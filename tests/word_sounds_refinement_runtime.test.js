@@ -51,3 +51,22 @@ describe('Word Sounds compiled pack actually played',()=>{
   });
  }
 });
+
+
+describe('Word Sounds recorded display support',()=>{
+ it('does not count the post-answer reward as a pre-answer hint',async()=>{
+  const {host,rows}=await mount('counting');
+  const answer=host.querySelector('[role="button"][aria-label="Number 3"]');
+  await act(async()=>answer.click());
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({correct:true,mode:'sound_only',textSupported:false,cluesShown:[],attempts:1});
+ });
+ it('records a printed-label hint using the latest render',async()=>{
+  const {host,rows}=await mount('counting');
+  const reveal=[...host.querySelectorAll('button')].find(b=>b.textContent.includes('👂'));
+  expect(reveal).toBeTruthy();await act(async()=>reveal.click());
+  await act(async()=>host.querySelector('[role="button"][aria-label="Number 3"]').click());
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({correct:true,mode:'visual',textSupported:true,cluesShown:['printed_sound_labels']});
+ });
+});

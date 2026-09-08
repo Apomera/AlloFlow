@@ -50,6 +50,125 @@ var Settings2 = _lazyIcon('Settings2');
 var Smile = _lazyIcon('Smile');
 var Sparkles = _lazyIcon('Sparkles');
 var X = _lazyIcon('X');
+function adventureSetupText(t, key, fallback) {
+  const full = key.includes(".") ? key : "adventure.learning_settings." + key;
+  const value = typeof t === "function" ? t(full) : null;
+  return value && value !== full ? value : fallback;
+}
+function adventureSetupLocked(props, permission) {
+  if (props.adventureState?.isLoading || props.isProcessing) return true;
+  if (props.isTeacherMode) return false;
+  const settings = props.studentProjectSettings || {};
+  const permissions = settings.adventurePermissions || {};
+  if (permissions.lockAllSettings) return true;
+  if (permission === "freeResponse") return settings.allowFreeResponse === false;
+  if (permission === "allowVisualsToggle") return permissions.allowVisualsToggle === false;
+  return permission ? permissions[permission] !== true : false;
+}
+function adventureSetupLimit(state) {
+  const bounded = (value) => Math.max(3, Math.min(50, Math.round(Number(value) || 20)));
+  return Object.prototype.hasOwnProperty.call(state, "episodeTurnLimit") ? state.episodeTurnLimit == null ? null : bounded(state.episodeTurnLimit) : state.enableAutoClimax ? null : bounded(state.climaxMinTurns);
+}
+function AdventureSettingsSurface({ theme, children, compact = false }) {
+  const dark = theme === "dark" || theme === "contrast";
+  const contrast = theme === "contrast";
+  return /* @__PURE__ */ React.createElement("div", { "data-adventure-settings": true, className: compact ? "as-compact" : "", style: {
+    "--as-ink": dark ? "#f8fafc" : "#17233a",
+    "--as-muted": dark ? "#cbd5e1" : "#475569",
+    "--as-bg": contrast ? "#000" : dark ? "#0f172a" : "#fff",
+    "--as-wash": contrast ? "#000" : dark ? "#1e293b" : "#f4f6fb",
+    "--as-line": contrast ? "#fff" : dark ? "#94a3b8" : "#64748b",
+    "--as-accent": contrast ? "#fde047" : dark ? "#a5b4fc" : "#4338ca"
+  } }, /* @__PURE__ */ React.createElement("style", null, `
+      [data-adventure-settings]{color:var(--as-ink);background:var(--as-bg);font-size:14px;line-height:1.5;min-width:0}
+      [data-adventure-settings] *{box-sizing:border-box}
+      [data-adventure-settings] .as-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px}
+      [data-adventure-settings].as-compact .as-grid{grid-template-columns:1fr}
+      [data-adventure-settings] .as-box{padding:16px;background:var(--as-wash);border:1px solid var(--as-line);border-radius:12px;margin:0 0 16px;min-width:0}
+      [data-adventure-settings] .as-title{font-size:15px;font-weight:700;margin:0 0 12px}
+      [data-adventure-settings] .as-field{display:block;font-weight:600;font-size:13px;min-width:0;margin:0}
+      [data-adventure-settings] .as-control{display:block;width:100%;min-width:0;min-height:44px;background:var(--as-bg);color:var(--as-ink);border:1px solid var(--as-line);border-radius:8px;padding:9px 10px;font:inherit;margin-top:6px}
+      [data-adventure-settings] textarea.as-control{resize:vertical;min-height:100px}
+      [data-adventure-settings] .as-help{display:block;font-size:12px;font-weight:400;color:var(--as-muted);margin:6px 0 0;line-height:1.6}
+      [data-adventure-settings] .as-check{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 0;cursor:pointer;font-size:13px;font-weight:600}
+      [data-adventure-settings] .as-check input{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--as-accent)}
+      [data-adventure-settings] input:disabled,[data-adventure-settings] select:disabled,[data-adventure-settings] textarea:disabled{cursor:not-allowed;color:var(--as-muted);opacity:1;background:var(--as-wash)}
+      [data-adventure-settings] .as-button{min-height:44px;padding:8px 12px;border:1px solid var(--as-line);border-radius:8px;background:var(--as-bg);color:var(--as-accent);font-size:13px;font-weight:600;cursor:pointer}
+      [data-adventure-settings] .as-button:disabled{cursor:not-allowed;color:var(--as-muted)}
+      [data-adventure-settings] :is(input,select,textarea,button,summary):focus-visible{outline:3px solid var(--as-accent);outline-offset:3px}
+      [data-adventure-settings] details{border-bottom:1px solid var(--as-line);margin-bottom:4px}
+      [data-adventure-settings] summary{min-height:48px;padding:12px 2px;cursor:pointer;font-weight:700;font-size:14px;border-radius:4px}
+      [data-adventure-settings] summary .as-help{display:inline;margin-left:10px}
+      [data-adventure-settings] .as-detail{padding:4px 0 16px}
+      [data-adventure-settings] .as-resource{padding:12px;border:1px solid var(--as-line);border-radius:8px;margin:12px 0}
+      [data-adventure-settings] .as-resource .as-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:10px}
+      [data-adventure-settings] .as-notice{padding:10px 12px;border-left:3px solid var(--as-accent);background:var(--as-wash);font-size:13px;margin-bottom:16px}
+      [data-adventure-settings] .as-summary{font-size:13px;line-height:1.7;padding:12px 0;margin-top:12px;color:var(--as-muted);overflow-wrap:anywhere}
+      [data-adventure-settings] .as-summary strong{color:var(--as-ink)}
+      @media(max-width:500px){[data-adventure-settings] summary .as-help{display:block;margin-left:16px}}
+    `), children);
+}
+function AdventureSettingSection({ title, summary, children }) {
+  return /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, /* @__PURE__ */ React.createElement("span", null, title), " ", summary && /* @__PURE__ */ React.createElement("span", { className: "as-help" }, summary)), /* @__PURE__ */ React.createElement("div", { className: "as-detail" }, children));
+}
+function AdventureEpisodeSettings({ state, onChange, t, locked = false, id = "adventure-episode-length", theme = "light", freeResponse = false, includeFinale = false }) {
+  const label = (key, fallback) => adventureSetupText(t, key, fallback);
+  const limit = adventureSetupLimit(state);
+  const disabled = locked || typeof onChange !== "function";
+  const update = (key, value) => {
+    if (!disabled) onChange((previous) => ({ ...previous, [key]: value }));
+  };
+  return /* @__PURE__ */ React.createElement(AdventureSettingsSurface, { theme }, /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id }, label("length", "Episode length"), /* @__PURE__ */ React.createElement("select", { className: "as-control", "aria-label": label("length", "Episode length"), id, value: limit == null ? "open" : String(limit), disabled, onChange: (e) => update("episodeTurnLimit", e.target.value === "open" ? null : Number(e.target.value)) }, /* @__PURE__ */ React.createElement("option", { value: "6" }, label("short", "Short \xB7 6 decisions")), /* @__PURE__ */ React.createElement("option", { value: "12" }, label("standard", "Standard \xB7 12 decisions")), /* @__PURE__ */ React.createElement("option", { value: "20" }, label("long", "Long \xB7 20 decisions")), limit != null && ![6, 12, 20].includes(limit) && /* @__PURE__ */ React.createElement("option", { value: String(limit) }, limit, " ", label("decisions", "decisions")), /* @__PURE__ */ React.createElement("option", { value: "open" }, label("open", "Open-ended")))), !freeResponse && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-choices" }, label("choices", "Choices per decision"), /* @__PURE__ */ React.createElement("select", { className: "as-control", "aria-label": label("choices", "Choices per decision"), id: id + "-choices", value: state.choiceCount || 6, disabled, onChange: (e) => update("choiceCount", Number(e.target.value)) }, [2, 3, 4, 5, 6].map((count) => /* @__PURE__ */ React.createElement("option", { key: count, value: count }, count))))), /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("length_hint", "Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.")), includeFinale && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!state.enableAutoClimax, disabled, onChange: (e) => update("enableAutoClimax", e.target.checked) }), label("finale", "Include a final challenge")), limit === null && state.enableAutoClimax && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-earliest" }, label("earliest_finale", "Earliest finale round (open-ended)"), /* @__PURE__ */ React.createElement("input", { className: "as-control", "aria-label": label("earliest_finale", "Earliest finale round (open-ended)"), id: id + "-earliest", type: "number", min: "3", max: "50", value: state.climaxMinTurns || 20, disabled, onChange: (e) => update("climaxMinTurns", Math.max(3, Math.min(50, Number(e.target.value) || 20))) }), /* @__PURE__ */ React.createElement("span", { className: "as-help" }, label("open_finale_hint", "The finale also waits for sufficient story progress.")))));
+}
+function AdventureSetupFields(props) {
+  const state = props.adventureState || {};
+  const settings = props.studentProjectSettings || {};
+  const permissions = settings.adventurePermissions || {};
+  const label = (key, fallback) => adventureSetupText(props.t, key, fallback);
+  const id = props.idPrefix || "adventure-setup";
+  const locked = (permission) => adventureSetupLocked(props, permission);
+  const change = (setter, value, permission) => {
+    if (!locked(permission) && typeof props[setter] === "function") props[setter](value);
+  };
+  const toggle = (field2, setter, title, help, permission, extraDisabled = false) => typeof props[setter] === "function" && /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!props[field2], disabled: locked(permission) || extraDisabled, onChange: (e) => change(setter, e.target.checked, permission) }), /* @__PURE__ */ React.createElement("span", null, title, help && /* @__PURE__ */ React.createElement("span", { className: "as-help" }, help)));
+  const field = (key, title, value, setter, options, permission, help) => /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-" + key }, title, /* @__PURE__ */ React.createElement("select", { className: "as-control", "aria-label": title, "aria-describedby": help ? id + "-" + key + "-help" : void 0, id: id + "-" + key, value, disabled: locked(permission) || typeof props[setter] !== "function", onChange: (e) => change(setter, e.target.value, permission) }, options.map(([value2, text]) => /* @__PURE__ */ React.createElement("option", { key: value2, value: value2 }, text))), help && /* @__PURE__ */ React.createElement("span", { className: "as-help", id: id + "-" + key + "-help" }, help));
+  const modes = [["choice", label("adventure.mode_choice", "Standard Adventure Mode")], ["debate", label("adventure.mode_debate", "Debate")], ["system", label("adventure.mode_system", "Systems simulation")]];
+  const languages = Array.from(new Set((props.selectedLanguages || []).filter((lang) => lang !== "English")));
+  const languageOptions = [["English", label("adventure.lang_options.english_only", "English only")], ...languages.flatMap((lang) => [[lang, lang], [lang + " + English", lang + " \xB7 " + label("with_translation", "with translation")]])];
+  if (languages.length > 1) languageOptions.push(["All + English", languages.join(", ") + " \xB7 " + label("with_translation", "with translation")]);
+  if (props.adventureLanguageMode && !languageOptions.some((option) => option[0] === props.adventureLanguageMode)) languageOptions.push([props.adventureLanguageMode, props.adventureLanguageMode]);
+  const resourceMode = props.factionResourceMode === "manual" ? "manual" : "ai";
+  const setResourceMode = (value) => {
+    if (locked()) return;
+    if (typeof props.setFactionResourceMode === "function") props.setFactionResourceMode(value);
+    else {
+      const handler = value === "manual" ? props.handleSetFactionResourceModeToManual : props.handleSetFactionResourceModeToAi;
+      if (typeof handler === "function") handler();
+    }
+  };
+  const editResources = (update) => {
+    if (!locked() && typeof props.setAdventureState === "function") props.setAdventureState((previous) => ({ ...previous, systemResources: update(previous.systemResources || []) }));
+  };
+  const supports = typeof props.setAdventureAutoRead === "function" || typeof props.setAdventureTypingPaceEnabled === "function" || typeof props.setAdventureFluencyEnabled === "function";
+  const hasCloud = typeof props.setIsAdventureCloudEnabled === "function";
+  const permissionToggle = (key, title, help) => props.isTeacherMode && typeof props.setStudentProjectSettings === "function" && /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: permissions[key] === true, disabled: locked(), onChange: (e) => {
+    const checked = e.target.checked;
+    if (!locked()) props.setStudentProjectSettings((previous) => ({ ...previous, adventurePermissions: { ...previous.adventurePermissions, [key]: checked } }));
+  } }), /* @__PURE__ */ React.createElement("span", null, title, /* @__PURE__ */ React.createElement("span", { className: "as-help" }, help)));
+  const limit = adventureSetupLimit(state);
+  const onOff = (value) => label(value ? "common.on" : "common.off", value ? "On" : "Off");
+  return /* @__PURE__ */ React.createElement(AdventureSettingsSurface, { theme: props.theme, compact: props.compact }, !props.isTeacherMode && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, permissions.lockAllSettings ? label("student_locked_hint", "Your teacher has fixed this setup. You can review the settings and start your adventure.") : label("student_edit_hint", "You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.")), /* @__PURE__ */ React.createElement("section", { className: "as-box", "aria-labelledby": id + "-essential-heading" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-essential-heading", className: "as-title" }, label("essential_setup", "Essential setup")), /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, field("input-mode", label("adventure.interaction_mode", "Interaction mode"), props.adventureInputMode || "choice", "setAdventureInputMode", modes, "allowModeSwitch"), field("language", label("adventure.language_label", "Adventure language"), props.adventureLanguageMode || "English", "setAdventureLanguageMode", languageOptions, "allowLanguageSwitch", label("translation_hint", "Story language follows this control; the translation language follows Universal Settings.")), /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-response" }, label("response_format", "Student responses"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("response_format", "Student responses"), id: id + "-response", className: "as-control", value: props.adventureFreeResponseEnabled ? "written" : "choice", disabled: locked("freeResponse") || typeof props.setAdventureFreeResponseEnabled !== "function", onChange: (e) => change("setAdventureFreeResponseEnabled", e.target.value === "written", "freeResponse") }, /* @__PURE__ */ React.createElement("option", { value: "choice" }, label("response_choices", "Choose from suggestions")), /* @__PURE__ */ React.createElement("option", { value: "written" }, label("response_written", "Write or dictate"))))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, /* @__PURE__ */ React.createElement(AdventureEpisodeSettings, { state, onChange: props.setAdventureState, t: props.t, theme: props.theme, locked: locked(), id: id + "-episode-length", freeResponse: props.adventureFreeResponseEnabled, includeFinale: true })), props.isSocialStoryMode && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-social-focus" }, label("social_focus", "Social skill to practise"), /* @__PURE__ */ React.createElement("input", { id: id + "-social-focus", className: "as-control", type: "text", value: props.socialStoryFocus || "", disabled: locked() || typeof props.setSocialStoryFocus !== "function", onChange: (e) => change("setSocialStoryFocus", e.target.value), placeholder: label("adventure.social_story_focus_placeholder", "e.g., Sharing toys, Dealing with frustration") })), props.adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", null, toggle("enableFactionResources", "setEnableFactionResources", label("adventure.system_state_label", "Track resources"), label("adventure.system_state_desc", "Track how your decisions affect the system.")), props.enableFactionResources && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-resource-mode" }, label("resource_setup", "Resource setup"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("resource_setup", "Resource setup"), className: "as-control", id: id + "-resource-mode", value: resourceMode, disabled: locked() || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual), onChange: (e) => setResourceMode(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ai" }, label("resources_ai", "AI-generated resources")), /* @__PURE__ */ React.createElement("option", { value: "manual" }, label("resources_manual", "Teacher-defined resources")))), resourceMode === "manual" && /* @__PURE__ */ React.createElement("div", null, (state.systemResources || []).map((resource, index) => /* @__PURE__ */ React.createElement("div", { className: "as-resource", key: index }, /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, [["name", label("resource_name", "Resource name"), "text"], ["quantity", label("resource_quantity", "Starting value"), "number"], ["unit", label("resource_unit", "Unit"), "text"]].map(([key, title, type]) => /* @__PURE__ */ React.createElement("label", { className: "as-field", key, htmlFor: id + "-resource-" + index + "-" + key }, title, " ", index + 1, /* @__PURE__ */ React.createElement("input", { id: id + "-resource-" + index + "-" + key, className: "as-control", type, min: type === "number" ? 0 : void 0, value: resource[key] ?? "", disabled: locked(), onChange: (e) => {
+    const value = type === "number" ? Math.max(0, Number(e.target.value) || 0) : e.target.value;
+    editResources((rows) => rows.map((row, i) => i === index ? { ...row, [key]: value } : row));
+  } })))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "as-button", style: { marginTop: 10 }, disabled: locked(), onClick: () => editResources((rows) => rows.filter((_, i) => i !== index)) }, label("remove_resource", "Remove resource"), " ", index + 1))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "as-button", style: { marginTop: 12 }, disabled: locked(), onClick: () => editResources((rows) => [...rows, { name: "", icon: "\u{1F539}", quantity: 50, unit: "%", type: "strategic" }]) }, label("adventure.add_state_variable", "Add resource")))))), supports && /* @__PURE__ */ React.createElement(AdventureSettingSection, { title: label("learning_supports", "Learning supports"), summary: label("reading_practice", "Reading practice") + ": " + onOff(props.adventureFluencyEnabled) }, typeof props.setAdventureAutoRead === "function" && /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!props.adventureAutoRead, disabled: locked(), onChange: (e) => {
+    change("setAdventureAutoRead", e.target.checked);
+    if (!e.target.checked && typeof props.stopPlayback === "function") props.stopPlayback();
+  } }), label("auto_read_setup", "Read each scene automatically")), toggle("adventureFluencyEnabled", "setAdventureFluencyEnabled", label("adventure.fluency_setting_label", "Scene reading practice"), label("adventure.fluency_setting_desc", "Offer an optional microphone button for practising the current passage.")), props.adventureFreeResponseEnabled && toggle("adventureTypingPaceEnabled", "setAdventureTypingPaceEnabled", label("adventure.typing_pace_label", "Typing pace"), label("adventure.typing_pace_desc", "Descriptive pace and word count for written responses. Never affects points or grades."))), /* @__PURE__ */ React.createElement(AdventureSettingSection, { title: label("story_rules", "Story & game rules"), summary: label("adventure.chance_mode_label", "Chance") + ": " + onOff(props.adventureChanceMode) }, field("difficulty", label("energy_rewards", "Energy & rewards"), props.adventureDifficulty || "Normal", "setAdventureDifficulty", [["Story", label("adventure.diff_story_option", "Story")], ["Normal", label("adventure.diff_normal_option", "Normal")], ["Hard", label("adventure.diff_hard_option", "Hard")], ["Hardcore", label("adventure.diff_hardcore_option", "Hardcore")]], "allowDifficultySwitch", label("difficulty_" + (props.adventureDifficulty || "Normal"), { Story: "Half energy loss; 1.5\xD7 XP. Reasoning expectations follow the lesson.", Normal: "Standard energy loss and XP. Reasoning expectations follow the lesson.", Hard: "1.5\xD7 energy loss; 0.75\xD7 XP. Success thresholds stay the same.", Hardcore: "2.5\xD7 energy loss; 0.5\xD7 XP. Success thresholds stay the same." }[props.adventureDifficulty || "Normal"])), toggle("isAdventureStoryMode", "setIsAdventureStoryMode", label("adventure.story_mode_label", "Peaceful mode"), label("adventure.story_mode_desc", "Focus on exploration and puzzles.")), toggle("adventureChanceMode", "setAdventureChanceMode", label("adventure.chance_mode_label", "Chance mode"), label("adventure.chance_mode_desc", "Chance rolls influence the story outcome.")), toggle("isSocialStoryMode", "setIsSocialStoryMode", label("adventure.social_story_mode_label", "Social scenario mode"), label("social_mode_hint", "Show a target social skill in Essential setup."))), /* @__PURE__ */ React.createElement(AdventureSettingSection, { title: label("visual_settings", "Visuals"), summary: label("adventure.art_style_label", "Art style") + ": " + label("adventure.art_" + (props.adventureArtStyle || "auto"), props.adventureArtStyle || "Auto") }, field("art-style", label("adventure.art_style_label", "Art style"), props.adventureArtStyle || "auto", "setAdventureArtStyle", ["universal", "auto", "storybook", "pixel", "cinematic", "anime", "crayon", "custom"].map((value) => [value, label("adventure.art_" + value, { universal: "Use Universal style", auto: "Auto", storybook: "Storybook", pixel: "Pixel art", cinematic: "Cinematic", anime: "Anime", crayon: "Hand-drawn", custom: "Custom" }[value])]), "allowVisualsToggle"), props.adventureArtStyle === "universal" && /* @__PURE__ */ React.createElement("p", { className: "as-help" }, props.universalImageStyle || label("universal_style_empty", "No Universal style is set; Adventure will use its automatic style.")), props.adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-custom-art" }, label("custom_art", "Custom art style"), /* @__PURE__ */ React.createElement("input", { id: id + "-custom-art", className: "as-control", value: props.adventureCustomArtStyle || "", disabled: locked("allowVisualsToggle"), onChange: (e) => change("setAdventureCustomArtStyle", e.target.value, "allowVisualsToggle") })), toggle("adventureConsistentCharacters", "setAdventureConsistentCharacters", label("adventure.consistent_characters_label", "Consistent characters"), label("adventure.consistent_characters_desc", "Keep character appearances consistent across scenes.")), toggle("useLowQualityVisuals", "setUseLowQualityVisuals", label("adventure.low_quality_label", "Faster, simpler visuals"), label("adventure.low_quality_desc", "Faster generation, less data."), "allowVisualsToggle")), /* @__PURE__ */ React.createElement(AdventureSettingSection, { title: label("story_guidance", "Story guidance"), summary: props.adventureCustomInstructions?.trim() ? label("guidance_added", "Custom instructions added") : label("guidance_empty", "No custom instructions") }, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-custom-instructions" }, label("input.custom_instructions", "Custom instructions"), /* @__PURE__ */ React.createElement("textarea", { id: id + "-custom-instructions", className: "as-control", value: props.adventureCustomInstructions || "", disabled: locked("allowCustomInstructions"), onChange: (e) => change("setAdventureCustomInstructions", e.target.value, "allowCustomInstructions"), placeholder: label("adventure.placeholder_custom", "Add guidance for this adventure.") }))), (hasCloud || props.isTeacherMode && props.setStudentProjectSettings) && /* @__PURE__ */ React.createElement(AdventureSettingSection, { title: label("saving_permissions", "Saving & permissions"), summary: label("cloud_images", "Cloud images") + ": " + onOff(props.isAdventureCloudEnabled) }, hasCloud && (props.isTeacherMode || permissions.allowCloudImageStorage === true) && /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!props.isAdventureCloudEnabled, disabled: locked("allowCloudImageStorage"), onChange: (e) => {
+    if (locked("allowCloudImageStorage")) return;
+    change("setIsAdventureCloudEnabled", e.target.checked, "allowCloudImageStorage");
+    if (typeof props.safeSetItem === "function") props.safeSetItem("allo_adventure_cloud", e.target.checked ? "true" : "false");
+  } }), /* @__PURE__ */ React.createElement("span", null, label("adventure.cloud_storage_label", "Cloud image storage"), /* @__PURE__ */ React.createElement("span", { className: "as-help" }, label("adventure.cloud_storage_desc", "Store generated images online.")))), props.adventureFreeResponseEnabled && props.isAdventureCloudEnabled && (props.isTeacherMode || permissions.allowCloudImageStorage) && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, label("adventure.pii_warning_desc", "Avoid including personal information in written responses when cloud image storage is enabled.")), permissionToggle("lockAllSettings", label("adventure.lock_settings_label", "Lock student settings"), label("adventure.lock_settings_desc", "Keep the adventure setup fixed for students.")), permissionToggle("allowCloudImageStorage", label("adventure.allow_cloud_storage_label", "Allow cloud image storage"), label("adventure.allow_cloud_storage_desc", "Allow students to store generated images online."))), /* @__PURE__ */ React.createElement("div", { className: "as-summary", role: "region", "aria-label": label("setup_summary", "Setup summary") }, /* @__PURE__ */ React.createElement("strong", null, label("setup_summary", "Setup summary"), ": "), modes.find((option) => option[0] === props.adventureInputMode)?.[1] || modes[0][1], " \xB7 ", limit == null ? label("open", "Open-ended") : limit + " " + label("decisions", "decisions"), " \xB7 ", props.adventureFreeResponseEnabled ? label("response_written", "Write or dictate") : (state.choiceCount || 6) + " " + label("suggested_choices", "suggested choices"), " \xB7 ", languageOptions.find((option) => option[0] === props.adventureLanguageMode)?.[1] || props.adventureLanguageMode));
+}
 function useAiTextAvailable() {
   const read = () => {
     try {
@@ -974,6 +1093,8 @@ function AdventurePanel(props) {
     return value && value !== "adventure.learning_settings." + key ? value : fallback;
   };
   const episodeLimit = Object.prototype.hasOwnProperty.call(adventureState, "episodeTurnLimit") ? adventureState.episodeTurnLimit : adventureState.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(adventureState.climaxMinTurns) || 20));
+  const completedDecisions = Math.max(0, Number.isFinite(adventureState.stats?.decisions) ? adventureState.stats.decisions : (Number(adventureState.turnCount) || 1) - 1);
+  const manualFinaleMinimum = episodeLimit == null ? adventureState.climaxMinTurns || 20 : Math.max(1, episodeLimit - 1);
   const difficultyDetails = { Story: "Half energy loss; 1.5\xD7 XP. Reasoning expectations follow the lesson.", Normal: "Standard energy loss and XP. Reasoning expectations follow the lesson.", Hard: "1.5\xD7 energy loss; 0.75\xD7 XP. Success thresholds stay the same.", Hardcore: "2.5\xD7 energy loss; 0.5\xD7 XP. Success thresholds stay the same." };
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" }, hasSavedAdventure && /* @__PURE__ */ React.createElement(
     "button",
@@ -993,343 +1114,13 @@ function AdventurePanel(props) {
       className: "h-full bg-yellow-400 transition-all motion-reduce:transition-none duration-500",
       style: { width: `${Math.min(100, globalPoints / studentProjectSettings.adventureUnlockXP * 100)}%` }
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 font-mono opacity-70" }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-3 text-purple-200 font-medium" }, t("adventure.locked_tip"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_input_mode" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("adventure.interaction_mode")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "adventure_setup_input_mode",
-      value: adventureInputMode,
-      onChange: (e) => setAdventureInputMode(e.target.value),
-      disabled: !isTeacherMode && (!adventurePermissions.allowModeSwitch || adventurePermissions.lockAllSettings),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "choice" }, t("adventure.mode_choice")),
-    /* @__PURE__ */ React.createElement("option", { value: "debate" }, t("adventure.mode_debate")),
-    /* @__PURE__ */ React.createElement("option", { value: "system" }, t("adventure.mode_system"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, adventureInputMode === "choice" ? t("adventure.mode_choice_desc") : adventureInputMode === "debate" ? t("adventure.mode_debate_desc") : t("adventure.mode_system_desc"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_difficulty" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("adventure.difficulty_label")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "adventure_setup_difficulty",
-      value: adventureDifficulty,
-      onChange: (e) => setAdventureDifficulty(e.target.value),
-      disabled: !isTeacherMode && (!adventurePermissions.allowDifficultySwitch || adventurePermissions.lockAllSettings),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "Story" }, t("adventure.diff_story_option")),
-    /* @__PURE__ */ React.createElement("option", { value: "Normal" }, t("adventure.diff_normal_option")),
-    /* @__PURE__ */ React.createElement("option", { value: "Hard" }, t("adventure.diff_hard_option")),
-    /* @__PURE__ */ React.createElement("option", { value: "Hardcore" }, t("adventure.diff_hardcore_option"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, learningText("difficulty_" + adventureDifficulty, difficultyDetails[adventureDifficulty] || difficultyDetails.Normal))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_language" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("adventure.language_label")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "adventure_setup_language",
-      value: adventureLanguageMode,
-      onChange: (e) => setAdventureLanguageMode(e.target.value),
-      disabled: !isTeacherMode && (!adventurePermissions.allowLanguageSwitch || adventurePermissions.lockAllSettings),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "English" }, t("adventure.lang_options.english_only")),
-    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement(React.Fragment, { key: lang }, /* @__PURE__ */ React.createElement("option", { value: lang }, t("adventure.lang_options.only_suffix", { lang })), /* @__PURE__ */ React.createElement("option", { value: `${lang} + English` }, lang + " \xB7 " + learningText("with_translation", "with translation")))),
-    selectedLanguages.length > 1 && /* @__PURE__ */ React.createElement("option", { value: "All + English" }, selectedLanguages.join(", ") + " \xB7 " + learningText("with_translation", "with translation"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, learningText("translation_hint", "Story language follows this control; the translation language follows Universal Settings."))), /* @__PURE__ */ React.createElement(
-    ResourceCustomInstructions,
-    {
-      helpKey: "adventure_custom_instructions",
-      t,
-      ariaFallback: "Custom instructions for adventure",
-      value: adventureCustomInstructions,
-      onChange: setAdventureCustomInstructions,
-      placeholderKey: "common.adventure_instructions_placeholder",
-      disabled: !isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_free_response" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_adventure_free_response_enabled"),
-      id: "freeResponseMode",
-      type: "checkbox",
-      "data-help-key": "adventure_setup_chk_freeresponse",
-      checked: adventureFreeResponseEnabled,
-      onChange: (e) => setAdventureFreeResponseEnabled(e.target.checked),
-      disabled: !isTeacherMode && (studentProjectSettings.allowFreeResponse === false || adventurePermissions.lockAllSettings),
-      className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "freeResponseMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(PenTool, { size: 14, className: "text-purple-600" }), " ", t("adventure.free_response_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.free_response_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_chance_mode" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_adventure_chance_mode"),
-      id: "chanceMode",
-      type: "checkbox",
-      "data-help-key": "adventure_setup_chk_chance",
-      checked: adventureChanceMode,
-      onChange: (e) => setAdventureChanceMode(e.target.checked),
-      disabled: lockAllAdventureSettings,
-      className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "chanceMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Octagon, { size: 14, className: "text-purple-600" }), " ", t("adventure.chance_mode_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.chance_mode_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-pink-50 p-2 rounded border border-pink-200", "data-help-key": "adventure_social_story" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_is_social_story_mode"),
-      id: "socialStoryMode",
-      type: "checkbox",
-      checked: isSocialStoryMode,
-      onChange: (e) => setIsSocialStoryMode(e.target.checked),
-      disabled: lockAllAdventureSettings,
-      className: "w-4 h-4 text-pink-600 border-slate-300 rounded focus:ring-pink-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "socialStoryMode", className: "text-xs font-bold text-pink-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Heart, { size: 14, className: "text-pink-600" }), " ", t("adventure.social_story_mode_label") || "Social Story Mode (SEL)", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.social_story_mode_desc") || "Focus on social skills"))), isSocialStoryMode && /* @__PURE__ */ React.createElement("div", { className: "pl-6 animate-in motion-reduce:animate-none slide-in-from-top-1" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] text-pink-700 font-bold mb-1 uppercase opacity-80" }, t("adventure.social_story_focus_label") || "Target Social Skill / Focus:"), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.adventure_social_story_focus_placeholder"),
-      type: "text",
-      value: socialStoryFocus,
-      onChange: (e) => setSocialStoryFocus(e.target.value),
-      placeholder: t("adventure.social_story_focus_placeholder") || "e.g., Sharing toys, Dealing with frustration",
-      disabled: lockAllAdventureSettings,
-      className: "w-full text-xs p-1.5 border border-pink-300 rounded focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-pink-900 placeholder:text-pink-300"
-    }
-  ))), adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 p-2 rounded border border-amber-200 space-y-2", "data-help-key": "adventure_system_state" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_enable_faction_resources"),
-      id: "enableFactionResources",
-      type: "checkbox",
-      checked: enableFactionResources,
-      onChange: (e) => setEnableFactionResources(e.target.checked),
-      disabled: lockAllAdventureSettings,
-      className: "w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "enableFactionResources", className: "text-xs font-bold text-amber-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Package, { size: 14, className: "text-amber-600" }), " ", t("adventure.system_state_label"), /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.system_state_desc")))), enableFactionResources && /* @__PURE__ */ React.createElement("div", { className: "pl-6 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { id: "adventure-system-state-mode-label", className: "text-xs text-amber-700 font-medium" }, t("adventure.system_state_mode_label"), ":"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "adventure-system-state-mode-label", className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": factionResourceMode === "ai",
-      onClick: handleSetFactionResourceModeToAi,
-      disabled: lockAllAdventureSettings,
-      className: `px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${factionResourceMode === "ai" ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`
-    },
-    "\u{1F916} ",
-    t("adventure.system_state_ai_decides")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": factionResourceMode === "manual",
-      onClick: handleSetFactionResourceModeToManual,
-      disabled: lockAllAdventureSettings,
-      className: `px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${factionResourceMode === "manual" ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`
-    },
-    "\u270F\uFE0F ",
-    t("adventure.system_state_manual_entry")
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 italic" }, factionResourceMode === "ai" ? t("adventure.system_state_ai_desc") : t("adventure.system_state_manual_desc")), factionResourceMode === "manual" && /* @__PURE__ */ React.createElement("div", { className: "space-y-2 bg-amber-50/50 p-2 rounded border border-amber-200" }, (adventureState.systemResources || []).map((resource, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: "flex items-center gap-2 text-xs" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_resource"),
-      type: "text",
-      value: resource.icon,
-      disabled: lockAllAdventureSettings,
-      onChange: (e) => {
-        const updated = [...adventureState.systemResources || []];
-        updated[idx] = { ...updated[idx], icon: e.target.value };
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "w-10 p-1 text-center border border-amber-300 rounded text-sm",
-      placeholder: "\u{1F539}"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": "\u{1F539}",
-      type: "text",
-      value: resource.name,
-      disabled: lockAllAdventureSettings,
-      onChange: (e) => {
-        const updated = [...adventureState.systemResources || []];
-        updated[idx] = { ...updated[idx], name: e.target.value };
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "flex-1 p-1 border border-amber-300 rounded",
-      placeholder: t("common.placeholder_state_variable")
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.state_variable"),
-      type: "number",
-      value: resource.quantity,
-      disabled: lockAllAdventureSettings,
-      onChange: (e) => {
-        const updated = [...adventureState.systemResources || []];
-        updated[idx] = { ...updated[idx], quantity: parseInt(e.target.value) || 0 };
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "w-16 p-1 border border-amber-300 rounded text-center",
-      min: "0"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_resource"),
-      type: "text",
-      value: resource.unit || "",
-      disabled: lockAllAdventureSettings,
-      onChange: (e) => {
-        const updated = [...adventureState.systemResources || []];
-        updated[idx] = { ...updated[idx], unit: e.target.value };
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "w-12 p-1 border border-amber-300 rounded text-center text-[11px]",
-      placeholder: "%",
-      title: t("common.unit_e_g_people_days")
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.remove"),
-      disabled: lockAllAdventureSettings,
-      onClick: () => {
-        const updated = (adventureState.systemResources || []).filter((_, i) => i !== idx);
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "p-1 text-red-500 hover:text-red-700",
-      title: t("common.remove")
-    },
-    /* @__PURE__ */ React.createElement(X, { size: 14 })
-  ))), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.add"),
-      disabled: lockAllAdventureSettings,
-      onClick: () => {
-        const updated = [...adventureState.systemResources || [], { name: "", icon: "\u{1F539}", quantity: 50, unit: "%", type: "strategic" }];
-        setAdventureState((prev) => ({ ...prev, systemResources: updated }));
-      },
-      className: "text-xs text-amber-600 hover:text-amber-800 flex items-center gap-1"
-    },
-    /* @__PURE__ */ React.createElement(Plus, { size: 12 }),
-    " ",
-    t("adventure.add_state_variable")
-  )))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_story_mode" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_is_adventure_story_mode"),
-      id: "storyMode",
-      type: "checkbox",
-      "data-help-key": "adventure_setup_chk_story",
-      checked: isAdventureStoryMode,
-      onChange: (e) => setIsAdventureStoryMode(e.target.checked),
-      disabled: lockAllAdventureSettings,
-      className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storyMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14, className: "text-purple-600" }), " ", t("adventure.story_mode_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.story_mode_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-violet-100/50 p-2 rounded border border-violet-200", "data-help-key": "adventure_consistent_characters" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_consistent_characters") || "Toggle consistent characters",
-      id: "advConsistentChars",
-      type: "checkbox",
-      "data-help-key": "adventure_setup_chk_consistent_characters",
-      checked: adventureConsistentCharacters,
-      onChange: (e) => setAdventureConsistentCharacters(e.target.checked),
-      disabled: lockAllAdventureSettings,
-      className: "w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advConsistentChars", className: "text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2" }, "\u{1F3AD} ", t("adventure.consistent_characters_label") || "Consistent Characters", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.consistent_characters_desc") || "Persistent visual cast across scenes"))), /* @__PURE__ */ React.createElement("details", { className: "group/adv-settings" }, /* @__PURE__ */ React.createElement("summary", { className: "flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, className: "text-slate-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2699\uFE0F ", t("adventure.advanced_settings") || "Advanced Settings"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: "text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180" })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "adventure_art_style" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "advArtStyle", className: "text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap" }, "\u{1F3A8} ", t("adventure.art_style_label") || "Art Style"), /* @__PURE__ */ React.createElement("select", { id: "advArtStyle", value: adventureArtStyle, onChange: (e) => setAdventureArtStyle(e.target.value), disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer" }, /* @__PURE__ */ React.createElement("option", { value: "universal" }, "Use Universal style"), /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F3A8} ", t("adventure.art_auto") || "Auto (default)"), /* @__PURE__ */ React.createElement("option", { value: "storybook" }, "\u{1F4DA} ", t("adventure.art_storybook") || "Storybook"), /* @__PURE__ */ React.createElement("option", { value: "pixel" }, "\u{1F3AE} ", t("adventure.art_pixel") || "Pixel Art"), /* @__PURE__ */ React.createElement("option", { value: "cinematic" }, "\u{1F3AC} ", t("adventure.art_cinematic") || "Cinematic"), /* @__PURE__ */ React.createElement("option", { value: "anime" }, "\u{1F3A8} ", t("adventure.art_anime") || "Anime"), /* @__PURE__ */ React.createElement("option", { value: "crayon" }, "\u{1F58D}\uFE0F ", t("adventure.art_crayon") || "Hand-drawn"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u270F\uFE0F ", t("adventure.art_custom") || "Custom..."))), adventureArtStyle === "universal" && /* @__PURE__ */ React.createElement("p", { className: "rounded border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[11px] text-indigo-800" }, universalImageStyle && universalImageStyle.trim() ? `Using Universal style: ${universalImageStyle.trim()}` : "No Universal style is set; Adventure will use its automatic style."), adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.custom_art_style_placeholder") || "Custom art style", value: adventureCustomArtStyle, onChange: (e) => setAdventureCustomArtStyle(e.target.value), placeholder: t("adventure.custom_art_style_placeholder") || "Describe your art style...", disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_low_quality" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_use_low_quality_visuals"),
-      id: "advLowQuality",
-      type: "checkbox",
-      "data-help-key": "adventure_setup_chk_lowqual",
-      checked: useLowQualityVisuals,
-      onChange: (e) => setUseLowQualityVisuals(e.target.checked),
-      disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false,
-      className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advLowQuality", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14, className: "text-purple-600" }), " ", t("adventure.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.low_quality_desc")))), (isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-green-100/50 p-2 rounded border border-green-200", "data-help-key": "adventure_cloud_storage" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_is_adventure_cloud_enabled"),
-      id: "advCloudStorage",
-      type: "checkbox",
-      checked: isAdventureCloudEnabled,
-      onChange: (e) => {
-        setIsAdventureCloudEnabled(e.target.checked);
-        safeSetItem("allo_adventure_cloud", e.target.checked ? "true" : "false");
-      },
-      className: "w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advCloudStorage", className: "text-xs font-bold text-green-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Cloud, { size: 14, className: "text-green-600" }), " ", t("adventure.cloud_storage_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.cloud_storage_desc")))))), adventureFreeResponseEnabled && isAdventureCloudEnabled && (isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage) && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-300 rounded p-2 flex items-start gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 14, className: "text-amber-600 flex-shrink-0 mt-0.5" }), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800" }, /* @__PURE__ */ React.createElement("strong", null, t("adventure.pii_warning_title")), " ", t("adventure.pii_warning_desc"))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-red-100/50 p-2 rounded border border-red-200", "data-help-key": "adventure_lock_settings" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_lock_all_settings_false"),
-      id: "lockAllSettings",
-      type: "checkbox",
-      checked: studentProjectSettings.adventurePermissions?.lockAllSettings || false,
-      onChange: (e) => setStudentProjectSettings((prev) => ({
-        ...prev,
-        adventurePermissions: {
-          ...prev.adventurePermissions,
-          lockAllSettings: e.target.checked
-        }
-      })),
-      className: "w-4 h-4 text-red-600 border-slate-300 rounded focus:ring-red-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "lockAllSettings", className: "text-xs font-bold text-red-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Lock, { size: 14, className: "text-red-600" }), " ", t("adventure.lock_settings_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.lock_settings_desc")))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-amber-100/50 p-2 rounded border border-amber-200", "data-help-key": "adventure_allow_cloud" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_allow_cloud_image_storage_false"),
-      id: "allowCloudImageStorage",
-      type: "checkbox",
-      checked: studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false,
-      onChange: (e) => setStudentProjectSettings((prev) => ({
-        ...prev,
-        adventurePermissions: {
-          ...prev.adventurePermissions,
-          allowCloudImageStorage: e.target.checked
-        }
-      })),
-      className: "w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "allowCloudImageStorage", className: "text-xs font-bold text-amber-800 cursor-pointer select-none flex flex-col gap-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 14, className: "text-amber-600" }), " ", t("adventure.allow_cloud_storage_label")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.allow_cloud_storage_desc")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal text-amber-700 bg-amber-200/50 px-1 rounded mt-0.5" }, "\u26A0\uFE0F ", t("adventure.ferpa_warning")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-lg border border-purple-100 shadow-sm space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-purple-100 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-purple-800 uppercase tracking-widest flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Flag, { size: 12 }), " ", t("adventure.climax.settings_header")), adventureState.climax?.isActive && /* @__PURE__ */ React.createElement("span", { className: "bg-red-100 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 animate-pulse motion-reduce:animate-none" }, t("adventure.climax.status_active"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "sidebar-adventure-episode-length", className: "block text-xs font-bold text-slate-800" }, learningText("length", "Episode length")), /* @__PURE__ */ React.createElement("select", { id: "sidebar-adventure-episode-length", value: episodeLimit == null ? "open" : String(episodeLimit), disabled: lockAllAdventureSettings, onChange: (event) => {
-    const value = event.target.value;
-    setAdventureState((previous) => ({ ...previous, episodeTurnLimit: value === "open" ? null : Number(value) }));
-  }, className: "min-h-11 w-full rounded-lg border border-purple-700 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("option", { value: "6" }, learningText("short", "Short \xB7 6 decisions")), /* @__PURE__ */ React.createElement("option", { value: "12" }, learningText("standard", "Standard \xB7 12 decisions")), /* @__PURE__ */ React.createElement("option", { value: "20" }, learningText("long", "Long \xB7 20 decisions")), episodeLimit != null && ![6, 12, 20].includes(Number(episodeLimit)) && /* @__PURE__ */ React.createElement("option", { value: String(episodeLimit) }, episodeLimit, " ", learningText("decisions", "decisions")), /* @__PURE__ */ React.createElement("option", { value: "open" }, learningText("open", "Open-ended"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-slate-700" }, learningText("finale_hint", "A set episode ends at its chosen length, with or without a final challenge. In open-ended play, the automatic finale waits for the minimum round and sufficient story progress."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "adventure_auto_climax" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": learningText("finale", "Include a final challenge"),
-      id: "enableAutoClimax",
-      disabled: lockAllAdventureSettings,
-      type: "checkbox",
-      checked: adventureState.enableAutoClimax || false,
-      onChange: (e) => setAdventureState((prev) => ({ ...prev, enableAutoClimax: e.target.checked })),
-      className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "enableAutoClimax", className: "text-xs font-medium text-slate-700 cursor-pointer select-none" }, learningText("finale", "Include a final challenge"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-medium" }, learningText("earliest_finale", "Earliest finale round (open-ended)")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": learningText("earliest_finale", "Earliest finale round (open-ended)"),
-      disabled: episodeLimit !== null || lockAllAdventureSettings,
-      type: "number",
-      min: "3",
-      max: "50",
-      value: adventureState.climaxMinTurns || 20,
-      onChange: (e) => {
-        const value = Math.max(3, Math.min(50, Number(e.target.value) || 20));
-        setAdventureState((prev) => ({ ...prev, climaxMinTurns: value }));
-      },
-      className: "w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 font-bold text-purple-900"
-    }
-  )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_turns")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.turnCount >= (adventureState.climaxMinTurns || 20) ? "text-green-600" : "text-slate-600"}` }, adventureState.turnCount, "/", adventureState.climaxMinTurns || 20)), /* @__PURE__ */ React.createElement("div", { className: "h-full w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_mastery")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.climax?.masteryScore >= 80 ? "text-green-600" : "text-slate-600"}` }, adventureState.climax?.masteryScore || 0, "/80"))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 font-mono opacity-70" }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-3 text-purple-200 font-medium" }, t("adventure.locked_tip"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AdventureSetupFields, { ...props, compact: true, idPrefix: "sidebar-adventure" }), isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 py-3 cursor-pointer text-sm font-bold text-slate-800" }, learningText("teacher_controls", "Teacher story controls")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, learningText("decisions", "Decisions")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${completedDecisions >= manualFinaleMinimum ? "text-green-600" : "text-slate-600"}` }, completedDecisions, "/", manualFinaleMinimum)), /* @__PURE__ */ React.createElement("div", { className: "h-full w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_mastery")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.climax?.masteryScore >= 80 ? "text-green-600" : "text-slate-600"}` }, adventureState.climax?.masteryScore || 0, "/80"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => {
-        const minTurns = adventureState.climaxMinTurns || 20;
-        if ((adventureState.turnCount || 0) < minTurns) {
+        const minTurns = manualFinaleMinimum;
+        if ((completedDecisions || 0) < minTurns) {
           addToast(t("adventure.climax.warning_min_rounds", { count: minTurns }), "warning");
           return;
         }
@@ -1348,7 +1139,7 @@ function AdventurePanel(props) {
         }));
         addToast(t("adventure.climax.toast_initiated"), "success");
       },
-      disabled: adventureState.climax?.isActive,
+      disabled: adventureState.climax?.isActive || adventureState.isLoading || isProcessing,
       className: `w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${adventureState.climax?.isActive ? "bg-slate-100 text-slate-600 cursor-not-allowed" : "bg-white border border-purple-200 text-purple-600 hover:bg-purple-50"}`
     },
     adventureState.climax?.isActive ? t("adventure.climax.active_btn") : t("adventure.climax.trigger_btn")
@@ -4680,7 +4471,15 @@ function GeneratorActionsView(props) {
     studentProjectSettings,
     t,
     universalImageStyle,
-    useLowQualityVisuals
+    useLowQualityVisuals,
+    adventureAutoRead: props.adventureAutoRead,
+    setAdventureAutoRead: props.setAdventureAutoRead,
+    stopPlayback: props.stopPlayback,
+    theme: props.theme,
+    adventureTypingPaceEnabled: props.adventureTypingPaceEnabled,
+    adventureFluencyEnabled: props.adventureFluencyEnabled,
+    setAdventureTypingPaceEnabled: props.setAdventureTypingPaceEnabled,
+    setAdventureFluencyEnabled: props.setAdventureFluencyEnabled
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("quiz") ? void 0 : "none" }, id: "ui-tool-quiz", "data-help-key": "tool_quiz", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "quiz" ? "border-emerald-600 shadow-xl shadow-emerald-500/20" : "border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10"}
               ` }, /* @__PURE__ */ React.createElement(

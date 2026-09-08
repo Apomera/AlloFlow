@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-09-08T11:21:02.052Z",
+  "kind": "isolated actual-source behavioral probes; no live UI claim",
+  "draftIdentity": {
+    "differentRemediationDocumentsCollide": true,
+    "differentResourceSelectionsCollide": true,
+    "remediationKey": "alloflow-builder-draft-v1:remediation%7Cprint%7CAlloFlow%20Document%7C0%3A%3A",
+    "selectionKey": "alloflow-builder-draft-v1:history%7Cprint%7CAlloFlow%20Document%7C2%3Aa%3Ab"
+  },
+  "delayedCaptureAfterClose": {
+    "sourceBefore": "history",
+    "signatureBefore": "source-signature",
+    "sourceAfter": null,
+    "signatureAfter": null,
+    "projectDraftAfter": null,
+    "htmlStillInLocalSession": true
+  },
+  "staleBlockRestore": {
+    "comparisonTarget": "Edited opening.",
+    "targetIndex": 0,
+    "accepted": true,
+    "unrelatedInsertedParagraphRemoved": true,
+    "intendedOriginalBlockRemainsEdited": true,
+    "finalBody": "<p>Saved opening.</p><p id=\"opening\">Edited opening.</p><p id=\"tail\">Unchanged tail.</p>"
+  },
+  "nonTextComparison": {
+    "imageReplacementReportedChanged": 0,
+    "truncated": false
+  }
+}

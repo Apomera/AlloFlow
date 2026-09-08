@@ -44,7 +44,7 @@
   }
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
+body{margin:0;background:var(--bg);overflow-wrap:anywhere;color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
 .wrap{max-width:860px;margin:0 auto;padding:32px 22px 80px;}
 .banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
 h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
@@ -56,9 +56,9 @@ li{margin:0 0 7px;}
 strong{font-weight:700;color:var(--ink);}
 a{color:var(--accent);}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
-code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+code{overflow-wrap:anywhere;background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
 pre{overflow:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:calc(12.5px * var(--fs));line-height:1.5;}
-pre code{border:0;padding:0;background:transparent;}
+pre code{overflow-wrap:normal;border:0;padding:0;background:transparent;}
 table{border-collapse:collapse;width:100%;margin:0;font-size:calc(14.5px * var(--fs));background:var(--panel);}
 th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
 th{background:var(--th);font-weight:700;color:var(--ink);}
@@ -226,8 +226,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>13 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed September 5, 2026</span><span class="dot" aria-hidden="true"></span>
-<span>prints to about 29 pages</span>
+<span>reviewed September 8, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>can be printed with your preferred paper size and margins</span>
 </p>
 
 <div class="start">
@@ -376,6 +376,17 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>A group award in the portal's dark theme. The counter shows how many students the one explanation will reach.</figcaption>
 </figure>
 <h2 id="store">5. The Store: Windows, Checkout, and Receipts</h2>
+<h3>Find a reward and plan a purchase</h3>
+<p>The Store opens with a reward gallery and an <strong>Available to spend</strong> balance. Students browse the full-width catalog; cashiers see a selected student's balance alongside checkout. Points reserved for active Print Lab requests are listed separately and cannot be spent again at the register.</p>
+<ol>
+<li>Use <strong>Search rewards</strong> to find a name or description. <strong>Sort rewards</strong> puts items in store order, point order, or alphabetical order.</li>
+<li>Students can select <strong>Within my balance</strong>. <strong>In stock only</strong> hides sold-out prizes. The result count tells you how much of the catalog is showing; <strong>Clear filters</strong> restores it and moves keyboard focus to search.</li>
+<li>Read the price and stock label. <strong>Unlimited</strong> means the catalog does not impose a finite stock count. A saving goal can stay selected while a prize is sold out; it does not reserve a future item.</li>
+<li>Choose <strong>Refresh live availability</strong> after a new award or a stock change. The balance, saving progress, and affordability filter update together. A cashier's existing cart is retained while searching and refreshing.</li>
+</ol>
+<figure><img src="school-rewards-manual-assets/13-store-browse.jpg" width="1132" height="1447" loading="lazy" alt="The updated fictional student store, with an available balance, a saving-goal progress bar, catalog search and sorting, affordability and stock filters, and colorful reward cards with explicit prices and stock labels."><figcaption>Browse, compare, and save toward a reward. Color adds variety; prices, stock, and goal status are also written in text.</figcaption></figure>
+<h3>Checkout remains a reviewed action</h3>
+
 <p>Shopping happens inside a <strong>trimester window</strong> that an administrator moves through <em>Draft</em>, <em>Preview</em>, <em>Open</em>, <em>Closed</em>, and <em>Archived</em>. In Preview, students see prizes and what they can afford; in Open, cashiers can check out. Configured start and end times fail closed outside the window.</p>
 <ul>
 <li><strong>Checkout</strong> is done by a cashier at the register in two steps. First the cashier chooses and verifies the student, picks the open window, and builds the cart while watching the available balance and the stock on each prize. Then <em>Refresh, review, and complete checkout</em> refreshes the live balance, window, and inventory and shows a final confirmation with the points before and after; nothing is charged until the cashier confirms. If availability changed, the cart is kept and the affected prize is highlighted for review.</li>
@@ -384,10 +395,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Refunds</strong> are administrator-only and restore points and finite inventory for the whole order.</li>
 <li><strong>Inventory</strong> is an append-only movement history: creating a prize, adjusting stock, sales, and refunds each leave a record, and a stale stock version is refused rather than overwritten.</li>
 </ul>
-<figure>
-<img src="school-rewards-manual-assets/12-store-scheduled.jpg" width="1180" height="744" loading="lazy" alt="The Store tab as a cashier. The Store catalog note reads Trimester 1 is set to Open, but shopping has not started yet, checkout opens 2026-09-06 11:47, above a Refresh live availability button and four prizes with their point costs and stock. The Cashier checkout card shows the student search and filters, a Choose a student menu, the Open store window menu reading None available, and an empty cart.">
-<figcaption>A window set to Open before its start time. The note says exactly what is happening and when checkout opens; the window menu offers nothing until then.</figcaption>
-</figure>
+<figure><img src="school-rewards-manual-assets/14-cashier-review.jpg" width="558" height="622" loading="lazy" alt="A fictional cashier checkout showing the selected student's name and reference, the current shopping window, a notebook in the cart with plus and minus quantity buttons, and the available balance before the reviewed purchase."><figcaption>Verify the student, adjust quantities, and read the remaining balance. The checkout button refreshes the ledger before asking for the final confirmation.</figcaption></figure>
 <div class="tablewrap">
 <table>
 <caption>What the Store tab note means</caption>
@@ -425,13 +433,13 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="suite">A one-page version of this section, written for a student or a parent, is in the <a href="school-rewards-quick-cards.html#card-student">printable quick cards</a>.</p>
 <p>Students do not need the portal to take part: balance emails arrive on the schedule the school sets. A rostered student who opens the portal with their school account sees only their own balance, growth, recent recognition, and the prize catalog.</p>
 <figure>
-<img src="school-rewards-manual-assets/05-student-overview.jpg" width="1180" height="900" loading="lazy" alt="A student's overview: an available balance of 42 points, growth points earned, store status Preview with the opening date, a Prize preview with two prizes and Save for this buttons, a Saving for line reading Robotics kit hour 80 points with 38 more points to go, and a My growth card with a Helpful level bar.">
+<img src="school-rewards-manual-assets/05-student-overview.jpg" width="1180" height="900" loading="lazy" alt="A fictional student overview with personal available points, growth earned through recognition, the current store status, colorful prize previews, and a saving goal. Spending points does not reduce the growth history.">
 <figcaption>What a student sees. The prize goal line updates as points arrive; the goal itself stays in that browser and is never sent to the ledger.</figcaption>
 </figure>
 <ul>
 <li><strong>Two numbers.</strong> <em>My available-to-spend balance</em> is what a purchase can use. <em>Growth points earned</em> and the level bars count every recognition in each category and never go down; shopping spends points without undoing growth.</li>
 <li><strong>Latest recognition</strong> shows the five most recent awards with the category and the sentence staff wrote. The full history is under Progress &amp; activity.</li>
-<li><strong>Save for this</strong> marks one prize as a goal and shows the points still needed.</li>
+<li><strong>Save for this</strong> marks one prize as a goal in Overview and Store. The progress bar shows how much of its price your available balance covers; the text names the points still needed. Select <strong>Saving for this</strong> again to clear it. Saving a goal does not reserve stock or spend points; a cashier completes the purchase. The preference stays in this browser and is scoped to the student, school, and academic year.</li>
 <li><strong>Language.</strong> A menu in the header switches the student surfaces between English and Spanish; the choice is remembered on that device and defaults to the device language. When a signed-in student chooses a language, the repository saves it too, so balance emails to that student arrive in the same language and a new device picks it up on sign-in. Section 11 says what is and is not translated.</li>
 <li><strong>Families.</strong> Where a school has set up reviewed guardian connections, guardians receive bounded digests of positive progress. Digests omit staff notes and transaction-level reasons on purpose; the detailed view belongs to the signed-in student.</li>
 </ul>
@@ -446,7 +454,21 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Classroom roster bridge.</strong> Exports the teacher's roster groups as a CSV template: the group becomes the homeroom and the codename a cross-reference column, while first name, last initial, grade, and managed email are left blank for an administrator to complete from the SIS before importing in the portal's Admin tab. The importer ignores the two extra columns. Nothing leaves the device in this step.</li>
 </ul>
 <h2 id="printlab">8. The 3D Print Lab</h2>
-<p>The Print Lab lets a student submit a small 3D design from AlloFlow's STEAM Lab, have staff review and quote it in points, and reserve those points until the print is fulfilled. Four tools can produce that design: the <strong>3D Print Lab</strong> itself, where a student builds a model from primitive shapes or opens a GLB or STL file; <strong>Geometry World</strong>, which sends a selected block build straight into Print Lab; <strong>Architecture Studio</strong>, whose block buildings in any style continue into Print Lab with one button; and <strong>Art Studio</strong>'s sculpt mode, whose primitive-shape sculptures do the same. No other tool makes printable geometry. The links run both ways: Print Lab opens with buttons to start in any of the three, and each handed-in model gets a way back. Geometry World and Art Studio receive the editable model itself (blocks, or the primitive recipe as edited in Print Lab); Architecture Studio keeps its own save, so its button simply returns you to the studio. It is a large surface with its own safety and review workflow, and most pilots will not use it at first. A new deployment starts with the tab <strong>hidden</strong>. An administrator turns it on under <strong>School settings</strong> once the school has a reviewed printer workflow; existing print records stay in the ledger either way, and the switch is a display setting rather than an access control. The full workflow, formats, and safety boundaries are documented in the package README and the Print Lab design note.</p>
+<p>Students can submit a 3D design, receive a staff-reviewed point quote, and reserve points until the finished piece is collected. A new deployment starts with the tab <strong>hidden</strong>. An administrator enables it under <strong>School settings</strong> after arranging the school's printer and review process. Existing records remain in the ledger when the tab is hidden; visibility does not grant or remove account permissions.</p>
+<h3>Describe a piece, then edit it</h3>
+<p>Start in <strong>3D Print Lab</strong>, or bring a supported design from Geometry World, Architecture Studio, or Art Studio's Sculpt 3D. For a simple object, try a description such as <em>A small turtle with a broad flat base and a rounded shell</em>, then choose <strong>Create editable recipe</strong>. Example descriptions help you get started. AI generation requires the configured provider; a description is a starting draft that you inspect and revise.</p>
+<p>Use your device's keyboard dictation if you prefer speaking, review the recognized words, and then submit the description. There is no built-in microphone recorder. In Print Lab, <strong>Edit this model in Sculpt 3D</strong> opens primitive-based models for part-by-part changes. Sculpt keeps manual controls and Undo; its <strong>Print Lab</strong> button returns the edited recipe. Physical scale and AI-use disclosure travel with that round trip. A changed model needs a new preflight and staff review.</p>
+<h3>Review strength and reduce material use</h3>
+<p>Open <strong>Materials</strong> to consider load direction, layer orientation, thin parts, joints, walls, supports, and the intended use. Compare two runs from the school's slicer using grams and print minutes. For example, 20 g to 14 g is 6 g less material (30%), while 100 to 120 minutes is 20 minutes more (20%). The comparison helps discuss a tradeoff; it does not alter the model, school quote, point balance, or print job.</p>
+<p>The built-in estimate is a rough scenario with an assumed shell fraction. It is not a slicer result or a reliable upper bound on filament use. Preflight can identify mesh, scale, and printer-fit problems, but it does not establish load capacity. Print Lab does not perform structural simulation, automatic hollowing, or topology optimization. Staff must inspect the actual sliced layers and test a prototype where strength matters. Display pieces are a useful starting point for demonstrations.</p>
+<h3>Follow the private school review path</h3>
+<ol>
+<li><strong>Student:</strong> inspect scale and preflight, export the review handoff and model, then submit the matching files through the school Print Lab tab. Review the AI-use disclosure and requested material.</li>
+<li><strong>Staff:</strong> download the exact uploaded model for review. Inspect its file match, physical dimensions, and slicer preview, then record the offline review evidence. Quote fields stay locked while asset verification and its refresh finish.</li>
+<li><strong>Staff:</strong> approve a point quote or return the request with correction guidance. The student reviews the current quote and confirms it; confirmation reserves points rather than spending them. A changed quote requires a fresh review.</li>
+<li><strong>Staff:</strong> advance the request through the queue, printing, and ready states. These are workflow records; they do not send commands to a printer. Fulfillment spends the reserved points once. Cancellation releases the reservation; an administrator can refund a fulfilled print.</li>
+</ol>
+<p>Model files stay in school-managed storage. Students do not receive Drive links to private assets. If storage access cannot be verified, stop and have the deployment owner review it. The package README contains the full staff runbook.</p>
 <h2 id="admin">9. Administration</h2>
 <p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it and carries a button that opens that card or tab. It is also the honest way to confirm each role works: when a teacher's first award appears, their sign-in and role are proven.</p>
 <p><strong>How the tab is laid out.</strong> Admin setup opens with the checklist and School settings expanded and every other card collapsed, so a new administrator meets two cards rather than nineteen. The section links at the top expand a card, scroll to it, and move keyboard focus to its heading. <em>Adjust stock</em> on a prize opens the separate inventory card, because editing a prize never changes its stock.</p>
@@ -484,7 +506,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="access">11. Themes, Phones, Languages, and Accessibility</h2>
 <ul>
 <li><strong>Themes.</strong> Inside AlloFlow the panel follows the app's theme, including the high-contrast theme. The portal follows the device: a dark colour scheme and a request for more contrast are both honoured, and reduced motion turns off transitions.</li>
-<li><strong>Phones.</strong> Below 760 pixels the portal's tab strip becomes a fixed bar at the bottom of the screen, cards stack, and award tiles remain full-width targets.</li>
+<li><strong>Phones.</strong> Below 760 pixels cards stack and the portal normally puts navigation at the bottom. On short screens, including a landscape phone, navigation stays in the page so it does not cover the form. Store controls have clear focus outlines and larger touch targets; quantity and saving-goal changes keep keyboard focus in place.</li>
 <li><strong>Built-in help.</strong> The <strong>Help</strong> button in the portal header opens a guide inside the portal: the two kinds of points, who does what, and the questions each role asks most, with links to this manual, the quick cards, and the practice page. It shows only the sections for the signed-in role, is translated with the rest of the portal, and works when the school network blocks outside links.</li>
 <li><strong>Languages.</strong> The header menu lists every language the portal ships. Spanish is complete: every screen a student, teacher, cashier, or administrator sees is translated, including the store, the admin cards, and the print lab. A language that is only partly translated shows its coverage beside its name, so a partly translated portal never looks like a finished one, and any string without a translation stays English rather than breaking.</li>
 <li><strong>How languages are added.</strong> The portal runs inside the school's own Apps Script project, so it cannot use the language packs the rest of AlloFlow uses. It keeps its own catalogue instead, at <code>apps_script/school_rewards/portal_strings.json</code>, with one file per language beside it. Adding a language is a translation file, not a code change; <code>lang/SCHOOL_REWARDS_PORTAL_TRANSLATION_HANDOFF.md</code> lists exactly what is left to translate and what must be left alone. Languages beyond English and Spanish download the first time someone picks them, so a school network that blocks the AlloFlow CDN still gets those two.</li>
@@ -496,6 +518,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <figcaption>A student's phone view in Spanish, with the tab bar pinned to the bottom of the screen.</figcaption>
 </figure>
 <h2 id="troubleshooting">12. Troubleshooting</h2>
+<ul><li><strong>A reward is missing:</strong> choose <strong>Clear filters</strong> and refresh availability. A sold-out prize can remain your saving goal; only an active catalog item is shown.</li><li><strong>The saving goal is different on another device or next year:</strong> goals are browser preferences scoped to the student, school, and academic year, not a purchase or a cross-device reservation.</li><li><strong>Print quote fields are disabled after verification:</strong> wait for the refresh to finish. If it fails, use the saved-change refresh control before continuing; do not assume a quoted amount was saved.</li></ul>
 <p><strong>"The ledger needs an administrator to review it."</strong> The portal shows this sentence in place of any internal integrity message. Nothing was changed. <em>Show details</em> reveals the exact text for the administrator, who runs the integrity report from Admin setup. The deployment check page and the portal's day-to-day messages are written to say what happened and what to do next; if one is still unclear, quote it when asking for help.</p>
 <ul>
 <li><strong>The card only shows the setup checklist:</strong> no deployment URL is saved on this device. Paste it in step 9, or ask the administrator for the staff link.</li>

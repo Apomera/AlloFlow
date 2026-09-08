@@ -1,0 +1,145 @@
+        (function initLandscape() {
+          var landscapeKey = '';
+          function number(v, fallback) { var n = Number(v); return isFinite(n) ? n : fallback; }
+          function disposeLandscape() {
+            if (!engine._landscape) return;
+            var group = engine._landscape;
+            if (group.parent) group.parent.remove(group);
+            group.children.forEach(function(mesh) { mesh.geometry.dispose(); mesh.material.dispose(); });
+            engine._landscape = null; landscapeKey = '';
+          }
+          function makeBuffer() { return { positions: [], colors: [] }; }
+          function triangle(buffer, a, b, c, color) {
+            [a, b, c].forEach(function(v) {
+              buffer.positions.push(v[0], v[1], v[2]);
+              buffer.colors.push(v.length > 3 ? v[3] : color.r, v.length > 3 ? v[4] : color.g, v.length > 3 ? v[5] : color.b);
+            });
+          }
+          function meshFrom(buffer, name, terrain) {
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(buffer.positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(buffer.colors, 3));
+            geometry.computeVertexNormals();
+            if (terrain) {
+              // Join the lighting across contours. Keep only a trace of facet
+              // definition; the terrain's silhouette carries its low-poly style.
+              var sums = {}, p = geometry.attributes.position.array, n = geometry.attributes.normal.array;
+              function keyAt(k) { return Math.round(p[k] * 10000) + ',' + Math.round(p[k + 1] * 10000) + ',' + Math.round(p[k + 2] * 10000); }
+              for (var k = 0; k < p.length; k += 3) {
+                var key = keyAt(k), sum = sums[key] || (sums[key] = [0, 0, 0]);
+                sum[0] += n[k]; sum[1] += n[k + 1]; sum[2] += n[k + 2];
+              }
+              for (var j = 0; j < p.length; j += 3) {
+                var avg = sums[keyAt(j)], length = Math.hypot(avg[0], avg[1], avg[2]) || 1;
+                var nx = avg[0] / length * 0.96 + n[j] * 0.04;
+                var ny = avg[1] / length * 0.96 + n[j + 1] * 0.04;
+                var nz = avg[2] / length * 0.96 + n[j + 2] * 0.04;
+                var norm = Math.hypot(nx, ny, nz) || 1;
+                n[j] = nx / norm; n[j + 1] = ny / norm; n[j + 2] = nz / norm;
+              }
+            }
+            geometry.computeBoundingSphere();
+            var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: !terrain });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.name = name; mesh.userData.gwLandscape = true;
+            mesh.raycast = function() {};
+            mesh.castShadow = false; mesh.receiveShadow = false;
+            return mesh;
+          }
+          function smooth(v) { v = Math.min(1, Math.max(0, v)); return v * v * (3 - 2 * v); }
+          function noise(x, z) {
+            return 0.5 + (Math.sin(x * 0.047 + z * 0.031 + 0.4) + Math.sin(x * 0.026 - z * 0.059 + 1.1) * 0.53
+              + Math.sin(x * 0.101 + z * 0.077 + 2.8) * 0.24) / 3.54;
+          }
+          function cone(buffer, x, y, z, radius, height, color, twist) {
+            for (var k = 0; k < 7; k++) {
+              var a = twist + k * Math.PI * 2 / 7, b = twist + (k + 1) * Math.PI * 2 / 7;
+              var va = [x + Math.cos(a) * radius, y, z + Math.sin(a) * radius];
+              var vb = [x + Math.cos(b) * radius, y, z + Math.sin(b) * radius];
+              triangle(buffer, va, [x, y + height, z], vb, color);
+              triangle(buffer, [x, y, z], va, vb, color);
+            }
+          }
+          engine.disposeLandscape = disposeLandscape;
+          engine.refreshLandscape = function(ground) {
+            if (engine._destroyed || !engine.scene) return;
+            ground = ground || {};
+            var x0 = number(ground.xMin, -8), x1 = number(ground.xMax, 24), z0 = number(ground.zMin, -8), z1 = number(ground.zMax, 24);
+            if (x0 > x1) { var swapX = x0; x0 = x1; x1 = swapX; }
+            if (z0 > z1) { var swapZ = z0; z0 = z1; z1 = swapZ; }
+            var baseY = number(ground.y, 0) - 0.12, nextKey = [x0, x1, z0, z1, baseY].join(':');
+            if (landscapeKey === nextKey && engine._landscape) return;
+            disposeLandscape(); landscapeKey = nextKey;
+            var centerX = (x0 + x1) / 2, centerZ = (z0 + z1) / 2;
+            var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5, outline = [], segments = 12;
+            // The rounded rectangular perimeter leaves all lesson footprints
+            // clear, even when a generated lesson is long, narrow, or offset.
+            for (var side = 0; side < 4; side++) {
+              for (var s = 0; s < segments; s++) {
+                var f = s / segments;
+                if (side === 0) outline.push({ x: halfX, z: -halfZ + 2 * halfZ * f, nx: 1, nz: 0 });
+                if (side === 1) outline.push({ x: halfX - 2 * halfX * f, z: halfZ, nx: 0, nz: 1 });
+                if (side === 2) outline.push({ x: -halfX, z: halfZ - 2 * halfZ * f, nx: -1, nz: 0 });
+                if (side === 3) outline.push({ x: -halfX + 2 * halfX * f, z: -halfZ, nx: 0, nz: -1 });
+              }
+              for (var arc = 0; arc < segments; arc++) {
+                var angle = side * Math.PI / 2 + arc / segments * Math.PI / 2;
+                outline.push({ x: side === 0 || side === 3 ? halfX : -halfX, z: side < 2 ? halfZ : -halfZ,
+                  nx: Math.cos(angle), nz: Math.sin(angle) });
+              }
+            }
+            var nearBands = [30, 36, 43, 51, 60, 70, 81, 92, 104, 117], farBands = [67, 76, 87, 99, 112, 126, 142, 159];
+            var nearLow = engine._horizon && engine._horizon.material && engine._horizon.material.color ? engine._horizon.material.color.clone() : geometryWorldSrgbColor(THREE, 0x496d46);
+            var nearHigh = geometryWorldSrgbColor(THREE, 0x6a8058);
+            var farLow = geometryWorldSrgbColor(THREE, 0x778b85), farHigh = geometryWorldSrgbColor(THREE, 0x899991);
+            var moss = geometryWorldSrgbColor(THREE, 0x727f52);
+            function point(i, ring, far) {
+              var d = outline[i], bands = far ? farBands : nearBands, t = i / outline.length * Math.PI * 2;
+              // Contours drift independently, so ridges do not read as concentric
+              // shelves. The two boundary contours remain fixed and exactly low.
+              var interior = ring > 0 && ring < bands.length - 1;
+              var distance = bands[ring] + (interior ? Math.sin(t * 5 + ring * 1.93) * 1.6 + Math.sin(t * 9 - ring * 0.71) * 0.8 : 0);
+              var lx = d.x + d.nx * distance, lz = d.z + d.nz * distance;
+              var n = noise(lx + (far ? 28 : 0), lz - (far ? 15 : 0));
+              var crest = (far ? 107 : 57) + Math.sin(t * 3 + (far ? 1.9 : 0.3)) * (far ? 13 : 9) + Math.sin(t * 7 + 1.2) * 4;
+              var primary = Math.exp(-Math.pow((distance - crest) / (far ? 24 : 20), 2));
+              var shoulder = Math.exp(-Math.pow((distance - crest - (far ? 23 : 25)) / 17, 2));
+              var edgeFade = smooth((distance - bands[0]) / 12) * smooth((bands[bands.length - 1] - distance) / 16);
+              var y = (primary * (far ? 10 + n * 18 : 4 + n * 8) + shoulder * (far ? 3.5 : 2.8)) * edgeFade;
+              var heightTint = far ? Math.min(1, y / 30) : smooth((y - 0.15) / 8);
+              var tint = (far ? farLow : nearLow).clone().lerp(far ? farHigh : nearHigh, heightTint);
+              if (!far) tint.lerp(moss, smooth(noise(lx - 45, lz + 19) - 0.35) * 0.22 * heightTint);
+              return [centerX + lx, baseY + y, centerZ + lz, tint.r, tint.g, tint.b];
+            }
+            var group = new THREE.Group(); group.name = 'gw-landscape'; group.userData.gwLandscape = true;
+            var nearGrid = null;
+            [true, false].forEach(function(far) {
+              var terrain = makeBuffer(), bands = far ? farBands : nearBands;
+              var grid = bands.map(function(_, ring) { return outline.map(function(_, i) { return point(i, ring, far); }); });
+              if (!far) nearGrid = grid;
+              for (var r = 0; r < bands.length - 1; r++) {
+                for (var i = 0; i < outline.length; i++) {
+                  var next = (i + 1) % outline.length, a = grid[r][i], b = grid[r][next], c = grid[r + 1][i], d = grid[r + 1][next];
+                  if ((r + i) % 2) { triangle(terrain, a, b, d); triangle(terrain, a, d, c); }
+                  else { triangle(terrain, a, b, c); triangle(terrain, b, d, c); }
+                }
+              }
+              group.add(meshFrom(terrain, far ? 'gw-distant-ridges' : 'gw-rolling-hills', true));
+            });
+            var trunks = makeBuffer(), foliage = makeBuffer(), trunkColor = geometryWorldSrgbColor(THREE, 0x685642);
+            var leaves = [0x426751, 0x50715a, 0x59765e].map(function(hex) { return geometryWorldSrgbColor(THREE, hex); });
+            // Unequal groups, varied depths and layered crowns suggest a small
+            // grove instead of a repeating line of identical triangle trees.
+            [6, 7, 9, 10, 29, 31, 33, 54, 56, 57, 79, 81, 83, 85].forEach(function(i, tree) {
+              var p = nearGrid[tree % 3 === 0 ? 3 : 4][i], height = 2.7 + ((i * 17) % 13) * 0.14;
+              var radius = height * (0.25 + (tree % 3) * 0.015), twist = i * 0.73, leaf = leaves[tree % 3];
+              cone(trunks, p[0], p[1], p[2], 0.13, height * 0.83, trunkColor, twist);
+              cone(foliage, p[0], p[1] + height * 0.16, p[2], radius, height * 0.55, leaf, twist);
+              cone(foliage, p[0], p[1] + height * 0.40, p[2], radius * 0.75, height * 0.48, leaf, twist + 0.18);
+              cone(foliage, p[0], p[1] + height * 0.64, p[2], radius * 0.47, height * 0.39, leaves[(tree + 1) % 3], twist - 0.12);
+            });
+            group.add(meshFrom(trunks, 'gw-distant-tree-trunks', false));
+            group.add(meshFrom(foliage, 'gw-distant-tree-canopies', false));
+            engine._landscape = group; engine.scene.add(group);
+          };
+        })();

@@ -1,0 +1,16 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "voltage/current/power scales",
+    "view settings preserve electrical state and history",
+    "keyboard card selection",
+    "scene selection synchronization",
+    "editor updates comparisons",
+    "undo preserves comparison mode",
+    "eight part layout",
+    "390px overflow",
+    "unknown hatch",
+    "return to details"
+  ]
+}

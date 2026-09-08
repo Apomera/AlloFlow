@@ -33,7 +33,24 @@
     style.textContent = [
       '.litlab-dialog button,.litlab-dialog input,.litlab-dialog select,.litlab-dialog textarea{min-height:24px}',
       '.litlab-dialog button{min-width:24px}',
-      '.litlab-dialog :where(button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #0f172a;outline-offset:3px;box-shadow:0 0 0 2px #fff}',
+      '.litlab-dialog,.litlab-dialog *{box-sizing:border-box}',
+      '.litlab-dialog{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1e293b}',
+      '.litlab-dialog button,.litlab-dialog select,.litlab-dialog input{min-height:40px}',
+      '.litlab-dialog button:disabled{cursor:not-allowed}',
+      '.litlab-dialog textarea{background:#fff;color:#1e293b}',
+      '.litlab-dialog h3,.litlab-dialog h4{line-height:1.3}',
+      '.litlab-header{gap:12px;flex-shrink:0}.litlab-header>div{min-width:0}.litlab-header h2,.litlab-header p{overflow-wrap:anywhere}',
+      '.litlab-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;margin:0;padding:16px 24px;border-bottom:1px solid #e8e3f1;background:#fff;gap:12px;flex-shrink:0}',
+      '.litlab-step{display:flex;gap:9px;align-items:center;font-size:12px;font-weight:650;color:#64748b;min-width:0}',
+      '.litlab-step-number{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border:1px solid #d7d1e4;border-radius:50%;font-size:12px;background:#faf9fc}',
+      '.litlab-step[aria-current="step"]{color:#6d28d9}.litlab-step[aria-current="step"] .litlab-step-number{background:#6d28d9;border-color:#6d28d9;color:#fff}',
+      '.litlab-step[data-complete="true"] .litlab-step-number{background:#ede9fe;border-color:#ddd6fe;color:#6d28d9}',
+      '.litlab-mode-picker{padding:5px;border:1px solid #ddd6ed;background:#f0edf6;border-radius:14px}.litlab-mode-picker button{flex:1}',
+      '.litlab-story-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:#64748b;margin-top:10px;line-height:1.5}',
+      '.litlab-options{flex-wrap:wrap}.litlab-options>button{min-width:64px}.litlab-options>label{width:100%}',
+      '.litlab-performer{flex-wrap:wrap}.litlab-performer select{max-width:100%}',
+      '@media(max-width:600px){.litlab-dialog{max-height:96dvh!important;border-radius:16px!important}.litlab-header{padding:14px!important}.litlab-body{padding:16px!important}.litlab-steps{padding:12px;gap:6px}.litlab-step{flex-direction:column;gap:5px;text-align:center;font-size:11px}.litlab-performer{padding:10px!important;gap:6px!important}.litlab-performer>span{width:100%;text-align:center}.litlab-voice-grid{grid-template-columns:minmax(0,1fr)!important}}',
+      '.litlab-dialog :where(button,input,select,textarea,[tabindex],summary):focus-visible{outline:3px solid #0f172a;outline-offset:3px;box-shadow:0 0 0 2px #fff}',
       '@media (forced-colors:active){.litlab-dialog :where(button,input,select,textarea,[tabindex]):focus-visible{outline-color:Highlight;box-shadow:none}}',
       '@media (prefers-reduced-motion:reduce){.litlab-dialog,.litlab-dialog *,.litlab-dialog *::before,.litlab-dialog *::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}'
     ].join('');
@@ -58,7 +75,7 @@
       stack.push(trap);
       function focusable() {
         return Array.prototype.slice.call(dialog.querySelectorAll(
-          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'
         )).filter(function (node) {
           return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
         });
@@ -199,7 +216,52 @@
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); }
   function load(key, fallback) { try { var s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; } catch (e) { return fallback; } }
-  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { return false; } }
+
+  function normalizeLitLabScript(value) {
+    if (!value || !Array.isArray(value.characters) || !Array.isArray(value.lines) || !value.lines.length) throw new Error(tr('Invalid script format'));
+    var ids = new Set();
+    var characters = value.characters.map(function (character, index) {
+      if (!character || typeof character.id !== 'string' || !character.id || typeof character.name !== 'string' || !character.name.trim() || ids.has(character.id)) throw new Error(tr('Invalid script format'));
+      ids.add(character.id);
+      return Object.assign({}, character, { description: typeof character.description === 'string' ? character.description : '', color: /^#[0-9a-f]{6}$/i.test(character.color || '') ? character.color : '#64748b', voice: typeof character.voice === 'string' ? character.voice : VOICE_POOL[index % VOICE_POOL.length], portrait: typeof character.portrait === 'string' ? character.portrait : null });
+    });
+    if (!ids.has('narrator')) { ids.add('narrator'); characters.unshift({ id: 'narrator', name: 'Narrator', description: 'The storyteller', color: '#64748b', voice: 'Aoede', portrait: null }); }
+    var lineIds = new Set();
+    var lines = value.lines.map(function (line, index) {
+      if (!line || typeof line.text !== 'string' || !line.text.trim()) throw new Error(tr('Invalid script format'));
+      var id = typeof line.id === 'string' && line.id ? line.id : 'l' + (index + 1);
+      while (lineIds.has(id)) id += '_';
+      lineIds.add(id);
+      var type = ['dialogue', 'narration', 'stage-direction'].indexOf(line.type) !== -1 ? line.type : 'narration';
+      return Object.assign({}, line, { id: id, type: type, speaker: type === 'stage-direction' ? 'stage' : ids.has(line.speaker) ? line.speaker : 'narrator' });
+    });
+    return Object.assign({}, value, { characters: characters, lines: lines, title: typeof value.title === 'string' ? value.title : '', setting: typeof value.setting === 'string' ? value.setting : '', theme: typeof value.theme === 'string' ? value.theme : '', literaryElements: Array.isArray(value.literaryElements) ? value.literaryElements.filter(function (item) { return typeof item === 'string'; }) : [] });
+  }
+
+  function normalizeLitLabFeedback(value) {
+    if (!value || ['developing', 'proficient', 'exemplary'].indexOf(value.overallRating) === -1) throw new Error('Incomplete feedback');
+    var out = { overallRating: value.overallRating };
+    ['strengths', 'nudges'].forEach(function (key) {
+      if (value[key] != null && (!Array.isArray(value[key]) || value[key].some(function (item) { return typeof item !== 'string'; }))) throw new Error('Invalid feedback');
+      out[key] = (value[key] || []).map(function (item) { return item.trim(); }).filter(Boolean);
+    });
+    ['characterInsight', 'themeInsight', 'craftInsight'].forEach(function (key) {
+      if (value[key] != null && typeof value[key] !== 'string') throw new Error('Invalid feedback');
+      out[key] = (value[key] || '').trim();
+    });
+    if (!out.strengths.length && !out.nudges.length && !out.characterInsight && !out.themeInsight && !out.craftInsight) throw new Error('Empty feedback');
+    return out;
+  }
+
+  function normalizeLitLabPlan(value) {
+    if (!value || !Array.isArray(value.tasks) || value.tasks.length < 3) throw new Error('Incomplete revision plan');
+    var tasks = value.tasks.slice(0, 3).map(function (task) {
+      if (!task || ['title', 'detail', 'why'].some(function (key) { return typeof task[key] !== 'string' || !task[key].trim(); })) throw new Error('Invalid revision task');
+      return { title: task.title.trim(), detail: task.detail.trim(), why: task.why.trim(), source: typeof task.source === 'string' ? task.source : '' };
+    });
+    return { tasks: tasks, encouragement: typeof value.encouragement === 'string' ? value.encouragement : '' };
+  }
 
   // ── Self-contained UI localization (mirrors Lingua Practice) ───────────────
   // LitLab's chrome is localized into the STUDENT's interface language
@@ -327,6 +389,8 @@
     var _sourceText = useState(''); var sourceText = _sourceText[0]; var setSourceText = _sourceText[1];
     var _storyTitle = useState(''); var storyTitle = _storyTitle[0]; var setStoryTitle = _storyTitle[1];
     var _isLoading = useState(false); var isLoading = _isLoading[0]; var setIsLoading = _isLoading[1];
+    var _generationDraft = useState(''); var generationDraft = _generationDraft[0]; var setGenerationDraft = _generationDraft[1];
+    var _generationError = useState(''); var generationError = _generationError[0]; var setGenerationError = _generationError[1];
     var _loadingMsg = useState(''); var loadingMsg = _loadingMsg[0]; var setLoadingMsg = _loadingMsg[1];
     // AI generation
     var _genGenre = useState('fairy-tale'); var genGenre = _genGenre[0]; var setGenGenre = _genGenre[1];
@@ -342,6 +406,8 @@
       { id: 'custom', label: 'Custom', words: '', desc: 'Specify exact word count' },
     ];
     var _customWordCount = useState('600'); var customWordCount = _customWordCount[0]; var setCustomWordCount = _customWordCount[1];
+
+    var customWordCountValid = /^\d+$/.test(customWordCount) && Number(customWordCount) >= 50 && Number(customWordCount) <= 5000;
 
     // Script state
     var _script = useState(null); var script = _script[0]; var setScript = _script[1];
@@ -366,6 +432,24 @@
     var _largeText = useState(function () { try { return localStorage.getItem('alloLitLabReadingMode') === '1'; } catch (e) { return false; } });
     var largeText = _largeText[0]; var setLargeText = _largeText[1];
     var audioRef = useRef(null);
+    var speechAbortRef = useRef(null);
+    var narrationRef = useRef(null);
+    var narrationPayloadRef = useRef(null);
+    var narrationResourceIdRef = useRef(null);
+    var narrationLiveRef = useRef(null);
+    var preparationRef = useRef(null);
+    var _narrationRevision = useState(0); var refreshNarration = _narrationRevision[1];
+    var _narrationDirty = useState(false); var narrationDirty = _narrationDirty[0]; var setNarrationDirty = _narrationDirty[1];
+    var _narrationNotice = useState(''); var narrationNotice = _narrationNotice[0]; var setNarrationNotice = _narrationNotice[1];
+    var _preparing = useState(false); var preparing = _preparing[0]; var setPreparing = _preparing[1];
+    var _storyLanguage = useState(props.storyLanguage || 'English'); var storyLanguage = _storyLanguage[0]; var setStoryLanguage = _storyLanguage[1];
+    var speechEpochRef = useRef(0);
+    var speechFinishRef = useRef(null);
+    var playbackEpochRef = useRef(0);
+    var recordingEpochRef = useRef(0);
+    var storyEpochRef = useRef(0);
+    var recordingStreamRef = useRef(null);
+    var recordingUrlRef = useRef(null);
     var playingRef = useRef(false);
     var pausedRef = useRef(false);
     var lineContainerRef = useRef(null);
@@ -379,8 +463,33 @@
     var _revisionPlan = useState(null); var revisionPlan = _revisionPlan[0]; var setRevisionPlan = _revisionPlan[1];
     var _revisionPlanLoading = useState(false); var revisionPlanLoading = _revisionPlanLoading[0]; var setRevisionPlanLoading = _revisionPlanLoading[1];
 
+    var activeSavedIdRef = useRef(null);
+    var saveInFlightRef = useRef(false);
+    var _saving = useState(false); var saving = _saving[0]; var setSaving = _saving[1];
+    var _saveMessage = useState(''); var saveMessage = _saveMessage[0]; var setSaveMessage = _saveMessage[1];
+    var _saveError = useState(false); var saveError = _saveError[0]; var setSaveError = _saveError[1];
+    function reportSave(message, failed) { setSaveMessage(message); setSaveError(!!failed); if (addToast) addToast(message, failed ? 'error' : 'success'); }
+    var feedbackEpochRef = useRef(0);
+    var planEpochRef = useRef(0);
+    var _feedbackNotice = useState(''); var feedbackNotice = _feedbackNotice[0]; var setFeedbackNotice = _feedbackNotice[1];
+    var _completedTasks = useState({}); var completedTasks = _completedTasks[0]; var setCompletedTasks = _completedTasks[1];
+
+    function invalidatePlan() {
+      planEpochRef.current++; setRevisionPlan(null); setRevisionPlanLoading(false); setCompletedTasks({});
+    }
+    function invalidateFeedback() {
+      feedbackEpochRef.current++;
+      if (analysisFeedback) setFeedbackNotice(tr('Your reflection changed. Get feedback again for your updated responses.'));
+      setAnalysisFeedback(null); invalidatePlan();
+    }
+
     // Saved scripts
-    var _savedScripts = useState(function () { return load(STORAGE_SCRIPTS, []); });
+    var _savedScripts = useState(function () {
+      var entries = load(STORAGE_SCRIPTS, []);
+      return Array.isArray(entries) ? entries.map(function (entry) {
+        try { if (!entry) return null; var valid = normalizeLitLabScript(entry.script); return Object.assign({}, entry, { title: typeof entry.title === 'string' ? entry.title : valid.title, script: valid }); } catch (_) { return null; }
+      }).filter(Boolean) : [];
+    });
     var savedScripts = _savedScripts[0]; var setSavedScripts = _savedScripts[1];
 
     // Teacher-scaffold field (saved into the resource-history config payload).
@@ -397,6 +506,9 @@
         if (initialConfig.sourceText) setSourceText(initialConfig.sourceText);
         if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
         if (initialConfig.teacherPrompt) setTeacherPrompt(initialConfig.teacherPrompt);
+        if (typeof initialConfig.genPrompt === 'string') setGenPrompt(initialConfig.genPrompt);
+        if (initialConfig.genCharCount >= 2 && initialConfig.genCharCount <= 6) setGenCharCount(initialConfig.genCharCount);
+        if (initialConfig.customWordCount != null) setCustomWordCount(String(initialConfig.customWordCount));
         if (initialConfig.genGenre) setGenGenre(initialConfig.genGenre);
         if (initialConfig.genLength) setGenLength(initialConfig.genLength);
         if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
@@ -470,7 +582,8 @@
 
     // ── Phase 1: Extract characters & build script ──
     var extractScript = useCallback(async function (text) {
-      if (!onCallGemini || !text.trim()) return;
+      if (!onCallGemini || !text.trim() || isLoading) return;
+      var storyEpoch = storyEpochRef.current;
       setIsLoading(true);
       setLoadingMsg(tr('Analyzing text and extracting characters...'));
       try {
@@ -508,32 +621,29 @@
           + '  ]\n'
           + '}';
         var result = await onCallGemini(prompt, true);
-        var parsed = JSON.parse(cleanJson(result));
-        if (!parsed.characters || !parsed.lines) throw new Error(tr('Invalid script format'));
-        // Assign default voices to characters
-        parsed.characters.forEach(function (ch, i) {
-          ch.voice = VOICE_POOL[i % VOICE_POOL.length];
-          ch.portrait = null;
-        });
-        // Add narrator as a "character" for voice assignment
-        if (!parsed.characters.find(function (c) { return c.id === 'narrator'; })) {
-          parsed.characters.unshift({ id: 'narrator', name: 'Narrator', description: 'The storyteller', color: '#64748b', voice: 'Aoede', portrait: null });
-        }
-        // Ensure all lines have ids
-        parsed.lines.forEach(function (line, i) { if (!line.id) line.id = 'l' + (i + 1); });
-        setScript(parsed);
-        setStoryTitle(parsed.title || 'Untitled');
+        if (storyEpoch !== storyEpochRef.current) return;
+        var parsed = normalizeLitLabScript(JSON.parse(cleanJson(result)));
+        parsed.title = storyTitle.trim() || parsed.title || tr('Untitled');
+        beginScript(parsed);
+        setStoryTitle(parsed.title);
         setPhase('assign');
         addToast && addToast(tr('Script created! ') + parsed.characters.length + ' characters, ' + parsed.lines.length + ' lines.', 'success');
       } catch (err) {
+        if (storyEpoch !== storyEpochRef.current) return;
         warnLog('Script extraction failed:', err);
         addToast && addToast('Script extraction failed: ' + err.message, 'error');
-      } finally { setIsLoading(false); setLoadingMsg(''); }
-    }, [onCallGemini, gradeLevel, addToast]);
+      } finally { if (storyEpoch === storyEpochRef.current) { setIsLoading(false); setLoadingMsg(''); } }
+    }, [onCallGemini, gradeLevel, genGradeLevel, storyTitle, isLoading, addToast]);
 
     // ── AI Story Generation ──
     var generateStory = useCallback(async function () {
-      if (!onCallGemini) return;
+      if (!onCallGemini || isLoading) return;
+      if (genLength === 'custom' && !customWordCountValid) {
+        addToast && addToast(tr('Enter a whole number from 50 to 5000 words.'), 'error');
+        return;
+      }
+      var storyEpoch = storyEpochRef.current;
+      setGenerationError('');
       setIsLoading(true);
       var genreObj = GENRES.find(function (g) { return g.id === genGenre; }) || GENRES[0];
       setLoadingMsg('Writing a ' + genreObj.label + ' story...');
@@ -575,13 +685,15 @@
             + '- End at a compelling moment — do NOT resolve the story yet.\n\n'
             + 'Return ONLY the story text — no title, no commentary.';
           var part1 = await onCallGemini(p1, false);
-          if (!part1 || part1.trim().length < 50) throw new Error(tr('Story generation failed'));
+          if (storyEpoch !== storyEpochRef.current) return;
+          if (typeof part1 !== 'string' || part1.trim().length < 50) throw new Error(tr('Story generation failed'));
           fullStory = part1.trim();
 
           // Middle passes (if 3+ chunks needed)
           for (var ci = 1; ci < numChunks - 1; ci++) {
             setLoadingMsg('Writing part ' + (ci + 1) + ' of ' + numChunks + '...');
             await new Promise(function (r) { setTimeout(r, 1500); });
+            if (storyEpoch !== storyEpochRef.current) return;
             var pMid = 'You are continuing a ' + genreObj.label + ' story for ' + gl + ' students.\n\n'
               + 'Story so far (ending):\n"""\n' + fullStory.substring(fullStory.length - 1500) + '\n"""\n\n'
               + 'Requirements:\n'
@@ -590,12 +702,15 @@
               + '- Maintain the same characters, tone, and style. ' + vocabGuide + '\n\n'
               + 'Return ONLY the continuation — no headers, no commentary. Start exactly where the previous part left off.';
             var midResult = await onCallGemini(pMid, false);
-            if (midResult && midResult.trim().length > 30) fullStory += '\n\n' + midResult.trim();
+            if (storyEpoch !== storyEpochRef.current) return;
+            if (typeof midResult !== 'string' || midResult.trim().length <= 30) throw new Error(tr('A section of the story could not be completed.'));
+            fullStory += '\n\n' + midResult.trim();
           }
 
           // Final pass: Climax and ending
           setLoadingMsg('Writing the ending...');
           await new Promise(function (r) { setTimeout(r, 1500); });
+          if (storyEpoch !== storyEpochRef.current) return;
           var pEnd = 'You are writing the FINAL part of a ' + genreObj.label + ' story for ' + gl + ' students.\n\n'
             + 'Story so far (ending):\n"""\n' + fullStory.substring(fullStory.length - 1500) + '\n"""\n\n'
             + 'Requirements:\n'
@@ -604,188 +719,459 @@
             + '- Maintain the same characters, tone, and style. ' + vocabGuide + '\n\n'
             + 'Return ONLY the conclusion — no headers, no commentary.';
           var endResult = await onCallGemini(pEnd, false);
-          if (endResult && endResult.trim().length > 30) fullStory += '\n\n' + endResult.trim();
+          if (storyEpoch !== storyEpochRef.current) return;
+          if (typeof endResult !== 'string' || endResult.trim().length <= 30) throw new Error(tr('The story ending could not be completed.'));
+          fullStory += '\n\n' + endResult.trim();
         } else {
           // Single-pass generation for shorter stories
           var prompt = basePrompt + '- Target length: ' + wordRange + ' words.\n'
             + '- Include a clear beginning, middle, and end\n\n'
             + 'Return ONLY the story text — no title header, no commentary.';
           fullStory = await onCallGemini(prompt, false);
+          if (storyEpoch !== storyEpochRef.current) return;
         }
 
-        if (fullStory && fullStory.trim().length > 50) {
+        if (typeof fullStory === 'string' && fullStory.trim().length > 50) {
+          setGenerationDraft('');
           setSourceText(fullStory.trim());
           setInputMode('paste');
           addToast && addToast(tr('Story generated! ') + fullStory.trim().split(/\s+/).length + ' words. Review it, then click "Create Script".', 'success');
         } else {
-          addToast && addToast(tr('Generation returned too little text. Try again.'), 'error');
+          throw new Error(tr('Generation returned too little text. Try again.'));
         }
       } catch (err) {
+        if (storyEpoch !== storyEpochRef.current) return;
+        setGenerationError(tr('The story could not be completed. Try again or review the draft below, if available.'));
+        if (typeof fullStory === 'string' && fullStory.trim().length > 50) setGenerationDraft(fullStory.trim());
         addToast && addToast(tr('Story generation failed: ') + err.message, 'error');
-      } finally { setIsLoading(false); setLoadingMsg(''); }
-    }, [onCallGemini, gradeLevel, genGradeLevel, genGenre, genPrompt, genCharCount, genLength, addToast]);
+      } finally { if (storyEpoch === storyEpochRef.current) { setIsLoading(false); setLoadingMsg(''); } }
+    }, [onCallGemini, gradeLevel, genGradeLevel, genGenre, genPrompt, genCharCount, genLength, customWordCount, customWordCountValid, isLoading, addToast]);
 
-    // ── TTS Playback ──
-    var speakLine = useCallback(function (text, voice, speed) {
-      return new Promise(function (resolve) {
-        if (!text || !text.trim()) { resolve(); return; }
-        if (onCallTTS) {
-          onCallTTS(text, voice || selectedVoice || 'Kore', speed || playbackSpeed).then(function (url) {
-            if (url) {
-              var a = new Audio(url);
-              audioRef.current = a;
-              a.playbackRate = speed || playbackSpeed;
-              a.onended = function () { audioRef.current = null; resolve(); };
-              a.onerror = function () { audioRef.current = null; resolve(); };
-              a.play().catch(function () { resolve(); });
-            } else { resolve(); }
-          }).catch(function () {
-            // Fallback to browser TTS
-            if (window.speechSynthesis) {
-              window.speechSynthesis.cancel();
-              var utt = new SpeechSynthesisUtterance(text);
-              utt.rate = speed || playbackSpeed;
-              utt.onend = function () { resolve(); };
-              window.speechSynthesis.speak(utt);
-            } else { resolve(); }
+    // Each story owns a private V4 lane. Never borrow the adapted-text current lane.
+    narrationLiveRef.current = { script: script, language: storyLanguage.trim() || 'English', callTTS: onCallTTS };
+    function isNarrationMuted() {
+      return typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted();
+    }
+    function cancelPreparation() {
+      if (preparationRef.current) preparationRef.current.abort();
+      preparationRef.current = null;
+      setPreparing(false);
+    }
+    function releaseNarration() {
+      if (preparationRef.current) preparationRef.current.abort();
+      preparationRef.current = null;
+      if (narrationRef.current) narrationRef.current.store.clear();
+      narrationRef.current = null;
+    }
+    function getNarration() {
+      if (narrationRef.current) return narrationRef.current.service;
+      var modules = window.AlloModules || {};
+      if (!narrationLiveRef.current.script || !modules.KaraokeAudioStore || !modules.createReadAloudAudioService) return null;
+      var lane = modules.KaraokeAudioStore.createStore();
+      if (narrationPayloadRef.current) lane.hydrate(narrationPayloadRef.current);
+      var resourceId = narrationResourceIdRef.current || (narrationResourceIdRef.current = uid());
+      var profiles = new Map();
+      var service = modules.createReadAloudAudioService({
+        getStoreModule: function () { return lane; },
+        getResource: function () { return narrationLiveRef.current.script; },
+        getSynthesisProfile: function (context) {
+          var current = narrationLiveRef.current;
+          var character = current.script.characters.find(function (item) { return item.id === context.segment.raw.speaker; });
+          return { voice: character && character.voice || 'Aoede', language: current.language, speed: 1, synthesisRate: 1, voiceResolverVersion: 2 };
+        },
+        synthesize: async function (request) {
+          var provider = narrationLiveRef.current.callTTS;
+          if (!provider || isNarrationMuted()) throw new Error('Narration is unavailable or muted.');
+          var provenance = {};
+          var url = await provider(request.text, request.profile.voice, 1, { language: request.profile.language, signal: request.signal, maxRetries: 1,
+            onResolvedProfile: function (value) { provenance = value || {}; }
           });
-        } else if (window.speechSynthesis) {
-          window.speechSynthesis.cancel();
-          var utt = new SpeechSynthesisUtterance(text);
-          utt.rate = speed || playbackSpeed;
-          utt.onend = function () { resolve(); };
-          window.speechSynthesis.speak(utt);
-        } else { resolve(); }
+          if (url && !(request.signal && request.signal.aborted)) profiles.set(request.segment.segmentId, provenance);
+          return { url: url, provenance: provenance };
+        },
+        encode: async function (audio, context) {
+          var response = await fetch(typeof audio === 'string' ? audio : audio.url, { signal: context.signal });
+          if (!response.ok) throw new Error('Narration audio could not be copied.');
+          var blob = await response.blob();
+          // Use the same cooperative compact encoder as adapted-text narration.
+          // Retain the original container if the encoder is unavailable.
+          try {
+            var buffer = await new Promise(function (resolve, reject) {
+              var reader = new FileReader(); reader.onload = function () { resolve(reader.result); }; reader.onerror = reject; reader.readAsArrayBuffer(blob);
+            });
+            var inspector = modules.inspectReadAloudAudioBytes;
+            var container = inspector ? inspector(new Uint8Array(buffer), blob.type) : null;
+            if (container && container.pcm) {
+              if (!window.lamejs && window.__alloEnsureLameJs) await window.__alloEnsureLameJs();
+              var helper = modules.AudioHelpers;
+              if (window.lamejs && helper && helper.pcmToMp3Async) {
+                var compact = await helper.pcmToMp3Async(container.pcm, container.sampleRate, 64);
+                blob = new Blob([compact], { type: 'audio/mpeg' });
+              }
+            }
+          } catch (_) {}
+          return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onerror = function () { reject(new Error('Narration audio could not be read.')); };
+            reader.onload = function () { resolve({ b64: String(reader.result).split(',')[1], mime: blob.type || 'audio/mpeg' }); };
+            reader.readAsDataURL(blob);
+          });
+        }
+      }).forResource({
+        resourceId: resourceId, resourceType: 'litlab-script', lane: lane, persistencePolicy: 'none',
+        adapter: {
+          enumerate: function (value) { return value.lines; },
+          spokenText: function (line) { return line.text; },
+          fields: function (line) { return { segmentId: line.id, storageKey: {
+            identityVersion: 4, adapterId: 'alloflow.litlab.read-aloud', adapterVersion: 1,
+            scopeId: resourceId, segmentId: line.id, spokenText: line.text
+          } }; }
+        }
       });
-    }, [onCallTTS, selectedVoice, playbackSpeed]);
+      narrationRef.current = { service: service, store: lane, profiles: profiles };
+      return service;
+    }
+    function narrationPayload() {
+      var service = getNarration();
+      return service ? service.serialize() : narrationPayloadRef.current;
+    }
+    var narrationSummary = { total: script ? script.lines.length : 0, ready: 0, stale: 0 };
+    try { var currentNarration = getNarration(); if (currentNarration) narrationSummary = currentNarration.summary(); } catch (_) {}
+    React.useEffect(function () {
+      return function () { releaseNarration(); };
+    }, []);
+    React.useEffect(function () {
+      cancelPreparation();
+      return function () { if (preparationRef.current) preparationRef.current.abort(); };
+    }, [script, storyLanguage, phase]);
 
-    // ── Performance Playback (full script) ──
-    var playFromLine = useCallback(async function (startIdx) {
-      if (!script || !script.lines) return;
-      playingRef.current = true;
-      pausedRef.current = false;
-      setIsPlaying(true);
-      setIsPaused(false);
-      for (var i = startIdx; i < script.lines.length; i++) {
-        if (!playingRef.current) break;
-        // Pause check: when paused, hold here until resumed (or stopped). Pause takes effect AFTER current line finishes.
-        while (pausedRef.current && playingRef.current) {
-          await new Promise(function (r) { setTimeout(r, 100); });
+    // A cancelled request must never start audio after Stop, navigation, or close.
+    var cancelSpeech = useCallback(function () {
+      speechEpochRef.current++;
+      if (speechAbortRef.current) speechAbortRef.current.abort();
+      speechAbortRef.current = null;
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      if (speechFinishRef.current) speechFinishRef.current();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }, []);
+
+    var speakLine = useCallback(function (text, voice, speed, lineId) {
+      cancelSpeech();
+      var controller = new AbortController();
+      speechAbortRef.current = controller;
+      var epoch = speechEpochRef.current;
+      return new Promise(function (resolve) {
+        var done = false;
+        function finish() {
+          if (done) return;
+          done = true;
+          if (speechFinishRef.current === finish) speechFinishRef.current = null;
+          resolve();
         }
-        if (!playingRef.current) break;
-        setCurrentLine(i);
-        // Scroll into view
-        var lineEl = document.getElementById('ss-line-' + i);
-        if (lineEl) lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        var line = script.lines[i];
-        // Update current page based on line index
-        setCurrentPage(Math.floor(i / LINES_PER_PAGE));
-        // If student is playing a role, skip TTS for their character
-        if (myRole && line.speaker === myRole) {
-          // Announce whose turn it is
-          var myChar = script.characters.find(function (c) { return c.id === myRole; });
-          await speakLine('Your turn, ' + (myChar ? myChar.name : 'you') + '.', 'Aoede', playbackSpeed);
-          await new Promise(function (r) { setTimeout(r, 3000); });
-          continue;
+        speechFinishRef.current = finish;
+        function active() { return !done && epoch === speechEpochRef.current; }
+        function fallback() {
+          if (!active()) return;
+          if (isNarrationMuted()) { finish(); return; }
+          if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { finish(); return; }
+          try {
+            var utterance = new window.SpeechSynthesisUtterance(text);
+            utterance.rate = speed || playbackSpeed;
+            var language = narrationLiveRef.current.language;
+            utterance.lang = ({ English: 'en', Spanish: 'es', French: 'fr', German: 'de', Portuguese: 'pt', Italian: 'it', Arabic: 'ar', Chinese: 'zh', Japanese: 'ja', Korean: 'ko', Hindi: 'hi' })[language] || language;
+            utterance.onend = finish;
+            utterance.onerror = finish;
+            window.speechSynthesis.speak(utterance);
+          } catch (_) { finish(); }
         }
-        if (line.type === 'stage-direction') {
-          // Narrator reads stage directions aloud
-          await speakLine(line.text, 'Aoede', playbackSpeed * 0.9);
-          continue;
-        }
-        var character = script.characters.find(function (c) { return c.id === line.speaker; });
-        var voice = character ? character.voice : 'Aoede';
-        // Announce speaker name before dialogue (not for narrator — it's obvious)
-        if (line.type === 'dialogue' && character && character.id !== 'narrator') {
-          await speakLine(character.name + ' says:', 'Aoede', playbackSpeed * 1.2);
-          await new Promise(function (r) { setTimeout(r, 150); });
-        }
-        await speakLine(line.text, voice, playbackSpeed);
-        // Brief pause between lines
-        if (playingRef.current) await new Promise(function (r) { setTimeout(r, 300); });
-      }
-      playingRef.current = false;
-      setIsPlaying(false);
-      if (handleScoreUpdate) handleScoreUpdate(20, 'LitLab Performance', 'storystage-perform-' + (script.title || 'untitled'));
-    }, [script, speakLine, playbackSpeed, myRole, handleScoreUpdate]);
+        if (!text || !text.trim() || isNarrationMuted()) { finish(); return; }
+        Promise.resolve().then(async function () {
+          if (!active()) return null;
+          var service = lineId ? getNarration() : null;
+          if (service) {
+            var inspection = service.inspect(lineId);
+            if (inspection.status === 'ready') return inspection.url;
+            if (!onCallTTS) return null;
+            var profile = inspection.profile;
+            var url = await service.resolve(lineId, { signal: controller.signal, profile: profile });
+            if (!active()) return null;
+            try {
+              await service.capturePlayed(lineId, { url: url, provenance: narrationRef.current.profiles.get(lineId) || {} }, { signal: controller.signal, profile: profile });
+              if (active()) { setNarrationDirty(true); refreshNarration(function (n) { return n + 1; }); }
+            } catch (error) {
+              if (active()) setNarrationNotice(tr('This line can play, but its audio could not be retained. Try preparing narration again.'));
+            }
+            return url;
+          }
+          if (onCallTTS) return onCallTTS(text, voice || selectedVoice || 'Kore', 1, { language: narrationLiveRef.current.language, signal: controller.signal, maxRetries: 1 });
+          return null;
+        }).then(function (url) {
+          if (!active()) return;
+          if (isNarrationMuted()) { finish(); return; }
+          if (!url) { fallback(); return; }
+          var audio = new Audio(url);
+          audioRef.current = audio;
+          audio.playbackRate = speed || playbackSpeed;
+          function ended() { if (audioRef.current === audio) audioRef.current = null; finish(); }
+          audio.onended = ended;
+          audio.onerror = ended;
+          Promise.resolve(audio.play()).catch(ended);
+        }).catch(fallback);
+      });
+    }, [onCallTTS, selectedVoice, playbackSpeed, cancelSpeech]);
 
     var stopPlayback = useCallback(function () {
+      playbackEpochRef.current++;
+      playingRef.current = false;
+      pausedRef.current = false;
+      cancelSpeech();
+      setIsPlaying(false);
+      setIsPaused(false);
+      announceLitLab(tr('Playback stopped.'));
+    }, [cancelSpeech]);
+
+    var playFromLine = useCallback(async function (startIdx) {
+      if (isNarrationMuted()) { setNarrationNotice(tr('Unmute audio before playing narration.')); return; }
+      if (!script || !script.lines.length) return;
+      stopPlayback();
+      var epoch = playbackEpochRef.current;
+      function active() { return epoch === playbackEpochRef.current && playingRef.current; }
+      playingRef.current = true;
+      setIsPlaying(true);
+      for (var i = startIdx; i < script.lines.length; i++) {
+        while (pausedRef.current && active()) await new Promise(function (r) { setTimeout(r, 100); });
+        if (!active()) return;
+        if (isNarrationMuted()) { stopPlayback(); return; }
+        setCurrentLine(i);
+        setCurrentPage(Math.floor(i / LINES_PER_PAGE));
+        var line = script.lines[i];
+        var character = script.characters.find(function (c) { return c.id === line.speaker; });
+        if (myRole && line.speaker === myRole) {
+          await speakLine('Your turn, ' + (character ? character.name : 'you') + '.', 'Aoede', playbackSpeed);
+          if (!active()) return;
+          await new Promise(function (r) { setTimeout(r, 3000); });
+        } else {
+          if (line.type === 'dialogue' && character && character.id !== 'narrator') {
+            await speakLine(character.name + ' says:', 'Aoede', playbackSpeed * 1.2);
+            if (!active()) return;
+            await new Promise(function (r) { setTimeout(r, 150); });
+          }
+          if (!active()) return;
+          await speakLine(line.text, character ? character.voice : 'Aoede', line.type === 'stage-direction' ? playbackSpeed * 0.9 : playbackSpeed, line.id);
+        }
+        if (!active()) return;
+        if (i < script.lines.length - 1) await new Promise(function (r) { setTimeout(r, 300); });
+      }
+      if (!active()) return;
+      if (isNarrationMuted()) { stopPlayback(); return; }
       playingRef.current = false;
       pausedRef.current = false;
       setIsPlaying(false);
       setIsPaused(false);
-      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-      announceLitLab(tr('Playback stopped.'));
-    }, []);
+      announceLitLab(tr('Performance complete.'));
+      if (handleScoreUpdate) handleScoreUpdate(20, 'LitLab Performance', 'storystage-perform-' + (script.title || 'untitled'));
+    }, [script, speakLine, playbackSpeed, myRole, handleScoreUpdate, stopPlayback]);
 
     var pausePlayback = useCallback(function () {
       pausedRef.current = true;
       setIsPaused(true);
       announceLitLab(tr('Paused. Will hold after current line finishes.'));
     }, []);
-
     var resumePlayback = useCallback(function () {
       pausedRef.current = false;
       setIsPaused(false);
       announceLitLab(tr('Resumed.'));
     }, []);
 
+    React.useEffect(function () {
+      setIsPlaying(false); setIsPaused(false); setPreviewingVoice(null);
+      return function () {
+        playbackEpochRef.current++;
+        playingRef.current = false; pausedRef.current = false;
+        cancelSpeech();
+      };
+    }, [phase, script, storyLanguage, cancelSpeech]);
+    React.useEffect(function () {
+      if (!isPlaying || !lineContainerRef.current) return;
+      var line = lineContainerRef.current.querySelector('#ss-line-' + currentLine);
+      if (line && typeof line.scrollIntoView === 'function') line.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    }, [currentLine, currentPage, isPlaying]);
+
+    function beginScript(nextScript) {
+      releaseNarration(); setPreparing(false); setNarrationDirty(false); setNarrationNotice('');
+      narrationPayloadRef.current = null; narrationResourceIdRef.current = uid();
+      activeSavedIdRef.current = null; setSaveMessage(''); setSaveError(false);
+      storyEpochRef.current++;
+      feedbackEpochRef.current++; planEpochRef.current++;
+      setFeedbackNotice(''); setCompletedTasks({}); setGenerationDraft(''); setGenerationError(''); setIsLoading(false);
+      stopPlayback();
+      // A new text starts a new performance; unrelated responses and images must not carry over.
+      setScript(nextScript); setCurrentPage(0); setCurrentLine(0); setMyRole(null);
+      setPageImages({}); setPageImgLoading({}); setSceneImage(null); setSceneImageLoading(false);
+      setEmotionLog({}); setAnalysisResponses({}); setAnalysisFeedback(null);
+      setSelfAssessment({}); setSelfAssessmentSubmitted(false); setRevisionPlan(null); setRevisionPlanLoading(false); setSelectedStandard('');
+      recordingEpochRef.current++;
+      var recorder = mediaRecorderRef.current;
+      if (recorder) { try { if (typeof recorder.cancel === 'function') recorder.cancel(); else if (typeof recorder.stop === 'function' && recorder.state !== 'inactive') recorder.stop(); } catch (_) {} }
+      if (recordingStreamRef.current) recordingStreamRef.current.getTracks().forEach(function (track) { track.stop(); });
+      recordingStreamRef.current = null; mediaRecorderRef.current = null; setIsRecording(false);
+      if (recordingUrlRef.current && recordingUrlRef.current.indexOf('blob:') === 0) URL.revokeObjectURL(recordingUrlRef.current);
+      recordingUrlRef.current = null; setRecordingUrl(null); setRecordedChunks([]);
+    }
+
     // ── Save/Load Scripts ──
     var saveScript = useCallback(function () {
       if (!script) return;
-      var entry = { id: uid(), title: storyTitle, script: script, sourceText: sourceText, savedAt: new Date().toISOString() };
-      var updated = [entry].concat(savedScripts.slice(0, 19));
-      setSavedScripts(updated);
-      store(STORAGE_SCRIPTS, updated);
-      addToast && addToast(tr('Script saved!'), 'success');
-    }, [script, storyTitle, sourceText, savedScripts, addToast]);
+      var entry = {
+        narrationResourceId: narrationResourceIdRef.current, karaokeAudio: narrationPayload(), storyLanguage: storyLanguage,
+        id: activeSavedIdRef.current || uid(), title: storyTitle, script: script, sourceText: sourceText, savedAt: new Date().toISOString(),
+        progressVersion: 1,
+        progress: { playbackSpeed: playbackSpeed, phase: phase, currentLine: currentLine, currentPage: currentPage, myRole: myRole, performerName: performerName,
+          analysisResponses: analysisResponses, analysisFeedback: analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error ? analysisFeedback : null,
+          selfAssessment: selfAssessment, selfAssessmentSubmitted: selfAssessmentSubmitted, emotionLog: emotionLog, selectedStandard: selectedStandard,
+          revisionPlan: revisionPlan && !revisionPlan.error ? revisionPlan : null, completedTasks: completedTasks, sceneImage: sceneImage, pageImages: pageImages }
+      };
+      var latest = load(STORAGE_SCRIPTS, savedScripts);
+      var updated = [entry].concat((Array.isArray(latest) ? latest : savedScripts).filter(function (item) { return item && item.id !== entry.id; }).slice(0, 19));
+      if (!store(STORAGE_SCRIPTS, updated)) {
+        reportSave(tr('Could not save this script. Device storage may be full. Your work and narration are still open; your previous save is unchanged.'), true); return false;
+      }
+      activeSavedIdRef.current = entry.id; setSavedScripts(updated);
+      setNarrationDirty(false);
+      reportSave(tr('Progress saved on this device.'), false);
+      return true;
+    }, [script, storyLanguage, playbackSpeed, storyTitle, sourceText, savedScripts, phase, currentLine, currentPage, myRole, performerName, analysisResponses, analysisFeedback, selfAssessment, selfAssessmentSubmitted, emotionLog, selectedStandard, revisionPlan, completedTasks, sceneImage, pageImages, addToast]);
 
     var loadScript = useCallback(function (entry) {
-      setScript(entry.script);
-      setStoryTitle(entry.title);
-      setSourceText(entry.sourceText || '');
-      setPhase('assign');
-    }, []);
+      try {
+        var restored = normalizeLitLabScript(entry.script);
+        beginScript(restored);
+        narrationPayloadRef.current = entry.karaokeAudio || null;
+        narrationResourceIdRef.current = entry.narrationResourceId || entry.id || uid();
+        setStoryLanguage(typeof entry.storyLanguage === 'string' && entry.storyLanguage.trim() ? entry.storyLanguage : 'English');
+        activeSavedIdRef.current = typeof entry.id === 'string' ? entry.id : null;
+        setStoryTitle(typeof entry.title === 'string' ? entry.title : restored.title);
+        setSourceText(typeof entry.sourceText === 'string' ? entry.sourceText : '');
+        var progress = entry.progressVersion === 1 && entry.progress && typeof entry.progress === 'object' ? entry.progress : null;
+        setPlaybackSpeed(progress && [0.75, 1, 1.25, 1.5].indexOf(progress.playbackSpeed) !== -1 ? progress.playbackSpeed : 1);
+        if (!progress) { setPhase('assign'); return; }
+        function strings(value) {
+          var out = Object.create(null);
+          if (value && typeof value === 'object' && !Array.isArray(value)) Object.keys(value).forEach(function (key) { if (typeof value[key] === 'string') out[key] = value[key]; });
+          return out;
+        }
+        setAnalysisResponses(strings(progress.analysisResponses));
+        var reactions = strings(progress.emotionLog);
+        Object.keys(reactions).forEach(function (key) { if (EMOTIONS.indexOf(reactions[key]) === -1 || !restored.lines.some(function (line) { return line.id === key; })) delete reactions[key]; });
+        setEmotionLog(reactions);
+        var ratings = {};
+        LITLAB_RUBRIC.forEach(function (criterion) { var rating = progress.selfAssessment && progress.selfAssessment[criterion.id]; if (Number.isInteger(rating) && rating >= 1 && rating <= 5) ratings[criterion.id] = rating; });
+        setSelfAssessment(ratings); setSelfAssessmentSubmitted(progress.selfAssessmentSubmitted === true);
+        setSelectedStandard(typeof progress.selectedStandard === 'string' ? progress.selectedStandard : '');
+        if (typeof progress.performerName === 'string') setPerformerName(progress.performerName);
+        setMyRole(restored.characters.some(function (character) { return character.id === progress.myRole; }) ? progress.myRole : null);
+        setCurrentLine(Number.isInteger(progress.currentLine) ? Math.max(0, Math.min(restored.lines.length - 1, progress.currentLine)) : 0);
+        setCurrentPage(Number.isInteger(progress.currentPage) ? Math.max(0, Math.min(Math.ceil(restored.lines.length / LINES_PER_PAGE) - 1, progress.currentPage)) : 0);
+        if (typeof progress.sceneImage === 'string') setSceneImage(progress.sceneImage);
+        setPageImages(strings(progress.pageImages));
+        try { if (progress.analysisFeedback) setAnalysisFeedback(normalizeLitLabFeedback(progress.analysisFeedback)); } catch (_) {}
+        try {
+          if (progress.revisionPlan) {
+            var plan = normalizeLitLabPlan(progress.revisionPlan); setRevisionPlan(plan);
+            var complete = {}; plan.tasks.forEach(function (_, index) { complete[index] = !!(progress.completedTasks && progress.completedTasks[index] === true); }); setCompletedTasks(complete);
+          }
+        } catch (_) {}
+        setPhase(['assign', 'perform', 'analyze'].indexOf(progress.phase) !== -1 ? progress.phase : 'assign');
+        setSaveMessage(tr('Saved progress restored.')); setSaveError(false);
+      } catch (_) { reportSave(tr('This saved script could not be opened. Try another script or create it again from your source text.'), true); }
+    }, [stopPlayback, addToast]);
+
+    async function prepareNarration() {
+      if (preparationRef.current || !script) return;
+      stopPlayback();
+      var service;
+      try { service = getNarration(); } catch (_) {}
+      if (!service) { setNarrationNotice(tr('Narration tools are still loading. Try again in a moment.')); return; }
+      if (isNarrationMuted()) { setNarrationNotice(tr('Unmute audio before preparing narration.')); return; }
+      var controller = new AbortController();
+      preparationRef.current = controller; setPreparing(true);
+      try {
+        var result = await service.prepareAll({ signal: controller.signal, onProgress: function (progress) {
+          if (preparationRef.current !== controller || controller.signal.aborted) return;
+          setNarrationNotice(tr('Preparing narration: {done} of {total} lines checked.', { done: progress.completed, total: progress.total }));
+          if (progress.prepared) setNarrationDirty(true);
+          refreshNarration(function (n) { return n + 1; });
+        } });
+        if (controller.signal.aborted || preparationRef.current !== controller) return;
+        var saved = saveScript();
+        setNarrationNotice(result.failed
+          ? tr('{count} lines could not be prepared. Try again to retry only missing or outdated lines.', { count: result.failed })
+          : saved ? tr('Narration saved with this script on this device.') : tr('Narration is ready but could not be saved. Keep this window open and try Save progress again.'));
+      } catch (error) {
+        if (preparationRef.current === controller) setNarrationNotice(tr('Narration preparation stopped. Save progress to keep completed clips; prepare again to continue.'));
+      } finally {
+        if (preparationRef.current === controller) { preparationRef.current = null; setPreparing(false); refreshNarration(function (n) { return n + 1; }); }
+      }
+    }
 
     // ── Resource-history hooks (mirror StoryForge / PoetTree) ──
     // saveAsAssignment: teacher captures source text + title + focus prompt into a
     // 'litlab-config' resource so students can load it pre-populated.
-    var saveAsAssignment = useCallback(function () {
-      if (!onSaveConfig) return;
+    var saveAsAssignment = useCallback(async function () {
+      if (!onSaveConfig || saveInFlightRef.current) return;
+      saveInFlightRef.current = true; setSaving(true); setSaveMessage('');
       var config = {
         storyTitle: storyTitle,
         sourceText: sourceText,
         teacherPrompt: teacherPrompt,
         gradeLevel: gradeLevel,
         inputMode: inputMode,
+        genPrompt: genPrompt,
+        genCharCount: genCharCount,
+        customWordCount: customWordCount,
         genGenre: genGenre,
         genLength: genLength,
         genGradeLevel: genGradeLevel,
         savedAt: new Date().toISOString()
       };
-      onSaveConfig(config);
-      addToast && addToast(tr('LitLab assignment saved!'), 'success');
-    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, addToast]);
+      try {
+        var result = await onSaveConfig(config);
+        if (result === false || (result && result.ok === false)) throw new Error('Save failed');
+        reportSave(tr('LitLab assignment saved!'), false);
+      } catch (_) { reportSave(tr('The assignment could not be saved. Your setup is still here; try again.'), true); }
+      finally { saveInFlightRef.current = false; setSaving(false); }
+    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, genPrompt, genCharCount, customWordCount, addToast]);
 
     // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
     // 'litlab-submission' resource for portfolio review.
-    var saveSubmissionToPortfolio = useCallback(function () {
-      if (!onSaveSubmission) return;
+    var saveSubmissionToPortfolio = useCallback(async function () {
+      if (!onSaveSubmission || saveInFlightRef.current) return;
       if (!script) { addToast && addToast(tr('Generate or load a script first!'), 'info'); return; }
+      saveInFlightRef.current = true; setSaving(true); setSaveMessage('');
       var submission = {
+        analysisResponses: Object.assign({}, analysisResponses),
+        selfAssessment: Object.assign({}, selfAssessment),
+        selectedStandard: selectedStandard,
+        revisionPlan: revisionPlan && !revisionPlan.error ? revisionPlan : null,
+        completedTasks: Object.assign({}, completedTasks),
         storyTitle: storyTitle || (script && script.title) || 'My Performance',
         scriptTitle: script.title || '',
         characterCount: (script.characters || []).length,
         lineCount: (script.lines || []).length,
         characters: (script.characters || []).map(function (c) { return { name: c.name, voice: c.voice, color: c.color }; }),
-        analysisFeedback: analysisFeedback || null,
+        analysisFeedback: analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error ? analysisFeedback : null,
         myRole: myRole,
-        author: studentNickname || 'Student',
+        author: performerName || studentNickname || 'Student',
         gradeLevel: gradeLevel,
         savedAt: new Date().toISOString()
       };
-      onSaveSubmission(submission);
+      try {
+        var submitted = await onSaveSubmission(submission);
+        if (submitted === false || (submitted && submitted.ok === false)) throw new Error('Save failed');
+      } catch (_) {
+        reportSave(tr('Your performance could not be saved. Your work is still here; try again.'), true);
+        saveInFlightRef.current = false; setSaving(false); return;
+      }
       try {
         var ts = Date.now();
         var createdAt = new Date(ts).toISOString();
@@ -819,24 +1205,32 @@
         };
         var artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
         if (artifactStore && typeof artifactStore.save === 'function') {
-          artifactStore.save(artifact, { source: 'story-stage', limit: 80 });
+          var savedArtifact = await artifactStore.save(artifact, { source: 'story-stage', limit: 80 });
+          if (savedArtifact === false || (savedArtifact && savedArtifact.ok === false)) throw new Error('Portfolio save failed');
+          // The legacy store returns its in-memory array even when a localStorage write fails.
+          if (Array.isArray(savedArtifact)) {
+            var persistedArtifacts = load('alloflow_student_artifacts', []);
+            if (!Array.isArray(persistedArtifacts) || !persistedArtifacts.some(function (item) { return item && item.id === artifact.id; })) throw new Error('Portfolio copy did not persist');
+          }
         } else {
           var existing = [];
           if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
           else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
           var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
-          window.__alloflowStudentArtifacts = next;
           localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+          window.__alloflowStudentArtifacts = next;
           window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
             detail: { source: 'story-stage', sourceLabel: 'Story Stage', kindLabel: 'Performance', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact: artifact, count: next.length }
           }));
         }
-      } catch (e) {}
-      addToast && addToast('Saved new student-controlled Story Stage performance to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', 'success');
-    }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
+        reportSave(tr('Performance and reflections saved to My Resources and AlloHaven Portfolio.'), false);
+      } catch (_) { reportSave(tr('Saved to My Resources, but the AlloHaven copy could not be saved on this device.'), true); }
+      finally { saveInFlightRef.current = false; setSaving(false); }
+    }, [onSaveSubmission, script, storyTitle, analysisResponses, analysisFeedback, selfAssessment, selectedStandard, revisionPlan, completedTasks, myRole, performerName, studentNickname, gradeLevel, addToast]);
 
     // ── Generate Character Portraits ──
     var generatePortrait = useCallback(async function (charId) {
+      var storyEpoch = storyEpochRef.current;
       if (!onCallImagen || !script) return;
       var ch = script.characters.find(function (c) { return c.id === charId; });
       if (!ch) return;
@@ -844,16 +1238,22 @@
         var prompt = 'Character portrait illustration: ' + ch.name + ' — ' + ch.description + '. '
           + 'Style: warm, expressive, children\'s book illustration. Circular frame. White background. STRICTLY NO TEXT.';
         var url = await onCallImagen(prompt, 256, 0.85);
+        if (storyEpoch !== storyEpochRef.current) return;
         if (url) {
-          var updatedChars = script.characters.map(function (c) { return c.id === charId ? Object.assign({}, c, { portrait: url }) : c; });
-          setScript(Object.assign({}, script, { characters: updatedChars }));
+          setScript(function (current) {
+            if (!current || storyEpoch !== storyEpochRef.current) return current;
+            return Object.assign({}, current, { characters: current.characters.map(function (c) { return c.id === charId ? Object.assign({}, c, { portrait: url }) : c; }) });
+          });
         }
-      } catch (err) { warnLog('Portrait gen failed:', err.message); }
+      } catch (err) { if (storyEpoch !== storyEpochRef.current) return; warnLog('Portrait gen failed:', err.message); }
     }, [onCallImagen, script]);
 
     // ── Literary Analysis Feedback ──
     var getAnalysisFeedback = useCallback(async function () {
-      if (!onCallGemini || !script) return;
+      var storyEpoch = storyEpochRef.current;
+      if (!onCallGemini || !script || analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (value) { return value.trim(); })) return;
+      var feedbackEpoch = ++feedbackEpochRef.current;
+      setFeedbackNotice(''); invalidatePlan();
       setAnalysisFeedback('loading');
       try {
         var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
@@ -873,23 +1273,25 @@
           + 'Theme: ' + (script.theme || 'not specified') + '\n'
           + 'Literary elements: ' + (script.literaryElements || []).join(', ') + '\n'
           + emotionSummary + standardFocus + '\n\n'
+          + 'Story script (use this text to check events and quoted evidence):\n' + script.lines.map(function (line, index) { return (index + 1) + '. [' + line.speaker + '] ' + line.text; }).join('\n') + '\n\n'
           + 'Student responses:\n' + respSummary + '\n\n'
           + 'Grade expectations: ' + gradeGuide + '\n\n'
           + 'Return JSON: {"overallRating":"developing|proficient|exemplary","strengths":["1-2 things done well"],"nudges":["1-2 guiding questions"],"characterInsight":"feedback on character understanding","themeInsight":"feedback on theme analysis","craftInsight":"feedback on literary craft awareness"}\n\n'
           + 'Score according to ' + gradeLevel + ' expectations. Match vocabulary to their level.';
         var result = await onCallGemini(prompt, true);
-        var parsed = JSON.parse(cleanJson(result));
+        if (storyEpoch !== storyEpochRef.current || feedbackEpoch !== feedbackEpochRef.current) return;
+        var parsed = normalizeLitLabFeedback(JSON.parse(cleanJson(result)));
         setAnalysisFeedback(parsed);
         if (handleScoreUpdate) {
           var xp = parsed.overallRating === 'exemplary' ? 30 : parsed.overallRating === 'proficient' ? 20 : 10;
           handleScoreUpdate(xp, 'LitLab Literary Analysis', 'storystage-analysis-' + (script.title || 'untitled'));
         }
         addToast && addToast(tr('Feedback received!'), 'success');
-      } catch (err) {
-        setAnalysisFeedback({ error: tr('Could not generate feedback.') });
+      } catch (err) { if (storyEpoch !== storyEpochRef.current || feedbackEpoch !== feedbackEpochRef.current) return;
+        setAnalysisFeedback({ error: tr('Feedback was incomplete or unavailable. Try again; your responses are still here.') });
         addToast && addToast('Feedback failed: ' + err.message, 'error');
       }
-    }, [onCallGemini, script, storyTitle, gradeLevel, analysisResponses, handleScoreUpdate, addToast]);
+    }, [onCallGemini, script, storyTitle, gradeLevel, analysisResponses, emotionLog, selectedStandard, analysisFeedback, handleScoreUpdate, addToast]);
 
     // ── LitLab metacognitive rubric (5 criteria, performance + analysis hybrid) ──
     var LITLAB_RUBRIC = [
@@ -916,7 +1318,10 @@
     // the student weaves multiple feedback streams into a coherent next step
     // for re-reading, re-performing, or revising their analysis responses.
     var synthesizeRevisionPlan = useCallback(async function () {
-      if (!onCallGemini || !script) return;
+      var storyEpoch = storyEpochRef.current;
+      if (!onCallGemini || !script || revisionPlanLoading || !_helpersAvailableForLitLabPlan()) return;
+      var planEpoch = ++planEpochRef.current;
+      setCompletedTasks({});
       setRevisionPlanLoading(true);
       try {
         var helperContext = [];
@@ -973,27 +1378,29 @@
           + '  "encouragement": "<one short specific compliment on something the student is already doing well>"\n'
           + '}';
         var result = await onCallGemini(prompt, true);
-        var parsed = JSON.parse(cleanJson(result));
-        if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
+        if (storyEpoch !== storyEpochRef.current || planEpoch !== planEpochRef.current) return;
+        var parsed = normalizeLitLabPlan(JSON.parse(cleanJson(result)));
         setRevisionPlan(parsed);
-      } catch (err) {
+      } catch (err) { if (storyEpoch !== storyEpochRef.current || planEpoch !== planEpochRef.current) return;
         warnLog('Revision plan synthesis failed:', err && err.message);
         setRevisionPlan({ error: "Couldn't build a revision plan right now. Try again in a moment." });
       } finally {
-        setRevisionPlanLoading(false);
+        if (storyEpoch === storyEpochRef.current && planEpoch === planEpochRef.current) setRevisionPlanLoading(false);
       }
-    }, [onCallGemini, script, storyTitle, gradeLevel, analysisFeedback, selfAssessment, selfAssessmentSubmitted, emotionLog, selectedStandard]);
+    }, [onCallGemini, script, storyTitle, gradeLevel, analysisFeedback, selfAssessment, selfAssessmentSubmitted, emotionLog, selectedStandard, revisionPlanLoading]);
 
     // ── Scene Illustration ──
     var generateSceneImage = useCallback(async function () {
+      var storyEpoch = storyEpochRef.current;
       if (!onCallImagen || !script) return;
       setSceneImageLoading(true);
       try {
         var prompt = 'Illustration for a story scene: ' + (script.setting || storyTitle || 'a fictional setting') + '. '
           + 'Style: warm, colorful, children\'s book illustration. Wide landscape composition. Rich detail. STRICTLY NO TEXT.';
         var url = await onCallImagen(prompt, 600, 0.85);
+        if (storyEpoch !== storyEpochRef.current) return;
         if (url) setSceneImage(url);
-      } catch (err) { warnLog('Scene image failed:', err.message); }
+      } catch (err) { if (storyEpoch !== storyEpochRef.current) return; warnLog('Scene image failed:', err.message); }
       setSceneImageLoading(false);
     }, [onCallImagen, script, storyTitle]);
 
@@ -1022,29 +1429,33 @@
     }, [onCallGeminiImageEdit]);
 
     var refineSceneImage = useCallback(async function (instruction) {
+      var storyEpoch = storyEpochRef.current;
       if (!sceneImage || !instruction || !instruction.trim()) return;
       setSceneImageLoading(true);
       announceLitLab(tr('Refining cover image…'));
       try {
         var refined = await refineImage(sceneImage, instruction.trim(), 600);
+        if (storyEpoch !== storyEpochRef.current) return;
         if (refined) { setSceneImage(refined); addToast && addToast(tr('Cover refined.'), 'success'); announceLitLab(tr('Cover image refined.')); }
         else { addToast && addToast(tr('Refine failed.'), 'error'); }
-      } finally { setSceneImageLoading(false); }
+      } finally { if (storyEpoch === storyEpochRef.current) setSceneImageLoading(false); }
     }, [sceneImage, refineImage, addToast]);
 
     var refinePageImage = useCallback(async function (pageIdx, instruction) {
+      var storyEpoch = storyEpochRef.current;
       var current = pageImages[pageIdx];
       if (!current || !instruction || !instruction.trim()) return;
       setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
       announceLitLab(tr('Refining page {page} illustration…', { page: pageIdx + 1 }));
       try {
         var refined = await refineImage(current, instruction.trim(), 600);
+        if (storyEpoch !== storyEpochRef.current) return;
         if (refined) {
           setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = refined; return n; });
           addToast && addToast(tr('Page ') + (pageIdx + 1) + ' refined.', 'success');
           announceLitLab(tr('Page ') + (pageIdx + 1) + ' illustration refined.');
         } else { addToast && addToast(tr('Refine failed.'), 'error'); }
-      } finally { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
+      } finally { if (storyEpoch === storyEpochRef.current) setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
     }, [pageImages, refineImage, addToast]);
 
     var importStoryUrl = useCallback(async function (url) {
@@ -1122,6 +1533,7 @@
 
     // ── Generate illustration for a specific page ──
     var generatePageImage = useCallback(async function (pageIdx) {
+      var storyEpoch = storyEpochRef.current;
       if (!onCallImagen || !script || !pages[pageIdx]) return;
       setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
       try {
@@ -1130,21 +1542,26 @@
         var prompt = 'Illustration for a children\'s storybook page: ' + sceneDesc + '. '
           + 'Style: warm, colorful, detailed storybook illustration. Landscape format. STRICTLY NO TEXT or words in the image.';
         var url = await onCallImagen(prompt, 512, 0.85);
+        if (storyEpoch !== storyEpochRef.current) return;
         if (url) setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = url; return n; });
-      } catch (err) { warnLog('Page image failed:', err.message); }
+      } catch (err) { if (storyEpoch !== storyEpochRef.current) return; warnLog('Page image failed:', err.message); }
       setPageImgLoading(function (prev) { var n = Object.assign({}, prev); delete n[pageIdx]; return n; });
     }, [onCallImagen, script, pages]);
 
     // ── Generate all page illustrations ──
     var generateAllImages = useCallback(async function () {
+      var storyEpoch = storyEpochRef.current;
       if (!onCallImagen || !script) return;
       addToast && addToast('Generating illustrations for all ' + totalPages + ' pages...', 'info');
       for (var i = 0; i < totalPages; i++) {
+        if (storyEpoch !== storyEpochRef.current) return;
         if (!pageImages[i]) {
           await generatePageImage(i);
+          if (storyEpoch !== storyEpochRef.current) return;
           if (i < totalPages - 1) await new Promise(function (r) { setTimeout(r, 1500); });
         }
       }
+      if (storyEpoch !== storyEpochRef.current) return;
       addToast && addToast(tr('All illustrations complete!'), 'success');
     }, [onCallImagen, script, totalPages, pageImages, generatePageImage, addToast]);
 
@@ -1257,89 +1674,83 @@
       if (w) { w.document.open(); w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
-    // ── Recording (Phase 3v.MR shared-module routed) ──
+    // Keep microphone ownership and late permission/results tied to one recording.
     var startRecording = useCallback(async function () {
-      // Shared-module path
-      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
-        var ctrl = window.AlloFlowVoice.recordAudioBlob({
-          maxDurationMs: 15 * 60 * 1000, // generous cap; performances run long
-          preferredMimeType: 'audio/webm;codecs=opus',
-          onError: function (err) {
-            addToast && addToast(tr('Microphone access denied. Please allow microphone to record.'), 'error');
-            setIsRecording(false);
-          }
-        });
-        if (!ctrl.supported) {
-          addToast && addToast(tr('Recording not supported in this browser.'), 'error');
+      if (mediaRecorderRef.current) return;
+      var epoch = ++recordingEpochRef.current;
+      mediaRecorderRef.current = { pending: true };
+      setIsRecording(true);
+      function active() { return recordingEpochRef.current === epoch; }
+      function releaseStream() {
+        if (recordingStreamRef.current) recordingStreamRef.current.getTracks().forEach(function (track) { track.stop(); });
+        recordingStreamRef.current = null;
+      }
+      function failed() {
+        if (!active()) return;
+        releaseStream(); mediaRecorderRef.current = null; setIsRecording(false);
+        addToast && addToast(tr('Recording could not start. Check microphone access and try again.'), 'error');
+      }
+      function saved(blob, dataUrl) {
+        if (!active()) return;
+        releaseStream(); mediaRecorderRef.current = null; setIsRecording(false);
+        if ((!blob || !blob.size) && !dataUrl) return;
+        var url = blob && blob.size ? URL.createObjectURL(blob) : dataUrl;
+        if (recordingUrlRef.current && recordingUrlRef.current.indexOf('blob:') === 0) URL.revokeObjectURL(recordingUrlRef.current);
+        recordingUrlRef.current = url;
+        setRecordingUrl(url); setRecordedChunks(blob ? [blob] : []);
+        addToast && addToast(tr('Recording saved!'), 'success');
+        if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
+      }
+      try {
+        if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+          var ctrl = window.AlloFlowVoice.recordAudioBlob({ maxDurationMs: 15 * 60 * 1000, preferredMimeType: 'audio/webm;codecs=opus' });
+          mediaRecorderRef.current = ctrl;
+          // Always consume result, including unsupported or cancelled controllers.
+          var result = await ctrl.result;
+          if (!active()) return;
+          if (result && result.blob) saved(result.blob);
+          else if (result && result.base64) saved(null, result.base64);
+          else { mediaRecorderRef.current = null; setIsRecording(false); }
           return;
         }
-        mediaRecorderRef.current = ctrl;
-        setIsRecording(true);
-        addToast && addToast(tr('Recording started — read your lines!'), 'info');
-        ctrl.result.then(function (rec) {
-          if (!rec || !rec.base64) { setIsRecording(false); return; }
-          // Reconstruct a Blob URL so callers that play back via
-          // <audio src=blob:...> get the same flavor as the legacy path.
-          fetch(rec.base64).then(function (r) { return r.blob(); }).then(function (blob) {
-            var url = URL.createObjectURL(blob);
-            setRecordingUrl(url);
-            setRecordedChunks([blob]); // single-chunk array shape
-            addToast && addToast(tr('Recording saved!'), 'success');
-            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
-            setIsRecording(false);
-          }).catch(function () {
-            // Fallback: use the data URI directly as the URL
-            setRecordingUrl(rec.base64);
-            setRecordedChunks([]);
-            addToast && addToast(tr('Recording saved!'), 'success');
-            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
-            setIsRecording(false);
-          });
-        }).catch(function (err) {
-          if (err && err.message === 'cancelled') { setIsRecording(false); return; }
-          setIsRecording(false);
-        });
-        return;
-      }
-      // Inline fallback (pre-3v.MR behavior, identical)
-      try {
         var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        var mr = new MediaRecorder(stream);
+        if (!active()) { stream.getTracks().forEach(function (track) { track.stop(); }); return; }
+        recordingStreamRef.current = stream;
+        var recorder = new MediaRecorder(stream);
         var chunks = [];
-        mr.ondataavailable = function (e) { if (e.data.size > 0) chunks.push(e.data); };
-        mr.onstop = function () {
-          var blob = new Blob(chunks, { type: 'audio/webm' });
-          var url = URL.createObjectURL(blob);
-          setRecordingUrl(url);
-          setRecordedChunks(chunks);
-          stream.getTracks().forEach(function (t) { t.stop(); });
-          addToast && addToast(tr('Recording saved!'), 'success');
-          if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
-        };
-        mediaRecorderRef.current = mr;
-        mr.start();
-        setIsRecording(true);
+        recorder.ondataavailable = function (event) { if (event.data.size) chunks.push(event.data); };
+        recorder.onstop = function () { saved(new Blob(chunks, { type: recorder.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm' })); };
+        recorder.onerror = failed;
+        mediaRecorderRef.current = recorder;
+        recorder.start();
         addToast && addToast(tr('Recording started — read your lines!'), 'info');
-      } catch (err) {
-        addToast && addToast(tr('Microphone access denied. Please allow microphone to record.'), 'error');
-      }
+      } catch (_) { failed(); }
     }, [storyTitle, handleScoreUpdate, addToast]);
 
     var stopRecording = useCallback(function () {
-      var rec = mediaRecorderRef.current;
-      if (!rec) { setIsRecording(false); return; }
-      // Shared controller: has isRecording() + stop()
-      if (typeof rec.isRecording === 'function') {
-        if (rec.isRecording()) {
-          try { rec.stop(); } catch (e) { /* ignore */ }
+      var recorder = mediaRecorderRef.current;
+      if (!recorder) return;
+      if (recorder.pending) {
+        recordingEpochRef.current++; mediaRecorderRef.current = null; setIsRecording(false); return;
+      }
+      try { if (typeof recorder.isRecording === 'function' || recorder.state !== 'inactive') recorder.stop(); }
+      catch (_) { setIsRecording(false); }
+    }, []);
+    React.useEffect(function () { if (phase !== 'perform') stopRecording(); }, [phase, stopRecording]);
+    React.useEffect(function () {
+      return function () {
+        storyEpochRef.current++;
+        recordingEpochRef.current++;
+        var recorder = mediaRecorderRef.current;
+        if (recorder) {
+          try {
+            if (typeof recorder.cancel === 'function') recorder.cancel();
+            else if (typeof recorder.stop === 'function' && recorder.state !== 'inactive') recorder.stop();
+          } catch (_) {}
         }
-        // setIsRecording(false) happens after the result Promise resolves
-        return;
-      }
-      if (rec.state !== 'inactive') {
-        rec.stop();
-      }
-      setIsRecording(false);
+        if (recordingStreamRef.current) recordingStreamRef.current.getTracks().forEach(function (track) { track.stop(); });
+        if (recordingUrlRef.current && recordingUrlRef.current.indexOf('blob:') === 0) URL.revokeObjectURL(recordingUrlRef.current);
+      };
     }, []);
 
     // ── Get grade band for standards ──
@@ -1353,39 +1764,41 @@
     // ── Export script as printable HTML ──
     var exportScript = useCallback(function () {
       if (!script) return;
+      var esc = function (value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var color = function (value) { return /^#[0-9a-f]{6}$/i.test(value || '') ? value : '#475569'; };
       var chars = script.characters.filter(function (c) { return c.id !== 'stage'; });
-      var html = '<html><head><title>' + storyTitle + ' — LitLab Script</title>'
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(storyTitle) + ' — LitLab Script</title>'
         + '<style>body{font-family:Georgia,serif;max-width:700px;margin:40px auto;padding:20px;color:#1e293b;line-height:1.8}'
         + '.char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
         + '.narration{font-style:italic;color:#475569;margin:12px 0}'
-        + '.stage{font-style:italic;color:#9ca3af;font-size:0.9em;margin:8px 0 8px 20px}'
+        + '.stage{font-style:italic;color:#475569;font-size:0.9em;margin:8px 0 8px 20px}'
         + '.dialogue{margin:8px 0;padding-left:20px}'
         + '.cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:20px 0}'
         + '.cast-card{border:2px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center}'
         + 'h1{text-align:center;border-bottom:2px solid #7c3aed;padding-bottom:12px}'
         + '@media print{body{margin:20px}}</style></head><body>';
-      html += '<h1>🎭 ' + storyTitle + '</h1>';
-      if (performerName) html += '<p style="text-align:center;color:#6b7280">Performer: ' + performerName + '</p>';
+      html += '<h1>🎭 ' + esc(storyTitle) + '</h1>';
+      if (performerName) html += '<p style="text-align:center;color:#6b7280">Performer: ' + esc(performerName) + '</p>';
       html += '<h2>Cast of Characters</h2><div class="cast">';
       chars.forEach(function (c) {
-        html += '<div class="cast-card" style="border-color:' + c.color + '">'
-          + (c.portrait ? '<img src="' + c.portrait + '" alt="Portrait of ' + (c.name || 'character').replace(/"/g, '&quot;') + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
-          + '<div style="font-weight:bold;color:' + c.color + '">' + c.name + '</div>'
-          + '<div style="font-size:0.85em;color:#6b7280">' + (c.description || '') + '</div></div>';
+        html += '<div class="cast-card" style="border-color:' + color(c.color) + '">'
+          + (c.portrait ? '<img src="' + esc(c.portrait) + '" alt="Portrait of ' + esc(c.name || 'character') + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + '<div style="font-weight:bold;color:' + color(c.color) + '">' + esc(c.name) + '</div>'
+          + '<div style="font-size:0.85em;color:#6b7280">' + esc(c.description || '') + '</div></div>';
       });
       html += '</div><hr><h2>Script</h2>';
       script.lines.forEach(function (line) {
         var ch = script.characters.find(function (c) { return c.id === line.speaker; });
         if (line.type === 'stage-direction') {
-          html += '<div class="stage">[' + line.text + ']</div>';
+          html += '<div class="stage">[' + esc(line.text) + ']</div>';
         } else if (line.type === 'narration') {
-          html += '<div class="narration">' + line.text + '</div>';
+          html += '<div class="narration">' + esc(line.text) + '</div>';
         } else {
-          html += '<div class="dialogue"><span class="char-name" style="color:' + (ch ? ch.color : '#374151') + '">' + (ch ? ch.name : 'Unknown') + ':</span>' + line.text + '</div>';
+          html += '<div class="dialogue"><span class="char-name" style="color:' + color(ch && ch.color) + '">' + esc(ch ? ch.name : 'Unknown') + ':</span>' + esc(line.text) + '</div>';
         }
       });
-      if (script.theme) html += '<hr><p><strong>Theme:</strong> ' + script.theme + '</p>';
-      html += '<div style="margin-top:30px;text-align:center;font-size:0.8em;color:#9ca3af">Generated with AlloFlow LitLab</div>';
+      if (script.theme) html += '<hr><p><strong>Theme:</strong> ' + esc(script.theme) + '</p>';
+      html += '<div style="margin-top:30px;text-align:center;font-size:0.8em;color:#475569">Generated with AlloFlow LitLab</div>';
       html += '</body></html>';
       var w = window.open('', '_blank');
       if (w) { w.document.write(html); w.document.close(); }
@@ -1393,13 +1806,13 @@
 
     // ── Styles ──
     var S = {
-      modal: { position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
-      container: { background: '#fff', borderRadius: '20px', width: '100%', maxWidth: '1000px', maxHeight: '92vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' },
-      header: { background: 'linear-gradient(135deg, #7c3aed, #a855f7)', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff', shrink: 0 },
-      body: { flex: 1, overflowY: 'auto', padding: '20px' },
+      modal: { position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(25,18,45,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
+      container: { background: '#fff', borderRadius: '20px', width: '100%', maxWidth: '1000px', maxHeight: '94vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' },
+      header: { background: 'linear-gradient(115deg, #3b2066, #6d28d9)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff', flexShrink: 0 },
+      body: { flex: 1, minHeight: 0, overflowY: 'auto', padding: '28px', background: '#faf9fc' },
       btn: function (bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; },
-      card: { background: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' },
-      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '13px' },
+      card: { background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid #e3dfeb', marginBottom: '12px', boxShadow: '0 3px 12px rgba(46,25,77,0.03)' },
+      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', color: '#1e293b', background: '#fff' },
     };
 
     // ═══════════════════════════════════════════════════════════════════
@@ -1425,12 +1838,12 @@
         onClick: function (ev) { ev.stopPropagation(); }
       },
         // Header
-        e('div', { style: S.header },
+        e('div', { className: 'litlab-header', style: S.header },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
             e('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '🎭'),
             e('div', null,
               e('h2', { id: 'litlab-dialog-title', style: { fontWeight: 900, fontSize: '18px', margin: 0 } }, 'LitLab'),
-              e('p', { id: 'litlab-dialog-description', style: { fontSize: '11px', opacity: 0.8, margin: 0 } }, storyTitle || tr('Bring stories to life'))
+              e('p', { id: 'litlab-dialog-description', style: { fontSize: '12px', color: '#ede9fe', margin: '3px 0 0' } }, storyTitle || tr('Bring stories to life'))
             )
           ),
           e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
@@ -1442,13 +1855,44 @@
             e('button', { ref: closeButtonRef, type: 'button', onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': tr('Close') }, '×')
           )
         ),
+        e('ol', { className: 'litlab-steps', 'aria-label': tr('Performance progress') },
+          [['input', tr('Choose text')], ['assign', tr('Assign voices')], ['perform', tr('Perform')], ['analyze', tr('Reflect')]].map(function (step, index) {
+            var currentIndex = ['input', 'assign', 'perform', 'analyze'].indexOf(phase);
+            return e('li', { key: step[0], className: 'litlab-step', 'aria-current': phase === step[0] ? 'step' : undefined, 'data-complete': index < currentIndex ? 'true' : 'false' },
+              e('span', { className: 'litlab-step-number', 'aria-hidden': 'true' }, index < currentIndex ? '✓' : index + 1),
+              e('span', null, step[1])
+            );
+          })
+        ),
         // Body
-        e('div', { style: S.body },
+        e('div', { className: 'litlab-body', style: S.body },
+          saveMessage && e('p', { role: saveError ? 'alert' : 'status', style: { margin: '0 auto 14px', maxWidth: '700px', padding: '10px 14px', borderRadius: '10px', background: saveError ? '#fff7ed' : '#f0fdf4', color: saveError ? '#9a3412' : '#166534', fontSize: '13px', lineHeight: 1.5 } }, saveMessage),
+          script && phase !== 'input' && e('div', { role: 'group', 'aria-label': tr('Save your work'), style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '16px', padding: '12px 14px', border: '1px solid #ddd6fe', borderRadius: '12px', background: '#f5f3ff' } },
+            e('div', { style: { flex: '1 1 220px' } },
+              e('strong', { style: { color: '#5b21b6', fontSize: '13px' } }, tr('Pick up where you left off')),
+              e('p', { style: { fontSize: '12px', color: '#475569', margin: '3px 0 0', lineHeight: 1.5 } }, tr('Save your script, retained narration, reflections, artwork, and revision checklist on this device. Save again after changes; download microphone recordings separately.'))
+            ),
+            e('button', { type: 'button', onClick: saveScript, disabled: preparing, style: S.btn(PURPLE, '#fff', preparing) }, tr('Save progress')),
+            onSaveSubmission && e('button', { type: 'button', onClick: saveSubmissionToPortfolio, disabled: saving, 'aria-busy': saving, style: S.btn('#fff', '#5b21b6', saving) }, saving ? tr('Saving…') : tr('Save to Portfolio'))
+          ),
+
+          script && phase !== 'input' && e('section', { 'aria-label': tr('Saved narration'), style: { padding: '12px 14px', border: '1px solid #ddd6fe', borderRadius: '12px', marginBottom: '16px' } },
+            e('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' } },
+              e('strong', { style: { flex: '1 1 190px', fontSize: '13px' } }, tr('{ready} of {total} narration lines ready', { ready: narrationSummary.ready, total: narrationSummary.total })),
+              e('label', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '12px' } }, tr('Story language'),
+                e('input', { 'aria-label': tr('Story language'), value: storyLanguage, maxLength: 80, disabled: preparing || isPlaying, onChange: function (event) { cancelSpeech(); setStoryLanguage(event.target.value); }, style: { width: '140px', maxWidth: '100%', border: '1px solid #c4b5fd', borderRadius: '8px', padding: '6px 8px' } })),
+              e('button', { type: 'button', disabled: preparing || isPlaying, onClick: prepareNarration, style: S.btn(PURPLE, '#fff', preparing || isPlaying) }, tr('Prepare narration')),
+              preparing && e('button', { type: 'button', onClick: function () { cancelPreparation(); setNarrationNotice(tr('Preparation cancelled. Save progress to keep completed clips.')); }, style: S.btn('#fff', '#5b21b6', false) }, tr('Cancel preparation'))
+            ),
+            e('p', { style: { fontSize: '12px', color: '#475569', margin: '8px 0 0', lineHeight: 1.5 } }, narrationDirty ? tr('New audio is ready. Save progress to keep it after closing.') : tr('Prepare narration saves missing or outdated lines with this script. Microphone recordings are downloaded separately.')),
+            narrationSummary.stale > 0 && e('p', { style: { fontSize: '12px', color: '#9a3412' } }, tr('{count} lines need updated narration for the current voice or language.', { count: narrationSummary.stale })),
+            narrationNotice && e('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5, marginBottom: 0 } }, narrationNotice)
+          ),
 
           // ═══ INPUT PHASE ═══
           phase === 'input' && e('div', { style: { maxWidth: '700px', margin: '0 auto' } },
             // Codename bar
-            e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', padding: '8px 16px', background: LIGHT_PURPLE, borderRadius: '12px', border: '1px solid #c4b5fd' } },
+            e('div', { className: 'litlab-performer', style: { display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', padding: '8px 16px', background: LIGHT_PURPLE, borderRadius: '12px', border: '1px solid #c4b5fd' } },
               e('span', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE } }, tr('🎭 Performer:')),
               e('select', { value: performerName.split(' ')[0] || '', onChange: function (ev) {
                 var animal = performerName.split(' ').slice(1).join(' ') || CN_ANI[0];
@@ -1498,24 +1942,31 @@
               }),
               e('button', {
                 onClick: saveAsAssignment,
-                disabled: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim(),
+                disabled: saving || (!sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim()),
+                'aria-busy': saving,
                 'aria-label': tr('Save this LitLab setup as an assignment in My Resources'),
                 style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
-              }, tr('💾 Save as Assignment'))
+              }, saving ? tr('Saving…') : tr('💾 Save as Assignment'))
             ),
 
             // Mode selector
-            e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
+            e('div', { className: 'litlab-mode-picker', role: 'group', 'aria-label': tr('Story source'), style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
               [['paste', tr('📋 Paste Text')], ['generate', tr('✨ AI Generate')]].map(function (pair) {
-                return e('button', { key: pair[0], onClick: function () { setInputMode(pair[0]); },
+                return e('button', { key: pair[0], 'aria-pressed': inputMode === pair[0], disabled: isLoading, onClick: function () { setInputMode(pair[0]); },
                   style: Object.assign({}, S.btn(inputMode === pair[0] ? PURPLE : '#f1f5f9', inputMode === pair[0] ? '#fff' : '#374151', false), { padding: '10px 20px' })
                 }, pair[1]);
               })
             ),
 
+            e('div', { style: { marginBottom: '16px' } },
+              e('label', { htmlFor: 'litlab-story-title', style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' } }, tr('Story title (optional)')),
+              e('input', { id: 'litlab-story-title', value: storyTitle, onChange: function (ev) { setStoryTitle(ev.target.value); }, placeholder: tr('Give your performance a title'), style: S.input })
+            ),
             // Paste mode
             inputMode === 'paste' && e('div', { style: S.card },
-              e('textarea', { value: sourceText, onChange: function (ev) { setSourceText(ev.target.value); },
+              generationDraft && sourceText === generationDraft && e('p', { role: 'note', style: { fontSize: '13px', color: '#92400e', background: '#fffbeb', padding: '10px', borderRadius: '8px', lineHeight: 1.5 } }, tr('This is a partial draft. Review it and add any missing scenes or an ending before creating your script.')),
+              e('label', { htmlFor: 'litlab-story-text', style: { display: 'block', fontSize: '14px', fontWeight: 750, marginBottom: '10px' } }, tr('Your story or excerpt')),
+              e('textarea', { id: 'litlab-story-text', 'aria-describedby': 'litlab-source-help', value: sourceText, onChange: function (ev) { setSourceText(ev.target.value); },
                 onPaste: async function (ev) {
                   var items = ev.clipboardData && ev.clipboardData.items;
                   if (!items || !props.onCallGeminiVision) return;
@@ -1541,10 +1992,15 @@
                   }
                 },
                 placeholder: 'Paste a story, chapter, poem, or play excerpt here...\n\nYou can also paste an image (screenshot of a book page) — the text will be extracted automatically.',
-                rows: 10, style: Object.assign({}, S.input, { resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }),
+                rows: 8, style: Object.assign({}, S.input, { resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }),
                 autoFocus: phase === 'input' && inputMode === 'paste',
                 'aria-label': tr('Story text input') }),
-              e('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' } },
+              e('div', { id: 'litlab-source-help', className: 'litlab-story-meta' },
+                e('span', null, sourceText.trim() ? sourceText.trim().split(/\s+/).length + ' ' + tr('words') : tr('Start with a short scene or a favorite passage.')),
+                e('span', null, tr('Next: choose a voice for each character.'))
+              ),
+              sourceText.length > 12000 && e('p', { role: 'note', style: { fontSize: '12px', lineHeight: 1.5, color: '#92400e', background: '#fffbeb', padding: '10px', borderRadius: '8px' } }, tr('Only the first 12,000 characters will be used to create the script. Shorten your excerpt to include the ending.')),
+              e('div', { style: { display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
                   'aria-busy': isLoading ? 'true' : 'false',
@@ -1590,7 +2046,7 @@
               e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'block' } }, tr('Genre')),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', marginBottom: '12px' } },
                 GENRES.map(function (g) {
-                  return e('button', { key: g.id, onClick: function () { setGenGenre(g.id); },
+                  return e('button', { key: g.id, 'aria-pressed': genGenre === g.id, onClick: function () { setGenGenre(g.id); },
                     style: { padding: '8px', borderRadius: '10px', border: '2px solid ' + (genGenre === g.id ? PURPLE : '#e5e7eb'), background: genGenre === g.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + tr(g.label)),
@@ -1603,10 +2059,10 @@
                 placeholder: tr('e.g. "A story about a girl who discovers she can talk to animals" or "Set in ancient Egypt with a mystery about a missing artifact"'),
                 rows: 3, style: Object.assign({}, S.input, { marginBottom: '12px', resize: 'vertical' }),
                 'aria-label': tr('Story generation instructions') }),
-              e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' } },
+              e('div', { className: 'litlab-options', style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' } },
                 e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, tr('Characters:')),
                 [2, 3, 4, 5, 6].map(function (n) {
-                  return e('button', { key: n, onClick: function () { setGenCharCount(n); },
+                  return e('button', { key: n, 'aria-pressed': genCharCount === n, 'aria-label': n + ' ' + tr('characters'), onClick: function () { setGenCharCount(n); },
                     style: { width: '32px', height: '32px', borderRadius: '50%', border: '2px solid ' + (genCharCount === n ? PURPLE : '#d1d5db'), background: genCharCount === n ? PURPLE : '#fff', color: genCharCount === n ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
                   }, n);
                 })
@@ -1622,10 +2078,10 @@
                 )
               ),
               // Length selector
-              e('div', { style: { display: 'flex', gap: '6px', marginBottom: '12px' } },
+              e('div', { className: 'litlab-options', style: { display: 'flex', gap: '6px', marginBottom: '12px' } },
                 e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, tr('Length:')),
                 LENGTH_OPTIONS.map(function (lo) {
-                  return e('button', { key: lo.id, onClick: function () { setGenLength(lo.id); },
+                  return e('button', { key: lo.id, 'aria-pressed': genLength === lo.id, onClick: function () { setGenLength(lo.id); },
                     'aria-label': tr(lo.label) + ' story' + (lo.words ? ': ' + lo.words + ' words' : ''),
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
@@ -1640,14 +2096,15 @@
                 e('input', { type: 'number', min: 50, max: 5000, step: 50, value: customWordCount,
                   onChange: function (ev) { setCustomWordCount(ev.target.value); },
                   style: Object.assign({}, S.input, { width: '120px' }),
-                  'aria-label': tr('Custom word count') }),
-                e('span', { style: { fontSize: '10px', color: '#64748b' } }, 'words (50–5000)')
+                  'aria-label': tr('Custom word count'), 'aria-invalid': !customWordCountValid, 'aria-describedby': 'litlab-word-count-help' }),
+                e('span', { id: 'litlab-word-count-help', style: { fontSize: '12px', color: customWordCountValid ? '#64748b' : '#b91c1c' } }, tr('Enter a whole number from 50 to 5000 words.'))
               ),
-              e('button', { onClick: generateStory, disabled: isLoading,
+              e('button', { onClick: generateStory, disabled: isLoading || (genLength === 'custom' && !customWordCountValid),
                 'aria-busy': isLoading ? 'true' : 'false',
                 'aria-label': isLoading ? tr('Generating story, please wait') : tr('Generate Story with AI'),
-                style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : tr('✨ Generate Story')),
-              sourceText && e('p', { style: { fontSize: '11px', color: '#16a34a', marginTop: '8px', fontWeight: 600 } }, '✅ Story generated! Switch to "Paste Text" tab to review, then click "Create Script".')
+                style: S.btn(PURPLE, '#fff', isLoading || (genLength === 'custom' && !customWordCountValid)) }, isLoading ? '⏳ ' + loadingMsg : tr('✨ Generate Story')),
+              generationError && e('p', { role: 'alert', style: { fontSize: '13px', color: '#92400e', lineHeight: 1.5 } }, generationError),
+              generationDraft && e('button', { type: 'button', disabled: isLoading, onClick: function () { setSourceText(generationDraft); setInputMode('paste'); }, style: Object.assign({}, S.btn('#fef3c7', '#78350f', isLoading), { marginTop: '8px' }) }, tr('Review partial draft'))
             ),
 
             // Saved scripts
@@ -1672,7 +2129,7 @@
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, tr('🎤 Assign Voices')),
               e('p', { style: { color: '#475569', fontSize: '13px' } }, tr('Choose a distinct voice for each character. Click preview to hear them.'))
             ),
-            e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '20px' } },
+            e('div', { className: 'litlab-voice-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '20px' } },
               script.characters.map(function (ch) {
                 return e('div', { key: ch.id, style: { background: '#fff', borderRadius: '14px', padding: '16px', border: '3px solid ' + (ch.color || '#e5e7eb'), boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } },
                   e('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
@@ -1698,7 +2155,7 @@
                     e('option', { value: '' }, tr('— Select Voice —')),
                     allVoices.map(function (v) { return e('option', { key: v.id, value: v.id }, v.label || v.id); })
                   ),
-                  e('button', { onClick: function () {
+                  e('button', { disabled: preparing, onClick: function () {
                     setPreviewingVoice(ch.id);
                     speakLine('Hello, I am ' + ch.name + '.', ch.voice).then(function () { setPreviewingVoice(null); });
                   }, disabled: previewingVoice === ch.id,
@@ -1708,9 +2165,8 @@
               })
             ),
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
-              e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('💾 Save Script')),
-              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': tr('Save this performance to your portfolio (My Resources)'), style: S.btn('#7c3aed', '#fff', false) }, tr('📚 Save to Portfolio')),
-              e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, tr('🎭 Start Performance →'))
+
+              e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); setCurrentPage(0); }, style: S.btn(PURPLE, '#fff', false) }, tr('🎭 Start Performance →'))
             )
           ),
 
@@ -1719,16 +2175,16 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, tr('▶ Play'))
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, disabled: preparing, autoFocus: true, style: S.btn('#15803d', '#fff', false) }, tr('▶ Play'))
                 : null,
               isPlaying && (isPaused
-                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, tr('▶ Resume'))
-                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, tr('⏸ Pause'))),
-              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': tr('Stop playback'), style: S.btn('#ef4444', '#fff', false) }, tr('⏹ Stop')),
+                ? e('button', { onClick: resumePlayback, style: S.btn('#15803d', '#fff', false) }, tr('▶ Resume'))
+                : e('button', { onClick: pausePlayback, style: S.btn('#92400e', '#fff', false) }, tr('⏸ Pause'))),
+              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': tr('Stop playback'), style: S.btn('#b91c1c', '#fff', false) }, tr('⏹ Stop')),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, tr('Speed:')),
                 [0.75, 1, 1.25, 1.5].map(function (spd) {
-                  return e('button', { key: spd, onClick: function () { setPlaybackSpeed(spd); },
+                  return e('button', { key: spd, disabled: isPlaying, onClick: function () { setPlaybackSpeed(spd); },
                     'aria-pressed': playbackSpeed === spd ? 'true' : 'false',
                     'aria-label': 'Playback speed ' + spd + ' times',
                     style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
@@ -1749,7 +2205,7 @@
               }, '🔠 ' + (largeText ? 'Reading mode on' : tr('Reading mode'))),
               e('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' } },
                 e('span', { style: { fontSize: '11px', color: '#475569' } }, tr('My Role:')),
-                e('select', { value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
+                e('select', { disabled: isPlaying, value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
                   style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #94a3b8' },
                   'aria-label': tr('Select your character role')
                 },
@@ -1762,6 +2218,7 @@
               !isRecording
                 ? e('button', { onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏺ Record'))
                 : e('button', { onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏹ Stop Recording')),
+              recordingUrl && e('a', { href: recordingUrl, download: (storyTitle || 'LitLab').replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').slice(0, 80) + '-recording.' + ((recordedChunks[0] && recordedChunks[0].type || recordingUrl).indexOf('mp4') !== -1 ? 'm4a' : (recordedChunks[0] && recordedChunks[0].type || recordingUrl).indexOf('ogg') !== -1 ? 'ogg' : 'webm'), style: Object.assign({}, S.btn('#f1f5f9', '#374151', false), { display: 'inline-flex', alignItems: 'center', minHeight: '40px', textDecoration: 'none' }) }, tr('Download recording')),
               recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': tr('Your recording') }),
               e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('🖨️ Script')),
               e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, tr('📖 Storybook')),
@@ -1774,10 +2231,10 @@
             ),
             // Page navigation bar
             totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
-              e('button', { onClick: function () { setCurrentPage(Math.max(0, currentPage - 1)); }, disabled: currentPage === 0,
+              e('button', { onClick: function () { cancelSpeech(); setCurrentPage(Math.max(0, currentPage - 1)); setCurrentLine(Math.max(0, currentPage - 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage === 0,
                 style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': tr('Previous page') }, '◀'),
               e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, tr('Page ') + (currentPage + 1) + ' of ' + totalPages),
-              e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
+              e('button', { onClick: function () { cancelSpeech(); setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); setCurrentLine(Math.min(totalPages - 1, currentPage + 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage >= totalPages - 1,
                 style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': tr('Next page') }, '▶')
             ),
             // Cover image (for storybook export header)
@@ -1805,6 +2262,10 @@
               'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : tr('Illustrate this page with AI'),
               style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
             }, pageImgLoading[currentPage] ? '⏳ Generating...' : tr('🎨 Illustrate This Page')),
+            e('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' } },
+              e('span', { style: { fontSize: '13px', fontWeight: 700, color: '#475569' } }, tr('Line {current} of {total}', { current: currentLine + 1, total: script.lines.length })),
+              e('button', { type: 'button', onClick: function () { stopPlayback(); setCurrentLine(0); setCurrentPage(0); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('Restart from beginning'))
+            ),
             // Progress bar
             e('div', { style: { height: '4px', background: '#e5e7eb', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: (script.lines.length > 0 ? Math.round(((currentLine + 1) / script.lines.length) * 100) : 0) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a855f7)', borderRadius: '2px', transition: 'width 0.3s' } })
@@ -1819,26 +2280,27 @@
                 var bgColor = isCurrent ? (isMyLine ? '#fef3c7' : character ? character.color + '15' : '#f0fdf4') : 'transparent';
                 var borderColor = isCurrent ? (isMyLine ? '#f59e0b' : character ? character.color : '#22c55e') : 'transparent';
                 return e('div', { key: line.id, id: 'ss-line-' + idx,
-                  onClick: function () { if (!isPlaying) { setCurrentLine(idx); speakLine(line.text, character ? character.voice : 'Aoede'); } },
-                  style: { padding: line.type === 'stage-direction' ? '4px 16px' : '10px 16px', borderLeft: '4px solid ' + borderColor, background: bgColor, borderRadius: '0 8px 8px 0', marginBottom: '4px', cursor: 'pointer', transition: 'all 0.2s', transform: isCurrent ? 'scale(1.01)' : 'scale(1)' }
+
+                  style: { padding: line.type === 'stage-direction' ? '4px 16px' : '10px 16px', borderLeft: '4px solid ' + borderColor, background: bgColor, borderRadius: '0 8px 8px 0', marginBottom: '4px', transition: 'background 0.2s' }
                 },
+                  e('button', { type: 'button', disabled: isPlaying || preparing, 'aria-label': tr('Read line {number} aloud', { number: idx + 1 }), onClick: function () { setCurrentLine(idx); speakLine(line.text, character ? character.voice : 'Aoede', playbackSpeed, line.id); }, style: { float: 'right', margin: '0 0 4px 8px', border: '1px solid #c4b5fd', borderRadius: '8px', background: '#f5f3ff', color: '#5b21b6', padding: '4px 8px', cursor: 'pointer' } }, '▶'),
                   line.type === 'stage-direction'
                     ? e('p', { style: { fontSize: largeText ? '13px' : '11px', color: '#475569', fontStyle: 'italic', margin: 0, lineHeight: largeText ? 1.85 : 1.4 } }, '[' + line.text + ']')
                     : e('div', null,
                         e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' } },
                           character && character.portrait && e('img', { src: character.portrait, alt: '', style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' } }),
-                          e('span', { style: { fontSize: largeText ? '13px' : '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
+                          e('span', { style: { fontSize: largeText ? '13px' : '11px', fontWeight: 800, color: '#334155' } },
                             character ? character.name : 'Unknown'),
                           isMyLine && e('span', { style: { fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 } }, tr('🎤 YOUR LINE'))
                         ),
                         e('p', { style: { fontSize: largeText ? (line.type === 'narration' ? '16px' : '17px') : (line.type === 'narration' ? '13px' : '14px'), color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: largeText ? 1.85 : 1.6 } }, line.text),
                         // Emotion reaction buttons (visible on current/past lines)
-                        (isCurrent || idx < currentLine) && e('div', { style: { display: 'flex', gap: '2px', marginTop: '4px' } },
+                        (isCurrent || idx < currentLine) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '4px' } },
                           EMOTIONS.map(function (em) {
                             var isSelected = emotionLog[line.id] === em;
-                            return e('button', { key: em, onClick: function (ev) { ev.stopPropagation(); setEmotionLog(function (prev) { var n = Object.assign({}, prev); n[line.id] = isSelected ? null : em; return n; }); },
+                            return e('button', { key: em, onClick: function (ev) { ev.stopPropagation(); invalidateFeedback(); setEmotionLog(function (prev) { var n = Object.assign({}, prev); n[line.id] = isSelected ? null : em; return n; }); },
                               style: { fontSize: '14px', padding: '1px 3px', borderRadius: '4px', border: 'none', background: isSelected ? '#fef3c7' : 'transparent', cursor: 'pointer', opacity: isSelected ? 1 : 0.4, transition: 'all 0.1s' },
-                              'aria-label': 'React with ' + em, title: tr('How does this line make you feel?') }, em);
+                              'aria-pressed': isSelected, 'aria-label': 'React with ' + em, title: tr('How does this line make you feel?') }, em);
                           })
                         )
                       )
@@ -1853,13 +2315,20 @@
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, tr('📝 Literary Analysis')),
               e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
             ),
+            e('details', { style: Object.assign({}, S.card, { marginBottom: '16px' }) },
+              e('summary', { style: { cursor: 'pointer', fontSize: '14px', fontWeight: 750, color: '#5b21b6' } }, tr('Review story evidence')),
+              e('p', { style: { fontSize: '12px', color: '#475569', lineHeight: 1.6 } }, tr('Find a line that supports your idea. Quote it or explain it in your own words.')),
+              e('ol', { 'aria-label': tr('Story lines for reference'), style: { maxHeight: '260px', overflowY: 'auto', paddingLeft: '28px', fontSize: '14px', lineHeight: 1.8 } },
+                script.lines.map(function (line) { var speaker = script.characters.find(function (character) { return character.id === line.speaker; }); return e('li', { key: line.id, style: { marginBottom: '8px', paddingLeft: '4px' } }, e('strong', null, (speaker ? speaker.name : tr('Stage direction')) + ': '), line.text); })
+              )
+            ),
             // Standards alignment
             e('div', { style: { marginBottom: '16px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px' } },
               e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '6px' } }, '📐 CCSS ELA Standards — Literature (' + getGradeBand() + ')'),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 (CCSS_STANDARDS[getGradeBand()] || []).map(function (std, i) {
-                  return e('span', { key: i, style: { fontSize: '9px', background: selectedStandard === std ? '#3b82f6' : '#dbeafe', color: selectedStandard === std ? '#fff' : '#1e40af', padding: '3px 8px', borderRadius: '8px', cursor: 'pointer', border: '1px solid ' + (selectedStandard === std ? '#2563eb' : '#93c5fd'), fontWeight: selectedStandard === std ? 700 : 500 },
-                    onClick: function () { setSelectedStandard(selectedStandard === std ? '' : std); } }, std);
+                  return e('button', { type: 'button', key: i, 'aria-pressed': selectedStandard === std, style: { textAlign: 'left', fontSize: '12px', background: selectedStandard === std ? '#1d4ed8' : '#dbeafe', color: selectedStandard === std ? '#fff' : '#1e40af', padding: '3px 8px', borderRadius: '8px', cursor: 'pointer', border: '1px solid ' + (selectedStandard === std ? '#2563eb' : '#93c5fd'), fontWeight: selectedStandard === std ? 700 : 500 },
+                    onClick: function () { invalidateFeedback(); setSelectedStandard(selectedStandard === std ? '' : std); } }, std);
                 })
               ),
               selectedStandard && e('p', { style: { fontSize: '10px', color: '#1e40af', marginTop: '6px', fontStyle: 'italic' } }, 'Focus your analysis on this standard: ' + selectedStandard)
@@ -1885,7 +2354,7 @@
                     e('span', { style: { width: '12px', height: '12px', borderRadius: '50%', background: ch.color, display: 'inline-block' } }),
                     e('span', { style: { fontSize: '13px', fontWeight: 700, color: '#1e293b' } }, ch.name)
                   ),
-                  e('textarea', { value: analysisResponses[key] || '', onChange: function (ev) { setAnalysisResponses(function (prev) { var n = Object.assign({}, prev); n[key] = ev.target.value; return n; }); },
+                  e('textarea', { value: analysisResponses[key] || '', onChange: function (ev) { invalidateFeedback(); setAnalysisResponses(function (prev) { var n = Object.assign({}, prev); n[key] = ev.target.value; return n; }); },
                     placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'What is ' + ch.name + ' like? How do you know?' : /6th|7th|8th/i.test(gradeLevel) ? 'Describe ' + ch.name + '\'s personality and motivations. Use evidence from the text.' : 'Analyze ' + ch.name + '\'s character arc, motivations, and how they contribute to the theme. Cite specific dialogue or actions.',
                     rows: 2, style: Object.assign({}, S.input, { resize: 'vertical' }),
                     'aria-label': 'Analysis of ' + ch.name })
@@ -1894,19 +2363,19 @@
             ),
             // Theme
             e('div', { style: S.card },
-              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#059669', marginBottom: '6px' } }, tr('💡 Theme & Message')),
-              e('textarea', { value: analysisResponses.theme || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { theme: ev.target.value }); }); },
+              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#047857', marginBottom: '6px' } }, tr('💡 Theme & Message')),
+              e('textarea', { value: analysisResponses.theme || '', onChange: function (ev) { invalidateFeedback(); setAnalysisResponses(function (prev) { return Object.assign({}, prev, { theme: ev.target.value }); }); },
                 placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What is the lesson or big idea of this story?') : /6th|7th|8th/i.test(gradeLevel) ? 'What is the theme of this story? How do the characters and events develop this theme?' : 'Identify the central theme(s). How does the author develop the theme through character, conflict, setting, and symbolism?',
                 rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Theme analysis' })
             ),
             // Literary craft
             script.literaryElements && script.literaryElements.length > 0 && e('div', { style: S.card },
-              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#d97706', marginBottom: '6px' } }, '✍️ Author\'s Craft'),
+              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#92400e', marginBottom: '6px' } }, '✍️ Author\'s Craft'),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' } },
                 script.literaryElements.map(function (el, i) { return e('span', { key: i, style: { fontSize: '10px', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '8px', border: '1px solid #fde68a' } }, el); })
               ),
-              e('textarea', { value: analysisResponses.craft || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { craft: ev.target.value }); }); },
+              e('textarea', { value: analysisResponses.craft || '', onChange: function (ev) { invalidateFeedback(); setAnalysisResponses(function (prev) { return Object.assign({}, prev, { craft: ev.target.value }); }); },
                 placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What did the author do to make the story interesting or exciting?') : /6th|7th|8th/i.test(gradeLevel) ? 'Choose one literary element from above. Find an example in the story and explain how it affects the reader.' : 'Analyze the author\'s use of the literary elements listed above. How do these choices contribute to meaning, mood, or reader experience? Cite specific passages.',
                 rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Literary craft analysis' })
@@ -1914,7 +2383,7 @@
             // Personal response
             e('div', { style: S.card },
               e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#2563eb', marginBottom: '6px' } }, tr('💬 Personal Response')),
-              e('textarea', { value: analysisResponses.personal || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { personal: ev.target.value }); }); },
+              e('textarea', { value: analysisResponses.personal || '', onChange: function (ev) { invalidateFeedback(); setAnalysisResponses(function (prev) { return Object.assign({}, prev, { personal: ev.target.value }); }); },
                 placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What was your favorite part? How did the story make you feel?') : 'What is your personal response to this text? How does it connect to your own experience, other texts, or the world?',
                 rows: 2, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Personal response' })
@@ -1932,7 +2401,7 @@
                   e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own performance + analysis on 5 criteria before the AI does. Builds reflection.')
                 ),
                 e('button', {
-                  onClick: function () { setSelfAssessmentSubmitted(true); announceLitLab(tr('Self-assessment skipped.')); },
+                  onClick: function () { invalidatePlan(); setSelfAssessmentSubmitted(true); announceLitLab(tr('Self-assessment skipped.')); },
                   'aria-label': tr('Skip self-assessment'),
                   style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
                 }, tr('Skip'))
@@ -1949,6 +2418,7 @@
                       id: 'll-self-' + c.id, type: 'range', min: '1', max: '5', step: '1', value: val,
                       onChange: function (ev) {
                         var v = parseInt(ev.target.value, 10);
+                        invalidatePlan();
                         setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
                       },
                       'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
@@ -1962,6 +2432,7 @@
                 onClick: function () {
                   var filled = {};
                   LITLAB_RUBRIC.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
+                  invalidatePlan();
                   setSelfAssessment(filled);
                   setSelfAssessmentSubmitted(true);
                   announceLitLab(tr('Self-assessment submitted.'));
@@ -1979,34 +2450,35 @@
                 }).join('')
               ),
               e('button', {
-                onClick: function () { setSelfAssessmentSubmitted(false); },
+                onClick: function () { invalidatePlan(); setSelfAssessmentSubmitted(false); },
                 'aria-label': tr('Edit self-assessment'),
                 style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
               }, 'Edit')
             ),
+            feedbackNotice && e('p', { role: 'status', style: { fontSize: '13px', color: '#92400e', lineHeight: 1.5, padding: '12px', background: '#fffbeb', borderRadius: '10px' } }, feedbackNotice),
             // Submit for feedback
-            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' } },
+            e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '16px' } },
               e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
                 'aria-busy': analysisFeedback === 'loading' ? 'true' : 'false',
                 'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : tr('Get AI feedback on your analysis'),
-                style: S.btn('#059669', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
+                style: S.btn('#047857', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
               }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : tr('✨ Get Feedback')),
               e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('← Back to Performance'))
             ),
             // Feedback display
             analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error && e('div', { style: { marginTop: '16px', background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)', border: '2px solid #86efac', borderRadius: '14px', padding: '20px' } },
-              e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+              e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
                 e('h4', { style: { fontSize: '15px', fontWeight: 800, color: '#166534' } }, tr('📝 Literary Analysis Feedback')),
                 e('span', { style: { fontSize: '12px', fontWeight: 800, padding: '4px 12px', borderRadius: '20px', background: analysisFeedback.overallRating === 'exemplary' ? '#dcfce7' : analysisFeedback.overallRating === 'proficient' ? '#dbeafe' : '#fef3c7', color: analysisFeedback.overallRating === 'exemplary' ? '#166534' : analysisFeedback.overallRating === 'proficient' ? '#1e40af' : '#92400e', border: '1px solid ' + (analysisFeedback.overallRating === 'exemplary' ? '#86efac' : analysisFeedback.overallRating === 'proficient' ? '#93c5fd' : '#fde68a') } },
                   analysisFeedback.overallRating === 'exemplary' ? tr('⭐ Exemplary') : analysisFeedback.overallRating === 'proficient' ? tr('✅ Proficient') : tr('📈 Developing'))
               ),
               analysisFeedback.characterInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, marginBottom: '2px' } }, 'CHARACTERS'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.characterInsight)),
-              analysisFeedback.themeInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#059669', marginBottom: '2px' } }, 'THEME'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.themeInsight)),
-              analysisFeedback.craftInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#d97706', marginBottom: '2px' } }, 'CRAFT'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.craftInsight)),
-              analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' } }, tr('💪 Strengths')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
-              analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#d97706', marginBottom: '4px' } }, tr('🤔 Think Deeper')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
+              analysisFeedback.themeInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#047857', marginBottom: '2px' } }, 'THEME'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.themeInsight)),
+              analysisFeedback.craftInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#92400e', marginBottom: '2px' } }, 'CRAFT'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.craftInsight)),
+              analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#15803d', marginBottom: '4px' } }, tr('💪 Strengths')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
+              analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#92400e', marginBottom: '4px' } }, tr('🤔 Think Deeper')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
             ),
-            analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error),
+            analysisFeedback && analysisFeedback.error && e('p', { role: 'alert', style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error),
 
             // ── Revision Plan Capstone (gated on ≥2 helper outputs) ──
             // Pulls together AI feedback + self-assessment + emotion log + standard
@@ -2017,9 +2489,9 @@
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
                 e('div', null,
                   e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
-                    e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
+                    e('span', { 'aria-hidden': 'true' }, '🗺️'), tr('Revision Plan')
                   ),
-                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Synthesizes your AI feedback, self-rating, and performance reactions into ONE prioritized 3-task plan.')
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, tr('Try these three steps, then mark each one complete as you practice.'))
                 ),
                 e('button', {
                   onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
@@ -2028,11 +2500,12 @@
                   style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
                 }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? tr('🔄 Rebuild') : tr('🗺️ Build plan')))
               ),
-              revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
+              revisionPlan && revisionPlan.error && e('p', { role: 'alert', style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
               revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
                 revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
                   e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
                 ),
+                e('p', { role: 'status', style: { fontSize: '13px', fontWeight: 700, color: '#5b21b6', margin: '4px 0' } }, tr('{done} of {total} steps complete', { done: Object.values(completedTasks).filter(Boolean).length, total: revisionPlan.tasks.length })),
                 e('ol', { 'aria-label': tr('Prioritized revision tasks'), style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
                   (revisionPlan.tasks || []).map(function (t, ti) {
                     return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
@@ -2042,6 +2515,9 @@
                           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
                             e('h5', { style: { fontSize: '12px', fontWeight: 800, color: '#581c87', margin: 0 } }, t.title || 'Task ' + (ti + 1)),
                             t.source && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, t.source)
+                          ),
+                          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', fontSize: '12px', color: '#5b21b6', cursor: 'pointer' } },
+                            e('input', { type: 'checkbox', checked: !!completedTasks[ti], 'aria-label': tr('Mark step {number} complete: {title}', { number: ti + 1, title: t.title }), onChange: function (event) { var checked = event.target.checked; setCompletedTasks(function (previous) { return Object.assign({}, previous, { [ti]: checked }); }); }, style: { accentColor: PURPLE, width: '18px', minHeight: '18px' } }), tr('Completed')
                           ),
                           t.detail && e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.55 } }, t.detail),
                           t.why && e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '4px 0 0', fontStyle: 'italic' } }, t.why)

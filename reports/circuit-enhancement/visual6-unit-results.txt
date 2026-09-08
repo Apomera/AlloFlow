@@ -1,0 +1,77 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_model.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > solves the voltage divider with KVL and conserved power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > sums parallel branch currents, including measurement loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > uses exact zero for an open switch and a steady-state capacitor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > keeps a parallel resistor energized when another branch is open
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not invent a voltage split across multiple blocking components
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_model.test.js > shared circuit DC physics > models LED forward drop, polarity, turn-on and power balance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not let a resistor on a separate branch protect an LED
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > identifies meter faults and preserves nearly ideal series measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > handles empty, unpowered and malformed state without non-finite readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > conserves power across a grid of series and parallel networks
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit bench learning and view contract > renders a named 3D view with an equivalent numeric inspector
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_model.test.js > circuit bench learning and view contract > offers prediction, reversible edits, and progressive explanations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > explains the LED knee instead of claiming an Ohmic straight line
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > renders every supported component in either representation without invalid values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all eight SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  07:54:18
+   Duration  16.33s (transform 123ms, setup 93ms, import 213ms, tests 2.47s, environment 11.57s)
+

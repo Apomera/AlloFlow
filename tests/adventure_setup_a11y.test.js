@@ -1,67 +1,53 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-
-const source = fs.readFileSync('view_adventure_source.jsx', 'utf8');
-
-describe('Adventure saved-game and setup accessibility', () => {
-  it('groups setup sections and associates visible labels with core fields', () => {
-    expect(source).toContain('role="group" aria-labelledby="adventure-setup-core-heading"');
-    expect(source).toContain('role="group" aria-labelledby="adventure-setup-modifiers-heading"');
-    expect(source).toContain('role="group" aria-labelledby="adventure-setup-customization-heading"');
-    expect(source).toContain('htmlFor="adventure-setup-input-mode"');
-    expect(source).toContain('id="adventure-setup-input-mode"');
-    expect(source).toContain('htmlFor="adventure-setup-difficulty"');
-    expect(source).toContain('id="adventure-setup-difficulty"');
-    expect(source).toContain('htmlFor="adventure-setup-language"');
-    expect(source).toContain('id="adventure-setup-language"');
-    expect(source).not.toContain("aria-label={t('common.selection')}");
+import { createRequire } from 'node:module';
+import { transformSync } from '@babel/core';
+const require=createRequire(import.meta.url);
+const React=require('../desktop/web-app/node_modules/react');
+const {renderToStaticMarkup}=require('../desktop/web-app/node_modules/react-dom/server');
+const source=fs.readFileSync('view_adventure_settings_source.jsx','utf8');
+const compiled=transformSync(source,{plugins:['@babel/plugin-transform-react-jsx'],babelrc:false,configFile:false}).code;
+const {AdventureSetupFields,adventureSetupLocked,adventureSetupLimit}=new Function('React',compiled+';return {AdventureSetupFields,adventureSetupLocked,adventureSetupLimit};')(React);
+function fixture(teacher=true,permissions={}) {
+  const values={adventureInputMode:'system',adventureDifficulty:'Normal',adventureLanguageMode:'English',adventureFreeResponseEnabled:false,adventureChanceMode:false,isAdventureStoryMode:true,isSocialStoryMode:true,socialStoryFocus:'Sharing',enableFactionResources:true,factionResourceMode:'manual',adventureArtStyle:'custom',adventureCustomArtStyle:'Watercolour',adventureConsistentCharacters:true,useLowQualityVisuals:false,adventureCustomInstructions:'',adventureFluencyEnabled:true,adventureTypingPaceEnabled:false,isAdventureCloudEnabled:false};
+  const props={...values,isTeacherMode:teacher,studentProjectSettings:{allowFreeResponse:true,adventurePermissions:permissions},adventureState:{episodeTurnLimit:null,enableAutoClimax:true,choiceCount:4,systemResources:[{name:'Budget',quantity:100,unit:'credits'}]},setAdventureState:()=>{},selectedLanguages:['Spanish'],t:k=>k};
+  for(const key of Object.keys(values))props['set'+key[0].toUpperCase()+key.slice(1)]=()=>{};
+  return props;
+}
+describe('Shared Adventure setup semantics',()=>{
+  it('gives every editable control a real label and unique id in both entry points',()=>{
+    document.body.innerHTML=renderToStaticMarkup(React.createElement(React.Fragment,null,
+      React.createElement(AdventureSetupFields,{...fixture(),idPrefix:'launch'}),
+      React.createElement(AdventureSetupFields,{...fixture(),idPrefix:'sidebar',compact:true})));
+    for(const control of document.querySelectorAll('input,select,textarea'))expect(control.labels.length).toBeGreaterThan(0);
+    const ids=[...document.querySelectorAll('[id]')].map(n=>n.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(document.querySelector('#launch-social-focus').value).toBe('Sharing');
+    expect(document.querySelector('#sidebar-resource-0-name').value).toBe('Budget');
   });
-
-  it('uses visible checkbox labels and larger focusable targets', () => {
-    expect(source.match(/min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within/g)?.length).toBeGreaterThanOrEqual(6);
-    expect(source.match(/w-5 h-5 shrink-0/g)?.length).toBeGreaterThanOrEqual(7);
-    expect(source).not.toContain('common.toggle_adventure_free_response_enabled');
-    expect(source).not.toContain('common.toggle_adventure_chance_mode');
-    expect(source).not.toContain('common.toggle_is_adventure_story_mode');
-    expect(source).not.toContain('common.toggle_enable_auto_climax_false');
-    expect(source).toContain('text-[11px] text-slate-700');
+  it('locks cloud storage as well as all other configuration controls',()=>{
+    document.body.innerHTML=renderToStaticMarkup(React.createElement(AdventureSetupFields,fixture(false,{lockAllSettings:true,allowCloudImageStorage:true})));
+    for(const control of document.querySelectorAll('input,select,textarea,button'))expect(control.disabled).toBe(true);
   });
-
-  it('associates climax and custom-instruction labels with their fields', () => {
-    expect(source).toContain('htmlFor="adventure-setup-climax-min-turns"');
-    expect(source).toContain('id="adventure-setup-climax-min-turns"');
-    expect(source).toContain('htmlFor="adventure-setup-custom-instructions"');
-    expect(source).toContain('id="adventure-setup-custom-instructions"');
-    expect(source).not.toContain('common.enter_adventure_state');
-    expect(source).toContain('resize-y focus:border-indigo-700');
+  it('preserves partial permissions for student setup',()=>{
+    const props=fixture(false,{allowLanguageSwitch:true,allowModeSwitch:false});
+    expect(adventureSetupLocked(props,'allowLanguageSwitch')).toBe(false);
+    expect(adventureSetupLocked(props,'allowModeSwitch')).toBe(true);
+    expect(adventureSetupLocked(props,'freeResponse')).toBe(false);
+    expect(adventureSetupLocked(props,'allowCloudImageStorage')).toBe(true);
+    expect(adventureSetupLocked({...props,adventureState:{isLoading:true}},'allowLanguageSwitch')).toBe(true);
+    expect(adventureSetupLocked({...props,isTeacherMode:true},'allowModeSwitch')).toBe(false);
   });
-
-  it('provides accurate saved-game and Start action names with robust focus', () => {
-    expect(source).toContain("aria-label={t('adventure.resume')}");
-    expect(source).toContain("aria-label={t('adventure.start_overwrite')}");
-    expect(source).toContain("aria-label={t('adventure.back_to_resume')}");
-    expect(source).toContain("aria-label={t('adventure.start')}");
-    expect(source).not.toContain("aria-label={t('common.history')}");
-    expect(source).not.toContain("aria-label={t('common.generate')}");
-    expect(source).toContain('disabled={adventureState.isLoading} aria-busy={adventureState.isLoading}');
-    expect(source).toContain('focus-visible:ring-offset-indigo-600');
+  it('retains legacy and explicitly open-ended episode settings',()=>{
+    expect(adventureSetupLimit({enableAutoClimax:false,climaxMinTurns:9})).toBe(9);
+    expect(adventureSetupLimit({episodeTurnLimit:null,enableAutoClimax:false})).toBeNull();
+    expect(adventureSetupLimit({episodeTurnLimit:999})).toBe(50);
   });
-
-  it('supports narrow layouts and reduced motion while hiding decoration', () => {
-    expect(source).toContain('p-4 sm:p-6 space-y-6 custom-scrollbar');
-    expect(source).toContain('text-xl sm:text-2xl font-black uppercase tracking-wide sm:tracking-widest');
-    expect(source).toContain('px-8 sm:px-16 py-4');
-    expect(source).toContain('motion-reduce:animate-none');
-    expect(source).toContain('motion-reduce:transform-none');
-    expect(source).toContain('<History size={20} aria-hidden="true"/>');
-    expect(source).toContain('<ArrowDown className="rotate-90" size={20} aria-hidden="true"/>');
-  });
-
-  it('keeps generated Adventure modules synchronized', () => {
-    const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
-    expect(rootModule).toContain('"aria-labelledby": "adventure-setup-core-heading"');
-    expect(rootModule).toContain('id: "adventure-setup-input-mode"');
-    expect(rootModule).toContain('"aria-busy": adventureState.isLoading');
+  it('shares the settings source across both independently loadable bundles',()=>{
+    for(const name of ['view_adventure','view_sidebar_panels']){
+      const built=fs.readFileSync(name+'_module.js','utf8');
+      expect(built).toContain('function AdventureSetupFields');
+      expect(fs.readFileSync('desktop/web-app/public/'+name+'_module.js','utf8')).toBe(built);
+    }
   });
 });

@@ -1,0 +1,33 @@
+        // Small, shared normal maps add material relief without extra faces or
+        // altering the printable mesh. Normal data stays in linear color space.
+        function makeSurfaceNormalTexture(kind, texture) {
+          var key = kind + 'SurfaceNormal';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var size = 128, canvas = document.createElement('canvas');
+          canvas.width = canvas.height = size;
+          var context = canvas.getContext('2d');
+          context.drawImage(texture.image, 0, 0, size, size);
+          var pixels = context.getImageData(0, 0, size, size).data;
+          var heights = new Float32Array(size * size);
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var offset = (y * size + x) * 4;
+            heights[y * size + x] = (pixels[offset] * 0.2126 + pixels[offset + 1] * 0.7152 + pixels[offset + 2] * 0.0722) / 255;
+          }
+          var output = context.createImageData(size, size), data = output.data;
+          function height(x, y) { return heights[((y + size) % size) * size + (x + size) % size]; }
+          var strength = kind === 'brick' ? 2.2 : kind === 'wood' ? 1.4 : 1.1;
+          for (var yy = 0; yy < size; yy++) for (var xx = 0; xx < size; xx++) {
+            var dx = (height(xx + 1, yy) - height(xx - 1, yy)) * strength;
+            var dy = (height(xx, yy + 1) - height(xx, yy - 1)) * strength;
+            var length = Math.sqrt(dx * dx + dy * dy + 1), i = (yy * size + xx) * 4;
+            data[i] = Math.round((0.5 - dx / length * 0.5) * 255);
+            data[i + 1] = Math.round((0.5 + dy / length * 0.5) * 255);
+            data[i + 2] = Math.round((0.5 + 0.5 / length) * 255); data[i + 3] = 255;
+          }
+          context.putImageData(output, 0, 0);
+          var result = new THREE.CanvasTexture(canvas);
+          result.wrapS = result.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = result;
+          return result;
+        }
+

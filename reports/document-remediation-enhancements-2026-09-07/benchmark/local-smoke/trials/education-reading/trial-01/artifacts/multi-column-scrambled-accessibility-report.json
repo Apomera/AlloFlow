@@ -1,0 +1,83 @@
+{
+  "alloflowPortableVersion": "0.2.9",
+  "artifacts": {
+    "accessibilityReport": "multi-column-scrambled-accessibility-report.json",
+    "accessibleHtml": "multi-column-scrambled-accessible.html",
+    "privacyReceipt": "multi-column-scrambled-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "status": "not_run"
+    },
+    "pdfUaValidation": {
+      "identifierWithheld": false,
+      "reason": "No generated PDF was available to validate.",
+      "status": "not_run"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 2,
+        "embedded_image_characters": 0,
+        "image_blocks": 0,
+        "plan_internal_token_recall": 1.0,
+        "text_characters": 496,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "missingTokens": 0,
+      "recall": 1.0,
+      "sourceTokens": 84,
+      "status": "completed",
+      "topMissingTokens": []
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 2,
+        "images": 0,
+        "links": 1,
+        "tables": 0
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "reason": "Disabled by request.",
+      "status": "not_run"
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-09-08T04:10:53Z",
+  "manualReview": [
+    "The source uses two visual columns, but its title explicitly establishes numbered reading order from 1 through 8; preserve it as one ordered list.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning.",
+    "PDF/UA validation did not run to completion."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "multi-column-scrambled.pdf",
+    "bytes": 1433,
+    "kind": "pdf",
+    "sha256": "c8a68f4feb2e9e5fe5bbd5e978bedbbf4ed7855080dfe4a20bcc541ea4cc8751"
+  },
+  "verdict": "html_only_review_required"
+}

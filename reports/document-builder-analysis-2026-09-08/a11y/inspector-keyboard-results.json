@@ -1,0 +1,100 @@
+{
+  "browser": "148.0.7778.96",
+  "css": "main.01e7c1d9.css",
+  "errors": [],
+  "tabs": [
+    {
+      "name": "Home",
+      "tabIndex": 0,
+      "selected": "true"
+    },
+    {
+      "name": "Insert",
+      "tabIndex": -1,
+      "selected": "false"
+    },
+    {
+      "name": "Layout",
+      "tabIndex": -1,
+      "selected": "false"
+    },
+    {
+      "name": "Review",
+      "tabIndex": -1,
+      "selected": "false"
+    },
+    {
+      "name": "View",
+      "tabIndex": -1,
+      "selected": "false"
+    },
+    {
+      "name": "🤖 Expert Workbench",
+      "tabIndex": -1,
+      "selected": "false"
+    }
+  ],
+  "tabArrow": {
+    "activeName": "Insert",
+    "activeRole": "tab",
+    "selected": [
+      "Insert"
+    ]
+  },
+  "customizeBefore": {
+    "open": true,
+    "closeRequests": 0,
+    "active": "<input type=\"checkbox\" class=\"accent-indigo-700\" checked=\"\">"
+  },
+  "customizeAfter": {
+    "open": true,
+    "closeRequests": 1,
+    "active": "<input type=\"checkbox\" class=\"accent-indigo-700\" checked=\"\">"
+  },
+  "toolbarCounts": [
+    {
+      "name": "Quick Access",
+      "tabStops": 20
+    },
+    {
+      "name": "Insert document elements",
+      "tabStops": 4
+    }
+  ],
+  "editorBefore": {
+    "outer": "IFRAME",
+    "inner": "BODY",
+    "innerFocusable": [
+      "Read resource",
+      "Embedded action"
+    ]
+  },
+  "editorAfter": {
+    "outer": "<button class=\"p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm\" aria-label=\"Toggle color theme\" title=\"Light Mode\"><span aria-hidden=\"true\">☀️</span></button>",
+    "inner": "BODY"
+  },
+  "inspectorBefore": {
+    "inner": "BODY",
+    "badges": 6
+  },
+  "inspectorAfter": {
+    "outer": "<button class=\"p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm\" aria-label=\"Toggle color theme\" title=\"Light Mode\"><span aria-hidden=\"true\">☀️</span></button>",
+    "inner": "<body spellcheck=\"true\" data-allo-tracked-view=\"all\" data-allo-reviewer-name=\"You\"><main><h1 class=\"a11y-inspect-outline a11y-inspect-outline-heading\" style=\"position: relative;\">Lesson plan<span class=\"a11y-inspect-badge a11y-badge-heading\" style=\"position: absolute; top: -14px; left: 0px;\">H1 #1</span></h1><p>Read the instructions and complete the exercise.</p><h2 class=\"a11y-inspect-outline a11y-inspect-outline-heading\" style=\"position: relative;\">First exercise<span class=\"a11y-inspect-badge a11y-badge-heading\" style=\"position: absolute; top: -14px; left: 0px;\">H2 #2</span></h2><p>Explain your answer.</p><h2 class=\"a11y-inspect-outline a11y-inspect-outline-heading\" style=\"position: relative;\">Resources<span class=\"a11y-inspect-badge a11y-badge-heading\" style=\"position: absolute; top: -14px; left: 0px;\">H2 #3</span></h2><p><a href=\"#resource\">Read resource</a></p><button id=\"embedded\" aria-label=\"Run lesson action\" class=\"a11y-inspect-outline a11y-inspect-outline-aria\" style=\"position: relative;\">Embedded action<span class=\"a11y-inspect-badge a11y-badge-aria\" role=\"button\" tabindex=\"0\" aria-label=\"Edit aria-label: Run lesson action\" title=\"Select to edit aria-label\" style=\"position: absolute; top: -14px; left: 0px;\">ARIA: Run lesson action</span></button><p id=\"resource\">Reference material.</p></main><div class=\"a11y-inspect-badge a11y-badge-lang\" style=\"position: fixed; top: 4px; right: 4px; z-index: 99999;\">LANG: en | DIR: ltr</div><div class=\"a11y-inspect-badge\" style=\"position: fixed; bottom: 8px; left: 8px; z-index: 99999; background: rgb(30, 41, 59); color: rgb(241, 245, 249); padding: 8px 12px; border-radius: 8px; font-size: 11px; max-width: 340px; line-height: 1.6;\"><strong style=\"display:block;margin-bottom:4px;\">♿ A11y Inspector</strong><span style=\"color:#a78bfa;\">■</span> Headings <span style=\"color:#f87171;\">■</span> Images/Alt <span style=\"color:#22d3ee;\">■</span> ARIA Labels <span style=\"color:#34d399;\">■</span> Roles <span style=\"color:#fbbf24;\">■</span> Tables <span style=\"color:#fb7185;\">■</span> Input Labels <span style=\"color:#818cf8;\">■</span> Landmarks<br><em style=\"font-size:10px;opacity:0.7;\">Use Enter, Space, or click on ALT, ARIA, role, and label badges to edit</em></div></body>"
+  },
+  "editableInspectorBadge": {
+    "count": 1,
+    "tabIndex": "0"
+  },
+  "skipEntry": {
+    "outer": "IFRAME",
+    "inner": "BODY"
+  },
+  "skipThenTab": {
+    "outer": "<button class=\"p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm\" aria-label=\"Toggle color theme\" title=\"Light Mode\"><span aria-hidden=\"true\">☀️</span></button>",
+    "inner": "BODY"
+  },
+  "scriptedBadgeActivation": {
+    "dialogs": 1,
+    "inputValue": "Run lesson action"
+  }
+}

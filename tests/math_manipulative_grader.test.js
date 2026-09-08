@@ -122,8 +122,8 @@ describe('MathManipulativeGrader core manipulatives', () => {
     })).toBe(false);
   });
 
-  it('preserves explicit zero dimensions instead of replacing them with defaults', () => {
-    expect(grade('volume', { l: 0, w: 2, h: 3 }, { dims: { l: 0, w: 2, h: 3 } })).toBe(true);
+  it('rejects zero volume dimensions rather than accepting an impossible model', () => {
+    expect(grade('volume', { l: 0, w: 2, h: 3 }, { dims: { l: 0, w: 2, h: 3 } })).toBe(false);
   });
 
   it('preserves a zero-degree protractor target', () => {
@@ -205,10 +205,10 @@ describe('MathManipulativeGrader lab-tool states', () => {
     })).toBe(true);
   });
 
-  it('grades plotted points using the existing nearest-integer contract', () => {
+  it('rejects different decimal plot coordinates', () => {
     expect(grade('dataPlot', { points: [{ x: 1.4, y: 2.4 }] }, {
       points: [{ x: 1.1, y: 2.1 }]
-    })).toBe(true);
+    })).toBe(false);
   });
 
   it('normalizes inequality whitespace', () => {

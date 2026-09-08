@@ -1,0 +1,48 @@
+{
+  "export": {
+    "stringData": "<section class=\"section\" id=\"d1\" data-ka-readable style=\"border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;\"><h2 class=\"resource-header\">Directions</h2><p style=\"margin-bottom: 10px;\">Read the passage.</p></section>",
+    "structuredData": "<section class=\"section\" id=\"d2\" data-ka-readable style=\"border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;\"><h2 class=\"resource-header\">Directions</h2><p style=\"margin-bottom: 10px;\">Read the passage.</p><section><h3>Your goals</h3><ul style=\"list-style:none;padding-left:0;\"><li style=\"margin:8px 0;\"><span aria-hidden=\"true\">&#x2610; </span>Explain your answer</li></ul></section></section>"
+  },
+  "parserComparison": {
+    "preview": "<ol start=\"1\" style=\"margin: 5px 0; padding-left: 20px; list-style-type: decimal;\"><li style=\"margin-bottom: 5px;\">Read <strong>the passage</strong>.</li><li style=\"margin-bottom: 5px;\">Answer the questions.</li></ol>",
+    "directionsExport": "<section class=\"section\" id=\"sample\" data-ka-readable style=\"border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;\"><h2 class=\"resource-header\">Directions</h2><ol start=\"1\" style=\"margin: 5px 0; padding-left: 20px; list-style-type: decimal;\"><li style=\"margin-bottom: 5px;\">Read <strong>the passage</strong>.</li><li style=\"margin-bottom: 5px;\">Answer the questions.</li></ol></section>"
+  },
+  "limits": {
+    "savedResources": 13,
+    "visibleResources": 13,
+    "omittedResource": "r12",
+    "nextStation": "r12",
+    "savedGoals": 25,
+    "visibleGoals": 25,
+    "finalInstructionVisible": true
+  },
+  "composerMobile": {
+    "viewportHeight": 844,
+    "dialogTop": 16,
+    "dialogBottom": 828,
+    "saveButtonTop": 747,
+    "saveButtonBottom": 781,
+    "dialogOverflowY": "hidden",
+    "overlayOverflowY": "visible",
+    "overlayPosition": "fixed"
+  },
+  "composerSmall": {
+    "top": 16,
+    "bottom": 552,
+    "saveTop": 471,
+    "saveBottom": 505,
+    "scrollTop": 610,
+    "scrollHeight": 971,
+    "clientHeight": 361
+  },
+  "questMap": {
+    "viewBoxWidth": 396,
+    "goalRightEdges": [
+      104,
+      196,
+      288,
+      380
+    ],
+    "svgOverflow": "hidden"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "malformedRejected": true,
+  "networkFailureRecoverable": true,
+  "cancelledResponseIgnored": true,
+  "newRequestSurvivesOldResponse": true,
+  "totalDerived": true,
+  "editedDraftRejectsOldFeedback": true,
+  "selfCheckRecovery": true,
+  "errors": []
+}

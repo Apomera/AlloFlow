@@ -27,6 +27,13 @@ function seed() {
   repo.call('adminUpdateRewardsSettings', { printLabEnabled: true });
   repo.call('awardSchoolRewardsPoints', { studentId: student.id, categoryId: category.id, amount: 60, reason: 'Fictional design-project recognition', idempotencyKey: 'demo_starting_points' });
   repo.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', description: 'Fictional store prize', cost: 10, inventoryLimit: 5, idempotencyKey: 'demo_notebook_catalog' });
+  [
+    { name: 'Sticker pack', description: 'A colorful collection for your notebook or project folder.', cost: 5, inventoryLimit: 24 },
+    { name: 'Sketching set', description: 'Pencils and a sketch pad for your next creative idea.', cost: 30, inventoryLimit: 8 },
+    { name: 'Creative studio time', description: 'Choose a supervised creative activity with your teacher.', cost: 45, inventoryLimit: -1 },
+    { name: 'Art supply bundle', description: 'A special collection of drawing and making supplies to save toward.', cost: 90, inventoryLimit: 3 },
+    { name: 'Puzzle pack', description: 'A small set of hands-on puzzles. Check back for the next restock.', cost: 25, inventoryLimit: 0 }
+  ].forEach((item, index) => repo.call('adminUpsertRewardsCatalogItem', { ...item, idempotencyKey: 'demo_catalog_extra_' + index }));
   repo.call('adminUpsertRewardsWindow', { name: 'Admin demo shopping window', status: 'OPEN' });
   return repo;
 }
@@ -90,7 +97,7 @@ function html() {
   document.getElementById('demo-reset').onclick=async function(){if(!confirm('Reset only the fictional demo records?'))return;var r=await fetch('/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});if(r.ok){sessionStorage.clear();location.reload()}else alert('Demo reset failed. Please try again.')};
   var script={};Object.defineProperty(script,'run',{get:function(){var success,failure,runner;runner=new Proxy({},{get:function(_,name){if(name==='withSuccessHandler')return function(fn){success=fn;return runner};if(name==='withFailureHandler')return function(fn){failure=fn;return runner};return function(argument){fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:demoRole,name:name,argument:argument})}).then(function(r){return r.json()}).then(function(out){if(!out.ok){var e=new Error(out.error);e.code=out.code;throw e}success(out.result)}).catch(function(e){if(failure)failure(e)})}}});return runner}});window.google={script:script};
   </script>`;
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Store + Print Lab — Local Admin Demo</title><style>.demo-bar{font:15px/1.5 system-ui,sans-serif;padding:16px 24px;background:#12344a;color:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.demo-bar label{color:#fff}.demo-bar select,.demo-bar button{min-height:44px;border-radius:6px;padding:6px 12px;background:#fff;color:#12344a;border:1px solid #bacbd7}.demo-bar details{width:100%}.demo-bar summary{cursor:pointer;font-weight:700;min-height:32px}.demo-bar a{color:#bae6fd;text-decoration:underline}.demo-bar li{margin:6px 0}</style></head><body>' + toolbar + bridge + portal + '</body></html>';
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Store + Print Lab — Local Admin Demo</title><style>.demo-bar{font:15px/1.5 system-ui,sans-serif;padding:16px 24px;background:#12344a;color:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.demo-bar label{color:#fff}.demo-bar select,.demo-bar button{min-height:44px;border-radius:6px;padding:6px 12px;background:#fff;color:#12344a;border:1px solid #bacbd7}.demo-bar details{width:100%}.demo-bar summary{cursor:pointer;font-weight:700;min-height:32px}.demo-bar a{color:#bae6fd;text-decoration:underline}.demo-bar li{margin:6px 0}@media(forced-colors:active){.demo-bar{background:Canvas;color:CanvasText;border:1px solid CanvasText}.demo-bar a{color:LinkText}}</style></head><body>' + toolbar + bridge + portal + '</body></html>';
 }
 
 export async function createDemoServer({ port = 0 } = {}) {

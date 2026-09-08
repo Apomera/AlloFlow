@@ -58,7 +58,9 @@ describe('Aquarium feeding actions and visual records',()=>{
     h.click('Live');
     expect(h.state.hungerLevels).toMatchObject({carnivore:0,omnivore:0,herbivore:40});
     expect(h.state.feedingLog.avgHungerDrop).toBeCloseTo(20/3);
-    expect(h.state.feedingLog.ammoniaAdded).toBeCloseTo(.66);
+    // The planted preset is 40 US gal, twice the concentration model's reference volume.
+    expect(h.state.feedingLog.ammoniaAdded).toBeCloseTo(.33);
+    expect(h.state.waterChem.ammonia).toBeCloseTo(h.state.feedingLog.ammoniaAdded);
     expect(h.state.aquariumFeedingEvent.acceptedIds).toEqual(['carnivore','omnivore']);
     expect(h.state.feedingLog.tip).toContain('omnivores');
     expect(h.state.eventLog.at(-1).msg).toContain('1 carnivores and 1 omnivores');

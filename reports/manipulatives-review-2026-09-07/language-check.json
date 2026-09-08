@@ -1,0 +1,12 @@
+[
+  {
+    "dir": "lang",
+    "checked": 63,
+    "failures": []
+  },
+  {
+    "dir": "desktop/web-app/public/lang",
+    "checked": 63,
+    "failures": []
+  }
+]

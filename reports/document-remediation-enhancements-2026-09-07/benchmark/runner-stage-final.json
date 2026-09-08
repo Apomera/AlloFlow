@@ -1,0 +1,70 @@
+{
+  "mcp": {
+    "benchmarkSummary": {
+      "plannedTrials": 1,
+      "completedTrials": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "trialStatus": "completed",
+    "subprocessDurationMs": 41978.874,
+    "selftestDurationMs": 36051,
+    "modelCalls": 11,
+    "checks": {
+      "browserLaunched": true,
+      "modulesBooted": true,
+      "auditAccepted": true,
+      "remediationStarted": true,
+      "contentPreserved": true,
+      "auditorCoverage": true,
+      "taggedArtifact": true,
+      "taggedDelivery": true,
+      "originalLayout": true,
+      "verificationBinding": true,
+      "activeContentScan": true
+    },
+    "beforeScore": 85,
+    "afterScore": 96
+  },
+  "stage": {
+    "files": 71,
+    "build": {
+      "runnerBuildSha256": "4c810041bc36c549a05cd3904312e4a27ca760fc7082472937a991a36f0d4d7a",
+      "manifestSha256": "b4d9114ae6532c9f7f35541c91f79eeb593c164c7b42c4ac40046f5b66f4f979"
+    },
+    "protocol": {
+      "runSchema": 1,
+      "checkpointSchema": 1,
+      "checkpointEngineAbi": 1
+    },
+    "packagedDriverLoaded": true,
+    "terminalCapsuleSchema": 2,
+    "selectedFiles": [
+      {
+        "path": "desktop/mcp/remediation_headless_driver.cjs",
+        "bytes": 172861,
+        "sha256": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61"
+      },
+      {
+        "path": "desktop/mcp/remediation_verification.cjs",
+        "bytes": 11824,
+        "sha256": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2"
+      },
+      {
+        "path": "verification_policy_module.js",
+        "bytes": 14622,
+        "sha256": "1097cfdb12633b8b08c2e5824e1b2f34ac623558e0b227aadb4d885e682de0a0"
+      },
+      {
+        "path": "view_pdf_validator_module.js",
+        "bytes": 20881,
+        "sha256": "da70d16b14c7818cb4d89fe85a4c6d6b42748d92b34fc217fbdecb5f8793d639"
+      },
+      {
+        "path": "doc_pipeline_module.js",
+        "bytes": 3321995,
+        "sha256": "1f72227c46c5b8d6e1660c3d198989b6385a75261d547a096323cd5393ad324d"
+      }
+    ]
+  }
+}

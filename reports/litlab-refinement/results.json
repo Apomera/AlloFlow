@@ -1,0 +1,38 @@
+{
+  "errors": [],
+  "overflows": [],
+  "audits": [
+    {
+      "name": "setup",
+      "violations": []
+    },
+    {
+      "name": "saved narration",
+      "violations": []
+    },
+    {
+      "name": "performance",
+      "violations": []
+    },
+    {
+      "name": "analysis",
+      "violations": []
+    },
+    {
+      "name": "analysis with source evidence",
+      "violations": []
+    },
+    {
+      "name": "feedback",
+      "violations": []
+    },
+    {
+      "name": "revision checklist",
+      "violations": []
+    },
+    {
+      "name": "restored reflection",
+      "violations": []
+    }
+  ]
+}

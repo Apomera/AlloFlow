@@ -1,0 +1,26 @@
+{
+  "view_simplified": {
+    "syntax": true,
+    "sourceIncluded": true,
+    "publicMirror": true
+  },
+  "pure_helpers": {
+    "syntax": true,
+    "sourceIncluded": true,
+    "publicMirror": true
+  },
+  "content_engine": {
+    "syntax": true,
+    "sourceIncluded": true,
+    "publicMirror": true
+  },
+  "AlloFlowANTI.txt": {
+    "pins": true
+  },
+  "desktop/web-app/src/AlloFlowANTI.txt": {
+    "pins": true
+  },
+  "desktop/web-app/src/App.jsx": {
+    "pins": true
+  }
+}

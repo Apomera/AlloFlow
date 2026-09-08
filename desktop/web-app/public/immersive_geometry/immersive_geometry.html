@@ -343,6 +343,20 @@
   @media(max-width:760px) { #sceneToolbar { top:8px; left:8px; right:8px; justify-content:center; gap:4px; padding:5px; border-radius:12px; }.scene-toolbar-label { display:none; } #sceneToolbar button { min-height:36px; padding:7px 12px; font-size:11px; } }
   @media(forced-colors:active) { #sceneToolbar,#sceneToolbar button,.settings-jumps button { border:1px solid ButtonText; } #sceneToolbar button[aria-pressed="true"] { border:2px solid Highlight; } }
   #hud [data-comfort][aria-pressed="true"] { background:#514998; border-color:#b1a6fa; color:white; }
+  #hud #uiBuildStep { width:88px; min-width:0; flex:0 0 88px; border:1px solid #62799d; border-radius:8px; background:#172740; color:#ecf3ff; font:11px system-ui; padding:5px; }
+  #uiBuildStep:focus-visible,#quickFindDialog input:focus-visible,#quickFindDialog button:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+  .exact-edit-status { margin:6px 0 0; font-size:11px; line-height:1.5; color:#b8e8d2; }.exact-edit-status:empty { display:none; }.exact-edit-status.is-error { color:#fecaca; }
+  .exact-grid input[aria-invalid="true"] { border-color:#fda4af; }
+  #sceneToolbar #uiQuickFind { display:grid; place-items:center; padding:7px; width:36px; flex:0 0 36px; }
+  #quickFindDialog { width:min(540px,calc(100vw - 24px)); max-height:calc(100dvh - 40px); padding:18px; border:1px solid #7b8cbb; border-radius:18px; color:#f3f6ff; background:#101b30; box-shadow:0 24px 80px #0009; }
+  #quickFindDialog::backdrop { background:#030b1cbf; backdrop-filter:blur(4px); }
+  .find-heading { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }.find-heading h2 { margin:0; font-size:21px; letter-spacing:-.02em; }.find-heading p { margin:5px 0 14px; font-size:12px; color:#bfcee7; }
+  #uiFindClose { width:34px; height:34px; font:24px system-ui; border:1px solid #586e95; border-radius:8px; color:#e4ecfb; background:#1b2a43; cursor:pointer; }
+  #uiFindInput { width:100%; box-sizing:border-box; padding:12px; font:14px system-ui; color:#fff; background:#0a1425; border:1px solid #7d94bc; border-radius:10px; }
+  #quickFindResults { max-height:45dvh; overflow:auto; margin-top:12px; padding:3px; display:grid; gap:5px; scrollbar-width:thin; }
+  .find-result { display:grid; gap:4px; padding:11px 12px; border:1px solid transparent; border-radius:9px; text-align:left; color:#eef3ff; background:#1a2941; font:13px system-ui; cursor:pointer; }.find-result span { color:#bdcee8; font-size:11px; }.find-result:hover { background:#2d365e; border-color:#9e9be2; }
+  .find-footer,#quickFindEmpty { margin:12px 0 0; color:#bdcee8; font-size:11px; line-height:1.5; }
+  @media(max-width:400px) { #sceneToolbar button { padding:7px 8px; } #hud #uiBuildStep { flex-basis:76px; width:76px; font-size:10px; } }
 </style>
 </head>
 <body>
@@ -360,7 +374,14 @@
     <button type="button" data-view-angle="corner" aria-pressed="true">Corner</button><button type="button" data-view-angle="front" aria-pressed="false">Front</button><button type="button" data-view-angle="side" aria-pressed="false">Side</button>
   </div>
   <button id="uiBuildCenter" type="button" title="Center the workspace (H)">Center view</button>
+  <button id="uiQuickFind" type="button" aria-label="Find a control" title="Find a control (Ctrl+K or Command+K)" aria-haspopup="dialog"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="6"></circle><path d="m15 15 5 5"></path></svg></button>
 </nav>
+<dialog id="quickFindDialog" aria-labelledby="quickFindTitle">
+  <div class="find-heading"><div><h2 id="quickFindTitle">Find a control</h2><p>Jump to a mode, tool, or setting.</p></div><button id="uiFindClose" type="button" aria-label="Close control finder">×</button></div>
+  <label class="sr-only" for="uiFindInput">Search controls</label><input id="uiFindInput" type="search" placeholder="Try color, lessons, or headset…" autocomplete="off" spellcheck="false" aria-controls="quickFindResults">
+  <div id="quickFindResults" aria-label="Matching controls"></div><p id="quickFindEmpty" hidden>No matching controls. Try “build”, “color”, or “comfort”.</p>
+  <p class="find-footer">Enter opens the first result. Tab moves through results. Esc closes.</p>
+</dialog>
 <div id="hud">
   <div class="hud-header"><div><span class="hud-eyebrow">GEOMETRY SANDBOX</span><h1>Immersive Stretch Lab</h1></div><button id="uiHudToggle" class="q" type="button" aria-expanded="true" aria-controls="hudBody">Hide controls</button></div>
   <div id="hudBody">
@@ -449,16 +470,17 @@
 
   <details id="exactDimensions" class="exact-dimensions"><summary>Exact dimensions <span>units</span></summary>
     <div class="exact-grid">
-      <label for="uiExactL">Length X<input id="uiExactL" type="number" min="0.25" max="4" step="0.05" aria-label="Exact length X" disabled></label>
-      <label for="uiExactW">Width Z<input id="uiExactW" type="number" min="0.25" max="4" step="0.05" aria-label="Exact width Z" disabled></label>
-      <label for="uiExactH">Height Y<input id="uiExactH" type="number" min="0.25" max="4" step="0.05" aria-label="Exact height Y" disabled></label>
+      <label for="uiExactL">Length X<input id="uiExactL" type="number" min="0.25" max="4" step="0.01" aria-describedby="exactEditHelp exactEditStatus" aria-label="Exact length X" disabled></label>
+      <label for="uiExactW">Width Z<input id="uiExactW" type="number" min="0.25" max="4" step="0.01" aria-describedby="exactEditHelp exactEditStatus" aria-label="Exact width Z" disabled></label>
+      <label for="uiExactH">Height Y<input id="uiExactH" type="number" min="0.25" max="4" step="0.01" aria-describedby="exactEditHelp exactEditStatus" aria-label="Exact height Y" disabled></label>
     </div>
-    <p class="historynote">0.25–4 units per edge. Finish an edit, then Undo to restore it.</p>
+    <p id="exactEditHelp" class="historynote">0.25–4 units, to two decimal places. Enter or leave the field to apply. Esc cancels.</p><p id="exactEditStatus" class="exact-edit-status" role="status" aria-live="polite"></p>
   </details>
 
   <div class="btnrow">
     <button class="q" id="uiGrow" aria-label="Grow the selected dimension">＋ longer</button>
     <button class="q" id="uiShrink" aria-label="Shrink the selected dimension">－ shorter</button>
+    <select id="uiBuildStep" aria-label="Resize step" title="Resize step" disabled><option value="0.05">0.05 step</option><option value="0.1">0.1 step</option><option value="0.25" selected>0.25 step</option><option value="0.5">0.5 step</option></select>
   </div>
 
   <div class="btnrow">
@@ -2572,6 +2594,7 @@ window.addEventListener('load', function () {
     document.getElementById('uiLighting').value = presentation.lighting;
     document.getElementById('uiShapeEdges').checked = presentation.showShapeEdges;
     document.getElementById('uiResizeStep').value = String(presentation.resizeStep);
+    document.getElementById('uiBuildStep').value = String(presentation.resizeStep);
     renderComfortControls();
     var lights = { studio: [0.9, 0.85], soft: [1.15, 0.35], bright: [1.3, 1.05] }[presentation.lighting];
     document.getElementById('ambientLight').setAttribute('light', 'intensity', lights[0]);
@@ -2984,6 +3007,7 @@ window.addEventListener('load', function () {
       button.disabled = index >= s.d || !!(stateComponent && stateComponent.replayActive); button.setAttribute('aria-pressed', String(index < s.d && index === s.axis));
       exact.disabled = index >= s.d || !!(stateComponent && stateComponent.replayActive); if (document.activeElement !== exact) exact.value = rState(s.dimensions[key]);
     });
+    document.getElementById('uiBuildStep').disabled = s.d <= 0 || !!(stateComponent && stateComponent.replayActive);
     document.querySelectorAll('[data-starter]').forEach(function(button) { button.disabled = !!(stateComponent && stateComponent.replayActive); });
     document.getElementById('uiMissionSelect').value = String(missionIndex);
     document.getElementById('uiMissionPrev').disabled = missionIndex === 0;
@@ -3763,15 +3787,32 @@ window.addEventListener('load', function () {
   ['L','W','H'].forEach(function(key, index) {
     document.getElementById('uiPickAxis' + index).addEventListener('click', function() { leaveHistoryPreview(); commitPendingGesture(); var c = comp(); if (c) c.selectAxis(index); });
     var field = document.getElementById('uiExact' + key);
-    field.addEventListener('focus', function() { leaveHistoryPreview(); commitPendingGesture(); var c = comp(); if (c && index < c.d) { c.selectAxis(index); c.beginResize(); } });
-    field.addEventListener('input', function() { var c = comp(); if (c && field.value !== '' && isFinite(Number(field.value))) c.setAxisValue(Number(field.value)); });
-    field.addEventListener('blur', function() { var c = comp(); if (c) { c.endResize(); field.value = rState(c[key]); } });
-    field.addEventListener('keydown', function(event) { if (event.key === 'Enter') { event.preventDefault(); field.blur(); } });
+    var status = document.getElementById('exactEditStatus'), exactDirty = false;
+    function clearExactError() { field.removeAttribute('aria-invalid'); status.textContent = ''; status.classList.remove('is-error'); }
+    function validExactValue() { var value = Number(field.value); return field.value !== '' && isFinite(value) && value >= MINV && value <= MAXV; }
+    function exactError() { field.setAttribute('aria-invalid','true'); status.classList.add('is-error'); status.textContent = 'Use a value from 0.25 to 4 units. This edit has not been applied.'; }
+    function applyExactValue() {
+      var c = comp(); if (!c || index >= c.d) return;
+      if (!exactDirty) { field.value = rState(c[key]); return; }
+      exactDirty = false;
+      if (!validExactValue()) { exactError(); field.value = rState(c[key]); field.removeAttribute('aria-invalid'); return; }
+      var value = rState(Number(field.value)); clearExactError();
+      if (value !== c[key]) { c.selectAxis(index); c.beginResize(); c.setAxisValue(value); c.endResize(); }
+      field.value = rState(c[key]);
+      status.textContent = ['Length','Width','Height'][index] + ' set to ' + field.value + ' units.';
+    }
+    field.addEventListener('focus', function() { leaveHistoryPreview(); commitPendingGesture(); exactDirty = false; clearExactError(); var c = comp(); if (c && index < c.d) c.selectAxis(index); });
+    field.addEventListener('input', function() { exactDirty = true; clearExactError(); });
+    field.addEventListener('blur', applyExactValue);
+    field.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') { event.preventDefault(); if (validExactValue()) field.blur(); else exactError(); }
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); exactDirty = false; var c = comp(); if (c) field.value = rState(c[key]); clearExactError(); field.blur(); status.textContent = 'Edit canceled. Geometry is unchanged.'; }
+    });
   });
   document.getElementById('uiMissionSelect').addEventListener('change', function(event) { selectMission(Number(event.target.value)); });
   document.getElementById('uiMissionPrev').addEventListener('click', function() { selectMission(missionIndex - 1); });
   document.getElementById('uiMissionNext').addEventListener('click', function() { selectMission(missionIndex + 1); });
-  [['uiShapeTint','shapeTint'],['uiSurfaceStyle','surfaceStyle'],['uiLighting','lighting'],['uiResizeStep','resizeStep']].forEach(function(pair) { document.getElementById(pair[0]).addEventListener('change', function(event) { presentation[pair[1]] = event.target.value; presentation = normalizePresentation(presentation); applyScenePreferences(true); }); });
+  [['uiShapeTint','shapeTint'],['uiSurfaceStyle','surfaceStyle'],['uiLighting','lighting'],['uiResizeStep','resizeStep'],['uiBuildStep','resizeStep']].forEach(function(pair) { document.getElementById(pair[0]).addEventListener('change', function(event) { presentation[pair[1]] = event.target.value; presentation = normalizePresentation(presentation); applyScenePreferences(true); }); });
   document.querySelectorAll('[data-comfort]').forEach(function(button) { button.addEventListener('click', function() { applyComfortPreset(button.getAttribute('data-comfort')); }); });
   [['uiPanelDistance','panelDistance'],['uiPanelSize','panelSize'],['uiPanelHeight','panelHeight']].forEach(function(pair) { document.getElementById(pair[0]).addEventListener('change', function(event) {
     presentation[pair[1]] = Number(event.target.value); presentation = normalizePresentation(presentation); renderComfortControls(); saveLabState(lastMissionState);
@@ -3803,6 +3844,53 @@ window.addEventListener('load', function () {
   document.getElementById('uiRecenter').addEventListener('click', function() { resetView(); recenterSpatialPanel(true); });
   var spatialPanel = document.getElementById('panel'), cameraEl = document.getElementById('camera');
   var lastHudFocus = null;
+  var findDialog = document.getElementById('quickFindDialog'), findInput = document.getElementById('uiFindInput'), findResults = document.getElementById('quickFindResults'), findOrigin = null;
+  var FIND_COMMANDS = [
+    {label:'Free build', detail:'Build at your own pace', words:'sandbox explore mode', mode:'free'},
+    {label:'Lesson sequence', detail:'Follow the dimension journey', words:'learn guided structured learning mode', mode:'lesson'},
+    {label:'Exact dimensions', detail:'Type length, width, or height', words:'size precise edit number units', panel:'build', section:'exactDimensions'},
+    {label:'Starter shapes', detail:'Start from a line, square, cube, or box', words:'primitive add create new', panel:'build', section:'starterShapes'},
+    {label:'Appearance', detail:'Color, surface, opacity, and lighting', words:'custom glass wireframe material backdrop', panel:'settings', section:'appearanceSettings'},
+    {label:'Scene guides', detail:'Grid, formulas, scale, and resize step', words:'focus minimal explain compare overlays', panel:'settings', section:'guideSettings'},
+    {label:'Measurements', detail:'Precision and mathematical explanations', words:'volume area perimeter boundary slices math', panel:'settings', section:'measurementSettings'},
+    {label:'Headset comfort', detail:'Panel placement and performance', words:'vr xr seated standing spacious distance size height quality', panel:'settings', section:'headsetSettings'},
+    {label:'Playback', detail:'Dimension story and geometry history', words:'replay undo timeline animation', panel:'settings', section:'playbackSettings'},
+    {label:'Sharing', detail:'Copy a scene link or use instructor mode', words:'save export teacher lesson link', panel:'settings', section:'sharingSettings'},
+    {label:'Help & shortcuts', detail:'Keyboard, mouse, and controller guide', words:'controls navigation instructions', panel:'help'}
+  ];
+  function revealFinderCommand(command) {
+    findDialog.close();
+    hudBody.hidden = false; hudToggle.setAttribute('aria-expanded','true'); hudToggle.textContent = 'Hide controls';
+    if (command.mode) applyWorkspaceMode(command.mode, true); else openWorkspacePanel(command.panel);
+    var target;
+    if (command.section) { var section = document.getElementById(command.section); section.open = true; target = section.querySelector('summary'); }
+    else target = document.getElementById(command.mode ? command.mode === 'free' ? 'uiModeFree' : 'uiModeLesson' : 'uiPanelHelp');
+    if (target) { target.focus(); if (target.scrollIntoView) target.scrollIntoView({block:'nearest',behavior:'instant'}); }
+    scheduleFlatReframe();
+  }
+  function renderFinder() {
+    var terms = findInput.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    findResults.textContent = '';
+    FIND_COMMANDS.filter(function(command) { var search = (command.label+' '+command.detail+' '+command.words).toLowerCase(); return terms.every(function(term) { return search.indexOf(term) !== -1; }); }).forEach(function(command) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'find-result';
+      var label = document.createElement('strong'), detail = document.createElement('span'); label.textContent = command.label; detail.textContent = command.detail;
+      button.appendChild(label); button.appendChild(detail); button.addEventListener('click',function() { revealFinderCommand(command); }); findResults.appendChild(button);
+    });
+    document.getElementById('quickFindEmpty').hidden = findResults.children.length > 0;
+  }
+  function openFinder() {
+    if (immersiveActive || findDialog.open) return;
+    findOrigin = document.activeElement; findInput.value = ''; renderFinder(); findDialog.showModal(); findInput.focus();
+  }
+  function closeFinder() { findDialog.close(); if (findOrigin && findOrigin.isConnected && findOrigin.focus) findOrigin.focus(); }
+  document.getElementById('uiQuickFind').addEventListener('click',openFinder);
+  document.getElementById('uiFindClose').addEventListener('click',closeFinder);
+  findDialog.addEventListener('cancel',function(event) { event.preventDefault(); closeFinder(); });
+  findDialog.addEventListener('keydown',function(event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeFinder(); } });
+  findInput.addEventListener('input',renderFinder);
+  findInput.addEventListener('keydown',function(event) { if (event.key === 'Enter') { var first = findResults.querySelector('button'); if (first) { event.preventDefault(); first.click(); } } if (event.key === 'ArrowDown') { var result = findResults.querySelector('button'); if (result) { event.preventDefault(); result.focus(); } } });
+  window.addEventListener('keydown',function(event) { if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') { event.preventDefault(); if (findDialog.open) closeFinder(); else openFinder(); } },true);
+
   function recenterSpatialPanel(announce) {
     if (!spatialPanel || !cameraEl || !window.THREE) return;
     var cameraObject = cameraEl.getObject3D('camera') || cameraEl.object3D;
@@ -3847,6 +3935,7 @@ window.addEventListener('load', function () {
     if (spatialPanel) spatialPanel.setAttribute('visible', immersiveActive);
     setSpatialAccessibility(immersiveActive);
     if (active) {
+      if (findDialog.open) findDialog.close();
       recenterSpatialPanel(false);
       if (labelWrap) labelWrap.setAttribute('visible', false);
       if (hud.contains(document.activeElement)) lastHudFocus = document.activeElement;

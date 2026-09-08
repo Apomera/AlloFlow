@@ -172,7 +172,7 @@ describe('Drone Flight visible WebGL runtime', () => {
     for (let frame = 0; frame < 8; frame += 1) await stepFrame(16 + frame * 16);
     expect(hudCanvas.getAttribute('data-flight-frame-health')).toBe('verified');
     expect(host.querySelector('[data-beehive-drone-webgl="true"]').getAttribute('data-flight-frame-health')).toBe('verified');
-    expect(host.querySelector('[data-flight-renderer-badge="true"]').textContent).toBe('3D scene verified');
+    expect(host.querySelector('[data-flight-renderer-badge="true"]').textContent).toBe('3D meadow');
   });
 
   it('falls back when WebGL repeatedly produces a flat transparent frame', async () => {
@@ -224,7 +224,7 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(renderer.dispose).toHaveBeenCalled();
     expect(hudCanvas.getAttribute('data-flight-renderer')).toBe('canvas-2d-fallback');
     expect(host.querySelector('[data-beehive-drone-webgl="true"]')).toBeNull();
-    expect(host.querySelector('[data-flight-renderer-badge="true"]').textContent).toBe('2D safety view');
+    expect(host.querySelector('[data-flight-renderer-badge="true"]').textContent).toBe('2D flight view');
     expect(context.fillRect).toHaveBeenCalled();
     expect(rafQueue.length).toBeGreaterThan(0);
     expect(warn).toHaveBeenCalled();

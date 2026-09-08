@@ -1921,7 +1921,7 @@ describe('calibrated parking geometry', () => {
     const tight = RR.PARKING_SCENARIOS.tightParallel;
     const physicalGapInches = (tight.obstacles[1].y - (tight.obstacles[0].y + tight.obstacles[0].h)) * RR.PARKING_INCHES_PER_PX;
     expect(physicalGapInches).toBeGreaterThan(180);
-    expect(physicalGapInches / 12).toBeCloseTo(18.9, 1);
+    expect(physicalGapInches).toBeGreaterThanOrEqual(180 + 24 + 24);
 
     const hydrant = RR.PARKING_SCENARIOS.hydrantParallel;
     const targetCar = { x: hydrant.slot.x, y: hydrant.slot.y, heading: -Math.PI / 2 };

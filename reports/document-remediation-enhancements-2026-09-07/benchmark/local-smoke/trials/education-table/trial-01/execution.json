@@ -1,0 +1,7 @@
+{
+  "exitCode": null,
+  "signal": "SIGKILL",
+  "error": "trial_deadline_exceeded",
+  "timedOut": true,
+  "durationMs": 37452.136
+}

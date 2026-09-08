@@ -1,0 +1,42 @@
+{
+  "tests": 9,
+  "mcp": {
+    "summary": {
+      "plannedTrials": 1,
+      "completedTrials": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "status": "completed",
+    "durationMs": 11867,
+    "subprocessDurationMs": 12501.254,
+    "modelCalls": 11,
+    "checks": {
+      "browserLaunched": true,
+      "modulesBooted": true,
+      "auditAccepted": true,
+      "remediationStarted": true,
+      "contentPreserved": true,
+      "auditorCoverage": true,
+      "taggedArtifact": true,
+      "taggedDelivery": true,
+      "originalLayout": true,
+      "verificationBinding": true,
+      "activeContentScan": true
+    },
+    "beforeScore": 85,
+    "afterScore": 96,
+    "implementationSha256": "ff276bb868e07a8a93f1e0a674b04ac2118641c40d45fef78e4ac8c1951c3c14",
+    "viewSourceSha256": "33d80b829c32d6994a7d1fd59e5e68b08ecdeb92d701caa24b7491f6a3c0de11",
+    "viewModuleSha256": "54109f18265bb8fb9733c8c13d386d9399a04874b68baa57c4816a0993f56119"
+  },
+  "stage": {
+    "files": 71,
+    "build": {
+      "runnerBuildSha256": "4c810041bc36c549a05cd3904312e4a27ca760fc7082472937a991a36f0d4d7a",
+      "manifestSha256": "b4d9114ae6532c9f7f35541c91f79eeb593c164c7b42c4ac40046f5b66f4f979"
+    },
+    "manifestUnchanged": true,
+    "viewUiBundled": false
+  }
+}

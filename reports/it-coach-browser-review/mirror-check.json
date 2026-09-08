@@ -1,0 +1,27 @@
+[
+  {
+    "file": "it_coach/it_coach.html",
+    "match": true,
+    "sha256": "bb99060bdf5b9974b2d6fd91fabf8d8a6da08a9d3b1d19f24d86203233e826b8"
+  },
+  {
+    "file": "it_coach/image_review.js",
+    "match": true,
+    "sha256": "d23a3c5860ef44d207c3287fe56285f5cb5e89b346532de649cbc1f7ab43b542"
+  },
+  {
+    "file": "video_studio_module.js",
+    "match": true,
+    "sha256": "4213a14473c611e14ebac4a9fd320eb27de4bf9e1e49930ec03a31de2f0b64b2"
+  },
+  {
+    "file": "video_studio/video_studio.html",
+    "match": true,
+    "sha256": "3ee2694d8b6e656118e27a518297668f3ab53392c81508957cf1d96271c9a529"
+  },
+  {
+    "file": "video_studio_host_bridge_module.js",
+    "match": true,
+    "sha256": "081de825c3d15ab09e17e82b3209ad213470c80417ba5e83e682ba5bee528e0e"
+  }
+]

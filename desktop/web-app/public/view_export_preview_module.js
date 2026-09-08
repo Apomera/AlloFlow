@@ -3132,6 +3132,7 @@ function _builderPrepareComparableDocument(source, ownerDocument) {
     if (!html) return null;
     const doc = new Parser().parseFromString(html, "text/html");
     _builderFinalizeDocumentForExport(doc);
+    doc.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
     doc.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style").forEach((node) => node.remove());
     return doc;
   } catch (_) {
@@ -3155,6 +3156,7 @@ function _builderComparableDocument(source, ownerDocument) {
   return {
     blocks,
     entries,
+    revision: doc.body.innerHTML,
     headings: _builderHeadingNodes(doc).map((heading) => String(heading.textContent || "").replace(/\s+/g, " ").trim()).filter(Boolean),
     statistics: _builderTextStatistics(text)
   };
@@ -3225,6 +3227,12 @@ function _builderCompareBlockSequences(beforeBlocks, afterBlocks, limit = 400) {
     modified,
     unchanged,
     changed: added + removed + modified,
+    comparedBefore: rows,
+    comparedAfter: columns,
+    totalBefore: beforeBlocks.length,
+    totalAfter: afterBlocks.length,
+    contentWindowTruncated: beforeBlocks.length > limit || afterBlocks.length > limit,
+    excerptWindowTruncated: added + removed + modified > excerpts.length,
     excerpts,
     truncated: beforeBlocks.length > limit || afterBlocks.length > limit || added + removed + modified > excerpts.length
   };
@@ -3236,6 +3244,10 @@ function _builderCompareDocumentVersions(currentDocument, snapshotHtml) {
   const blocks = _builderCompareBlockSequences(before.blocks, after.blocks);
   const excerpts = blocks.excerpts.map((excerpt) => ({
     ...excerpt,
+    sourceRevision: before.revision,
+    targetRevision: after.revision,
+    beforeHtml: before.entries[excerpt.beforeIndex]?.html || "",
+    afterHtml: after.entries[excerpt.afterIndex]?.html || "",
     beforeTag: Number.isInteger(excerpt.beforeIndex) ? before.entries[excerpt.beforeIndex]?.tag || "" : "",
     afterTag: Number.isInteger(excerpt.afterIndex) ? after.entries[excerpt.afterIndex]?.tag || "" : ""
   }));
@@ -3256,12 +3268,25 @@ function _builderRestoreVersionBlock(currentDocument, snapshotHtml, excerpt) {
   const beforeIndex = Number(excerpt.beforeIndex);
   const afterIndex = Number(excerpt.afterIndex);
   if (!Number.isInteger(beforeIndex) || !Number.isInteger(afterIndex)) return { ok: false, error: "That comparison block is no longer available." };
+  const before = _builderComparableDocument(snapshotHtml, currentDocument);
+  const after = _builderComparableDocument(currentDocument, currentDocument);
+  const stale = () => ({ ok: false, reason: "stale-comparison", error: "The document or saved version changed. Compare again before restoring a block." });
+  if (!before || !after || typeof excerpt.targetRevision !== "string" || excerpt.sourceRevision !== before.revision || excerpt.targetRevision !== after.revision || before.entries[beforeIndex]?.html !== excerpt.beforeHtml || after.entries[afterIndex]?.html !== excerpt.afterHtml) return stale();
+  if (before.entries.filter((entry) => entry.html === excerpt.beforeHtml).length !== 1 || after.entries.filter((entry) => entry.html === excerpt.afterHtml).length !== 1) {
+    return { ok: false, reason: "ambiguous-block", error: "This block is not unique. Restore the full version or edit the intended block directly." };
+  }
   const snapshotDocument = _builderPrepareComparableDocument(snapshotHtml, currentDocument);
   const sourceBlock = _builderComparableBlockElements(snapshotDocument)[beforeIndex];
   const targetBlock = _builderComparableBlockElements(currentDocument)[afterIndex];
   if (!sourceBlock || !targetBlock || !targetBlock.parentNode) return { ok: false, error: "That comparison block is no longer available." };
   if (String(sourceBlock.tagName || "").toLowerCase() !== String(targetBlock.tagName || "").toLowerCase()) return { ok: false, error: "Restore the full version to change this block type safely." };
   if (targetBlock.matches(_BUILDER_CHANGE_SELECTOR) || targetBlock.querySelector(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: "Accept or reject the pending changes in this block before restoring it." };
+  const targetWrapper = currentDocument.createElement("div");
+  targetWrapper.appendChild(targetBlock.cloneNode(true));
+  _builderFinalizeDocumentForExport(targetWrapper);
+  targetWrapper.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
+  targetWrapper.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style").forEach((node) => node.remove());
+  if (targetWrapper.firstElementChild?.outerHTML !== excerpt.afterHtml) return stale();
   const replacement = currentDocument.importNode(sourceBlock, true);
   Array.from(replacement.querySelectorAll("[id]")).concat(replacement.hasAttribute("id") ? [replacement] : []).forEach((node) => {
     const duplicate = currentDocument.getElementById(node.id);
@@ -3284,18 +3309,78 @@ function _builderRestoreVersionBlock(currentDocument, snapshotHtml, excerpt) {
   currentDocument.body.setAttribute("data-allo-user-edited", "1");
   return { ok: true, tracked: tracking, marker };
 }
-function _normalizeBuilderLocalDraft(candidate) {
+function _builderDraftContext({ source, mode, history, resourceIds, documentDigest, historySignature }) {
+  const kind = source === "remediation" ? "remediation" : "history";
+  const digest = typeof documentDigest === "string" ? documentDigest.trim() : "";
+  if (kind === "remediation" && !digest) return null;
+  try {
+    return JSON.stringify({
+      version: 3,
+      source: kind,
+      mode: mode || "print",
+      resourceIds: kind === "history" && Array.isArray(resourceIds) ? resourceIds : null,
+      historySignature: kind === "history" ? historySignature || null : null,
+      document: kind === "remediation" ? digest : Array.isArray(history) ? history : []
+    });
+  } catch (_) {
+    return null;
+  }
+}
+async function _builderDraftIdentity(context, cryptoApi = globalThis.crypto) {
+  if (typeof context !== "string" || !context || !cryptoApi?.subtle?.digest) return null;
+  try {
+    const digest = await cryptoApi.subtle.digest("SHA-256", new TextEncoder().encode(context));
+    const hash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hash.length === 64 ? "alloflow-builder-draft-v3:" + hash : null;
+  } catch (_) {
+    return null;
+  }
+}
+function _builderCreateDraftCapture({ capture, isCurrent, schedule = setTimeout, unschedule = clearTimeout }) {
+  let timer = null;
+  let cancelled = false;
+  let pending = false;
+  const clear = () => {
+    if (timer !== null) unschedule(timer);
+    timer = null;
+  };
+  const flush = () => {
+    clear();
+    const dirty = pending;
+    pending = false;
+    if (!dirty || cancelled || !isCurrent()) return false;
+    return capture();
+  };
+  return {
+    schedule() {
+      clear();
+      if (!cancelled && isCurrent()) {
+        pending = true;
+        timer = schedule(flush, 800);
+      }
+    },
+    flush,
+    cancel() {
+      cancelled = true;
+      pending = false;
+      clear();
+    }
+  };
+}
+function _normalizeBuilderLocalDraft(candidate, identity = null) {
   if (!candidate || typeof candidate !== "object" || typeof candidate.html !== "string" || candidate.html.length < 100) return null;
+  if (identity && (candidate.version !== 3 || candidate.sourceIdentity !== identity)) return null;
   const currentAt = Number(candidate.at) || Date.now();
   const rawSnapshots = Array.isArray(candidate.snapshots) ? candidate.snapshots : [];
   const snapshots = rawSnapshots.filter((item) => item && typeof item.html === "string" && item.html.length > 100).map((item, index) => ({
     id: String(item.id || `snapshot-${item.at || currentAt}-${index}`),
     at: Number(item.at) || currentAt,
     label: String(item.label || "Auto-save").slice(0, 80),
-    html: item.html
+    html: item.html,
+    ...identity ? { sourceIdentity: identity } : {}
   })).slice(0, 10);
-  if (!snapshots.length) snapshots.push({ id: `legacy-${currentAt}`, at: currentAt, label: "Recovered draft", html: candidate.html });
-  return { ...candidate, version: 2, at: currentAt, snapshots };
+  if (!snapshots.length) snapshots.push({ id: `legacy-${currentAt}`, at: currentAt, label: "Recovered draft", html: candidate.html, ...identity ? { sourceIdentity: identity } : {} });
+  return { ...candidate, version: identity ? 3 : 2, at: currentAt, snapshots };
 }
 const _BUILDER_VIEW_PREFS_KEY = "alloflow-builder-view-prefs-v1";
 const _BUILDER_QUICK_ACCESS_DEFAULT = ["save", "undo", "redo"];
@@ -3568,6 +3653,254 @@ function _builderEditorPageCss(enabled, pageSetup) {
     "}"
   ].join("\n");
 }
+function _builderResourceOptions(history, t) {
+  const translate = typeof t === "function" ? t : () => "";
+  const entries = [
+    ["includeAnalysis", "\u{1F4CA} Source Analysis", "analysis"],
+    ["includeSimplified", "\u{1F4D6} Adapted Text", "simplified"],
+    ["includeGlossary", "\u{1F4DA} Glossary", "glossary"],
+    ["includeQuiz", "\u2753 Quiz", "quiz"],
+    ["includeOutline", "\u{1F5C2}\uFE0F Graphic Organizer", "outline"],
+    ["includeFaq", "\u{1F4AC} FAQ", "faq"],
+    ["includeMemoryAid", translate("sidebar.tool_memory_aid") || "Memory Aid Studio", "memory-aid"],
+    ["includeAppliedChallenge", translate("sidebar.tool_applied_challenge") || "Applied Challenge Studio", "applied-challenge"],
+    ["includeSentenceFrames", "\u270D\uFE0F Sentence Frames", "sentence-frames"],
+    ["includeImage", "\u{1F3A8} Visual Support", "image"],
+    ["includeMath", "\u{1F522} Math", "math"],
+    ["includeDbq", "\u{1F4DC} DBQ", "dbq"],
+    ["includeLessonPlan", "\u{1F4CB} Lesson Plan", "lesson-plan"],
+    ["includeUdlAdvice", "\u{1F9E9} UDL Advice", "udl-advice"],
+    ["includeBrainstorm", "\u{1F4A1} Brainstorm", "brainstorm"]
+  ];
+  const types = new Set((Array.isArray(history) ? history : []).filter(Boolean).map((item) => item.type));
+  return entries.filter(([, , type]) => types.has(type));
+}
+function _builderResourceIncluded(config, key) {
+  return ["includeMemoryAid", "includeAppliedChallenge"].includes(key) ? config?.[key] !== false : !!config?.[key];
+}
+function _builderBulkResourceUpdate(history, config, t) {
+  const available = _builderResourceOptions(history, t);
+  const allOn = available.length > 0 && available.every(([key]) => _builderResourceIncluded(config, key));
+  return Object.fromEntries(available.map(([key]) => [key, !allOn]));
+}
+function _builderSelectedResourceItems(history, config, t) {
+  const options = _builderResourceOptions(history, t);
+  const definitions = new Map(options.map(([key, label, type]) => [type, { key, label }]));
+  return (Array.isArray(history) ? history : []).filter(Boolean).flatMap((item, index) => {
+    const definition = definitions.get(item.type);
+    if (!definition) return [];
+    const candidate = item.title || item.data?.title || item.result?.title;
+    const title = typeof candidate === "string" && candidate.trim() ? candidate.replace(/<[^>]*>/g, "").trim().slice(0, 120) : definition.label;
+    return [{ id: String(item.id || index), title, type: definition.label, included: _builderResourceIncluded(config, definition.key) }];
+  });
+}
+function _builderVisibleDocumentTitle(doc, fallback) {
+  const title = doc?.querySelector?.("h1")?.textContent || doc?.title || fallback || "Untitled document";
+  return String(title).replace(/\s+/g, " ").trim().slice(0, 160) || "Untitled document";
+}
+function _builderSaveStatusLabel(state, at) {
+  const labels = { capturing: "Saving changes\u2026", saved: "Saved on this device", restored: "Local draft restored", captured: "Saved for this session", ready: "No local changes yet", error: "Changes not captured. Try Save again." };
+  const label = labels[state] || "Local save unavailable";
+  const date = new Date(at || 0);
+  return at && Number.isFinite(date.getTime()) && ["saved", "restored", "captured"].includes(state) ? label + " \xB7 " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : label;
+}
+function _builderKeyboardTargets(container) {
+  return Array.from(container.querySelectorAll('button,a[href],input:not([type="hidden"]),select,textarea,iframe,[tabindex],summary')).filter((element) => {
+    if (element.tabIndex < 0 || element.matches(":disabled") || element.closest('[inert],[hidden],[aria-hidden="true"]')) return false;
+    if (!element.getClientRects().length) return false;
+    const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+    if (style?.visibility === "hidden" || style?.visibility === "collapse") return false;
+    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName !== "DETAILS" || parent.open) continue;
+      const summary = Array.from(parent.children).find((child) => child.tagName === "SUMMARY");
+      if (!summary || element !== summary && !summary.contains(element)) return false;
+    }
+    return true;
+  });
+}
+const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
+.allo-docsuite .builder-dialog { height:95vh; height:95dvh; min-height:0; }
+.allo-docsuite .builder-dialog[data-builder-focus="true"] { height:100%; }
+.allo-docsuite .builder-mobile-switch { display:none; }
+.allo-docsuite .builder-preview-shell { display:flex; min-height:0; }
+.allo-docsuite .builder-preview-frame { display:block; flex:1; min-height:0; }
+@media (max-width:1023px) {
+  .allo-docsuite .builder-dialog { overflow:hidden; }
+  .allo-docsuite .builder-mobile-switch { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-shrink:0; padding:.5rem .75rem; border-bottom:1px solid #cbd5e1; background:#fff; }
+  .allo-docsuite .builder-settings-panel { display:none; }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; flex:1 1 0; min-height:0; width:100%; overflow:auto; }
+  .allo-docsuite .builder-editor-pane { min-height:0; overflow-x:hidden; overflow-y:auto; }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-editor-pane { display:none; }
+  .allo-docsuite .builder-preview-stage { flex:1 0 22rem; min-height:22rem; }
+}
+`;
+function _builderCleanMarkdownRoot(doc) {
+  if (!doc?.body) throw new Error("The editable preview is not ready.");
+  const root = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+  root.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style").forEach((node) => node.remove());
+  _builderStripEditorBreakMetadata(root);
+  root.removeAttribute("contenteditable");
+  root.querySelectorAll("[contenteditable]").forEach((node) => node.removeAttribute("contenteditable"));
+  return root;
+}
+function _builderMarkdownFromRoot(root, options = {}) {
+  const warnings = /* @__PURE__ */ new Set();
+  const escaped = (value) => String(value || "").replace(/([\\`*_[\]])/g, "\\$1");
+  const fence = (value) => "`".repeat(Math.max(3, ...(String(value).match(/`+/g) || []).map((run) => run.length + 1)));
+  const link = (value, image) => {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    if (!image && raw.startsWith("#")) return raw.replace(/[<>\s]/g, (ch) => encodeURIComponent(ch));
+    if (image && /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw.replace(/\s/g, "");
+    try {
+      const url = new URL(raw, options.baseURI || "https://invalid.local/");
+      if (!["http:", "https:", ...image ? [] : ["mailto:", "tel:"]].includes(url.protocol)) return "";
+      const target = raw.startsWith("#") ? raw : url.href;
+      return target.replace(/[<>\s]/g, (ch) => encodeURIComponent(ch));
+    } catch (_) {
+      return "";
+    }
+  };
+  const mathBlocks = Array.from(root.querySelectorAll("math"));
+  const children = (node, depth) => Array.from(node.childNodes || []).map((child) => render(child, depth)).join("");
+  const render = (node, depth = 0) => {
+    if (depth > 100) throw new Error("The document is too deeply nested to convert to Markdown.");
+    if (node.nodeType === 3) return escaped(node.nodeValue);
+    if (node.nodeType !== 1) return "";
+    const tag = node.tagName.toLowerCase();
+    if (["script", "style", "head", "template"].includes(tag)) return "";
+    if (tag === "math") {
+      const xml = node.outerHTML, mark = fence(xml);
+      const spoken = options.spokenByBlock?.[mathBlocks.indexOf(node)];
+      return "\n\n" + (spoken ? "*Spoken: " + escaped(String(spoken).trim()) + "*\n\n" : "") + mark + "mathml\n" + xml + "\n" + mark + "\n\n";
+    }
+    if (tag === "img") {
+      const alt = escaped(node.getAttribute("alt") || "Image"), src = link(node.getAttribute("src"), true);
+      if (!src) {
+        warnings.add("An image source could not be included; its description is retained. Use HTML for the complete document.");
+        return "[Image: " + alt + "]";
+      }
+      return "![" + alt + "](<" + src + ">)";
+    }
+    if (tag === "pre") {
+      const value = node.textContent || "", mark = fence(value);
+      return "\n\n" + mark + "\n" + value + "\n" + mark + "\n\n";
+    }
+    if (tag === "code") {
+      const value = node.textContent || "", mark = fence(value);
+      return mark + " " + value + " " + mark;
+    }
+    if (tag === "table") {
+      if (node.querySelector('[colspan]:not([colspan="1"]),[rowspan]:not([rowspan="1"]),table,math,img')) {
+        warnings.add("Tables with merged cells, images, or math are retained as HTML. Check that your Markdown reader supports them.");
+        const copy = node.cloneNode(true);
+        [copy, ...copy.querySelectorAll("*")].forEach((el) => Array.from(el.attributes).forEach((attr) => {
+          if (/^on/i.test(attr.name) || attr.name === "srcdoc") el.removeAttribute(attr.name);
+        }));
+        copy.querySelectorAll("img").forEach((img) => {
+          const src = link(img.getAttribute("src"), true);
+          if (src) img.setAttribute("src", src);
+          else {
+            warnings.add("An image source could not be included; its description is retained. Use HTML for the complete document.");
+            img.replaceWith(root.ownerDocument.createTextNode("[Image: " + (img.getAttribute("alt") || "Image") + "]"));
+          }
+        });
+        copy.querySelectorAll("a[href]").forEach((anchor) => {
+          const href = link(anchor.getAttribute("href"), false);
+          if (href) anchor.setAttribute("href", href);
+          else anchor.removeAttribute("href");
+        });
+        return "\n\n" + copy.outerHTML + "\n\n";
+      }
+      const rows = Array.from(node.rows || []).map((row) => Array.from(row.cells).map((cell) => children(cell, depth + 1).trim().replace(/\|/g, "\\|").replace(/\n+/g, "<br>")));
+      if (!rows.length) return "";
+      const width = Math.max(...rows.map((row) => row.length));
+      const line = (row) => "| " + Array.from({ length: width }, (_, index) => row[index] || "").join(" | ") + " |";
+      const caption = node.caption ? escaped(node.caption.textContent) + "\n\n" : "";
+      return "\n\n" + caption + line(rows[0]) + "\n" + line(Array(width).fill("---")) + "\n" + rows.slice(1).map(line).join("\n") + "\n\n";
+    }
+    if (tag === "a") {
+      const label = children(node, depth + 1), href = link(node.getAttribute("href"), false);
+      return href ? "[" + label + "](<" + href + ">)" : label;
+    }
+    if (tag === "ul" || tag === "ol") {
+      const start = Number(node.getAttribute("start")) || 1;
+      return "\n\n" + Array.from(node.children).filter((item) => item.tagName === "LI").map((item, index) => (tag === "ol" ? start + index + ". " : "- ") + children(item, depth + 1).trim().replace(/\n/g, "\n  ")).join("\n") + "\n\n";
+    }
+    const inner = children(node, depth + 1);
+    if (/^h[1-6]$/.test(tag)) return "\n\n" + "#".repeat(Number(tag[1])) + " " + inner.trim() + "\n\n";
+    if (tag === "strong" || tag === "b") return "**" + inner + "**";
+    if (tag === "em" || tag === "i") return "*" + inner + "*";
+    if (tag === "br") return "\n";
+    if (tag === "hr") return "\n\n---\n\n";
+    if (tag === "blockquote") return "\n\n" + inner.trim().replace(/^/gm, "> ") + "\n\n";
+    if (["p", "div", "section", "article", "figure", "figcaption", "main"].includes(tag)) return "\n\n" + inner.trim() + "\n\n";
+    return inner;
+  };
+  return { markdown: render(root).trim(), warnings: [...warnings] };
+}
+async function _builderFetchExportImage(url, options = {}) {
+  const maxBytes = options.maxBytes || 8 * 1024 * 1024;
+  const timeoutMs = options.timeoutMs || 1e4;
+  const fetchImage = options.fetchImpl || fetch;
+  const controller = new AbortController();
+  let reader, finished = false, timer;
+  const cancel = () => {
+    controller.abort();
+    try {
+      const pending = reader?.cancel();
+      if (pending?.catch) pending.catch(() => {
+      });
+    } catch (_) {
+    }
+  };
+  const deadline = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      cancel();
+      reject(new Error("Image transfer timed out."));
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([deadline, (async () => {
+      const response = await fetchImage(url, { credentials: "omit", signal: controller.signal });
+      if (controller.signal.aborted) throw new Error("Image transfer timed out.");
+      if (!response.ok) throw new Error("Image request failed (" + response.status + ")");
+      const mediaType = String(response.headers.get("content-type") || "").split(";")[0].toLowerCase();
+      const extension = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp" }[mediaType];
+      if (!extension) throw new Error("Unsupported remote image type");
+      const declared = Number(response.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) throw new Error("Remote image exceeds the export size limit.");
+      if (!response.body?.getReader) throw new Error("This browser cannot read remote images with a bounded transfer.");
+      reader = response.body.getReader();
+      const chunks = [];
+      let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (controller.signal.aborted) throw new Error("Image transfer timed out.");
+        if (done) break;
+        if (!(value instanceof Uint8Array)) throw new Error("Invalid image response bytes.");
+        if (value.byteLength > maxBytes - size) throw new Error("Remote image exceeds the export size limit.");
+        size += value.byteLength;
+        chunks.push(value);
+      }
+      const bytes = new Uint8Array(size);
+      let offset = 0;
+      chunks.forEach((chunk) => {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+      });
+      finished = true;
+      return { bytes, mediaType, extension };
+    })()]);
+  } finally {
+    clearTimeout(timer);
+    if (!finished) cancel();
+    try {
+      reader?.releaseLock();
+    } catch (_) {
+    }
+  }
+}
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS,
@@ -3631,12 +3964,22 @@ function ExportPreviewView(props) {
     updateExportPreview: updateExportPreview2,
     exportPreviewSource,
     builderResourceIds = null,
+    builderDraftOwner = null,
+    onBuilderDraftCapture,
     onExportSuccess,
     builderWorkspaceMode = "author",
     setBuilderWorkspaceMode,
     onAdvancedReviewSessionChange
   } = props;
   const isAdvancedReview = builderWorkspaceMode === "advanced-review" && exportPreviewSource === "remediation";
+  const isRemediationDocument = exportPreviewSource === "remediation";
+  const resourceItems = _builderSelectedResourceItems(history, exportConfig, t);
+  const includedResourceCount = resourceItems.filter((item) => item.included).length;
+  const documentSourceLabel = isRemediationDocument ? "Remediated document" : Array.isArray(builderResourceIds) ? "Current lesson" : "History selection";
+  const [previewDocumentTitle, setPreviewDocumentTitle] = React.useState(() => _builderVisibleDocumentTitle(null, exportConfig?.title || exportConfig?.docTitle || exportConfig?.lessonTitle));
+  React.useEffect(() => {
+    if (isRemediationDocument && exportPreviewMode === "worksheet") setExportPreviewMode("print");
+  }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [blockSuggestions, setBlockSuggestions] = React.useState(null);
   const [blockSuggestionsBusy, setBlockSuggestionsBusy] = React.useState(false);
@@ -3720,6 +4063,8 @@ function ExportPreviewView(props) {
   const [versionComparison, setVersionComparison] = React.useState(null);
   const [preflightResult, setPreflightResult] = React.useState(null);
   const [isFocusMode, setIsFocusMode] = React.useState(false);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(false);
+  const mobileSettingsButtonRef = React.useRef(null);
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
   const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);
@@ -3727,11 +4072,12 @@ function ExportPreviewView(props) {
   const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
   const [activeRibbonTab, setActiveRibbonTab] = React.useState(() => _readBuilderViewPreferences().ribbonTab);
-  const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => _readBuilderViewPreferences().ribbonCollapsed);
+  const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => typeof window !== "undefined" && window.matchMedia?.("(max-width:1023px)").matches || _readBuilderViewPreferences().ribbonCollapsed);
   const [quickAccessItems, setQuickAccessItems] = React.useState(() => _readBuilderViewPreferences().quickAccess);
   const [pageMetrics, setPageMetrics] = React.useState({ count: 1, active: 0, sections: [], documentSections: [{ id: "section-1", index: 0, name: "Section 1", startType: "document", page: 0 }], activeSection: 0 });
   const [sectionNameDraft, setSectionNameDraft] = React.useState("Section 1");
   const [draftCaptureState, setDraftCaptureState] = React.useState("ready");
+  const [draftCaptureAt, setDraftCaptureAt] = React.useState(null);
   const [formatState, setFormatState] = React.useState({
     bold: false,
     italic: false,
@@ -3858,9 +4204,30 @@ function ExportPreviewView(props) {
   const advancedReviewHistoryRef = React.useRef([]);
   const advancedReviewCommandDispatchRef = React.useRef(false);
   const advancedReviewManualTimerRef = React.useRef(null);
-  const draftDocumentTitle = String(exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || "AlloFlow Document").trim().substring(0, 120) || "AlloFlow Document";
-  const draftIdentitySeed = Array.isArray(history) ? `${history.length}:${history[0]?.id || history[0]?.type || ""}:${history[history.length - 1]?.id || history[history.length - 1]?.type || ""}` : "empty";
-  const draftStorageKey = React.useMemo(() => `alloflow-builder-draft-v1:${encodeURIComponent([exportPreviewSource || "generated", exportPreviewMode || "print", draftDocumentTitle, draftIdentitySeed].join("|")).substring(0, 220)}`, [exportPreviewSource, exportPreviewMode, draftDocumentTitle, draftIdentitySeed]);
+  const draftDocumentTitle = String(previewDocumentTitle || exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || "AlloFlow Document").trim().substring(0, 120) || "AlloFlow Document";
+  const draftContext = _builderDraftContext({
+    source: exportPreviewSource,
+    mode: exportPreviewMode,
+    history,
+    resourceIds: builderResourceIds,
+    documentDigest: pdfFixResult?.documentDigest,
+    historySignature: builderDraftOwner?.historySignature
+  });
+  const [draftIdentityState, setDraftIdentityState] = React.useState(null);
+  const draftStorageKey = draftIdentityState?.context === draftContext ? draftIdentityState.key : null;
+  const draftCaptureRef = React.useRef(null);
+  const draftCaptureLatestRef = React.useRef(null);
+  const draftContextRef = React.useRef(draftContext);
+  draftContextRef.current = draftContext;
+  React.useEffect(() => {
+    let current = true;
+    _builderDraftIdentity(draftContext).then((key) => {
+      if (current) setDraftIdentityState({ context: draftContext, key });
+    });
+    return () => {
+      current = false;
+    };
+  }, [draftContext]);
   const promptForBuilderText = React.useCallback(async (message, defaultValue, options) => {
     if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === "function")) {
       addToast && addToast("The text-entry dialog is still loading. Please try again in a moment.", "error");
@@ -3870,6 +4237,7 @@ function ExportPreviewView(props) {
   }, [addToast]);
   React.useEffect(() => () => {
     mountedRef.current = false;
+    draftCaptureRef.current?.cancel();
     imageInsertRunRef.current += 1;
     writingCheckRunRef.current += 1;
     auditRunRef.current += 1;
@@ -3998,6 +4366,19 @@ function ExportPreviewView(props) {
       document.removeEventListener("keydown", onShortcut);
     };
   }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
+  React.useEffect(() => {
+    if (!showExportPreview) {
+      setMobileSettingsOpen(false);
+      return void 0;
+    }
+    const narrow = window.matchMedia("(max-width:1023px)");
+    const onResize = () => {
+      if (!narrow.matches) setMobileSettingsOpen(false);
+      else if (document.activeElement?.closest?.("#builder-settings-panel")) mobileSettingsButtonRef.current?.focus();
+    };
+    narrow.addEventListener("change", onResize);
+    return () => narrow.removeEventListener("change", onResize);
+  }, [showExportPreview]);
   const closeImageDialog = React.useCallback(() => {
     imageInsertRunRef.current += 1;
     setImageInsertBusy(false);
@@ -4011,12 +4392,16 @@ function ExportPreviewView(props) {
     if (!showExportPreview || pendingImageFile) return void 0;
     const dialog = exportDialogRef.current;
     if (!dialog) return void 0;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"]), summary')).filter((el) => !el.matches(":disabled") && el.getClientRects().length > 0);
+    const getFocusable = () => _builderKeyboardTargets(dialog);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setShowExportPreview(false);
+        if (dialog.getAttribute("data-builder-settings-open") === "true" && window.matchMedia("(max-width:1023px)").matches) {
+          event.stopPropagation();
+          setMobileSettingsOpen(false);
+          window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+        } else setShowExportPreview(false);
         return;
       }
       if (event.key !== "Tab") return;
@@ -4407,6 +4792,7 @@ ${pageCss}
       const keys = new Set([...references.bookmarks, ...references.crossReferences, ...references.footnotes, ...references.citations || [], ...(references.sources || []).map((source) => ({ key: "source:" + source.id }))].map((entry) => entry.key));
       return keys.has(current) ? current : "";
     });
+    setPreviewDocumentTitle(_builderVisibleDocumentTitle(doc));
     const statistics = _builderDocumentStatistics(doc);
     setWordCount(statistics.words);
     setDocumentStatistics(statistics);
@@ -7238,28 +7624,49 @@ ${pageCss}
   }, [addToast, exportPreviewRef]);
   const readLocalDraftStore = React.useCallback(() => {
     try {
+      if (!draftStorageKey) return null;
       const rawDraft = window.localStorage.getItem(draftStorageKey);
-      return _normalizeBuilderLocalDraft(rawDraft ? JSON.parse(rawDraft) : null);
+      return _normalizeBuilderLocalDraft(rawDraft ? JSON.parse(rawDraft) : null, draftStorageKey);
     } catch (_) {
       return null;
     }
   }, [draftStorageKey]);
   const persistLocalDraft = React.useCallback((html, at = Date.now(), label = "Auto-save") => {
-    if (typeof html !== "string" || html.length < 100) return false;
+    if (!draftStorageKey || draftContextRef.current !== draftContext || typeof html !== "string" || html.length < 100) return false;
     try {
       const existing = readLocalDraftStore();
       const duplicate = existing?.snapshots?.some((snapshot2) => snapshot2.html === html);
-      const snapshot = { id: `snapshot-${at}-${Math.random().toString(36).slice(2, 8)}`, at, label: String(label || "Auto-save").slice(0, 80), html };
+      const snapshot = { id: `snapshot-${at}-${Math.random().toString(36).slice(2, 8)}`, sourceIdentity: draftStorageKey, at, label: String(label || "Auto-save").slice(0, 80), html };
       const snapshots = (duplicate ? existing?.snapshots || [] : [snapshot, ...existing?.snapshots || []]).slice(0, 10);
-      const store = { version: 2, title: draftDocumentTitle, html, at, snapshots };
+      const store = { version: 3, sourceIdentity: draftStorageKey, source: exportPreviewSource, title: draftDocumentTitle, html, at, snapshots };
       window.localStorage.setItem(draftStorageKey, JSON.stringify(store));
       setVersionHistory(store.snapshots);
       setDraftRecovery(null);
+      setDraftCaptureAt(at);
       return true;
     } catch (_) {
       return false;
     }
-  }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle]);
+  }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle, draftContext, exportPreviewSource]);
+  const captureBuilderDraftDocument = React.useCallback((doc, label = "Auto-save", context = draftContext, token = doc?.__alloBuilderCaptureToken) => {
+    if (!mountedRef.current || !showExportPreview || draftContextRef.current !== context || exportPreviewRef.current?.contentDocument !== doc || !doc?.documentElement || doc.__alloBuilderCaptureToken !== token) return false;
+    try {
+      const capturedAt = Date.now();
+      const clean = getCleanBuilderDocument();
+      if (!clean?.html || typeof onBuilderDraftCapture === "function" && onBuilderDraftCapture(clean.html, { doc, token, owner: builderDraftOwner }) === false) {
+        setDraftCaptureState("error");
+        return false;
+      }
+      const savedLocally = persistLocalDraft(clean.html, capturedAt, label);
+      setDraftCaptureAt(capturedAt);
+      setDraftCaptureState(savedLocally ? "saved" : "captured");
+      return true;
+    } catch (_) {
+      setDraftCaptureState("error");
+      return false;
+    }
+  }, [showExportPreview, draftContext, exportPreviewRef, getCleanBuilderDocument, onBuilderDraftCapture, builderDraftOwner, persistLocalDraft]);
+  draftCaptureLatestRef.current = captureBuilderDraftDocument;
   const saveCurrentAsDocumentTemplate = React.useCallback(async () => {
     if (customDocumentTemplates.length >= 8) {
       addToast && addToast("You can keep up to 8 custom templates on this device. Remove one before saving another.", "info");
@@ -7353,6 +7760,7 @@ ${pageCss}
   }, [exportPreviewRef, getCleanBuilderDocument, persistLocalDraft, resumeTrackedEditingView, commitTrackedChangeMutation, addToast]);
   React.useEffect(() => {
     if (!showExportPreview) {
+      draftCaptureRef.current?.cancel();
       setDraftRecovery(null);
       setVersionHistory([]);
       return;
@@ -7363,7 +7771,7 @@ ${pageCss}
   }, [showExportPreview, readLocalDraftStore]);
   const restoreDraftHtml = React.useCallback((html, message = "Local draft restored.") => {
     const doc = exportPreviewRef.current?.contentDocument;
-    if (!html || !doc) {
+    if (!html || !doc || !draftStorageKey || draftContextRef.current !== draftContext) {
       addToast && addToast("The editable preview is not ready to restore yet.", "info");
       return false;
     }
@@ -7375,42 +7783,42 @@ ${pageCss}
       doc.open();
       doc.write(html);
       doc.close();
-      setDraftCaptureState("restored");
-      window.setTimeout(() => {
-        const liveDoc = exportPreviewRef.current?.contentDocument;
-        if (!liveDoc?.body) return;
-        liveDoc.body.setAttribute("data-allo-user-edited", "1");
-        window.__alloBuilderEditedPack = { html: "<!DOCTYPE html>\n" + liveDoc.documentElement.outerHTML, at: Date.now() };
-        refreshDocumentStats();
-        refreshReviewComments();
-        refreshTrackedChanges();
-        refreshActiveHeading();
-        refreshPageMetrics();
-        refreshFormattingState();
-        if (mountedRef.current) setDraftCaptureState("restored");
-      }, 80);
+      if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
+      const captured = draftCaptureLatestRef.current?.(doc, "Restored draft", draftContext);
+      setDraftCaptureState(captured ? "restored" : "error");
+      if (captured) setDraftCaptureAt(Date.now());
+      refreshDocumentStats();
+      refreshReviewComments();
+      refreshTrackedChanges();
+      refreshActiveHeading();
+      refreshPageMetrics();
+      refreshFormattingState();
+      if (mountedRef.current && captured) setDraftCaptureState("restored");
       addToast && addToast(message, "success");
       return true;
     } catch (_) {
       addToast && addToast("Could not restore that version.", "error");
       return false;
     }
-  }, [exportPreviewRef, refreshDocumentStats, refreshReviewComments, refreshTrackedChanges, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
+  }, [exportPreviewRef, draftContext, draftStorageKey, refreshDocumentStats, refreshReviewComments, refreshTrackedChanges, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
   const restoreLocalDraft = React.useCallback(() => {
-    if (restoreDraftHtml(draftRecovery?.html, "Local draft restored.")) setDraftRecovery(null);
-  }, [draftRecovery, restoreDraftHtml]);
+    if (draftRecovery?.sourceIdentity === draftStorageKey && restoreDraftHtml(draftRecovery?.html, "Local draft restored.")) setDraftRecovery(null);
+  }, [draftRecovery, draftStorageKey, restoreDraftHtml]);
   const restoreVersionSnapshot = React.useCallback((snapshot) => {
-    if (!snapshot?.html) return;
+    if (!snapshot?.html || snapshot.sourceIdentity !== draftStorageKey) {
+      addToast && addToast("That version belongs to another document. Reopen Version History for the current document.", "info");
+      return;
+    }
     const current = getCleanBuilderDocument();
     const now = Date.now();
     const rollbackSaved = Boolean(current?.html && current.html !== snapshot.html && persistLocalDraft(current.html, now, "Before version restore"));
     setVersionComparison(null);
     persistLocalDraft(snapshot.html, now + 1, "Restored version");
     restoreDraftHtml(snapshot.html, rollbackSaved ? "Version restored. A rollback point was saved." : "Version restored.");
-  }, [getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml]);
+  }, [getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml, draftStorageKey, addToast]);
   const compareVersionSnapshot = React.useCallback((snapshot) => {
     const doc = exportPreviewRef.current?.contentDocument;
-    if (!snapshot?.html || !doc) {
+    if (!snapshot?.html || !doc || snapshot.sourceIdentity !== draftStorageKey) {
       addToast && addToast("That local version is not available to compare.", "info");
       return;
     }
@@ -7420,12 +7828,12 @@ ${pageCss}
       return;
     }
     setVersionComparison({ ...comparison, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
-    addToast && addToast(comparison.changed ? "Version comparison ready: " + comparison.changed + " changed block" + (comparison.changed === 1 ? "" : "s") + "." : "The current document matches that version.", comparison.changed ? "info" : "success");
-  }, [exportPreviewRef, addToast]);
+    addToast && addToast(comparison.changed ? "Version comparison ready: " + comparison.changed + " changed block" + (comparison.changed === 1 ? "" : "s") + "." : "The compared text matches that version; images, links and formatting are not compared.", comparison.changed ? "info" : "success");
+  }, [exportPreviewRef, addToast, draftStorageKey]);
   const restoreVersionComparisonBlock = React.useCallback((excerpt) => {
     const doc = exportPreviewRef.current?.contentDocument;
     const snapshot = versionHistory.find((item) => item.id === versionComparison?.snapshotId);
-    if (!doc || !snapshot) {
+    if (!doc || !snapshot || snapshot.sourceIdentity !== draftStorageKey) {
       addToast && addToast("That comparison is no longer available.", "info");
       return;
     }
@@ -7439,7 +7847,7 @@ ${pageCss}
     commitTrackedChangeMutation(restored.tracked ? "Saved block applied as a tracked structural change." : "Saved block restored from version history.");
     const refreshed = _builderCompareDocumentVersions(doc, snapshot.html);
     if (refreshed.ok) setVersionComparison({ ...refreshed, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
-  }, [exportPreviewRef, versionHistory, versionComparison, commitTrackedChangeMutation, addToast]);
+  }, [exportPreviewRef, versionHistory, versionComparison, commitTrackedChangeMutation, addToast, draftStorageKey]);
   const saveVersionSnapshot = React.useCallback(() => {
     const clean = getCleanBuilderDocument();
     if (!clean || !persistLocalDraft(clean.html, Date.now(), "Manual snapshot")) {
@@ -7733,6 +8141,7 @@ ${pageCss}
         if (e.target === e.currentTarget) setShowExportPreview(false);
       }
     },
+    /* @__PURE__ */ React.createElement("style", null, _BUILDER_RESPONSIVE_LAYOUT_CSS),
     pendingImageFile && /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -7763,760 +8172,797 @@ ${pageCss}
         setImageAltError("");
       } }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Decorative image"), " \u2014 it adds no information and should be skipped by screen readers.")), /* @__PURE__ */ React.createElement("p", { id: "builder-image-alt-error", className: "mt-2 min-h-5 text-sm font-bold text-red-700", role: "alert" }, imageAltError), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeImageDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertPendingImage, disabled: imageInsertBusy, "aria-busy": imageInsertBusy, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, imageInsertBusy ? "Inserting image..." : "Insert image")))
     ),
-    /* @__PURE__ */ React.createElement("div", { "data-help-key": "doc_builder_document", ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: `relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? "rounded-none max-w-none max-h-none h-full" : "rounded-2xl max-w-[95vw] max-h-[95vh]"}`, inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, editingCitationId && /* @__PURE__ */ React.createElement("form", { ref: citationEditorRef, id: "builder-citation-editor", "data-builder-citation-editor": "1", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-citation-editor-title", "aria-describedby": "builder-citation-editor-help", onSubmit: saveCitationEdit, className: "absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "builder-citation-editor-title", className: "text-sm font-black text-cyan-950" }, "Edit citation"), /* @__PURE__ */ React.createElement("p", { id: "builder-citation-editor-help", className: "mt-0.5 text-[10px] leading-snug text-cyan-900" }, "Combine sources, adjust locators, and control how each source appears. Escape cancels.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white", "aria-label": "Close citation editor" }, "?")), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-2 overflow-y-auto p-3" }, citationItemsDraft.map((item, index) => {
+    /* @__PURE__ */ React.createElement("div", { "data-help-key": "doc_builder_document", "data-builder-focus": isFocusMode ? "true" : "false", "data-builder-settings-open": mobileSettingsOpen ? "true" : "false", ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: `builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? "rounded-none max-w-none max-h-none h-full" : "rounded-2xl max-w-[95vw] max-h-[95vh]"}`, inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, editingCitationId && /* @__PURE__ */ React.createElement("form", { ref: citationEditorRef, id: "builder-citation-editor", "data-builder-citation-editor": "1", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-citation-editor-title", "aria-describedby": "builder-citation-editor-help", onSubmit: saveCitationEdit, className: "absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "builder-citation-editor-title", className: "text-sm font-black text-cyan-950" }, "Edit citation"), /* @__PURE__ */ React.createElement("p", { id: "builder-citation-editor-help", className: "mt-0.5 text-[10px] leading-snug text-cyan-900" }, "Combine sources, adjust locators, and control how each source appears. Escape cancels.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white", "aria-label": "Close citation editor" }, "?")), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-2 overflow-y-auto p-3" }, citationItemsDraft.map((item, index) => {
       const sourceRecord = documentReferences.sources?.find((source) => source.id === item.sourceId);
       return /* @__PURE__ */ React.createElement("fieldset", { key: item.sourceId + "-" + index, className: "rounded-lg border border-slate-300 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Source ", index + 1), /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement("label", { className: "min-w-0 flex-1 text-[9px] font-bold uppercase text-slate-600" }, "Source", /* @__PURE__ */ React.createElement("select", { value: item.sourceId, onChange: (event) => updateCitationItemDraft(index, { sourceId: event.target.value }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold normal-case text-slate-800", "aria-label": "Source " + (index + 1) + " in citation" }, !sourceRecord && /* @__PURE__ */ React.createElement("option", { value: item.sourceId }, "Missing source ? choose a replacement"), (documentReferences.sources || []).map((source) => {
         const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
         return /* @__PURE__ */ React.createElement("option", { key: source.id, value: source.id, disabled: alreadyUsed }, source.title || _builderCitationAuthorKey(source, citationStyle), alreadyUsed ? " ? already cited" : "");
       }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex shrink-0", role: "group", "aria-label": "Reorder source " + (index + 1) }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, -1), disabled: !index, className: "h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " earlier" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, 1), disabled: index === citationItemsDraft.length - 1, className: "h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " later" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCitationItemDraft(index), disabled: citationItemsDraft.length === 1, className: "h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30", "aria-label": "Remove source " + (index + 1) + " from citation" }, "Remove"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Prefix", /* @__PURE__ */ React.createElement("input", { value: item.prefix, onChange: (event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., see" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Page or locator", /* @__PURE__ */ React.createElement("input", { value: item.locator, onChange: (event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "23 or chap. 2" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Suffix", /* @__PURE__ */ React.createElement("input", { value: item.suffix, onChange: (event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., emphasis added" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressAuthor, onChange: (event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked }), className: "accent-cyan-800" }), "Suppress author"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressYear, onChange: (event) => updateCitationItemDraft(index, { suppressYear: event.target.checked }), className: "accent-cyan-800" }), "Suppress year")));
-    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: `${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
-    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), Array.isArray(builderResourceIds) && exportPreviewSource === "history" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950" }, (t("guided.export_scope_label") || "Current lesson: {count} selected resources.").replace("{count}", builderResourceIds.length), history.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "block" }, t("guided.export_resources_missing") || "This lesson has no available resources, or some are missing. Review History before opening its package.")), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), typeof proposeRestyles === "function" && /* @__PURE__ */ React.createElement("details", { open: true, className: "rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden", "data-help-key": "doc_builder_block_suggestions" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100" }, "AI block suggestions ", Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? "(" + blockSuggestions.length + ")" : ""), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 px-2.5 pb-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-relaxed text-indigo-800" }, "Review the live document here. The AI only selects existing blocks; it never rewrites your text."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
+    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: "builder-mobile-switch" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        ref: mobileSettingsButtonRef,
         type: "button",
-        onClick: _suggestBuilderBlocks,
-        disabled: blockSuggestionsBusy,
-        className: "rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-50"
+        "aria-controls": "builder-settings-panel",
+        "aria-expanded": mobileSettingsOpen,
+        onClick: () => setMobileSettingsOpen((open) => !open),
+        className: "min-h-9 rounded border border-indigo-600 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50"
       },
-      blockSuggestionsBusy ? "Analyzing..." : "Suggest blocks"
-    ), blockSuggestionUndoCount > 0 && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: _undoBuilderBlockSuggestion,
-        className: "rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100"
-      },
-      "Undo last"
-    )), blockSuggestionError && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-900" }, blockSuggestionError), Array.isArray(blockSuggestions) && blockSuggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, blockSuggestions.map((proposal, index) => /* @__PURE__ */ React.createElement("article", { key: (proposal.ref ?? index) + ":" + proposal.kind, className: "rounded-lg border border-indigo-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase text-indigo-800" }, proposal.kind === "heading" ? "Heading" : proposal.kind === "callout" ? "Callout" : "List", proposal.level ? " (H" + proposal.level + ")" : ""), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[10px] leading-relaxed text-slate-700" }, proposal.reason || "This structure may help readers scan the document.")), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current),
-        className: "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100",
-        "aria-label": "Dismiss this block suggestion"
-      },
-      "Dismiss"
-    )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-1.5 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500" }, "Before"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block before", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.original), className: "h-24 w-full rounded border border-slate-200 bg-white" })), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-700" }, "After"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block after", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.html), className: "h-24 w-full rounded border border-indigo-300 bg-white" }))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => _applyBuilderBlockSuggestion(proposal),
-        className: "mt-1.5 w-full rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800"
-      },
-      "Apply to live document"
-    )))), Array.isArray(blockSuggestions) && blockSuggestions.length === 0 && !blockSuggestionError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600" }, "No structure changes suggested for this document."), blockSuggestionDropped > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[9px] italic text-slate-500" }, blockSuggestionDropped, " additional AI suggestion", blockSuggestionDropped === 1 ? "" : "s", " filtered out by the safety gate."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        onClick: () => applyExportPreset(preset),
-        className: "px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all",
-        title: `Apply "${preset.name}" preset`
-      },
-      preset.emoji,
-      " ",
-      preset.name
-    )), Object.entries(exportPresets).map(([key, preset]) => /* @__PURE__ */ React.createElement("div", { key, className: "flex items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => applyExportPreset(preset),
-        className: "px-2 py-1 bg-white border border-violet-600 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all",
-        title: `Apply "${preset.name}" preset`
-      },
-      preset.emoji,
-      " ",
-      preset.name
+      mobileSettingsOpen ? "Back to document" : "Document settings"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => deleteExportPreset(key),
-        className: "min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all",
-        "aria-label": `Delete "${preset.name}" preset`,
-        title: `Delete "${preset.name}" preset`
-      },
-      /* @__PURE__ */ React.createElement(X, { size: 10 })
-    )))), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const name = await promptForBuilderText("Enter a name for this export preset.", "", {
-        title: "Save export preset",
-        confirmText: "Save preset",
-        cancelText: "Cancel",
-        placeholder: "Preset name",
-        maxLength: 80,
-        validate: (value) => value.trim() ? null : "Enter a preset name."
-      });
-      if (name && name.trim()) saveExportPreset(name.trim());
-    }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", "data-help-key": "doc_builder_format", role: "radiogroup", "aria-label": "Export format", onKeyDown: handleRadioGroupKeyDown, "aria-describedby": "doc-builder-format-help" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, role: "radio", "aria-checked": exportPreviewMode === m, tabIndex: exportPreviewMode === m ? 0 : -1, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label))), /* @__PURE__ */ React.createElement("p", { id: "doc-builder-format-help", className: "mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5", role: "status" }, exportPreviewMode === "worksheet" ? t("export_preview.format_help_worksheet") || "A paper copy for students to write on. Answer boxes become ruled lines and answer choices become bubbles to fill in, and a name and date header is added. Opens your print window, where you can print it or save it as a PDF." : exportPreviewMode === "html" ? t("export_preview.format_help_html") || "One web page students open on a device. Highlighting, notes, drawing and typed answers all work, and save on that device." : exportPreviewMode === "slides" ? t("export_preview.format_help_slides") || "A PowerPoint file you can open in PowerPoint, Keynote or Google Slides." : t("export_preview.format_help_print") || "A finished copy to read or hand out, with everything shown as it is. Opens your print window, where you can print it or save it as a PDF. Pick Worksheet instead if students need blank lines to write on.")), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
-      "button",
-      {
         type: "button",
-        onClick: openBrandEditor,
-        className: "text-[10px] font-semibold text-rose-700 hover:text-rose-800 underline-offset-2 hover:underline normal-case",
-        title: "Create, edit, or delete school brand profiles"
+        onClick: () => setShowExportPreview(false),
+        "aria-label": t("a11y.close_doc_builder") || "Close Document Builder",
+        className: "min-h-9 rounded px-3 py-1 text-xs font-bold text-slate-700 hover:bg-red-50"
       },
-      "\u{1F3F7}\uFE0F Manage brand profiles"
-    )), noBrandsYet && setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
-      "button",
+      "Close"
+    )), /* @__PURE__ */ React.createElement(
+      "div",
       {
-        type: "button",
-        onClick: openBrandEditor,
-        className: "w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
-      },
-      "\u{1F3F7}\uFE0F ",
-      /* @__PURE__ */ React.createElement("strong", null, "First time?"),
-      " Set up your school brand \u2192 colors, fonts, logo for branded exports"
-    ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1", role: "radiogroup", "aria-label": "Document style", onKeyDown: handleRadioGroupKeyDown }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        role: "radio",
-        "aria-checked": exportTheme === key,
-        tabIndex: exportTheme === key ? 0 : -1,
-        onClick: () => setExportTheme(key),
-        className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? "bg-indigo-600 text-white ring-2 ring-indigo-300" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}`
-      },
-      s.emoji,
-      " ",
-      s.name
-    )), brandProfiles.map((p) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: p.id,
-        role: "radio",
-        "aria-checked": exportTheme === p.id,
-        tabIndex: exportTheme === p.id ? 0 : -1,
-        onClick: () => setExportTheme(p.id),
-        className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? "bg-rose-600 text-white ring-2 ring-rose-300" : "bg-white border border-rose-400 text-rose-700 hover:bg-rose-50"}`,
-        title: "School brand profile"
-      },
-      "\u{1F3F7}\uFE0F ",
-      p.name || "Brand"
-    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        value: exportConfig.fontId || (exportConfig.useAppFont ? "app" : "theme"),
-        onChange: (e) => {
-          const v = e.target.value;
-          setExportConfigAndRefresh((p) => ({ ...p, fontId: v, useAppFont: v === "app" }));
+        id: "builder-settings-panel",
+        role: "region",
+        "aria-label": "Document settings",
+        onKeyDownCapture: (event) => {
+          if (event.key !== "Escape" || !mobileSettingsOpen) return;
+          event.preventDefault();
+          event.stopPropagation();
+          setMobileSettingsOpen(false);
+          window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
         },
-        className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white",
-        "data-help-key": "doc_builder_font_select",
-        "aria-label": t("a11y.export_font") || "Export font family"
+        className: `builder-settings-panel ${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`
       },
-      /* @__PURE__ */ React.createElement("option", { value: "theme" }, "Theme font (default)"),
-      /* @__PURE__ */ React.createElement("option", { value: "app" }, "My app font (", FONT_OPTIONS.find((f) => f.id === selectedFont)?.label || "Default", ")"),
-      FONT_OPTIONS.filter((f) => f.id !== "default").map((f) => /* @__PURE__ */ React.createElement("option", { key: f.id, value: f.id }, f.label, f.category === "accessibility" ? " \u267F" : ""))
-    )), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 mb-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "checkbox",
-        className: "mt-0.5 accent-indigo-600",
-        checked: !!exportConfig.readerWebFonts,
-        onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, readerWebFonts: e.target.checked })),
-        "aria-describedby": "doc-builder-readerfonts-help"
-      }
-    ), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Let readers pick additional web fonts"), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-readerfonts-help", className: "block text-slate-600" }, "Adds accessibility, multilingual, sans-serif, serif and monospace web fonts to the menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "range",
-        min: 12,
-        max: 24,
-        value: exportConfig.fontSize,
-        onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, fontSize: parseInt(e.target.value) })),
-        className: "flex-1 accent-indigo-600",
-        "data-help-key": "doc_builder_font_size_slider",
-        "aria-label": t("a11y.font_size")
-      }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-8" }, exportConfig.fontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Margins:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 flex-1" }, [
-      { label: "Narrow", val: "0.5in" },
-      { label: "Normal", val: "1in" },
-      { label: "Wide", val: "1.5in" }
-    ].map((m) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: m.label,
-        type: "button",
-        "aria-pressed": pageSetup.margin === m.val,
-        onClick: () => {
-          applyPageMargin(m.val);
-          setExportConfigAndRefresh((p) => ({ ...p, pageMargin: m.val }));
-        },
-        className: `flex-1 text-[11px] font-bold py-1 border rounded transition-colors ${pageSetup.margin === m.val ? "bg-indigo-600 text-white border-indigo-700" : "text-slate-600 bg-white border-slate-400 hover:bg-indigo-50 hover:text-indigo-700"}`,
-        title: `${m.label} margins (${m.val})`,
-        "aria-label": `Set ${m.label} page margins`
-      },
-      m.label
-    )))), exportPreviewMode === "worksheet" && /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 mt-2 text-xs text-slate-700", htmlFor: "alloflow-worksheet-response-space" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Writing space:"), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        id: "alloflow-worksheet-response-space",
-        value: ["compact", "standard", "extended"].includes(exportConfig.worksheetResponseSpace) ? exportConfig.worksheetResponseSpace : "standard",
-        onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, worksheetResponseSpace: e.target.value })),
-        className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
-      },
-      /* @__PURE__ */ React.createElement("option", { value: "compact" }, "Compact \u2014 fewer pages"),
-      /* @__PURE__ */ React.createElement("option", { value: "standard" }, "Standard"),
-      /* @__PURE__ */ React.createElement("option", { value: "extended" }, "Extended \u2014 more room")
-    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-400 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono text-slate-600", "aria-live": "polite" }, wordCount.toLocaleString(), " words")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600 shrink-0", htmlFor: "word-goal-input" }, "Goal:"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "number",
-        id: "word-goal-input",
-        min: "0",
-        step: "50",
-        placeholder: "e.g. 500",
-        value: wordGoal || "",
-        className: "flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white",
-        "aria-label": t("a11y.target_word_count"),
-        onChange: (e) => setWordGoal(Math.max(0, parseInt(e.target.value, 10) || 0))
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": t("a11y.word_count_progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: wordGoalProgress.percent + "%", background: wordGoalProgress.percent >= 100 ? "#16a34a" : wordGoalProgress.percent >= 75 ? "#2563eb" : "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }, wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} / ${wordGoalProgress.goal} (${wordGoalProgress.percent}%)` : ""), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Word Art", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: t("placeholders.word_art_text_input"), defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("a11y.word_art_text") }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": t("a11y.word_art_style"), onKeyDown: handleRadioGroupKeyDown }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        type: "button",
-        role: "radio",
-        "aria-checked": i === 0,
-        tabIndex: i === 0 ? 0 : -1,
-        "data-wa-preset": key,
-        className: "wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all",
-        style: i === 0 ? { background: "#b45309", color: "white", borderColor: "#b45309" } : { background: "white", borderColor: "#fcd34d" },
-        onClick: (e) => {
-          const parent = e.currentTarget.parentElement;
-          if (!parent) return;
-          parent.querySelectorAll(".wordart-preset-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.tabIndex = -1;
-            b.style.background = "white";
-            b.style.color = "";
-            b.style.borderColor = "#fcd34d";
-          });
-          e.currentTarget.setAttribute("aria-checked", "true");
-          e.currentTarget.tabIndex = 0;
-          e.currentTarget.style.background = "#b45309";
-          e.currentTarget.style.color = "white";
-          e.currentTarget.style.borderColor = "#f59e0b";
-        }
-      },
-      emoji,
-      " ",
-      label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_size"), onKeyDown: handleRadioGroupKeyDown }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: s,
-        type: "button",
-        role: "radio",
-        "aria-checked": s === "L",
-        tabIndex: s === "L" ? 0 : -1,
-        "data-wa-size": s,
-        className: "wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
-        style: s === "L" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
-        onClick: (e) => {
-          const parent = e.currentTarget.parentElement;
-          if (!parent) return;
-          parent.querySelectorAll(".wordart-size-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.tabIndex = -1;
-            b.style.background = "white";
-            b.style.color = "#475569";
-            b.style.borderColor = "#e2e8f0";
-          });
-          e.currentTarget.setAttribute("aria-checked", "true");
-          e.currentTarget.tabIndex = 0;
-          e.currentTarget.style.background = "#4f46e5";
-          e.currentTarget.style.color = "white";
-          e.currentTarget.style.borderColor = "#4f46e5";
-        }
-      },
-      s
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_alignment"), onKeyDown: handleRadioGroupKeyDown }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: a,
-        type: "button",
-        role: "radio",
-        "aria-checked": a === "center",
-        tabIndex: a === "center" ? 0 : -1,
-        "data-wa-align": a,
-        "aria-label": `Align ${a}`,
-        className: "wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
-        style: a === "center" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
-        onClick: (e) => {
-          const parent = e.currentTarget.parentElement;
-          if (!parent) return;
-          parent.querySelectorAll(".wordart-align-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.tabIndex = -1;
-            b.style.background = "white";
-            b.style.color = "#475569";
-            b.style.borderColor = "#e2e8f0";
-          });
-          e.currentTarget.setAttribute("aria-checked", "true");
-          e.currentTarget.tabIndex = 0;
-          e.currentTarget.style.background = "#4f46e5";
-          e.currentTarget.style.color = "white";
-          e.currentTarget.style.borderColor = "#4f46e5";
-        }
-      },
-      icon
-    ))))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const textInput = document.getElementById("wordart-text-input");
-          const text = textInput && textInput.value ? textInput.value.trim() : "";
-          if (!text) {
-            addToast("Please enter word art text first", "info");
-            return;
-          }
-          const presetBtn = document.querySelector('.wordart-preset-btn[aria-checked="true"]');
-          const sizeBtn = document.querySelector('.wordart-size-btn[aria-checked="true"]');
-          const alignBtn = document.querySelector('.wordart-align-btn[aria-checked="true"]');
-          const preset = presetBtn ? presetBtn.getAttribute("data-wa-preset") : "goldFoil";
-          const size = sizeBtn ? sizeBtn.getAttribute("data-wa-size") : "L";
-          const align = alignBtn ? alignBtn.getAttribute("data-wa-align") : "center";
-          const iframe = exportPreviewRef.current;
-          const doc = iframe && iframe.contentDocument;
-          if (!doc || !doc.body) {
-            addToast("Preview not ready yet", "error");
-            return;
-          }
-          let html = "";
-          if (window.AlloWordArt && typeof window.AlloWordArt.render === "function") {
-            html = window.AlloWordArt.render(text, preset, size, align);
-          } else {
-            const P = { goldFoil: "background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;", neonGlow: "color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;", retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: "color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;", rainbow: "background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;" };
-            const sz = { S: "1.5rem", M: "2.5rem", L: "4rem", XL: "6rem" };
-            const safe = String(text).replace(/[<>&]/g, (c) => c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;");
-            const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ";line-height:1.1;" + (P[preset] || P.goldFoil) + '">' + safe + "</span>";
-            const wrapped = preset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
-            html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
-          }
-          if (!html) {
-            addToast("Could not render word art", "error");
-            return;
-          }
-          iframe.contentWindow.focus();
-          try {
-            doc.designMode = "on";
-          } catch (e) {
-          }
-          const sel = doc.getSelection();
-          const bodyEl = doc.body;
-          const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
-          const cursorInsideBody = anchor && (anchor === bodyEl || bodyEl.contains && bodyEl.contains(anchor.nodeType === 1 ? anchor : anchor.parentNode));
-          if (!cursorInsideBody) {
-            const main = doc.querySelector("main") || bodyEl;
-            const range = doc.createRange();
-            range.selectNodeContents(main);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-          }
-          let inserted = false;
-          try {
-            inserted = doc.execCommand("insertHTML", false, html);
-          } catch (e) {
-          }
-          if (!inserted) {
-            const wrap = doc.createElement("div");
-            wrap.innerHTML = html;
-            const node = wrap.firstChild;
-            if (node) doc.body.appendChild(node);
-          }
-          try {
-            if (doc.body) {
-              doc.body.setAttribute("data-allo-user-edited", "1");
-              doc.body.dispatchEvent(new doc.defaultView.Event("input", { bubbles: true }));
-            }
-          } catch (_) {
-          }
-          if (textInput) textInput.value = "";
-          addToast("\u2728 Word art inserted", "success");
-        },
-        className: "w-full px-3 py-2 bg-gradient-to-r from-amber-700 to-rose-700 hover:from-amber-800 hover:to-rose-800 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
-      },
-      "\u2728 Insert Word Art"
-    )), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Content", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Include Resources"), (() => {
-      const resourceKeys = ["includeAnalysis", "includeSimplified", "includeGlossary", "includeQuiz", "includeOutline", "includeFaq", "includeSentenceFrames", "includeImage", "includeMath", "includeDbq", "includeLessonPlan", "includeUdlAdvice", "includeBrainstorm"];
-      const allOn = resourceKeys.every((k) => exportConfig[k]);
-      return history.some((h) => h) && /* @__PURE__ */ React.createElement("button", { onClick: () => {
-        const update = {};
-        resourceKeys.forEach((k) => {
-          update[k] = !allOn;
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
+      }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))),
+      Array.isArray(builderResourceIds) && exportPreviewSource === "history" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950" }, (t("guided.export_scope_label") || "Current lesson: {count} selected resources.").replace("{count}", builderResourceIds.length), history.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "block" }, t("guided.export_resources_missing") || "This lesson has no available resources, or some are missing. Review History before opening its package.")),
+      exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")),
+      /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"),
+      exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."),
+      !isRemediationDocument && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Content", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Include Resources"), (() => {
+        const available = _builderResourceOptions(history, t);
+        const allOn = available.length > 0 && available.every(([key]) => _builderResourceIncluded(exportConfig, key));
+        return available.length > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+          setExportConfigAndRefresh((p) => ({ ...p, ..._builderBulkResourceUpdate(history, p, t) }));
+        }, className: "text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors" }, allOn ? "Deselect All" : "Select All");
+      })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, (() => {
+        const teacherOnlyDefault = /* @__PURE__ */ new Set(["includeAnalysis", "includeUdlAdvice", "includeBrainstorm"]);
+        const available = _builderResourceOptions(history, t);
+        if (available.length === 0) return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic px-1 py-2" }, "No resources generated yet. Generate resources first, then choose which to include in your document.");
+        return available.map(([key, label]) => {
+          const isTeacherOnly = teacherOnlyDefault.has(key);
+          const tooltip = isTeacherOnly ? "Always included in teacher copy. Toggle to also include in student copy." : "";
+          const showCloze = key === "includeSimplified" && exportPreviewMode === "worksheet" && exportConfig.includeSimplified && history.some((h) => h && h.type === "glossary");
+          return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: tooltip }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: _builderResourceIncluded(exportConfig, key), onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, [key]: e.target.checked })), className: "rounded" }), /* @__PURE__ */ React.createElement("span", null, label, isTeacherOnly && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[11px] text-indigo-700 font-bold" }, "(also in student copy)"))), showCloze && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5", title: "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.clozeWorksheet, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, clozeWorksheet: e.target.checked })), className: "rounded mt-0.5" }), /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F Fill in the blanks", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-tight" }, "Blanks the glossary words and adds a word bank."))));
         });
-        setExportConfigAndRefresh((p) => ({ ...p, ...update }));
-      }, className: "text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors" }, allOn ? "Deselect All" : "Select All");
-    })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, (() => {
-      const teacherOnlyDefault = /* @__PURE__ */ new Set(["includeAnalysis", "includeUdlAdvice", "includeBrainstorm"]);
-      const available = [
-        ["includeAnalysis", "\u{1F4CA} Source Analysis", "analysis"],
-        ["includeSimplified", "\u{1F4D6} Adapted Text", "simplified"],
-        ["includeGlossary", "\u{1F4DA} Glossary", "glossary"],
-        ["includeQuiz", "\u2753 Quiz", "quiz"],
-        ["includeOutline", "\u{1F5C2}\uFE0F Graphic Organizer", "outline"],
-        ["includeFaq", "\u{1F4AC} FAQ", "faq"],
-        ["includeMemoryAid", t("sidebar.tool_memory_aid") || "Memory Aid Studio", "memory-aid"],
-        ["includeAppliedChallenge", t("sidebar.tool_applied_challenge") || "Applied Challenge Studio", "applied-challenge"],
-        ["includeSentenceFrames", "\u270D\uFE0F Sentence Frames", "sentence-frames"],
-        ["includeImage", "\u{1F3A8} Visual Support", "image"],
-        ["includeMath", "\u{1F522} Math", "math"],
-        ["includeDbq", "\u{1F4DC} DBQ", "dbq"],
-        ["includeLessonPlan", "\u{1F4CB} Lesson Plan", "lesson-plan"],
-        ["includeUdlAdvice", "\u{1F9E9} UDL Advice", "udl-advice"],
-        ["includeBrainstorm", "\u{1F4A1} Brainstorm", "brainstorm"]
-      ].filter(([, , type]) => history.some((h) => h && h.type === type));
-      if (available.length === 0) return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic px-1 py-2" }, "No resources generated yet. Generate resources first, then choose which to include in your document.");
-      return available.map(([key, label]) => {
-        const isTeacherOnly = teacherOnlyDefault.has(key);
-        const tooltip = isTeacherOnly ? "Always included in teacher copy. Toggle to also include in student copy." : "";
-        const showCloze = key === "includeSimplified" && exportPreviewMode === "worksheet" && exportConfig.includeSimplified && history.some((h) => h && h.type === "glossary");
-        return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: tooltip }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: ["includeMemoryAid", "includeAppliedChallenge"].includes(key) ? exportConfig[key] !== false : exportConfig[key], onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, [key]: e.target.checked })), className: "rounded" }), /* @__PURE__ */ React.createElement("span", null, label, isTeacherOnly && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[11px] text-indigo-700 font-bold" }, "(also in student copy)"))), showCloze && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5", title: "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.clozeWorksheet, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, clozeWorksheet: e.target.checked })), className: "rounded mt-0.5" }), /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F Fill in the blanks", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-tight" }, "Blanks the glossary words and adds a word bank."))));
-      });
-    })())), (textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-950" }, "Text-access review before sharing"), textAccessExportReview.supplementalWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.supplementalCount, " supplemental text", textAccessExportReview.supplementalCount === 1 ? "" : "s", " but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export."), textAccessExportReview.unspecifiedAdaptedWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.unspecifiedAdaptedCount, " adapted text", textAccessExportReview.unspecifiedAdaptedCount === 1 ? "" : "s", " whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution."), textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-amber-800" }, "This notice is advisory and does not make an IEP or legal-compliance determination.")), (() => {
-      const skipped = getSkippedResources();
-      if (skipped.length === 0) return null;
-      const skippedTypes = new Set((Array.isArray(history) ? history : []).filter((item) => item && (item.type === "adventure" || item.type === "persona")).map((item) => item.type));
-      return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "Interactive resources not included:"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600" }, skipped.join(", ")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1 italic" }, "These are interactive tools that can't be rendered as static documents."), skippedTypes.has("adventure") && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, "\u{1F4D6} Adventure stories have their own export: open the adventure and use ", /* @__PURE__ */ React.createElement("strong", null, "Export Storybook"), " for a finished, self-contained HTML book (optionally narrated with saved TTS)."), skippedTypes.has("persona") && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, "\u{1F3AD} Persona conversations: use ", /* @__PURE__ */ React.createElement("strong", null, "Save private session"), " in the persona view \u2014 downloads a private JSON artifact plus a read-anywhere HTML transcript with narration."));
-    })(), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Export", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Options"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeTeacherKey, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeTeacherKey: e.target.checked })), className: "rounded" }), "\u{1F4CE} Teacher Answer Key"), exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && /* @__PURE__ */ React.createElement("div", { className: "ml-5 rounded-lg border border-emerald-200 bg-emerald-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs font-semibold text-emerald-950 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, separateTeacherStudentFiles: e.target.checked })), className: "mt-0.5 rounded" }), /* @__PURE__ */ React.createElement("span", null, "Separate student + teacher files ", /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, "(recommended)"))), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-emerald-900" }, "The STUDENT HTML downloads separately with the answer-key appendix removed. Answers stay in a private TEACHER download; project data is included when a private teacher ZIP can be created."), exportConfig.separateTeacherStudentFiles === false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] font-bold leading-snug text-rose-700" }, "The combined HTML will contain answers. Do not share it with students.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeStudentResponses, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeStudentResponses: e.target.checked })), className: "rounded" }), "\u{1F4DD} Student Responses"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-indigo-900", htmlFor: "alloflow-export-due-at" }, "Assignment due date and time (optional)"), /* @__PURE__ */ React.createElement("input", { id: "alloflow-export-due-at", type: "datetime-local", value: exportConfig.dueAt ? (() => {
-      try {
-        const d = new Date(exportConfig.dueAt);
-        return Number.isFinite(d.getTime()) ? new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16) : "";
-      } catch (_) {
-        return "";
-      }
-    })() : "", onChange: (e) => {
-      const raw = String(e.target.value || "").trim();
-      if (!raw) {
-        setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" }));
-        return;
-      }
-      const parsed = new Date(raw);
-      if (!Number.isFinite(parsed.getTime())) return;
-      let zone = "";
-      try {
-        zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-      } catch (_) {
-      }
-      setExportConfigAndRefresh((p) => ({ ...p, dueAt: parsed.toISOString(), dueTimeZone: zone }));
-    }, className: "mt-1 w-full rounded border border-indigo-300 bg-white px-2 py-1.5 text-xs text-slate-800", "aria-describedby": "alloflow-export-due-help" }), /* @__PURE__ */ React.createElement("div", { id: "alloflow-export-due-help", className: "mt-1 text-[10px] leading-snug text-indigo-800" }, "Late status is calculated only when this exact instant and a submission timestamp are available. The browser records your IANA timezone; missing work is never inferred here."), exportConfig.dueAt && /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-1 text-[10px] font-semibold text-indigo-800 underline", onClick: () => setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" })) }, "Clear due date")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: "For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers \u2014 they just can't look up or self-grade against the key." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.assessmentMode === true, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, assessmentMode: e.target.checked })), className: "rounded" }), "\u{1F512} Assessment mode (no embedded answers)"), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-white"}`, title: "Embeds generated read-aloud audio inside the HTML instead of placing audio files beside it." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.singleFileHtml || exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, disabled: exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, singleFileHtml: e.target.checked })), className: "rounded" }), "\u{1F50A} Embed generated audio in HTML"))), showDisplayModes && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Display modes"), hasGlossary && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeGlossary ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Glossary"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: (exportConfig.glossaryDisplayMode || "table") === "table", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "table" })), disabled: !exportConfig.includeGlossary }), "Table (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "flash-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "flash-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F0CF} Flash cards (fold-and-cut for paper, flip for digital)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "language-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "language-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F310} Language cards (emphasizes translations)")), (exportConfig.glossaryDisplayMode || "table") === "table" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
-      { v: "small", label: "S", px: 40 },
-      { v: "medium", label: "M", px: 64 },
-      { v: "large", label: "L", px: 96 },
-      { v: "xl", label: "XL", px: 140 }
-    ].map((opt) => {
-      const cur = exportConfig.glossaryImageSize || "medium";
-      const isActive = cur === opt.v;
-      return /* @__PURE__ */ React.createElement(
+      })())), (textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-950" }, "Text-access review before sharing"), textAccessExportReview.supplementalWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.supplementalCount, " supplemental text", textAccessExportReview.supplementalCount === 1 ? "" : "s", " but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export."), textAccessExportReview.unspecifiedAdaptedWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.unspecifiedAdaptedCount, " adapted text", textAccessExportReview.unspecifiedAdaptedCount === 1 ? "" : "s", " whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution."), textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-amber-800" }, "This notice is advisory and does not make an IEP or legal-compliance determination.")), (() => {
+        const skipped = getSkippedResources();
+        if (skipped.length === 0) return null;
+        const skippedTypes = new Set((Array.isArray(history) ? history : []).filter((item) => item && (item.type === "adventure" || item.type === "persona")).map((item) => item.type));
+        return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "Interactive resources not included:"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600" }, skipped.join(", ")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1 italic" }, "These are interactive tools that can't be rendered as static documents."), skippedTypes.has("adventure") && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, "\u{1F4D6} Adventure stories have their own export: open the adventure and use ", /* @__PURE__ */ React.createElement("strong", null, "Export Storybook"), " for a finished, self-contained HTML book (optionally narrated with saved TTS)."), skippedTypes.has("persona") && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, "\u{1F3AD} Persona conversations: use ", /* @__PURE__ */ React.createElement("strong", null, "Save private session"), " in the persona view \u2014 downloads a private JSON artifact plus a read-anywhere HTML transcript with narration."));
+      })(), /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-300 bg-white p-2", "data-builder-resource-list": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700" }, includedResourceCount, " of ", resourceItems.length, " resources selected"), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 space-y-1 text-xs text-slate-700" }, resourceItems.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: item.id + "-" + index, className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-label": item.included ? "Selected" : "Not selected" }, item.included ? "\u2713" : "\u2212"), /* @__PURE__ */ React.createElement("span", null, item.title, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, item.type))))))),
+      /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })),
+      typeof proposeRestyles === "function" && /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden", "data-help-key": "doc_builder_block_suggestions" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100" }, "AI block suggestions ", Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? "(" + blockSuggestions.length + ")" : ""), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 px-2.5 pb-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-relaxed text-indigo-800" }, "Review the live document here. The AI only selects existing blocks; it never rewrites your text."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
         "button",
         {
-          key: opt.v,
           type: "button",
-          disabled: !exportConfig.includeGlossary,
-          onClick: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryImageSize: opt.v })),
-          title: opt.label + " (" + opt.px + " px)",
-          "aria-label": "Glossary image size " + opt.label + " " + opt.px + " pixels",
-          "aria-pressed": isActive,
-          className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-emerald-600 text-white border-emerald-700" : "bg-white text-slate-600 border-slate-300 hover:bg-emerald-50")
+          onClick: _suggestBuilderBlocks,
+          disabled: blockSuggestionsBusy,
+          className: "rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-50"
         },
-        opt.label
-      );
-    })))), hasTimeline && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Timeline"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: (exportConfig.timelineDisplayMode || "list") === "list", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "list" })) }), "List (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: exportConfig.timelineDisplayMode === "cuttable-strips", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "cuttable-strips" })) }), "\u2702 Cuttable chronology strips")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
-      { v: "small", label: "S", px: 48 },
-      { v: "medium", label: "M", px: 64 },
-      { v: "large", label: "L", px: 96 },
-      { v: "xl", label: "XL", px: 140 }
-    ].map((opt) => {
-      const cur = exportConfig.timelineImageSize || "medium";
-      const isActive = cur === opt.v;
-      return /* @__PURE__ */ React.createElement(
+        blockSuggestionsBusy ? "Analyzing..." : "Suggest blocks"
+      ), blockSuggestionUndoCount > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
-          key: opt.v,
           type: "button",
-          onClick: () => setExportConfigAndRefresh((p) => ({ ...p, timelineImageSize: opt.v })),
-          title: opt.label + " (" + opt.px + " px)",
-          "aria-label": "Timeline image size " + opt.label + " " + opt.px + " pixels",
-          "aria-pressed": isActive,
-          className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-indigo-50")
+          onClick: _undoBuilderBlockSuggestion,
+          className: "rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100"
         },
-        opt.label
-      );
-    })))), hasBrainstorm && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeBrainstorm ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Brainstorm"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "brainstormDisplayMode", checked: (exportConfig.brainstormDisplayMode || "grid") === "grid", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, brainstormDisplayMode: "grid" })), disabled: !exportConfig.includeBrainstorm }), "Card grid (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "brainstormDisplayMode", checked: exportConfig.brainstormDisplayMode === "mindmap", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, brainstormDisplayMode: "mindmap" })), disabled: !exportConfig.includeBrainstorm }), "\u{1F31F} Mind-map graphic organizer"))), hasVennDiagram && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeOutline ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Venn diagram"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, [["completed", "\u2705 Completed reference"], ["activity", "\u{1F9E9} Student sorting activity"], ["both", "\u{1F4C4} Both (activity + completed key)"]].map(([value, label]) => {
-      const assessmentBlocked = exportConfig.assessmentMode === true && value !== "activity";
-      return /* @__PURE__ */ React.createElement("label", { key: value, className: `flex items-center gap-2 text-xs rounded px-1 py-0.5 ${assessmentBlocked || !exportConfig.includeOutline ? "cursor-not-allowed text-slate-400" : "text-slate-700 cursor-pointer hover:bg-white"}` }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "vennExportMode", checked: effectiveVennExportMode === value, onChange: () => setExportConfigAndRefresh((p) => ({ ...p, vennExportMode: value })), disabled: !exportConfig.includeOutline || assessmentBlocked }), label);
-    })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-1 text-[10px] leading-snug text-slate-500" }, "HTML uses accessible tap/select placement. PDF and Worksheet exports use blank circles with cut-out cards."), exportConfig.assessmentMode === true && /* @__PURE__ */ React.createElement("div", { className: "mt-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] leading-snug text-amber-900" }, "Assessment mode exports the activity without its completed reference or self-check answers.")), hasConceptSort && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.conceptSortInteractive !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, conceptSortInteractive: e.target.checked })), className: "rounded" }), "\u{1F9E9} Concept sort: interactive tap/select sorting"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Sort strip image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
-      { v: "small", label: "S", px: 56 },
-      { v: "medium", label: "M", px: 80 },
-      { v: "large", label: "L", px: 110 },
-      { v: "xl", label: "XL", px: 150 }
-    ].map((opt) => {
-      const cur = exportConfig.conceptSortImageSize || "medium";
-      const isActive = cur === opt.v;
-      return /* @__PURE__ */ React.createElement(
+        "Undo last"
+      )), blockSuggestionError && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-900" }, blockSuggestionError), Array.isArray(blockSuggestions) && blockSuggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, blockSuggestions.map((proposal, index) => /* @__PURE__ */ React.createElement("article", { key: (proposal.ref ?? index) + ":" + proposal.kind, className: "rounded-lg border border-indigo-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase text-indigo-800" }, proposal.kind === "heading" ? "Heading" : proposal.kind === "callout" ? "Callout" : "List", proposal.level ? " (H" + proposal.level + ")" : ""), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[10px] leading-relaxed text-slate-700" }, proposal.reason || "This structure may help readers scan the document.")), /* @__PURE__ */ React.createElement(
         "button",
         {
-          key: opt.v,
           type: "button",
-          onClick: () => setExportConfigAndRefresh((p) => ({ ...p, conceptSortImageSize: opt.v })),
-          title: opt.label + " (" + opt.px + " px)",
-          "aria-label": "Concept sort image size " + opt.label + " " + opt.px + " pixels",
-          "aria-pressed": isActive,
-          className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-rose-600 text-white border-rose-700" : "bg-white text-slate-600 border-slate-300 hover:bg-rose-50")
+          onClick: () => setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current),
+          className: "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100",
+          "aria-label": "Dismiss this block suggestion"
         },
-        opt.label
-      );
-    }))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u2728 AI Style Studio"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
-      { label: "\u{1F3A8} Auto-Beautify", prompt: "Make this document visually stunning and professional with a modern color scheme, elegant typography, subtle gradients, well-spaced sections with rounded cards, and a cohesive design system. Use a sophisticated palette." },
-      { label: "\u{1F3EB} Academic", prompt: "Professional academic style with serif headings (Georgia or similar), clean layout, navy/gold color scheme, formal table styling, proper margins, and a scholarly appearance suitable for university submissions." },
-      { label: "\u{1F308} Elementary", prompt: "Bright, playful, and colorful style for elementary students. Use rounded corners, fun colors (teal, coral, purple), larger friendly fonts, emoji-friendly, card-based layout with soft shadows." },
-      { label: "\u{1F319} Dark Mode", prompt: "Elegant dark mode with dark slate/charcoal background, soft white text, indigo/purple accents, subtle borders, and beautiful contrast. Easy on the eyes for screen reading." },
-      { label: "\u{1F4F0} Magazine", prompt: "Clean editorial magazine layout with large hero headings, pull quotes with colored left borders, two-column text sections where appropriate, serif body text, and professional photo-story feel." },
-      { label: "\u{1F9CA} Minimalist", prompt: "Ultra-minimal Scandinavian design. Lots of whitespace, thin sans-serif font, muted grays and one accent color, hairline borders, understated elegance." }
-    ].map((preset) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: preset.label,
-        onClick: () => {
-          setExportStylePrompt(preset.prompt);
-          setTimeout(() => generateCustomExportStyle(), 50);
+        "Dismiss"
+      )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-1.5 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500" }, "Before"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block before", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.original), className: "h-24 w-full rounded border border-slate-200 bg-white" })), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-700" }, "After"), /* @__PURE__ */ React.createElement("iframe", { title: "Suggested block after", sandbox: "allow-same-origin", srcDoc: _builderSuggestionPreviewSrcDoc(proposal.html), className: "h-24 w-full rounded border border-indigo-300 bg-white" }))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => _applyBuilderBlockSuggestion(proposal),
+          className: "mt-1.5 w-full rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800"
         },
-        disabled: isGeneratingStyle,
-        className: "px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 disabled:opacity-40 transition-colors"
-      },
-      preset.label
-    ))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "text",
-        value: exportStylePrompt,
-        onChange: (e) => setExportStylePrompt(e.target.value),
-        onKeyDown: (e) => {
-          if (e.key === "Enter" && exportStylePrompt.trim()) generateCustomExportStyle();
+        "Apply to live document"
+      )))), Array.isArray(blockSuggestions) && blockSuggestions.length === 0 && !blockSuggestionError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600" }, "No structure changes suggested for this document."), blockSuggestionDropped > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[9px] italic text-slate-500" }, blockSuggestionDropped, " additional AI suggestion", blockSuggestionDropped === 1 ? "" : "s", " filtered out by the safety gate."))),
+      !isRemediationDocument && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          onClick: () => applyExportPreset(preset),
+          className: "px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all",
+          title: `Apply "${preset.name}" preset`
         },
-        placeholder: t("placeholders.describe_style_preset"),
-        className: "flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300",
-        "aria-label": t("a11y.custom_export_style")
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: generateCustomExportStyle,
-        "aria-label": isGeneratingStyle ? "Generating custom style" : "Generate custom style",
-        disabled: !exportStylePrompt.trim() || isGeneratingStyle,
-        className: "px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
-      },
-      isGeneratingStyle ? "..." : "\u2728"
-    )), customExportCSS && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "flex items-center gap-2 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-700 font-medium" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCustomExportCSS(""), className: "text-[11px] text-slate-600 hover:text-red-500 font-bold" }, "Reset"))), (() => {
-      const wc = writingCheck;
-      const _leafBlocks = () => {
-        const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
-        if (!doc || !doc.body) return null;
-        return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
-      };
-      const runWritingCheck = async () => {
-        const runId = ++writingCheckRunRef.current;
-        const sourceDoc = exportPreviewRef.current?.contentDocument;
-        const sourceHtml = sourceDoc?.documentElement?.outerHTML || "";
-        setWritingCheck({ status: "loading" });
-        if (!sourceDoc || !sourceHtml) {
-          setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready - wait for it to render." });
+        preset.emoji,
+        " ",
+        preset.name
+      )), Object.entries(exportPresets).map(([key, preset]) => /* @__PURE__ */ React.createElement("div", { key, className: "flex items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => applyExportPreset(preset),
+          className: "px-2 py-1 bg-white border border-violet-600 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all",
+          title: `Apply "${preset.name}" preset`
+        },
+        preset.emoji,
+        " ",
+        preset.name
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => deleteExportPreset(key),
+          className: "min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all",
+          "aria-label": `Delete "${preset.name}" preset`,
+          title: `Delete "${preset.name}" preset`
+        },
+        /* @__PURE__ */ React.createElement(X, { size: 10 })
+      )))), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const name = await promptForBuilderText("Enter a name for this export preset.", "", {
+          title: "Save export preset",
+          confirmText: "Save preset",
+          cancelText: "Cancel",
+          placeholder: "Preset name",
+          maxLength: 80,
+          validate: (value) => value.trim() ? null : "Enter a preset name."
+        });
+        if (name && name.trim()) saveExportPreset(name.trim());
+      }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")),
+      /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", "data-help-key": "doc_builder_format", role: "radiogroup", "aria-label": "Export format", onKeyDown: handleRadioGroupKeyDown, "aria-describedby": "doc-builder-format-help" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].filter(([mode]) => !isRemediationDocument || mode !== "worksheet").map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, role: "radio", "aria-checked": exportPreviewMode === m, tabIndex: exportPreviewMode === m ? 0 : -1, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label))), /* @__PURE__ */ React.createElement("p", { id: "doc-builder-format-help", className: "mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5", role: "status" }, isRemediationDocument ? "Exports use the document shown in the editor. PDF opens your print window; HTML opens as a web page; Slides creates an editable PowerPoint. Review the downloaded layout before sharing." : exportPreviewMode === "worksheet" ? t("export_preview.format_help_worksheet") || "A paper copy for students to write on. Answer boxes become ruled lines and answer choices become bubbles to fill in, and a name and date header is added. Opens your print window, where you can print it or save it as a PDF." : exportPreviewMode === "html" ? t("export_preview.format_help_html") || "One web page students open on a device. Highlighting, notes, drawing and typed answers all work, and save on that device." : exportPreviewMode === "slides" ? t("export_preview.format_help_slides") || "A PowerPoint file you can open in PowerPoint, Keynote or Google Slides." : t("export_preview.format_help_print") || "A finished copy to read or hand out, with everything shown as it is. Opens your print window, where you can print it or save it as a PDF. Pick Worksheet instead if students need blank lines to write on.")),
+      /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-300 p-2", "data-builder-appearance": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700" }, "Appearance and page setup"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openBrandEditor,
+          className: "text-[10px] font-semibold text-rose-700 hover:text-rose-800 underline-offset-2 hover:underline normal-case",
+          title: "Create, edit, or delete school brand profiles"
+        },
+        "\u{1F3F7}\uFE0F Manage brand profiles"
+      )), noBrandsYet && setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openBrandEditor,
+          className: "w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
+        },
+        "\u{1F3F7}\uFE0F ",
+        /* @__PURE__ */ React.createElement("strong", null, "First time?"),
+        " Set up your school brand \u2192 colors, fonts, logo for branded exports"
+      ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1", role: "radiogroup", "aria-label": "Document style", onKeyDown: handleRadioGroupKeyDown }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          role: "radio",
+          "aria-checked": exportTheme === key,
+          tabIndex: exportTheme === key ? 0 : -1,
+          onClick: () => setExportTheme(key),
+          className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? "bg-indigo-600 text-white ring-2 ring-indigo-300" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}`
+        },
+        s.emoji,
+        " ",
+        s.name
+      )), brandProfiles.map((p) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: p.id,
+          role: "radio",
+          "aria-checked": exportTheme === p.id,
+          tabIndex: exportTheme === p.id ? 0 : -1,
+          onClick: () => setExportTheme(p.id),
+          className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? "bg-rose-600 text-white ring-2 ring-rose-300" : "bg-white border border-rose-400 text-rose-700 hover:bg-rose-50"}`,
+          title: "School brand profile"
+        },
+        "\u{1F3F7}\uFE0F ",
+        p.name || "Brand"
+      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: exportConfig.fontId || (exportConfig.useAppFont ? "app" : "theme"),
+          onChange: (e) => {
+            const v = e.target.value;
+            setExportConfigAndRefresh((p) => ({ ...p, fontId: v, useAppFont: v === "app" }));
+          },
+          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white",
+          "data-help-key": "doc_builder_font_select",
+          "aria-label": t("a11y.export_font") || "Export font family"
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "theme" }, "Theme font (default)"),
+        /* @__PURE__ */ React.createElement("option", { value: "app" }, "My app font (", FONT_OPTIONS.find((f) => f.id === selectedFont)?.label || "Default", ")"),
+        FONT_OPTIONS.filter((f) => f.id !== "default").map((f) => /* @__PURE__ */ React.createElement("option", { key: f.id, value: f.id }, f.label, f.category === "accessibility" ? " \u267F" : ""))
+      )), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 mb-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "checkbox",
+          className: "mt-0.5 accent-indigo-600",
+          checked: !!exportConfig.readerWebFonts,
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, readerWebFonts: e.target.checked })),
+          "aria-describedby": "doc-builder-readerfonts-help"
+        }
+      ), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Let readers pick additional web fonts"), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-readerfonts-help", className: "block text-slate-600" }, "Adds accessibility, multilingual, sans-serif, serif and monospace web fonts to the menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "range",
+          min: 12,
+          max: 24,
+          value: exportConfig.fontSize,
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, fontSize: parseInt(e.target.value) })),
+          className: "flex-1 accent-indigo-600",
+          "data-help-key": "doc_builder_font_size_slider",
+          "aria-label": t("a11y.font_size")
+        }
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-8" }, exportConfig.fontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Margins:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 flex-1" }, [
+        { label: "Narrow", val: "0.5in" },
+        { label: "Normal", val: "1in" },
+        { label: "Wide", val: "1.5in" }
+      ].map((m) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: m.label,
+          type: "button",
+          "aria-pressed": pageSetup.margin === m.val,
+          onClick: () => {
+            applyPageMargin(m.val);
+            setExportConfigAndRefresh((p) => ({ ...p, pageMargin: m.val }));
+          },
+          className: `flex-1 text-[11px] font-bold py-1 border rounded transition-colors ${pageSetup.margin === m.val ? "bg-indigo-600 text-white border-indigo-700" : "text-slate-600 bg-white border-slate-400 hover:bg-indigo-50 hover:text-indigo-700"}`,
+          title: `${m.label} margins (${m.val})`,
+          "aria-label": `Set ${m.label} page margins`
+        },
+        m.label
+      )))), exportPreviewMode === "worksheet" && /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 mt-2 text-xs text-slate-700", htmlFor: "alloflow-worksheet-response-space" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Writing space:"), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          id: "alloflow-worksheet-response-space",
+          value: ["compact", "standard", "extended"].includes(exportConfig.worksheetResponseSpace) ? exportConfig.worksheetResponseSpace : "standard",
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, worksheetResponseSpace: e.target.value })),
+          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "compact" }, "Compact \u2014 fewer pages"),
+        /* @__PURE__ */ React.createElement("option", { value: "standard" }, "Standard"),
+        /* @__PURE__ */ React.createElement("option", { value: "extended" }, "Extended \u2014 more room")
+      ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-400 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono text-slate-600", "aria-live": "polite" }, wordCount.toLocaleString(), " words")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600 shrink-0", htmlFor: "word-goal-input" }, "Goal:"), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          id: "word-goal-input",
+          min: "0",
+          step: "50",
+          placeholder: "e.g. 500",
+          value: wordGoal || "",
+          className: "flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white",
+          "aria-label": t("a11y.target_word_count"),
+          onChange: (e) => setWordGoal(Math.max(0, parseInt(e.target.value, 10) || 0))
+        }
+      )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": t("a11y.word_count_progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: wordGoalProgress.percent + "%", background: wordGoalProgress.percent >= 100 ? "#16a34a" : wordGoalProgress.percent >= 75 ? "#2563eb" : "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }, wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} / ${wordGoalProgress.goal} (${wordGoalProgress.percent}%)` : ""), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")))),
+      /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-300 p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700" }, "Word Art"), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: t("placeholders.word_art_text_input"), defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("a11y.word_art_text") }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": t("a11y.word_art_style"), onKeyDown: handleRadioGroupKeyDown }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          type: "button",
+          role: "radio",
+          "aria-checked": i === 0,
+          tabIndex: i === 0 ? 0 : -1,
+          "data-wa-preset": key,
+          className: "wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all",
+          style: i === 0 ? { background: "#b45309", color: "white", borderColor: "#b45309" } : { background: "white", borderColor: "#fcd34d" },
+          onClick: (e) => {
+            const parent = e.currentTarget.parentElement;
+            if (!parent) return;
+            parent.querySelectorAll(".wordart-preset-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.tabIndex = -1;
+              b.style.background = "white";
+              b.style.color = "";
+              b.style.borderColor = "#fcd34d";
+            });
+            e.currentTarget.setAttribute("aria-checked", "true");
+            e.currentTarget.tabIndex = 0;
+            e.currentTarget.style.background = "#b45309";
+            e.currentTarget.style.color = "white";
+            e.currentTarget.style.borderColor = "#f59e0b";
+          }
+        },
+        emoji,
+        " ",
+        label
+      )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_size"), onKeyDown: handleRadioGroupKeyDown }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: s,
+          type: "button",
+          role: "radio",
+          "aria-checked": s === "L",
+          tabIndex: s === "L" ? 0 : -1,
+          "data-wa-size": s,
+          className: "wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
+          style: s === "L" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
+          onClick: (e) => {
+            const parent = e.currentTarget.parentElement;
+            if (!parent) return;
+            parent.querySelectorAll(".wordart-size-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.tabIndex = -1;
+              b.style.background = "white";
+              b.style.color = "#475569";
+              b.style.borderColor = "#e2e8f0";
+            });
+            e.currentTarget.setAttribute("aria-checked", "true");
+            e.currentTarget.tabIndex = 0;
+            e.currentTarget.style.background = "#4f46e5";
+            e.currentTarget.style.color = "white";
+            e.currentTarget.style.borderColor = "#4f46e5";
+          }
+        },
+        s
+      )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_alignment"), onKeyDown: handleRadioGroupKeyDown }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: a,
+          type: "button",
+          role: "radio",
+          "aria-checked": a === "center",
+          tabIndex: a === "center" ? 0 : -1,
+          "data-wa-align": a,
+          "aria-label": `Align ${a}`,
+          className: "wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
+          style: a === "center" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
+          onClick: (e) => {
+            const parent = e.currentTarget.parentElement;
+            if (!parent) return;
+            parent.querySelectorAll(".wordart-align-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.tabIndex = -1;
+              b.style.background = "white";
+              b.style.color = "#475569";
+              b.style.borderColor = "#e2e8f0";
+            });
+            e.currentTarget.setAttribute("aria-checked", "true");
+            e.currentTarget.tabIndex = 0;
+            e.currentTarget.style.background = "#4f46e5";
+            e.currentTarget.style.color = "white";
+            e.currentTarget.style.borderColor = "#4f46e5";
+          }
+        },
+        icon
+      ))))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const textInput = document.getElementById("wordart-text-input");
+            const text = textInput && textInput.value ? textInput.value.trim() : "";
+            if (!text) {
+              addToast("Please enter word art text first", "info");
+              return;
+            }
+            const presetBtn = document.querySelector('.wordart-preset-btn[aria-checked="true"]');
+            const sizeBtn = document.querySelector('.wordart-size-btn[aria-checked="true"]');
+            const alignBtn = document.querySelector('.wordart-align-btn[aria-checked="true"]');
+            const preset = presetBtn ? presetBtn.getAttribute("data-wa-preset") : "goldFoil";
+            const size = sizeBtn ? sizeBtn.getAttribute("data-wa-size") : "L";
+            const align = alignBtn ? alignBtn.getAttribute("data-wa-align") : "center";
+            const iframe = exportPreviewRef.current;
+            const doc = iframe && iframe.contentDocument;
+            if (!doc || !doc.body) {
+              addToast("Preview not ready yet", "error");
+              return;
+            }
+            let html = "";
+            if (window.AlloWordArt && typeof window.AlloWordArt.render === "function") {
+              html = window.AlloWordArt.render(text, preset, size, align);
+            } else {
+              const P = { goldFoil: "background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;", neonGlow: "color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;", retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: "color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;", rainbow: "background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;" };
+              const sz = { S: "1.5rem", M: "2.5rem", L: "4rem", XL: "6rem" };
+              const safe = String(text).replace(/[<>&]/g, (c) => c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;");
+              const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ";line-height:1.1;" + (P[preset] || P.goldFoil) + '">' + safe + "</span>";
+              const wrapped = preset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
+              html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
+            }
+            if (!html) {
+              addToast("Could not render word art", "error");
+              return;
+            }
+            iframe.contentWindow.focus();
+            try {
+              doc.designMode = "on";
+            } catch (e) {
+            }
+            const sel = doc.getSelection();
+            const bodyEl = doc.body;
+            const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
+            const cursorInsideBody = anchor && (anchor === bodyEl || bodyEl.contains && bodyEl.contains(anchor.nodeType === 1 ? anchor : anchor.parentNode));
+            if (!cursorInsideBody) {
+              const main = doc.querySelector("main") || bodyEl;
+              const range = doc.createRange();
+              range.selectNodeContents(main);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+            let inserted = false;
+            try {
+              inserted = doc.execCommand("insertHTML", false, html);
+            } catch (e) {
+            }
+            if (!inserted) {
+              const wrap = doc.createElement("div");
+              wrap.innerHTML = html;
+              const node = wrap.firstChild;
+              if (node) doc.body.appendChild(node);
+            }
+            try {
+              if (doc.body) {
+                doc.body.setAttribute("data-allo-user-edited", "1");
+                doc.body.dispatchEvent(new doc.defaultView.Event("input", { bubbles: true }));
+              }
+            } catch (_) {
+            }
+            if (textInput) textInput.value = "";
+            addToast("\u2728 Word art inserted", "success");
+          },
+          className: "w-full px-3 py-2 bg-gradient-to-r from-amber-700 to-rose-700 hover:from-amber-800 hover:to-rose-800 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+        },
+        "\u2728 Insert Word Art"
+      ))),
+      !isRemediationDocument && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Export", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Options"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeTeacherKey, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeTeacherKey: e.target.checked })), className: "rounded" }), "\u{1F4CE} Teacher Answer Key"), exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && /* @__PURE__ */ React.createElement("div", { className: "ml-5 rounded-lg border border-emerald-200 bg-emerald-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs font-semibold text-emerald-950 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, separateTeacherStudentFiles: e.target.checked })), className: "mt-0.5 rounded" }), /* @__PURE__ */ React.createElement("span", null, "Separate student + teacher files ", /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, "(recommended)"))), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-emerald-900" }, "The STUDENT HTML downloads separately with the answer-key appendix removed. Answers stay in a private TEACHER download; project data is included when a private teacher ZIP can be created."), exportConfig.separateTeacherStudentFiles === false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] font-bold leading-snug text-rose-700" }, "The combined HTML will contain answers. Do not share it with students.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeStudentResponses, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeStudentResponses: e.target.checked })), className: "rounded" }), "\u{1F4DD} Student Responses"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-indigo-900", htmlFor: "alloflow-export-due-at" }, "Assignment due date and time (optional)"), /* @__PURE__ */ React.createElement("input", { id: "alloflow-export-due-at", type: "datetime-local", value: exportConfig.dueAt ? (() => {
+        try {
+          const d = new Date(exportConfig.dueAt);
+          return Number.isFinite(d.getTime()) ? new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16) : "";
+        } catch (_) {
+          return "";
+        }
+      })() : "", onChange: (e) => {
+        const raw = String(e.target.value || "").trim();
+        if (!raw) {
+          setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" }));
           return;
         }
+        const parsed = new Date(raw);
+        if (!Number.isFinite(parsed.getTime())) return;
+        let zone = "";
         try {
-          const linter = await _ensureHarper();
-          if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
-          const blocks = _leafBlocks();
-          if (!blocks) {
+          zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        } catch (_) {
+        }
+        setExportConfigAndRefresh((p) => ({ ...p, dueAt: parsed.toISOString(), dueTimeZone: zone }));
+      }, className: "mt-1 w-full rounded border border-indigo-300 bg-white px-2 py-1.5 text-xs text-slate-800", "aria-describedby": "alloflow-export-due-help" }), /* @__PURE__ */ React.createElement("div", { id: "alloflow-export-due-help", className: "mt-1 text-[10px] leading-snug text-indigo-800" }, "Late status is calculated only when this exact instant and a submission timestamp are available. The browser records your IANA timezone; missing work is never inferred here."), exportConfig.dueAt && /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-1 text-[10px] font-semibold text-indigo-800 underline", onClick: () => setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" })) }, "Clear due date")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: "For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers \u2014 they just can't look up or self-grade against the key." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.assessmentMode === true, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, assessmentMode: e.target.checked })), className: "rounded" }), "\u{1F512} Assessment mode (no embedded answers)"), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-white"}`, title: "Embeds generated read-aloud audio inside the HTML instead of placing audio files beside it." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.singleFileHtml || exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, disabled: exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, singleFileHtml: e.target.checked })), className: "rounded" }), "\u{1F50A} Embed generated audio in HTML"))), showDisplayModes && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Display modes"), hasGlossary && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeGlossary ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Glossary"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: (exportConfig.glossaryDisplayMode || "table") === "table", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "table" })), disabled: !exportConfig.includeGlossary }), "Table (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "flash-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "flash-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F0CF} Flash cards (fold-and-cut for paper, flip for digital)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "language-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "language-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F310} Language cards (emphasizes translations)")), (exportConfig.glossaryDisplayMode || "table") === "table" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
+        { v: "small", label: "S", px: 40 },
+        { v: "medium", label: "M", px: 64 },
+        { v: "large", label: "L", px: 96 },
+        { v: "xl", label: "XL", px: 140 }
+      ].map((opt) => {
+        const cur = exportConfig.glossaryImageSize || "medium";
+        const isActive = cur === opt.v;
+        return /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            key: opt.v,
+            type: "button",
+            disabled: !exportConfig.includeGlossary,
+            onClick: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryImageSize: opt.v })),
+            title: opt.label + " (" + opt.px + " px)",
+            "aria-label": "Glossary image size " + opt.label + " " + opt.px + " pixels",
+            "aria-pressed": isActive,
+            className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-emerald-600 text-white border-emerald-700" : "bg-white text-slate-600 border-slate-300 hover:bg-emerald-50")
+          },
+          opt.label
+        );
+      })))), hasTimeline && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Timeline"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: (exportConfig.timelineDisplayMode || "list") === "list", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "list" })) }), "List (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: exportConfig.timelineDisplayMode === "cuttable-strips", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "cuttable-strips" })) }), "\u2702 Cuttable chronology strips")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
+        { v: "small", label: "S", px: 48 },
+        { v: "medium", label: "M", px: 64 },
+        { v: "large", label: "L", px: 96 },
+        { v: "xl", label: "XL", px: 140 }
+      ].map((opt) => {
+        const cur = exportConfig.timelineImageSize || "medium";
+        const isActive = cur === opt.v;
+        return /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            key: opt.v,
+            type: "button",
+            onClick: () => setExportConfigAndRefresh((p) => ({ ...p, timelineImageSize: opt.v })),
+            title: opt.label + " (" + opt.px + " px)",
+            "aria-label": "Timeline image size " + opt.label + " " + opt.px + " pixels",
+            "aria-pressed": isActive,
+            className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-indigo-50")
+          },
+          opt.label
+        );
+      })))), hasBrainstorm && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeBrainstorm ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Brainstorm"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "brainstormDisplayMode", checked: (exportConfig.brainstormDisplayMode || "grid") === "grid", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, brainstormDisplayMode: "grid" })), disabled: !exportConfig.includeBrainstorm }), "Card grid (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "brainstormDisplayMode", checked: exportConfig.brainstormDisplayMode === "mindmap", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, brainstormDisplayMode: "mindmap" })), disabled: !exportConfig.includeBrainstorm }), "\u{1F31F} Mind-map graphic organizer"))), hasVennDiagram && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeOutline ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Venn diagram"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, [["completed", "\u2705 Completed reference"], ["activity", "\u{1F9E9} Student sorting activity"], ["both", "\u{1F4C4} Both (activity + completed key)"]].map(([value, label]) => {
+        const assessmentBlocked = exportConfig.assessmentMode === true && value !== "activity";
+        return /* @__PURE__ */ React.createElement("label", { key: value, className: `flex items-center gap-2 text-xs rounded px-1 py-0.5 ${assessmentBlocked || !exportConfig.includeOutline ? "cursor-not-allowed text-slate-400" : "text-slate-700 cursor-pointer hover:bg-white"}` }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "vennExportMode", checked: effectiveVennExportMode === value, onChange: () => setExportConfigAndRefresh((p) => ({ ...p, vennExportMode: value })), disabled: !exportConfig.includeOutline || assessmentBlocked }), label);
+      })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-1 text-[10px] leading-snug text-slate-500" }, "HTML uses accessible tap/select placement. PDF and Worksheet exports use blank circles with cut-out cards."), exportConfig.assessmentMode === true && /* @__PURE__ */ React.createElement("div", { className: "mt-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] leading-snug text-amber-900" }, "Assessment mode exports the activity without its completed reference or self-check answers.")), hasConceptSort && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.conceptSortInteractive !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, conceptSortInteractive: e.target.checked })), className: "rounded" }), "\u{1F9E9} Concept sort: interactive tap/select sorting"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Sort strip image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
+        { v: "small", label: "S", px: 56 },
+        { v: "medium", label: "M", px: 80 },
+        { v: "large", label: "L", px: 110 },
+        { v: "xl", label: "XL", px: 150 }
+      ].map((opt) => {
+        const cur = exportConfig.conceptSortImageSize || "medium";
+        const isActive = cur === opt.v;
+        return /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            key: opt.v,
+            type: "button",
+            onClick: () => setExportConfigAndRefresh((p) => ({ ...p, conceptSortImageSize: opt.v })),
+            title: opt.label + " (" + opt.px + " px)",
+            "aria-label": "Concept sort image size " + opt.label + " " + opt.px + " pixels",
+            "aria-pressed": isActive,
+            className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-rose-600 text-white border-rose-700" : "bg-white text-slate-600 border-slate-300 hover:bg-rose-50")
+          },
+          opt.label
+        );
+      })))))),
+      /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u2728 AI Style Studio"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
+        { label: "\u{1F3A8} Auto-Beautify", prompt: "Make this document visually stunning and professional with a modern color scheme, elegant typography, subtle gradients, well-spaced sections with rounded cards, and a cohesive design system. Use a sophisticated palette." },
+        { label: "\u{1F3EB} Academic", prompt: "Professional academic style with serif headings (Georgia or similar), clean layout, navy/gold color scheme, formal table styling, proper margins, and a scholarly appearance suitable for university submissions." },
+        { label: "\u{1F308} Elementary", prompt: "Bright, playful, and colorful style for elementary students. Use rounded corners, fun colors (teal, coral, purple), larger friendly fonts, emoji-friendly, card-based layout with soft shadows." },
+        { label: "\u{1F319} Dark Mode", prompt: "Elegant dark mode with dark slate/charcoal background, soft white text, indigo/purple accents, subtle borders, and beautiful contrast. Easy on the eyes for screen reading." },
+        { label: "\u{1F4F0} Magazine", prompt: "Clean editorial magazine layout with large hero headings, pull quotes with colored left borders, two-column text sections where appropriate, serif body text, and professional photo-story feel." },
+        { label: "\u{1F9CA} Minimalist", prompt: "Ultra-minimal Scandinavian design. Lots of whitespace, thin sans-serif font, muted grays and one accent color, hairline borders, understated elegance." }
+      ].map((preset) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: preset.label,
+          onClick: () => {
+            setExportStylePrompt(preset.prompt);
+            setTimeout(() => generateCustomExportStyle(), 50);
+          },
+          disabled: isGeneratingStyle,
+          className: "px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+        },
+        preset.label
+      ))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "text",
+          value: exportStylePrompt,
+          onChange: (e) => setExportStylePrompt(e.target.value),
+          onKeyDown: (e) => {
+            if (e.key === "Enter" && exportStylePrompt.trim()) generateCustomExportStyle();
+          },
+          placeholder: t("placeholders.describe_style_preset"),
+          className: "flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300",
+          "aria-label": t("a11y.custom_export_style")
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: generateCustomExportStyle,
+          "aria-label": isGeneratingStyle ? "Generating custom style" : "Generate custom style",
+          disabled: !exportStylePrompt.trim() || isGeneratingStyle,
+          className: "px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
+        },
+        isGeneratingStyle ? "..." : "\u2728"
+      )), customExportCSS && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "flex items-center gap-2 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-700 font-medium" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCustomExportCSS(""), className: "text-[11px] text-slate-600 hover:text-red-500 font-bold" }, "Reset"))),
+      (() => {
+        const wc = writingCheck;
+        const _leafBlocks = () => {
+          const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
+          if (!doc || !doc.body) return null;
+          return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
+        };
+        const runWritingCheck = async () => {
+          const runId = ++writingCheckRunRef.current;
+          const sourceDoc = exportPreviewRef.current?.contentDocument;
+          const sourceHtml = sourceDoc?.documentElement?.outerHTML || "";
+          setWritingCheck({ status: "loading" });
+          if (!sourceDoc || !sourceHtml) {
             setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready - wait for it to render." });
             return;
           }
-          const items = [];
-          let capped = false;
-          for (let bi = 0; bi < blocks.length; bi++) {
-            if (items.length >= 150) {
-              capped = true;
-              break;
-            }
-            const blockText = blocks[bi].textContent || "";
-            let lints = [];
-            try {
-              lints = await linter.lint(blockText, { language: "plaintext" });
-            } catch (_) {
-              continue;
-            }
+          try {
+            const linter = await _ensureHarper();
             if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
-            for (const l of lints) {
-              try {
-                const span = l.span();
-                const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s && s.get_replacement_text ? s.get_replacement_text() : null).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
-                items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: blockText.slice(span.start, span.end), snippet: (span.start > 20 ? "..." : "") + blockText.slice(Math.max(0, span.start - 20), Math.min(blockText.length, span.end + 24)) + (span.end + 24 < blockText.length ? "..." : ""), suggestions: sugg });
-              } catch (_) {
-              }
+            const blocks = _leafBlocks();
+            if (!blocks) {
+              setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready - wait for it to render." });
+              return;
+            }
+            const items = [];
+            let capped = false;
+            for (let bi = 0; bi < blocks.length; bi++) {
               if (items.length >= 150) {
                 capped = true;
                 break;
               }
-            }
-          }
-          const currentDoc = exportPreviewRef.current?.contentDocument;
-          if (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== sourceHtml) {
-            if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: "error", error: "The document changed while it was being checked. Run the writing check again for current results." });
-            return;
-          }
-          setWritingCheck({ status: "done", items, capped });
-        } catch (e) {
-          if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: "error", error: (e && e.message || "The checker failed to load - check the network and try again.").slice(0, 180) });
-        }
-      };
-      const _locate = (item, outline) => {
-        const blocks = _leafBlocks();
-        const el = blocks && blocks[item.blockIndex];
-        if (!el) return null;
-        try {
-          el.scrollIntoView({ block: "center", behavior: _builderPrefersReducedMotion() ? "instant" : "smooth" });
-          if (outline) {
-            el.style.outline = "3px solid #f59e0b";
-            el.style.outlineOffset = "2px";
-            setTimeout(() => {
+              const blockText = blocks[bi].textContent || "";
+              let lints = [];
               try {
-                el.style.outline = "";
-                el.style.outlineOffset = "";
+                lints = await linter.lint(blockText, { language: "plaintext" });
               } catch (_) {
+                continue;
               }
-            }, 2200);
-          }
-        } catch (_) {
-        }
-        return el;
-      };
-      const _apply = (item, replacement) => {
-        try {
-          const el = _locate(item, false);
-          const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
-          if (!el || !doc) {
-            addToast(t("toasts.writing_block_gone") || "That block is no longer in the preview \u2014 re-run the check.", "info");
-            return;
-          }
-          const cur = el.textContent || "";
-          if (cur.slice(item.start, item.end) !== item.bad) {
-            addToast(t("toasts.writing_text_shifted") || "The text changed since this check ran \u2014 re-run the check to apply safely.", "info");
-            return;
-          }
-          const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-          let node, off = 0, hit = null;
-          while (node = walker.nextNode()) {
-            const len = node.textContent.length;
-            if (item.start >= off && item.end <= off + len) {
-              hit = { node, local: item.start - off };
-              break;
-            }
-            off += len;
-          }
-          if (!hit) {
-            _locate(item, true);
-            addToast(t("toasts.writing_spans_markup") || "This suggestion spans formatting (a link or bold text) \u2014 fix it by hand at the highlighted spot.", "info");
-            return;
-          }
-          const _badLen = item.end - item.start;
-          if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
-            throw new Error("The correction could not be applied.");
-          }
-          const _delta = replacement.length - _badLen;
-          setWritingCheck((p) => {
-            if (!p || !p.items) return p;
-            const items = p.items.filter((x) => x !== item).map((x) => {
-              if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
-              if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
-              return null;
-            }).filter(Boolean);
-            return { ...p, items };
-          });
-          addToast('\u2713 "' + item.bad + '" \u2192 "' + replacement + '"', "success");
-        } catch (e) {
-          addToast("Apply failed: " + (e && e.message || "error"), "error");
-        }
-      };
-      const _dismiss = (item) => {
-        setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
-      };
-      return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "doc_builder_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), exportPreviewSource === "remediation" && wc && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This is a remediated document \u2014 its wording comes from the source PDF. Apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || (t("export_preview.writing.remove") || "(remove)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
-    })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u267F Accessibility Audit"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: async () => {
-          const runId = ++auditRunRef.current;
-          setExportAuditLoading(true);
-          setExportAuditResult(null);
-          try {
-            const iframe = exportPreviewRef.current;
-            const sourceDoc = iframe?.contentDocument;
-            const html = sourceDoc ? sourceDoc.documentElement.outerHTML : getExportPreviewHTML();
-            let _runEA = null;
-            try {
-              const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
-              if (_mk) {
-                const _inst = window.__alloAuditPipeline || (window.__alloAuditPipeline = _mk({
-                  callGemini: async () => "{}",
-                  callGeminiVision: async () => "{}",
-                  callImagen: async () => null,
-                  addToast: () => {
-                  },
-                  t: (k) => k,
-                  isRtlLang: () => false,
-                  updateExportPreview: () => {
-                  },
-                  getDefaultTitle: () => ""
-                }));
-                if (_inst && typeof _inst.runEqualAccessAudit === "function") _runEA = _inst.runEqualAccessAudit;
+              if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
+              for (const l of lints) {
+                try {
+                  const span = l.span();
+                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s && s.get_replacement_text ? s.get_replacement_text() : null).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
+                  items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: blockText.slice(span.start, span.end), snippet: (span.start > 20 ? "..." : "") + blockText.slice(Math.max(0, span.start - 20), Math.min(blockText.length, span.end + 24)) + (span.end + 24 < blockText.length ? "..." : ""), suggestions: sugg });
+                } catch (_) {
+                }
+                if (items.length >= 150) {
+                  capped = true;
+                  break;
+                }
               }
-            } catch (_) {
             }
-            const [aiResult, axeResult, eaResult] = await Promise.all([
-              auditOutputAccessibility(html),
-              runAxeAudit(html).catch(() => null),
-              _runEA ? _runEA(html).catch(() => null) : Promise.resolve(null)
-            ]);
-            if (!mountedRef.current || runId !== auditRunRef.current) return;
             const currentDoc = exportPreviewRef.current?.contentDocument;
-            if (sourceDoc && (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== html)) {
-              setExportAuditResult({ score: -2, summary: "The document changed during the audit. Run the audit again for results bound to the current document.", issues: [], passes: [] });
+            if (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== sourceHtml) {
+              if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: "error", error: "The document changed while it was being checked. Run the writing check again for current results." });
               return;
             }
-            const combined = { ...aiResult || { score: 0, summary: "", issues: [], passes: [] } };
-            if (axeResult) {
-              combined.axeViolations = axeResult.totalViolations;
-              combined.axePasses = axeResult.totalPasses;
-              combined.axeDetails = axeResult.critical.concat(axeResult.serious).concat(axeResult.moderate);
-              combined.summary = (combined.summary || "") + ` | axe-core: ${axeResult.totalViolations} violations, ${axeResult.totalPasses} passed`;
-            }
-            if (eaResult) {
-              combined.eaViolations = eaResult.failViolations;
-              combined.eaPotential = eaResult.potentialViolations;
-              combined.summary = (combined.summary || "") + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
-            }
-            if (axeResult && eaResult) combined.deterministicConsensus = axeResult.totalViolations === 0 && eaResult.failViolations === 0 ? "clean" : "issues";
-            setExportAuditResult(combined);
+            setWritingCheck({ status: "done", items, capped });
           } catch (e) {
-            if (mountedRef.current && runId === auditRunRef.current) setExportAuditResult({ score: -1, summary: "Audit failed. Check your connection and try again.", issues: [], passes: [] });
-          } finally {
-            if (mountedRef.current && runId === auditRunRef.current) setExportAuditLoading(false);
+            if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: "error", error: (e && e.message || "The checker failed to load - check the network and try again.").slice(0, 180) });
           }
+        };
+        const _locate = (item, outline) => {
+          const blocks = _leafBlocks();
+          const el = blocks && blocks[item.blockIndex];
+          if (!el) return null;
+          try {
+            el.scrollIntoView({ block: "center", behavior: _builderPrefersReducedMotion() ? "instant" : "smooth" });
+            if (outline) {
+              el.style.outline = "3px solid #f59e0b";
+              el.style.outlineOffset = "2px";
+              setTimeout(() => {
+                try {
+                  el.style.outline = "";
+                  el.style.outlineOffset = "";
+                } catch (_) {
+                }
+              }, 2200);
+            }
+          } catch (_) {
+          }
+          return el;
+        };
+        const _apply = (item, replacement) => {
+          try {
+            const el = _locate(item, false);
+            const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
+            if (!el || !doc) {
+              addToast(t("toasts.writing_block_gone") || "That block is no longer in the preview \u2014 re-run the check.", "info");
+              return;
+            }
+            const cur = el.textContent || "";
+            if (cur.slice(item.start, item.end) !== item.bad) {
+              addToast(t("toasts.writing_text_shifted") || "The text changed since this check ran \u2014 re-run the check to apply safely.", "info");
+              return;
+            }
+            const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+            let node, off = 0, hit = null;
+            while (node = walker.nextNode()) {
+              const len = node.textContent.length;
+              if (item.start >= off && item.end <= off + len) {
+                hit = { node, local: item.start - off };
+                break;
+              }
+              off += len;
+            }
+            if (!hit) {
+              _locate(item, true);
+              addToast(t("toasts.writing_spans_markup") || "This suggestion spans formatting (a link or bold text) \u2014 fix it by hand at the highlighted spot.", "info");
+              return;
+            }
+            const _badLen = item.end - item.start;
+            if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
+              throw new Error("The correction could not be applied.");
+            }
+            const _delta = replacement.length - _badLen;
+            setWritingCheck((p) => {
+              if (!p || !p.items) return p;
+              const items = p.items.filter((x) => x !== item).map((x) => {
+                if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
+                if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
+                return null;
+              }).filter(Boolean);
+              return { ...p, items };
+            });
+            addToast('\u2713 "' + item.bad + '" \u2192 "' + replacement + '"', "success");
+          } catch (e) {
+            addToast("Apply failed: " + (e && e.message || "error"), "error");
+          }
+        };
+        const _dismiss = (item) => {
+          setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+        };
+        return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "doc_builder_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), exportPreviewSource === "remediation" && wc && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This is a remediated document \u2014 its wording comes from the source PDF. Apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || (t("export_preview.writing.remove") || "(remove)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
+      })(),
+      /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u267F Accessibility Audit"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: async () => {
+            const runId = ++auditRunRef.current;
+            setExportAuditLoading(true);
+            setExportAuditResult(null);
+            try {
+              const iframe = exportPreviewRef.current;
+              const sourceDoc = iframe?.contentDocument;
+              const html = sourceDoc ? sourceDoc.documentElement.outerHTML : getExportPreviewHTML();
+              let _runEA = null;
+              try {
+                const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
+                if (_mk) {
+                  const _inst = window.__alloAuditPipeline || (window.__alloAuditPipeline = _mk({
+                    callGemini: async () => "{}",
+                    callGeminiVision: async () => "{}",
+                    callImagen: async () => null,
+                    addToast: () => {
+                    },
+                    t: (k) => k,
+                    isRtlLang: () => false,
+                    updateExportPreview: () => {
+                    },
+                    getDefaultTitle: () => ""
+                  }));
+                  if (_inst && typeof _inst.runEqualAccessAudit === "function") _runEA = _inst.runEqualAccessAudit;
+                }
+              } catch (_) {
+              }
+              const [aiResult, axeResult, eaResult] = await Promise.all([
+                auditOutputAccessibility(html),
+                runAxeAudit(html).catch(() => null),
+                _runEA ? _runEA(html).catch(() => null) : Promise.resolve(null)
+              ]);
+              if (!mountedRef.current || runId !== auditRunRef.current) return;
+              const currentDoc = exportPreviewRef.current?.contentDocument;
+              if (sourceDoc && (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== html)) {
+                setExportAuditResult({ score: -2, summary: "The document changed during the audit. Run the audit again for results bound to the current document.", issues: [], passes: [] });
+                return;
+              }
+              const combined = { ...aiResult || { score: 0, summary: "", issues: [], passes: [] } };
+              if (axeResult) {
+                combined.axeViolations = axeResult.totalViolations;
+                combined.axePasses = axeResult.totalPasses;
+                combined.axeDetails = axeResult.critical.concat(axeResult.serious).concat(axeResult.moderate);
+                combined.summary = (combined.summary || "") + ` | axe-core: ${axeResult.totalViolations} violations, ${axeResult.totalPasses} passed`;
+              }
+              if (eaResult) {
+                combined.eaViolations = eaResult.failViolations;
+                combined.eaPotential = eaResult.potentialViolations;
+                combined.summary = (combined.summary || "") + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
+              }
+              if (axeResult && eaResult) combined.deterministicConsensus = axeResult.totalViolations === 0 && eaResult.failViolations === 0 ? "clean" : "issues";
+              setExportAuditResult(combined);
+            } catch (e) {
+              if (mountedRef.current && runId === auditRunRef.current) setExportAuditResult({ score: -1, summary: "Audit failed. Check your connection and try again.", issues: [], passes: [] });
+            } finally {
+              if (mountedRef.current && runId === auditRunRef.current) setExportAuditLoading(false);
+            }
+          },
+          disabled: exportAuditLoading,
+          "data-help-key": "doc_builder_wcag_audit_btn",
+          "aria-busy": exportAuditLoading,
+          className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
         },
-        disabled: exportAuditLoading,
-        "data-help-key": "doc_builder_wcag_audit_btn",
-        "aria-busy": exportAuditLoading,
-        className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
-      },
-      exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
-    ), exportAuditResult && exportAuditResult.score < 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900" }, exportAuditResult.summary), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Accessibility Automated Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-700 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.2 AA conformance \u2014 a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 flex flex-col min-w-0 ${isFocusMode ? "min-h-0" : "min-h-[60vh] lg:min-h-0"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, isFocusMode ? "Document Builder" : "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700 font-medium" }, isFocusMode ? "Focus mode \xB7 write without distractions" : "Focus the preview and edit text directly"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openWordCountDetails, "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "builder-quick-access-toolbar", role: "toolbar", "aria-label": "Quick Access", className: "flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm" }, quickAccessItems.map((itemId) => {
+        exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
+      ), exportAuditResult && exportAuditResult.score < 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900" }, exportAuditResult.summary), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Accessibility Automated Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-700 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.2 AA conformance \u2014 a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.")))
+    ), /* @__PURE__ */ React.createElement("div", { className: "builder-editor-pane flex-1 flex flex-col min-w-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0", style: { maxWidth: "28rem" } }, /* @__PURE__ */ React.createElement("h3", { id: "builder-current-document-title", className: "truncate text-sm font-bold text-slate-800", title: previewDocumentTitle }, previewDocumentTitle), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600", "data-builder-document-context": true }, documentSourceLabel, !isRemediationDocument && " \xB7 " + includedResourceCount + " of " + resourceItems.length + " resources"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600", "data-builder-save-status": true }, _builderSaveStatusLabel(draftCaptureState, draftCaptureAt))), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700 font-medium" }, isFocusMode ? "Focus mode \xB7 write without distractions" : "Focus the preview and edit text directly"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openWordCountDetails, "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "builder-quick-access-toolbar", role: "toolbar", "aria-label": "Quick Access", className: "flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm" }, quickAccessItems.map((itemId) => {
       const option = _BUILDER_QUICK_ACCESS_OPTIONS.find((item) => item.id === itemId);
       const command = quickAccessActions[itemId];
       if (!option || !command) return null;
       const pressed = typeof command.pressed === "boolean" ? command.pressed : void 0;
       return /* @__PURE__ */ React.createElement("button", { key: itemId, type: "button", onMouseDown: (event) => event.preventDefault(), onClick: command.action, "aria-pressed": pressed, "aria-keyshortcuts": option.shortcut, "aria-label": option.label, title: option.shortcut ? option.label + " (" + option.shortcut + ")" : option.label, className: "h-7 rounded px-2 text-[10px] font-bold transition-colors " + (pressed ? "bg-indigo-700 text-white shadow-inner" : "text-slate-700 hover:bg-indigo-100 hover:text-indigo-800") }, option.shortLabel);
-    }), /* @__PURE__ */ React.createElement("details", { id: "builder-quick-access-customize", className: "relative" }, /* @__PURE__ */ React.createElement("summary", { className: "flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200", "aria-label": "Customize Quick Access toolbar", title: "Customize Quick Access toolbar" }, "+"), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[11px] text-slate-800" }, "Customize Quick Access"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] text-slate-500" }, "Up to 6")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, _BUILDER_QUICK_ACCESS_OPTIONS.map((option) => {
+    }), /* @__PURE__ */ React.createElement("details", { id: "builder-quick-access-customize", className: "relative", onKeyDownCapture: (event) => {
+      if (event.key !== "Escape" || !event.currentTarget.open) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.currentTarget.open = false;
+      event.currentTarget.querySelector("summary")?.focus();
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200", "aria-label": "Customize Quick Access toolbar", title: "Customize Quick Access toolbar" }, "+"), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[11px] text-slate-800" }, "Customize Quick Access"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] text-slate-500" }, "Up to 6")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, _BUILDER_QUICK_ACCESS_OPTIONS.map((option) => {
       const selected = quickAccessItems.includes(option.id);
       const position = quickAccessItems.indexOf(option.id);
       return /* @__PURE__ */ React.createElement("div", { key: option.id, className: "flex min-h-7 items-center gap-1 rounded px-1 hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-[10px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected, onChange: () => toggleQuickAccessItem(option.id), className: "accent-indigo-700" }), " ", /* @__PURE__ */ React.createElement("span", { className: "truncate" }, option.label)), selected && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === 0, onClick: () => moveQuickAccessItem(option.id, -1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " left" }, "\u2190"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === quickAccessItems.length - 1, onClick: () => moveQuickAccessItem(option.id, 1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " right" }, "\u2192")));
@@ -8677,46 +9123,31 @@ ${pageCss}
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
-      let html = "";
+      const preflight = runBuilderPreflight("markdown", false);
+      if (preflight.errors) {
+        addToast("Markdown export stopped: fix the blocking preflight issues first.", "error");
+        return;
+      }
+      if (!beginAlternativeExport("markdown")) return;
       try {
-        let _mClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
-        _mClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style").forEach((el) => el.remove());
-        _builderStripEditorBreakMetadata(_mClone);
-        html = _mClone.outerHTML;
-      } catch (_) {
-        html = doc.documentElement.outerHTML;
-      }
-      const _mathBlocks = html.match(/<math\b[\s\S]*?<\/math>/gi) || [];
-      let _spokenByBlock = null;
-      if (_mathBlocks.length) {
-        try {
-          if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin("sre_loader.js");
-          if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === "function") {
-            _spokenByBlock = await Promise.all(_mathBlocks.map((m) => window.AlloMathSpeech.toSpeech(m, { timeoutMs: 8e3 })));
+        const root = _builderCleanMarkdownRoot(doc);
+        const math = Array.from(root.querySelectorAll("math"));
+        let spokenByBlock = null;
+        if (math.length) {
+          try {
+            if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin("sre_loader.js");
+            if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map((node) => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8e3 })));
+          } catch (_) {
           }
-        } catch (_) {
-          _spokenByBlock = null;
         }
+        const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
+        downloadBuilderBlob(new Blob([result.markdown], { type: "text/markdown;charset=utf-8" }), { extension: "md" });
+        addToast(result.warnings.length ? result.warnings.join(" ") : "Markdown prepared from the current document.", result.warnings.length ? "warning" : "success");
+      } catch (error) {
+        addToast("Markdown export failed: " + (error?.message || "unknown error"), "error");
+      } finally {
+        finishAlternativeExport();
       }
-      let _mathIdx = 0;
-      const _cellTxt = (s) => String(s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").replace(/\|/g, "\\|").trim();
-      html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
-        const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map((tr) => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt));
-        if (!rows.length) return "\n";
-        const w = Math.max(...rows.map((r) => r.length));
-        const line = (r) => "| " + Array.from({ length: w }, (_, i) => r[i] || "").join(" | ") + " |";
-        return "\n\n" + line(rows[0]) + "\n|" + Array.from({ length: w }, () => " --- |").join("") + "\n" + rows.slice(1).map(line).join("\n") + "\n\n";
-      });
-      html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => "\n\n![" + String(alt).replace(/\]/g, ")") + "](image)\n\n");
-      html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => {
-        const _spoken = _spokenByBlock && _spokenByBlock[_mathIdx] ? String(_spokenByBlock[_mathIdx]).trim().replace(/\*/g, "") : "";
-        _mathIdx++;
-        return "\n\n" + (_spoken ? "*Spoken: " + _spoken + "*\n\n" : "") + "```mathml\n" + m + "\n```\n\n";
-      });
-      let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
-      const blob = new Blob([md], { type: "text/markdown" });
-      downloadBuilderBlob(blob, { extension: "md" });
-      addToast("Markdown downloaded", "success");
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DD} Markdown (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
       if (altExportBusy) return;
       if (!beginAlternativeExport("notebooklm")) return;
@@ -8842,31 +9273,15 @@ ${pageCss}
             }
           });
         } else if (doc) {
-          let html = "";
-          try {
-            let _mdClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
-            _mdClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style").forEach((el) => el.remove());
-            _builderStripEditorBreakMetadata(_mdClone);
-            html = _mdClone.outerHTML;
-          } catch (_) {
-            html = doc.documentElement.outerHTML;
-          }
-          const _cellTxt2 = (s) => String(s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").replace(/\|/g, "\\|").trim();
-          html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
-            const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map((tr) => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt2));
-            if (!rows.length) return "\n";
-            const w = Math.max(...rows.map((r) => r.length));
-            const line = (r) => "| " + Array.from({ length: w }, (_, i) => r[i] || "").join(" | ") + " |";
-            return "\n\n" + line(rows[0]) + "\n|" + Array.from({ length: w }, () => " --- |").join("") + "\n" + rows.slice(1).map(line).join("\n") + "\n\n";
-          });
-          html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => "\n\n![" + String(alt).replace(/\]/g, ")") + "](image)\n\n");
-          const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
-          out.push(body);
+          const root = _builderCleanMarkdownRoot(doc);
+          const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
+          out.push(converted.markdown);
+          converted.warnings.forEach((message) => addToast(message, "warning"));
         } else {
           addToast("Nothing to export yet \u2014 generate a lesson first", "error");
           return;
         }
-        const md = out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+        const md = out.join("\n").trim() + "\n";
         let copied = false;
         try {
           copied = window.alloCopyText ? await window.alloCopyText(md) : false;
@@ -8971,21 +9386,7 @@ ${pageCss}
               _replaceImageFallback(img);
               continue;
             }
-            const controller = typeof AbortController === "function" ? new AbortController() : null;
-            const timer = window.setTimeout(() => controller?.abort(), 1e4);
-            let response;
-            try {
-              response = await fetch(absolute, { credentials: "omit", signal: controller?.signal });
-            } finally {
-              window.clearTimeout(timer);
-            }
-            if (!response.ok) throw new Error(`Image request failed (${response.status})`);
-            const mediaType = String(response.headers.get("content-type") || "").split(";")[0].toLowerCase();
-            const extensionByType = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp" };
-            const ext = extensionByType[mediaType];
-            if (!ext) throw new Error("Unsupported remote image type");
-            const bytes = await response.arrayBuffer();
-            if (bytes.byteLength > 8 * 1024 * 1024) throw new Error("Remote image exceeds 8 MB");
+            const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
             const path = "images/image-" + (index + 1) + "." + ext;
             zip.file("OEBPS/" + path, bytes);
             img.setAttribute("src", path);
@@ -9045,7 +9446,7 @@ ${pageCss}
       try {
         let text = "";
         try {
-          const _bClone = doc.body.cloneNode(true);
+          const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
           _bClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style").forEach((el) => el.remove());
           _bClone.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
             try {
@@ -9062,7 +9463,7 @@ ${pageCss}
           });
           text = (_bClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
         } catch (_) {
-          text = doc.body.innerText || doc.body.textContent || "";
+          throw new Error("Could not prepare the accepted revision view for Braille.");
         }
         const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
         const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
@@ -9121,7 +9522,7 @@ ${pageCss}
           }
           const out = [];
           let dropped = 0;
-          for (const line of norm.replace(/\n?/g, "\n").split("\n")) {
+          for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
             const chars = Array.from(line);
             let bl = "";
             let numMode = false;
@@ -9230,7 +9631,7 @@ ${pageCss}
       } finally {
         finishAlternativeExport();
       }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: exportActionBusy || altExportBusy ? "border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" : "sr-only" }, exportActionBusy ? "Preparing your export. Keep the builder open until it finishes." : altExportBusy ? "Preparing " + altExportBusy.toUpperCase() + " export. Keep the builder open until it finishes." : ""), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message)))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, "Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: exportActionBusy || altExportBusy ? "border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" : "sr-only" }, exportActionBusy ? "Preparing your export. Keep the builder open until it finishes." : altExportBusy ? "Preparing " + altExportBusy.toUpperCase() + " export. Keep the builder open until it finishes." : ""), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message)))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, draftRecovery.title || draftDocumentTitle, " \xB7 Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
       const selected = activeRibbonTab === tab;
       return /* @__PURE__ */ React.createElement(
         "button",
@@ -9273,13 +9674,13 @@ ${pageCss}
         e.preventDefault();
         replaceCurrentInPreview();
       }
-    }, placeholder: "Replace with", className: "min-w-32 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: replaceCurrentInPreview, disabled: !findQuery.trim() || !findMatchState.count, className: "rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" }, "Replace current"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: replaceAllInPreview, disabled: !findQuery.trim() || !findMatchState.count, className: "rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" }, "Replace all")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium text-slate-600", "aria-label": "Find options" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.matchCase, onChange: (e) => setFindOptions((options) => ({ ...options, matchCase: e.target.checked })), className: "accent-indigo-700" }), "Match case"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.wholeWord, onChange: (e) => setFindOptions((options) => ({ ...options, wholeWord: e.target.checked })), className: "accent-indigo-700" }), "Whole words"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.highlightAll, onChange: (e) => setFindOptions((options) => ({ ...options, highlightAll: e.target.checked })), className: "accent-indigo-700" }), "Highlight all"))), /* @__PURE__ */ React.createElement("nav", { "aria-label": "Document heading outline", className: "max-h-24 overflow-y-auto rounded border border-slate-300 bg-white p-1" }, headingOutline.length ? headingOutline.map((heading) => /* @__PURE__ */ React.createElement("button", { key: heading.index + "-" + heading.text, type: "button", onClick: () => jumpToHeading(heading), "aria-current": activeHeadingIndex === heading.index ? "location" : void 0, className: `block w-full truncate rounded px-2 py-1 text-left text-[11px] ${activeHeadingIndex === heading.index ? "bg-indigo-100 font-bold text-indigo-800 ring-1 ring-indigo-200" : "text-slate-700 hover:bg-indigo-50"}`, style: { paddingLeft: Math.min(28, 4 + (heading.level - 1) * 6) }, title: heading.text }, "H", heading.level, " - ", heading.text)) : /* @__PURE__ */ React.createElement("span", { className: "block px-2 py-1 text-[11px] text-slate-500" }, "No headings yet.")))), /* @__PURE__ */ React.createElement("details", { id: "builder-version-history", className: "bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Version History (", versionHistory.length, ") ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "Stored on this device")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "Recent restore points stay on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveVersionSnapshot, className: "rounded bg-indigo-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-800" }, "Save snapshot")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-36 space-y-1 overflow-y-auto" }, versionHistory.length ? versionHistory.map((snapshot) => /* @__PURE__ */ React.createElement("div", { key: snapshot.id, className: "flex items-center gap-2 rounded border border-slate-200 bg-white px-2 py-1" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "truncate text-[11px] font-semibold text-slate-700" }, snapshot.label), /* @__PURE__ */ React.createElement("time", { className: "text-[10px] text-slate-500", dateTime: new Date(snapshot.at).toISOString() }, new Date(snapshot.at).toLocaleString())), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => compareVersionSnapshot(snapshot), "aria-pressed": versionComparison?.snapshotId === snapshot.id, className: "rounded border border-violet-400 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-50" }, "Compare"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => restoreVersionSnapshot(snapshot), className: "rounded border border-indigo-500 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50" }, "Restore"))) : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, "No snapshots yet. Editing will save recent versions automatically.")), versionComparison && /* @__PURE__ */ React.createElement("section", { "aria-label": "Version comparison with " + versionComparison.label, className: "mt-2 rounded-lg border border-violet-300 bg-violet-50 p-2 text-[10px] text-violet-950" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black" }, "Compared with ", versionComparison.label), /* @__PURE__ */ React.createElement("p", { className: "text-violet-700" }, new Date(versionComparison.at).toLocaleString(), " \xB7 ", versionComparison.changed, " changed block", versionComparison.changed === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    }, placeholder: "Replace with", className: "min-w-32 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: replaceCurrentInPreview, disabled: !findQuery.trim() || !findMatchState.count, className: "rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" }, "Replace current"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: replaceAllInPreview, disabled: !findQuery.trim() || !findMatchState.count, className: "rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" }, "Replace all")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium text-slate-600", "aria-label": "Find options" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.matchCase, onChange: (e) => setFindOptions((options) => ({ ...options, matchCase: e.target.checked })), className: "accent-indigo-700" }), "Match case"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.wholeWord, onChange: (e) => setFindOptions((options) => ({ ...options, wholeWord: e.target.checked })), className: "accent-indigo-700" }), "Whole words"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex cursor-pointer items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: findOptions.highlightAll, onChange: (e) => setFindOptions((options) => ({ ...options, highlightAll: e.target.checked })), className: "accent-indigo-700" }), "Highlight all"))), /* @__PURE__ */ React.createElement("nav", { "aria-label": "Document heading outline", className: "max-h-24 overflow-y-auto rounded border border-slate-300 bg-white p-1" }, headingOutline.length ? headingOutline.map((heading) => /* @__PURE__ */ React.createElement("button", { key: heading.index + "-" + heading.text, type: "button", onClick: () => jumpToHeading(heading), "aria-current": activeHeadingIndex === heading.index ? "location" : void 0, className: `block w-full truncate rounded px-2 py-1 text-left text-[11px] ${activeHeadingIndex === heading.index ? "bg-indigo-100 font-bold text-indigo-800 ring-1 ring-indigo-200" : "text-slate-700 hover:bg-indigo-50"}`, style: { paddingLeft: Math.min(28, 4 + (heading.level - 1) * 6) }, title: heading.text }, "H", heading.level, " - ", heading.text)) : /* @__PURE__ */ React.createElement("span", { className: "block px-2 py-1 text-[11px] text-slate-500" }, "No headings yet.")))), /* @__PURE__ */ React.createElement("details", { id: "builder-version-history", className: "bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Version History (", versionHistory.length, ") ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "Stored on this device")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "Recent restore points stay on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveVersionSnapshot, className: "rounded bg-indigo-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-800" }, "Save snapshot")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-36 space-y-1 overflow-y-auto" }, versionHistory.length ? versionHistory.map((snapshot) => /* @__PURE__ */ React.createElement("div", { key: snapshot.id, className: "flex items-center gap-2 rounded border border-slate-200 bg-white px-2 py-1" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "truncate text-[11px] font-semibold text-slate-700" }, snapshot.label), /* @__PURE__ */ React.createElement("time", { className: "text-[10px] text-slate-500", dateTime: new Date(snapshot.at).toISOString() }, new Date(snapshot.at).toLocaleString())), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => compareVersionSnapshot(snapshot), "aria-pressed": versionComparison?.snapshotId === snapshot.id, className: "rounded border border-violet-400 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-50" }, "Compare"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => restoreVersionSnapshot(snapshot), className: "rounded border border-indigo-500 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50" }, "Restore"))) : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, "No snapshots yet. Editing will save recent versions automatically.")), versionComparison && /* @__PURE__ */ React.createElement("section", { "aria-label": "Version comparison with " + versionComparison.label, className: "mt-2 rounded-lg border border-violet-300 bg-violet-50 p-2 text-[10px] text-violet-950" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black" }, "Text compared with ", versionComparison.label), /* @__PURE__ */ React.createElement("p", { className: "text-violet-700" }, new Date(versionComparison.at).toLocaleString(), " \xB7 ", versionComparison.changed, " changed block", versionComparison.changed === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       const snapshot = versionHistory.find((item) => item.id === versionComparison.snapshotId);
       if (snapshot) restoreVersionSnapshot(snapshot);
     }, className: "rounded border border-indigo-400 bg-white px-2 py-1 font-bold text-indigo-800 hover:bg-indigo-50" }, "Restore full version"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setVersionComparison(null), className: "rounded px-1.5 py-1 font-bold text-violet-700 hover:bg-violet-100", "aria-label": "Close version comparison" }, "Close"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-white px-1 py-1" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-emerald-700" }, versionComparison.added), "Added"), /* @__PURE__ */ React.createElement("span", { className: "rounded bg-white px-1 py-1" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-red-700" }, versionComparison.removed), "Removed"), /* @__PURE__ */ React.createElement("span", { className: "rounded bg-white px-1 py-1" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-amber-700" }, versionComparison.modified), "Modified"), /* @__PURE__ */ React.createElement("span", { className: "rounded bg-white px-1 py-1" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-slate-700" }, versionComparison.unchanged), "Unchanged")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 font-semibold" }, "Words: ", versionComparison.beforeWords.toLocaleString(), " \u2192 ", versionComparison.afterWords.toLocaleString(), " (", versionComparison.wordDelta >= 0 ? "+" : "", versionComparison.wordDelta, ") \xB7 Headings: ", versionComparison.beforeHeadings, " \u2192 ", versionComparison.afterHeadings), versionComparison.excerpts.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded border border-violet-200 bg-white", "aria-label": "Side-by-side version comparison" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 border-b border-violet-200 bg-violet-100 font-black uppercase tracking-wide text-violet-800" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1" }, "Saved version"), /* @__PURE__ */ React.createElement("span", { className: "border-l border-violet-200 px-2 py-1" }, "Current document")), /* @__PURE__ */ React.createElement("ol", { className: "max-h-72 divide-y divide-violet-100 overflow-y-auto" }, versionComparison.excerpts.map((excerpt, index) => {
       const restorable = excerpt.kind === "modified" && excerpt.beforeTag && excerpt.beforeTag === excerpt.afterTag;
       return /* @__PURE__ */ React.createElement("li", { key: excerpt.kind + "-" + excerpt.beforeIndex + "-" + excerpt.afterIndex + "-" + index, className: "p-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded px-1.5 py-0.5 text-[8px] font-black uppercase " + (excerpt.kind === "modified" ? "bg-amber-100 text-amber-800" : excerpt.kind === "removed" ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800") }, excerpt.kind), restorable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => restoreVersionComparisonBlock(excerpt), className: "rounded border border-indigo-400 bg-white px-2 py-1 text-[9px] font-bold text-indigo-800 hover:bg-indigo-50" }, "Use saved block")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-h-12 break-words rounded-l bg-red-50 px-2 py-1.5 text-red-950" }, excerpt.before ? /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap" }, excerpt.before) : /* @__PURE__ */ React.createElement("em", { className: "text-red-500" }, "Not present in saved version")), /* @__PURE__ */ React.createElement("div", { className: "min-h-12 break-words rounded-r border-l border-violet-200 bg-emerald-50 px-2 py-1.5 text-emerald-950" }, excerpt.after ? /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap" }, excerpt.after) : /* @__PURE__ */ React.createElement("em", { className: "text-emerald-600" }, "Not present in current document"))), excerpt.kind === "modified" && !restorable && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] text-slate-500" }, "This block changed type; restore the full version to apply it safely."));
-    }))) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-2 font-bold text-emerald-800" }, "The current document matches this saved version."), versionComparison.truncated && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-700" }, "Showing the first 24 changed blocks. The summary counts include the full comparison window."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, "Using a saved block preserves the rest of the document. If Track Changes is on, the restore becomes a reviewable structural change."))))), !ribbonCollapsed && activeRibbonTab === "home" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-home", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-home", className: "shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1", "aria-label": "Styles and Format Painter" }, /* @__PURE__ */ React.createElement("span", { className: "mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Styles"), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5", role: "toolbar", "aria-label": "Document styles" }, builderStyleGallery.map((styleOption) => {
+    }))) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-2 font-bold text-emerald-800" }, "The compared text matches this saved version. Images, links and formatting are not compared."), versionComparison.contentWindowTruncated && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-700" }, "Compared ", versionComparison.comparedBefore, " of ", versionComparison.totalBefore, " saved text blocks and ", versionComparison.comparedAfter, " of ", versionComparison.totalAfter, " current text blocks. Later blocks are not compared."), versionComparison.excerptWindowTruncated && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-700" }, "Showing the first 24 changed text blocks in the comparison window."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, "Text comparison excludes images, link destinations, formatting and other non-text changes."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, "Using a saved block preserves the rest of the document. If Track Changes is on, the restore becomes a reviewable structural change."))))), !ribbonCollapsed && activeRibbonTab === "home" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-home", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-home", className: "shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1", "aria-label": "Styles and Format Painter" }, /* @__PURE__ */ React.createElement("span", { className: "mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Styles"), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5", role: "toolbar", "aria-label": "Document styles" }, builderStyleGallery.map((styleOption) => {
       const selected = formatState.namedStyle === styleOption.id;
       const previewClass = styleOption.id === "title" ? "text-sm font-black" : styleOption.id.startsWith("heading") ? "font-black" : styleOption.id === "subtitle" ? "text-slate-500" : styleOption.id === "quote" ? "italic" : styleOption.id === "caption" ? "text-[9px] italic" : styleOption.id === "callout" ? "text-indigo-800" : "";
       return /* @__PURE__ */ React.createElement(
@@ -9606,7 +10007,7 @@ ${pageCss}
           doc.designMode = "on";
           try {
             if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
-            window.__alloBuilderEditedPack = { html: "<!DOCTYPE html>\n" + doc.documentElement.outerHTML, at: Date.now() };
+            draftCaptureLatestRef.current?.(doc, "Workbench edit");
           } catch (_) {
           }
           auditRunRef.current += 1;
@@ -9686,7 +10087,7 @@ ${pageCss}
     }, className: "text-[10px] text-cyan-300 hover:text-cyan-200 underline", title: "Copy the full agent/pipeline log to the clipboard" }, "\u{1F4CB} Copy log"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setAgentActivityLog([]);
       console.info("[ExpertWorkbench] log cleared");
-    }, className: "text-[10px] text-slate-300 hover:text-white underline ml-auto" }, "Clear")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 min-h-0 overflow-hidden bg-slate-100" }, showNavigationPane && /* @__PURE__ */ React.createElement("aside", { id: "document-builder-navigation", role: "complementary", "aria-label": "Document navigation", className: "relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white", style: { width: navigationPaneWidth } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Navigation"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, navigationPaneTab === "headings" ? headingOutline.length + " heading" + (headingOutline.length === 1 ? "" : "s") : navigationPaneTab === "sections" ? pageMetrics.documentSections.length + " section" + (pageMetrics.documentSections.length === 1 ? "" : "s") : navigationPaneTab === "references" ? (documentReferences.sources?.length || 0) + " source" + (documentReferences.sources?.length === 1 ? "" : "s") + " \xB7 " + (documentReferences.citations?.length || 0) + " citation" + (documentReferences.citations?.length === 1 ? "" : "s") + (documentReferences.brokenCount ? " \xB7 " + documentReferences.brokenCount + " broken" : "") : navigationPaneTab === "comments" ? unresolvedReviewCommentCount + " open / " + reviewComments.length + " total" : navigationPaneTab === "changes" ? pendingTrackedChangeCount + " pending change" + (pendingTrackedChangeCount === 1 ? "" : "s") : pageMetrics.count + " page" + (pageMetrics.count === 1 ? "" : "s"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowNavigationPane(false), "aria-label": "Close document navigation", className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1", role: "tablist", "aria-label": "Navigation view" }, /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-headings", type: "button", role: "tab", "aria-selected": navigationPaneTab === "headings", "aria-controls": "builder-navigation-panel-headings", tabIndex: navigationPaneTab === "headings" ? 0 : -1, onClick: () => setNavigationPaneTab("headings"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "headings"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "headings" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Headings"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-pages", type: "button", role: "tab", "aria-selected": navigationPaneTab === "pages", "aria-controls": "builder-navigation-panel-pages", tabIndex: navigationPaneTab === "pages" ? 0 : -1, onClick: () => setNavigationPaneTab("pages"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "pages"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "pages" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Pages"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-sections", type: "button", role: "tab", "aria-selected": navigationPaneTab === "sections", "aria-controls": "builder-navigation-panel-sections", tabIndex: navigationPaneTab === "sections" ? 0 : -1, onClick: () => setNavigationPaneTab("sections"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "sections"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "sections" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Sections"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-references", type: "button", role: "tab", "aria-selected": navigationPaneTab === "references", "aria-controls": "builder-navigation-panel-references", tabIndex: navigationPaneTab === "references" ? 0 : -1, onClick: () => setNavigationPaneTab("references"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "references"), className: "rounded px-0.5 py-1.5 text-[9px] font-bold " + (navigationPaneTab === "references" ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-300" : "text-slate-600 hover:bg-white") }, "References"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-comments", type: "button", role: "tab", "aria-selected": navigationPaneTab === "comments", "aria-controls": "builder-navigation-panel-comments", tabIndex: navigationPaneTab === "comments" ? 0 : -1, onClick: () => setNavigationPaneTab("comments"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "comments"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "comments" ? "bg-white text-amber-800 shadow-sm ring-1 ring-amber-300" : "text-slate-600 hover:bg-white"}` }, "Comments"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-changes", type: "button", role: "tab", "aria-selected": navigationPaneTab === "changes", "aria-controls": "builder-navigation-panel-changes", tabIndex: navigationPaneTab === "changes" ? 0 : -1, onClick: () => setNavigationPaneTab("changes"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "changes"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "changes" ? "bg-white text-violet-800 shadow-sm ring-1 ring-violet-300" : "text-slate-600 hover:bg-white"}` }, "Changes")), navigationPaneTab === "headings" ? /* @__PURE__ */ React.createElement("nav", { id: "builder-navigation-panel-headings", role: "tabpanel", "aria-labelledby": "builder-navigation-tab-headings", "aria-label": "Document heading navigation", className: "min-h-0 flex-1 overflow-y-auto p-2" }, headingOutline.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-indigo-50 px-2 py-1.5 text-[9px] leading-snug text-indigo-800" }, "Drag headings, or use the arrow buttons, to move a heading and all content beneath it. Nested headings stay with their section."), headingOutline.map((heading) => /* @__PURE__ */ React.createElement(
+    }, className: "text-[10px] text-slate-300 hover:text-white underline ml-auto" }, "Clear")))), /* @__PURE__ */ React.createElement("div", { className: "builder-preview-stage flex flex-1 min-h-0 overflow-hidden bg-slate-100" }, showNavigationPane && /* @__PURE__ */ React.createElement("aside", { id: "document-builder-navigation", role: "complementary", "aria-label": "Document navigation", className: "relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white", style: { width: navigationPaneWidth } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Navigation"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, navigationPaneTab === "headings" ? headingOutline.length + " heading" + (headingOutline.length === 1 ? "" : "s") : navigationPaneTab === "sections" ? pageMetrics.documentSections.length + " section" + (pageMetrics.documentSections.length === 1 ? "" : "s") : navigationPaneTab === "references" ? (documentReferences.sources?.length || 0) + " source" + (documentReferences.sources?.length === 1 ? "" : "s") + " \xB7 " + (documentReferences.citations?.length || 0) + " citation" + (documentReferences.citations?.length === 1 ? "" : "s") + (documentReferences.brokenCount ? " \xB7 " + documentReferences.brokenCount + " broken" : "") : navigationPaneTab === "comments" ? unresolvedReviewCommentCount + " open / " + reviewComments.length + " total" : navigationPaneTab === "changes" ? pendingTrackedChangeCount + " pending change" + (pendingTrackedChangeCount === 1 ? "" : "s") : pageMetrics.count + " page" + (pageMetrics.count === 1 ? "" : "s"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowNavigationPane(false), "aria-label": "Close document navigation", className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1", role: "tablist", "aria-label": "Navigation view" }, /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-headings", type: "button", role: "tab", "aria-selected": navigationPaneTab === "headings", "aria-controls": "builder-navigation-panel-headings", tabIndex: navigationPaneTab === "headings" ? 0 : -1, onClick: () => setNavigationPaneTab("headings"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "headings"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "headings" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Headings"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-pages", type: "button", role: "tab", "aria-selected": navigationPaneTab === "pages", "aria-controls": "builder-navigation-panel-pages", tabIndex: navigationPaneTab === "pages" ? 0 : -1, onClick: () => setNavigationPaneTab("pages"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "pages"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "pages" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Pages"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-sections", type: "button", role: "tab", "aria-selected": navigationPaneTab === "sections", "aria-controls": "builder-navigation-panel-sections", tabIndex: navigationPaneTab === "sections" ? 0 : -1, onClick: () => setNavigationPaneTab("sections"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "sections"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "sections" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Sections"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-references", type: "button", role: "tab", "aria-selected": navigationPaneTab === "references", "aria-controls": "builder-navigation-panel-references", tabIndex: navigationPaneTab === "references" ? 0 : -1, onClick: () => setNavigationPaneTab("references"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "references"), className: "rounded px-0.5 py-1.5 text-[9px] font-bold " + (navigationPaneTab === "references" ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-300" : "text-slate-600 hover:bg-white") }, "References"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-comments", type: "button", role: "tab", "aria-selected": navigationPaneTab === "comments", "aria-controls": "builder-navigation-panel-comments", tabIndex: navigationPaneTab === "comments" ? 0 : -1, onClick: () => setNavigationPaneTab("comments"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "comments"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "comments" ? "bg-white text-amber-800 shadow-sm ring-1 ring-amber-300" : "text-slate-600 hover:bg-white"}` }, "Comments"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-changes", type: "button", role: "tab", "aria-selected": navigationPaneTab === "changes", "aria-controls": "builder-navigation-panel-changes", tabIndex: navigationPaneTab === "changes" ? 0 : -1, onClick: () => setNavigationPaneTab("changes"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "changes"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "changes" ? "bg-white text-violet-800 shadow-sm ring-1 ring-violet-300" : "text-slate-600 hover:bg-white"}` }, "Changes")), navigationPaneTab === "headings" ? /* @__PURE__ */ React.createElement("nav", { id: "builder-navigation-panel-headings", role: "tabpanel", "aria-labelledby": "builder-navigation-tab-headings", "aria-label": "Document heading navigation", className: "min-h-0 flex-1 overflow-y-auto p-2" }, headingOutline.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-indigo-50 px-2 py-1.5 text-[9px] leading-snug text-indigo-800" }, "Drag headings, or use the arrow buttons, to move a heading and all content beneath it. Nested headings stay with their section."), headingOutline.map((heading) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: heading.index + "-" + heading.text,
@@ -9837,13 +10238,13 @@ ${pageCss}
         className: "absolute inset-y-0 right-0 w-2 cursor-col-resize bg-transparent hover:bg-indigo-300 focus:bg-indigo-300 focus:outline-none",
         title: "Drag or use arrow keys to resize navigation"
       }
-    )), "                  ", /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1 overflow-hidden bg-slate-100 p-4" }, /* @__PURE__ */ React.createElement(
+    )), "                  ", /* @__PURE__ */ React.createElement("div", { className: "builder-preview-shell min-w-0 flex-1 overflow-hidden bg-slate-100 p-4" }, /* @__PURE__ */ React.createElement(
       "iframe",
       {
         id: "document-builder-preview",
         ref: exportPreviewRef,
         title: "Editable document preview",
-        className: "w-full h-full bg-white rounded-lg shadow-inner border border-slate-400",
+        className: "builder-preview-frame w-full h-full bg-white rounded-lg shadow-inner border border-slate-400",
         sandbox: exportPreviewSource === "remediation" ? "allow-same-origin" : "allow-same-origin allow-scripts allow-forms",
         onLoad: () => {
           console.info("[ExportPreview] iframe loaded");
@@ -9860,7 +10261,10 @@ ${pageCss}
             refreshPageMetrics();
             applyEditorZoom(editorZoom);
             if (advancedReviewActiveRef.current) refreshAdvancedReviewTree(doc);
-            setDraftCaptureState("ready");
+            if (doc.body?.getAttribute("data-allo-user-edited") !== "1") {
+              setDraftCaptureState("ready");
+              setDraftCaptureAt(null);
+            }
             editorSelectionRangeRef.current = null;
             formatPainterRef.current = null;
             setFormatPainterActive(false);
@@ -9993,21 +10397,16 @@ ${pageCss}
               } catch (_) {
               }
             }, true);
-            let _capT = null;
-            const _captureEdits = () => {
-              try {
-                const capturedAt = Date.now();
-                const liveHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-                const clean = getCleanBuilderDocument();
-                const fullHtml = clean?.html || liveHtml;
-                window.__alloBuilderEditedPack = { html: fullHtml, at: capturedAt };
-                const savedLocally = persistLocalDraft(fullHtml, capturedAt, "Auto-save");
-                if (mountedRef.current) {
-                  setDraftCaptureState(savedLocally ? "saved" : "captured");
-                }
-              } catch (_) {
-              }
-            };
+            draftCaptureRef.current?.cancel();
+            const captureToken = {};
+            doc.__alloBuilderCaptureToken = captureToken;
+            const captureContext = draftContext;
+            const captureController = _builderCreateDraftCapture({
+              isCurrent: () => mountedRef.current && exportPreviewRef.current?.contentDocument === doc && doc.__alloBuilderCaptureToken === captureToken && draftContextRef.current === captureContext,
+              capture: () => draftCaptureLatestRef.current?.(doc, "Auto-save", captureContext, captureToken) || false
+            });
+            draftCaptureRef.current = captureController;
+            exportPreviewRef.current.__alloBuilderFlushDraft = captureController.flush;
             doc.addEventListener("input", () => {
               try {
                 _builderRefreshAdvancedAfterSnapshots(doc);
@@ -10030,8 +10429,7 @@ ${pageCss}
                 refreshPageMetrics();
                 refreshTableContext();
                 setFindDocumentRevision((value) => value + 1);
-                if (_capT) clearTimeout(_capT);
-                _capT = setTimeout(_captureEdits, 800);
+                captureController.schedule();
               } catch (_) {
               }
             }, true);
@@ -10048,7 +10446,7 @@ ${pageCss}
     ].map(([tabId, label]) => /* @__PURE__ */ React.createElement("button", { key: tabId, id: `advanced-review-tab-${tabId}`, type: "button", role: "tab", "aria-selected": advancedReviewTab === tabId, "aria-controls": `advanced-review-panel-${tabId}`, tabIndex: advancedReviewTab === tabId ? 0 : -1, onClick: () => setAdvancedReviewTab(tabId), className: `min-h-10 border-b-2 px-1 text-[9px] font-bold ${advancedReviewTab === tabId ? "border-indigo-700 bg-white text-indigo-800" : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900"}` }, label, tabId === "issues" && advancedReviewIssues.length ? ` (${advancedReviewIssues.length})` : ""))), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 overflow-y-auto" }, advancedReviewTab === "structure" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-structure", role: "tabpanel", "aria-labelledby": "advanced-review-tab-structure", className: "p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Semantic structure"), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] text-slate-500" }, advancedReviewTree.flat.length, " tagged source node", advancedReviewTree.flat.length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => refreshAdvancedReviewTree(), className: "min-h-8 rounded border border-slate-300 bg-white px-2 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Refresh")), advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-[10px] font-semibold text-amber-900" }, advancedReviewTreeError), advancedReviewTree.truncated && /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-amber-50 p-2 text-[9px] text-amber-900" }, "The outline is capped for responsiveness."), /* @__PURE__ */ React.createElement("div", { role: "tree", "aria-label": "Document semantic structure", className: "space-y-0.5" }, advancedReviewOutline.map(({ node, depth }) => /* @__PURE__ */ React.createElement("button", { key: node.id, type: "button", role: "treeitem", "aria-selected": advancedReviewSelectedId === node.id, "aria-level": depth + 1, onClick: () => selectAdvancedReviewNode(node.id), onDoubleClick: () => {
       selectAdvancedReviewNode(node.id);
       setAdvancedReviewTab("properties");
-    }, style: { paddingLeft: Math.min(48, 6 + depth * 12) }, className: `flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? "bg-sky-100 text-sky-950 ring-1 ring-sky-400" : "text-slate-700 hover:bg-slate-100"}` }, /* @__PURE__ */ React.createElement("span", { className: "w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700" }, node.role), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 truncate" }, node.text || "(empty)"), node.warnings?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 shrink-0 rounded-full bg-amber-500", "aria-label": `${node.warnings.length} warning${node.warnings.length === 1 ? "" : "s"}`, title: node.warnings.join("; ") }))), !advancedReviewOutline.length && !advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { className: "rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No semantic source nodes found.")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[9px] leading-snug text-slate-500" }, "Select a node to highlight it in the preview. Double-click to open its properties.")), advancedReviewTab === "issues" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-issues", role: "tabpanel", "aria-labelledby": "advanced-review-tab-issues", className: "p-2.5" }, advancedReviewEvidenceStale && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950" }, /* @__PURE__ */ React.createElement("strong", null, "Content changed."), " Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runAdvancedReviewBuilderAudit, disabled: exportAuditLoading, "aria-busy": exportAuditLoading, className: "mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, exportAuditLoading ? "Running Builder audit..." : "Run Builder HTML audit"), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[9px] leading-snug text-slate-500" }, "This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, advancedReviewIssues.map((issue) => /* @__PURE__ */ React.createElement("article", { key: issue.source + "-" + issue.id, className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black text-slate-800" }, issue.title), /* @__PURE__ */ React.createElement("span", { className: `rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${["critical", "serious", "high"].includes(issue.severity) ? "bg-red-100 text-red-800" : ["moderate", "medium"].includes(issue.severity) ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}` }, issue.severity)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-600" }, issue.message), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400" }, issue.source))), !advancedReviewIssues.length && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600" }, "No findings are available in the current review data. Run the Builder audit for this HTML version."))), advancedReviewTab === "properties" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-properties", role: "tabpanel", "aria-labelledby": "advanced-review-tab-properties", className: "space-y-3 p-2.5" }, advancedReviewSelectedNode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white" }, advancedReviewSelectedNode.role), /* @__PURE__ */ React.createElement("strong", { className: "min-w-0 flex-1 truncate text-[10px] text-slate-900" }, advancedReviewSelectedNode.text || "(empty node)")), /* @__PURE__ */ React.createElement("code", { className: "mt-1 block truncate text-[8px] text-slate-500" }, advancedReviewSelectedNode.id)), ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Semantic role", /* @__PURE__ */ React.createElement("select", { value: advancedReviewSelectedNode.tag, onChange: (event) => applyAdvancedReviewCommand({ type: "retag", nodeId: advancedReviewSelectedNode.id, tag: event.target.value }), className: "mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "p" }, "Paragraph"), /* @__PURE__ */ React.createElement("option", { value: "h1" }, "Heading 1"), /* @__PURE__ */ React.createElement("option", { value: "h2" }, "Heading 2"), /* @__PURE__ */ React.createElement("option", { value: "h3" }, "Heading 3"), /* @__PURE__ */ React.createElement("option", { value: "h4" }, "Heading 4"), /* @__PURE__ */ React.createElement("option", { value: "h5" }, "Heading 5"), /* @__PURE__ */ React.createElement("option", { value: "h6" }, "Heading 6"), /* @__PURE__ */ React.createElement("option", { value: "blockquote" }, "Block quote"))), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Reading order"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "up" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "down" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move later"))), ["img", "figure"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Alternative text", /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: advancedReviewAltDraft, onChange: (event) => setAdvancedReviewAltDraft(event.target.value), className: "mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-alt", nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft }), className: "min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800" }, "Apply alternative text"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: Boolean(advancedReviewSelectedNode.properties?.artifact), onChange: (event) => applyAdvancedReviewCommand({ type: "set-artifact", nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked }) }), "Artifact / decorative image")), advancedReviewSelectedNode.tag === "table" && /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Table headers"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-row" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-column" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First column"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "both" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Both")))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600" }, "Select a node in Structure to edit its role, order, image semantics, language, or table headers."), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-lg border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, advancedReviewSelectedNode ? "Selected node language" : "Document language"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: advancedReviewLanguageDraft, onChange: (event) => setAdvancedReviewLanguageDraft(event.target.value), placeholder: "en-US", "aria-label": advancedReviewSelectedNode ? "Selected node language" : "Document language", className: "min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-language", nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft }), className: "min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Apply")))), advancedReviewTab === "history" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-history", role: "tabpanel", "aria-labelledby": "advanced-review-tab-history", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Review ledger"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2" }, advancedReviewHistory.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[10px] text-slate-800" }, entry.summary), /* @__PURE__ */ React.createElement("time", { className: "shrink-0 text-[8px] text-slate-400" }, new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[8px] uppercase tracking-wide text-slate-500" }, entry.type, entry.targetId ? ` - ${entry.targetId}` : ""))), !advancedReviewHistory.length && /* @__PURE__ */ React.createElement("li", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No specialist mutations in this session."))), advancedReviewTab === "compare" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-compare", role: "tabpanel", "aria-labelledby": "advanced-review-tab-compare", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Session comparison"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Session baseline"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review session baseline", sandbox: "", srcDoc: advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" })), /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Current edited HTML"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review current document", sandbox: "", srcDoc: advancedReviewCurrentHtml || advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" }))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), draftCaptureState === "capturing" ? "Capturing changes\u2026" : draftCaptureState === "saved" ? "Saved on this device" : draftCaptureState === "restored" ? "Local draft restored" : draftCaptureState === "captured" ? "Draft captured in this session" : "Ready"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
+    }, style: { paddingLeft: Math.min(48, 6 + depth * 12) }, className: `flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? "bg-sky-100 text-sky-950 ring-1 ring-sky-400" : "text-slate-700 hover:bg-slate-100"}` }, /* @__PURE__ */ React.createElement("span", { className: "w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700" }, node.role), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 truncate" }, node.text || "(empty)"), node.warnings?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 shrink-0 rounded-full bg-amber-500", "aria-label": `${node.warnings.length} warning${node.warnings.length === 1 ? "" : "s"}`, title: node.warnings.join("; ") }))), !advancedReviewOutline.length && !advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { className: "rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No semantic source nodes found.")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[9px] leading-snug text-slate-500" }, "Select a node to highlight it in the preview. Double-click to open its properties.")), advancedReviewTab === "issues" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-issues", role: "tabpanel", "aria-labelledby": "advanced-review-tab-issues", className: "p-2.5" }, advancedReviewEvidenceStale && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950" }, /* @__PURE__ */ React.createElement("strong", null, "Content changed."), " Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runAdvancedReviewBuilderAudit, disabled: exportAuditLoading, "aria-busy": exportAuditLoading, className: "mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, exportAuditLoading ? "Running Builder audit..." : "Run Builder HTML audit"), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[9px] leading-snug text-slate-500" }, "This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, advancedReviewIssues.map((issue) => /* @__PURE__ */ React.createElement("article", { key: issue.source + "-" + issue.id, className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black text-slate-800" }, issue.title), /* @__PURE__ */ React.createElement("span", { className: `rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${["critical", "serious", "high"].includes(issue.severity) ? "bg-red-100 text-red-800" : ["moderate", "medium"].includes(issue.severity) ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}` }, issue.severity)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-600" }, issue.message), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400" }, issue.source))), !advancedReviewIssues.length && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600" }, "No findings are available in the current review data. Run the Builder audit for this HTML version."))), advancedReviewTab === "properties" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-properties", role: "tabpanel", "aria-labelledby": "advanced-review-tab-properties", className: "space-y-3 p-2.5" }, advancedReviewSelectedNode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white" }, advancedReviewSelectedNode.role), /* @__PURE__ */ React.createElement("strong", { className: "min-w-0 flex-1 truncate text-[10px] text-slate-900" }, advancedReviewSelectedNode.text || "(empty node)")), /* @__PURE__ */ React.createElement("code", { className: "mt-1 block truncate text-[8px] text-slate-500" }, advancedReviewSelectedNode.id)), ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Semantic role", /* @__PURE__ */ React.createElement("select", { value: advancedReviewSelectedNode.tag, onChange: (event) => applyAdvancedReviewCommand({ type: "retag", nodeId: advancedReviewSelectedNode.id, tag: event.target.value }), className: "mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "p" }, "Paragraph"), /* @__PURE__ */ React.createElement("option", { value: "h1" }, "Heading 1"), /* @__PURE__ */ React.createElement("option", { value: "h2" }, "Heading 2"), /* @__PURE__ */ React.createElement("option", { value: "h3" }, "Heading 3"), /* @__PURE__ */ React.createElement("option", { value: "h4" }, "Heading 4"), /* @__PURE__ */ React.createElement("option", { value: "h5" }, "Heading 5"), /* @__PURE__ */ React.createElement("option", { value: "h6" }, "Heading 6"), /* @__PURE__ */ React.createElement("option", { value: "blockquote" }, "Block quote"))), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Reading order"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "up" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "down" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move later"))), ["img", "figure"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Alternative text", /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: advancedReviewAltDraft, onChange: (event) => setAdvancedReviewAltDraft(event.target.value), className: "mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-alt", nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft }), className: "min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800" }, "Apply alternative text"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: Boolean(advancedReviewSelectedNode.properties?.artifact), onChange: (event) => applyAdvancedReviewCommand({ type: "set-artifact", nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked }) }), "Artifact / decorative image")), advancedReviewSelectedNode.tag === "table" && /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Table headers"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-row" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-column" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First column"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "both" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Both")))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600" }, "Select a node in Structure to edit its role, order, image semantics, language, or table headers."), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-lg border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, advancedReviewSelectedNode ? "Selected node language" : "Document language"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: advancedReviewLanguageDraft, onChange: (event) => setAdvancedReviewLanguageDraft(event.target.value), placeholder: "en-US", "aria-label": advancedReviewSelectedNode ? "Selected node language" : "Document language", className: "min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-language", nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft }), className: "min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Apply")))), advancedReviewTab === "history" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-history", role: "tabpanel", "aria-labelledby": "advanced-review-tab-history", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Review ledger"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2" }, advancedReviewHistory.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[10px] text-slate-800" }, entry.summary), /* @__PURE__ */ React.createElement("time", { className: "shrink-0 text-[8px] text-slate-400" }, new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[8px] uppercase tracking-wide text-slate-500" }, entry.type, entry.targetId ? ` - ${entry.targetId}` : ""))), !advancedReviewHistory.length && /* @__PURE__ */ React.createElement("li", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No specialist mutations in this session."))), advancedReviewTab === "compare" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-compare", role: "tabpanel", "aria-labelledby": "advanced-review-tab-compare", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Session comparison"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Session baseline"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review session baseline", sandbox: "", srcDoc: advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" })), /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Current edited HTML"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review current document", sandbox: "", srcDoc: advancedReviewCurrentHtml || advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" }))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), _builderSaveStatusLabel(draftCaptureState, draftCaptureAt)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
       ["Pages", pageMetrics.count, null],
       ["Words", documentStatistics.words, selectionStatistics.words],
       ["Characters (no spaces)", documentStatistics.charactersWithoutSpaces, selectionStatistics.charactersWithoutSpaces],
@@ -10277,7 +10675,7 @@ ${_pageCss}
           if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
           const cell = selectedNode?.closest?.("td,th");
           const table = cell?.closest?.("table");
-          if (cell && table) {
+          if (cell && table && !doc.activeElement?.closest?.('button,a[href],input,select,textarea,[role="button"]')) {
             let cells = Array.from(table.querySelectorAll("th,td"));
             const current = cells.indexOf(cell);
             let target = cells[current + (e.shiftKey ? -1 : 1)] || null;
@@ -10311,16 +10709,28 @@ ${_pageCss}
         } catch (_) {
         }
         try {
-          const inner = Array.from(doc.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0 && !el.closest('[aria-hidden="true"]'));
+          const inner = _builderKeyboardTargets(doc);
           const active = doc.activeElement;
+          if (!e.shiftKey && active === doc.body && inner.length) {
+            e.preventDefault();
+            inner[0].focus();
+            return;
+          }
+          const innerIndex = inner.indexOf(active);
+          const adjacent = inner[innerIndex + (e.shiftKey ? -1 : 1)];
+          if (innerIndex >= 0 && adjacent) {
+            e.preventDefault();
+            adjacent.focus();
+            return;
+          }
           const atStart = !inner.length || active === doc.body || active === inner[0];
-          const atEnd = !inner.length || active === doc.body || active === inner[inner.length - 1];
+          const atEnd = !inner.length || active === inner[inner.length - 1];
           if (e.shiftKey && atStart || !e.shiftKey && atEnd) {
             const frame = exportPreviewRef.current;
             const dialog = frame && frame.closest('[role="dialog"]');
-            const outer = dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0) : [];
+            const outer = dialog ? _builderKeyboardTargets(dialog) : [];
             const frameIndex = outer.indexOf(frame);
-            const target = e.shiftKey ? outer[Math.max(0, frameIndex - 1)] : outer[0];
+            const target = frameIndex < 0 ? null : outer[(frameIndex + (e.shiftKey ? outer.length - 1 : 1)) % outer.length];
             if (target && target.focus) {
               e.preventDefault();
               target.focus();

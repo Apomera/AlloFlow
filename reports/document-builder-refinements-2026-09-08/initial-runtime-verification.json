@@ -1,0 +1,27 @@
+{
+  "builderContainsCurrentSource": true,
+  "officeContainsCurrentSource": false,
+  "exportContainsCurrentSource": true,
+  "mirrorParity": {
+    "view_export_preview_module.js": true,
+    "view_pdf_audit_module.js": true,
+    "export_module.js": true,
+    "export_handlers_module.js": true
+  },
+  "hostParity": {
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true
+  },
+  "sourceHashes": {
+    "view_export_preview_module.js": "6dde20fd2cf42616826f0862343a09ea3a5bd50984823758f9abe7828de086b3",
+    "view_pdf_audit_module.js": "a5531138e97163f89c418206036f1b61d420b86c4fad53bcd9810696a510ab67",
+    "export_module.js": "c60c5433555ff71e9ae0e34b6fbfd7d12e5f1aaa95ee97874729f7fe10de0e34",
+    "export_handlers_module.js": "cd773b3e7a0bf6e29e11b5475b5c8e79bcac425cab57ee32da3681007b33ebca",
+    "view_export_preview_source.jsx": "10057b1aad796784a6ce9e26130d4ab4a8e6f3935d9c3bf4601885c6dff098ca",
+    "view_pdf_audit_source.jsx": "f2f57cefd9dc667a9d71bc308fc669d6f76c32790562e3dd4b89d8968e6b8c51",
+    "export_source.jsx": "ebfdf1485ea80a9b9f253275802a9d85889824d11a7299e15c6274b5ff48d03b",
+    "AlloFlowANTI.txt": "cca939740b2d3b4484bbfb38656bd9ff099cdce1aa76688ba881dc8b7641ef2c"
+  },
+  "unexpectedGlobals": [],
+  "passed": false
+}

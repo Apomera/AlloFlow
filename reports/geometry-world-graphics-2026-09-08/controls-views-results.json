@@ -1,0 +1,1050 @@
+{
+  "scope": "Actual local React/Three WebGL in touch-capable Chromium; small fractional creation; no source edits",
+  "errors": [],
+  "failures": [],
+  "placements": [],
+  "viewports": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "touch": [],
+      "views": [
+        {
+          "view": "perspective",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -0.5903455165238981,
+            -0.34003901751776516,
+            -0.7320284404896337
+          ],
+          "selected": 48,
+          "maxX": 0.19308915394723528,
+          "maxY": 0.4590576999769127,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Perspective",
+            "text": "Perspective",
+            "width": 87.34375,
+            "height": 44,
+            "x": 592.40625,
+            "y": 771,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "front",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "selected": 48,
+          "maxX": 0.25347233904314065,
+          "maxY": 0.5602777054881626,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Front",
+            "text": "Front",
+            "width": 52.953125,
+            "height": 44,
+            "x": 682.75,
+            "y": 771,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "side",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -1,
+            0,
+            -2.220446049250313e-16
+          ],
+          "selected": 48,
+          "maxX": 0.2022367304125613,
+          "maxY": 0.5586756437797867,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Side",
+            "text": "Side",
+            "width": 52.9375,
+            "height": 44,
+            "x": 738.703125,
+            "y": 771,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "top",
+          "up": [
+            0,
+            0,
+            -1
+          ],
+          "direction": [
+            0,
+            -1,
+            -4.440892098500627e-16
+          ],
+          "selected": 48,
+          "maxX": 0.33143232518833454,
+          "maxY": 0.552357979806399,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Top",
+            "text": "Top",
+            "width": 52.9375,
+            "height": 44,
+            "x": 794.640625,
+            "y": 771,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        }
+      ],
+      "restoredPose": {
+        "position": [
+          10,
+          8,
+          13
+        ],
+        "quaternion": [
+          -0.15543344028633285,
+          0.32648556797909994,
+          0.054523106843331254,
+          0.9307388733486263
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75
+      }
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "touch": [
+        {
+          "name": "Jump or fly up",
+          "text": "Up",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 394,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Fly down",
+          "text": "Down",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 448,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Place block",
+          "text": "Place",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 502,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Break block",
+          "text": "Break",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 556,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Measure structure",
+          "text": "Measure",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 610,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Undo last block action",
+          "text": "Undo",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 664,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "views": [
+        {
+          "view": "perspective",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -0.590345516523898,
+            -0.3400390175177653,
+            -0.7320284404896336
+          ],
+          "selected": 48,
+          "maxX": 0.4679096829888343,
+          "maxY": 0.30876127032286066,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Perspective",
+            "text": "Perspective",
+            "width": 94.734375,
+            "height": 44,
+            "x": 57,
+            "y": 724,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "front",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "selected": 48,
+          "maxX": 0.580177510157862,
+          "maxY": 0.35208406140966675,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Front",
+            "text": "Front",
+            "width": 57.421875,
+            "height": 44,
+            "x": 154.734375,
+            "y": 724,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "side",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -1,
+            0,
+            -2.220446049250313e-16
+          ],
+          "selected": 48,
+          "maxX": 0.571796705895502,
+          "maxY": 0.4383278448439906,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Side",
+            "text": "Side",
+            "width": 57.421875,
+            "height": 44,
+            "x": 215.15625,
+            "y": 724,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "top",
+          "up": [
+            0,
+            0,
+            -1
+          ],
+          "direction": [
+            0,
+            -1,
+            -2.220446049250313e-16
+          ],
+          "selected": 48,
+          "maxX": 0.5543675867003919,
+          "maxY": 0.23387978982270113,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Top",
+            "text": "Top",
+            "width": 57.40625,
+            "height": 44,
+            "x": 275.578125,
+            "y": 724,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        }
+      ],
+      "overlaps": [],
+      "joystickOverlaps": [],
+      "flight": [
+        {
+          "before": 8,
+          "during": {
+            "y": 11.444000000834464,
+            "up": true,
+            "down": false
+          },
+          "after": {
+            "y": 11.719100000500678,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "up",
+          "ending": "release",
+          "pass": true
+        },
+        {
+          "before": 11.719100000500678,
+          "during": {
+            "y": 8.932400000333786,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 8.519400000333786,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "cancel",
+          "pass": true
+        },
+        {
+          "before": 8.519400000333786,
+          "during": {
+            "y": 6.107200000166893,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 6.107200000166893,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "blur",
+          "pass": true
+        },
+        {
+          "before": 6.107200000166893,
+          "during": {
+            "y": 4.114300000250339,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 4.114300000250339,
+            "up": false,
+            "down": false,
+            "enabled": false,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "mode-off",
+          "pass": true
+        }
+      ],
+      "restoredPose": {
+        "position": [
+          10,
+          8,
+          13
+        ],
+        "quaternion": [
+          -0.15543344028633285,
+          0.32648556797909994,
+          0.054523106843331254,
+          0.9307388733486263
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75
+      }
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "touch": [
+        {
+          "name": "Jump or fly up",
+          "text": "Up",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 250,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Fly down",
+          "text": "Down",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 304,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Place block",
+          "text": "Place",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 358,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Break block",
+          "text": "Break",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 412,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Measure structure",
+          "text": "Measure",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 466,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Undo last block action",
+          "text": "Undo",
+          "width": 64,
+          "height": 48,
+          "x": 244,
+          "y": 520,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "views": [
+        {
+          "view": "perspective",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -0.5903455165238981,
+            -0.3400390175177652,
+            -0.7320284404896337
+          ],
+          "selected": 48,
+          "maxX": 0.41498313019462874,
+          "maxY": 0.27260832918229827,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Perspective",
+            "text": "Perspective",
+            "width": 91.890625,
+            "height": 44,
+            "x": 26,
+            "y": 580,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "front",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "selected": 48,
+          "maxX": 0.5147392522109858,
+          "maxY": 0.3104592594799752,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Front",
+            "text": "Front",
+            "width": 55.703125,
+            "height": 44,
+            "x": 120.890625,
+            "y": 580,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "side",
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "direction": [
+            -1,
+            0,
+            -2.220446049250313e-16
+          ],
+          "selected": 48,
+          "maxX": 0.5081383498448213,
+          "maxY": 0.3866915652608356,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Side",
+            "text": "Side",
+            "width": 55.703125,
+            "height": 44,
+            "x": 179.59375,
+            "y": 580,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        },
+        {
+          "view": "top",
+          "up": [
+            0,
+            0,
+            -1
+          ],
+          "direction": [
+            0,
+            -1,
+            -2.220446049250313e-16
+          ],
+          "selected": 48,
+          "maxX": 0.4943410068009968,
+          "maxY": 0.20631716840135034,
+          "clipped": false,
+          "overflow": false,
+          "control": {
+            "name": "Top",
+            "text": "Top",
+            "width": 55.703125,
+            "height": 44,
+            "x": 238.296875,
+            "y": 580,
+            "visible": true,
+            "inViewport": true,
+            "hit": true
+          }
+        }
+      ],
+      "overlaps": [],
+      "joystickOverlaps": [],
+      "flight": [
+        {
+          "before": 8,
+          "during": {
+            "y": 11.401999999582767,
+            "up": true,
+            "down": false
+          },
+          "after": {
+            "y": 12.34069999974966,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "up",
+          "ending": "release",
+          "pass": true
+        },
+        {
+          "before": 12.34069999974966,
+          "during": {
+            "y": 8.600599999666217,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 8.070700000166896,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "cancel",
+          "pass": true
+        },
+        {
+          "before": 8.070700000166896,
+          "during": {
+            "y": 6.144300000250343,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 6.144300000250343,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "blur",
+          "pass": true
+        },
+        {
+          "before": 6.144300000250343,
+          "during": {
+            "y": 4.3110000000000035,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 4.3110000000000035,
+            "up": false,
+            "down": false,
+            "enabled": false,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "mode-off",
+          "pass": true
+        }
+      ],
+      "restoredPose": {
+        "position": [
+          10,
+          8,
+          13
+        ],
+        "quaternion": [
+          -0.15543344028633285,
+          0.32648556797909994,
+          0.054523106843331254,
+          0.9307388733486263
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "fov": 75
+      }
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390,
+        "landscape": true
+      },
+      "touch": [
+        {
+          "name": "Jump or fly up",
+          "text": "Up",
+          "width": 58,
+          "height": 48,
+          "x": 454,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Fly down",
+          "text": "Down",
+          "width": 58,
+          "height": 48,
+          "x": 518,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Place block",
+          "text": "Place",
+          "width": 58,
+          "height": 48,
+          "x": 582,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Break block",
+          "text": "Break",
+          "width": 58,
+          "height": 48,
+          "x": 646,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Measure structure",
+          "text": "Measure",
+          "width": 58,
+          "height": 48,
+          "x": 710,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Undo last block action",
+          "text": "Undo",
+          "width": 58,
+          "height": 48,
+          "x": 774,
+          "y": 210,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "views": [],
+      "overlaps": [],
+      "joystickOverlaps": [],
+      "flight": [
+        {
+          "before": 8,
+          "during": {
+            "y": 10.379299999833108,
+            "up": true,
+            "down": false
+          },
+          "after": {
+            "y": 11.100299999833108,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "up",
+          "ending": "release",
+          "pass": true
+        },
+        {
+          "before": 11.100299999833108,
+          "during": {
+            "y": 9.3691999989152,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 8.797299998581414,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "cancel",
+          "pass": true
+        },
+        {
+          "before": 8.797299998581414,
+          "during": {
+            "y": 5.220999998748307,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 5.220999998748307,
+            "up": false,
+            "down": false,
+            "enabled": true,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "blur",
+          "pass": true
+        },
+        {
+          "before": 5.220999998748307,
+          "during": {
+            "y": 3.2896999993324316,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 3.2896999993324316,
+            "up": false,
+            "down": false,
+            "enabled": false,
+            "nativePointerLock": false
+          },
+          "direction": "down",
+          "ending": "mode-off",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "fixture": {
+    "studentBlocks": 50,
+    "groundBlocks": 99
+  },
+  "initial": {
+    "world": "[{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2}]",
+    "studentBlocks": 50,
+    "selected": 48,
+    "bytes": 12984,
+    "hash": "d89ff2407b55695caea0a5a5b1f0a8972d2cc3849c8d2b0ab8f030d04ab51715",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "redo": "[]",
+    "placed": 50,
+    "displayedPlaced": 50,
+    "xp": 25,
+    "milestones": "{}"
+  },
+  "blocked": {
+    "preview": {
+      "allowed": false,
+      "code": "occupied",
+      "reason": "This cell already has a block",
+      "cell": {
+        "x": 5,
+        "y": 1,
+        "z": 0
+      }
+    },
+    "ghost": {
+      "visible": true,
+      "color": "f16c58",
+      "opacity": 0.08,
+      "allowed": false,
+      "reason": "This cell already has a block",
+      "edgeColor": "ffbc9e",
+      "edgeDepthTest": false
+    },
+    "hint": {
+      "allowed": false,
+      "code": "occupied",
+      "reason": "This cell already has a block"
+    }
+  },
+  "guards": [
+    {
+      "name": "occupied",
+      "code": "occupied",
+      "expected": "occupied",
+      "allowed": false,
+      "created": false
+    },
+    {
+      "name": "below-floor",
+      "code": "below_floor",
+      "expected": "below_floor",
+      "allowed": false,
+      "created": false
+    },
+    {
+      "name": "world-edge",
+      "code": "out_of_bounds",
+      "expected": "out_of_bounds",
+      "allowed": false,
+      "created": false
+    },
+    {
+      "name": "fractional-grid",
+      "code": "out_of_bounds",
+      "expected": "out_of_bounds",
+      "allowed": false,
+      "created": false
+    },
+    {
+      "name": "non-finite",
+      "code": "out_of_bounds",
+      "expected": "out_of_bounds",
+      "allowed": false,
+      "created": false
+    },
+    {
+      "name": "block-quota (bounded count stub)",
+      "code": "block_limit",
+      "expected": "block_limit",
+      "allowed": false,
+      "created": false
+    }
+  ],
+  "noTarget": {
+    "preview": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Aim at a block face to build",
+      "cell": null
+    },
+    "ghost": {
+      "visible": false,
+      "color": "f16c58",
+      "opacity": 0.08,
+      "allowed": false,
+      "reason": "This cell already has a block",
+      "edgeColor": "ffbc9e",
+      "edgeDepthTest": false
+    },
+    "hint": null
+  },
+  "ready": {
+    "preview": {
+      "allowed": true,
+      "code": "ready",
+      "reason": "Ready to build",
+      "cell": {
+        "x": 2,
+        "y": 2,
+        "z": 1
+      }
+    },
+    "ghost": {
+      "visible": true,
+      "color": "9dddb5",
+      "opacity": 0.03,
+      "allowed": true,
+      "reason": "Ready to build",
+      "edgeColor": "d6f4df",
+      "edgeDepthTest": true
+    },
+    "hint": {
+      "allowed": true,
+      "code": "ready",
+      "reason": "Ready to build"
+    }
+  },
+  "intentionalPlacement": {
+    "world": "[{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":2,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2}]",
+    "studentBlocks": 51,
+    "selected": 49,
+    "bytes": 13384,
+    "hash": "fb4c6d9f3139a58561a8336b0db2c0557dee33fd74a04b59735fa81c52049c25",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+    "redo": "[]",
+    "placed": 51,
+    "displayedPlaced": 51,
+    "xp": 35,
+    "milestones": "{\"ten\":true,\"fifty\":true}"
+  },
+  "afterUndo": {
+    "world": "[{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2}]",
+    "studentBlocks": 50,
+    "selected": 48,
+    "bytes": 12984,
+    "hash": "d89ff2407b55695caea0a5a5b1f0a8972d2cc3849c8d2b0ab8f030d04ab51715",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "redo": "[{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+    "placed": 51,
+    "displayedPlaced": 51,
+    "xp": 35,
+    "milestones": "{\"ten\":true,\"fifty\":true}"
+  },
+  "final": {
+    "world": "[{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2}]",
+    "studentBlocks": 50,
+    "selected": 48,
+    "bytes": 12984,
+    "hash": "d89ff2407b55695caea0a5a5b1f0a8972d2cc3849c8d2b0ab8f030d04ab51715",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "redo": "[{\"action\":\"place\",\"x\":2,\"y\":2,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0}]",
+    "placed": 51,
+    "displayedPlaced": 51,
+    "xp": 35,
+    "milestones": "{\"ten\":true,\"fifty\":true}"
+  },
+  "shaderErrors": [],
+  "pass": true
+}

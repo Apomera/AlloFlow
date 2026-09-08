@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-08",
+  "distinctTests": 179,
+  "passed": 179,
+  "failed": [],
+  "modules": [
+    {
+      "name": "view_dbq_module.js",
+      "sha256": "1e6c759c43df1643d106055d5de3b80ff971744890bac4aa37fa64113f046971",
+      "bytes": 98886,
+      "mirrorMatches": true
+    },
+    {
+      "name": "view_timeline_module.js",
+      "sha256": "e2cd765c02dcd2ad6e40b871fc728df347b84d9287e36983155ae6e973a8192c",
+      "bytes": 35507,
+      "mirrorMatches": true
+    },
+    {
+      "name": "view_quiz_module.js",
+      "sha256": "0878c7e48ee2ca3463acf039854a31f0514bfa73d1c372057dd7128f1ca4d16d",
+      "bytes": 457218,
+      "mirrorMatches": true
+    }
+  ],
+  "sourceReports": [
+    "reports/main24-interactive-validation-2026-09-08.json",
+    "reports/main24-interactive-final-focus-2026-09-08.json"
+  ],
+  "runNote": "First run recorded 170 passing assertions in eight files but exited 1 and omitted the requested Concept Sort file. Focused rerun exited 0 with 61/61, including Concept Sort and both new regression files. Latest result per exact test name is retained."
+}

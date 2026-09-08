@@ -1,0 +1,288 @@
+{
+  "scope": "Studio scene look in actual WebGL; local React host",
+  "errors": [],
+  "checks": {
+    "geometry": {
+      "sha256": "e3ba621ef237669df898a3639bfeb3392e0e2a18820c5908c6a4755ad2995be0",
+      "triangles": 748,
+      "selected": 172
+    },
+    "desktop": {
+      "look": "studio",
+      "background": [
+        0.8796223968851662,
+        0.85499260812105,
+        0.8069522576650873
+      ],
+      "fog": [
+        0.8796223968851662,
+        0.85499260812105,
+        0.8069522576650873
+      ],
+      "stage": "gwe-studio-stage",
+      "resources": 5,
+      "bloomOff": true,
+      "floorReceivesShadow": true,
+      "shadowMaps": true,
+      "contactOpacity": 0.07,
+      "selectedVisible": true,
+      "hiddenObjects": 826,
+      "unrelatedHidden": true,
+      "buttons": [
+        {
+          "text": "Meadow",
+          "pressed": "false",
+          "height": 44
+        },
+        {
+          "text": "Studio",
+          "pressed": "true",
+          "height": 44
+        }
+      ],
+      "projected": [
+        [
+          -0.014443064767413468,
+          -0.14704567089842985,
+          0.9944211406264231
+        ],
+        [
+          -0.37915997868377327,
+          -0.4481851801389347,
+          0.9926017734972425
+        ],
+        [
+          -0.015861822542588326,
+          0.5462284118474988,
+          0.9937748430592432
+        ],
+        [
+          -0.4280321183148014,
+          0.422692358689542,
+          0.9915192126530981
+        ],
+        [
+          0.3516276688542373,
+          -0.34724106525854376,
+          0.9932116383567582
+        ],
+        [
+          0.022995226137298003,
+          -0.7918791059051032,
+          0.9905253092278579
+        ],
+        [
+          0.39327014268909516,
+          0.46486406702585836,
+          0.9922892209637962
+        ],
+        [
+          0.026813704282101808,
+          0.2729918614177777,
+          0.9887858487092986
+        ]
+      ],
+      "aspect": 1.71256038647343,
+      "canvas": [
+        1418,
+        828
+      ],
+      "overflow": false
+    },
+    "firstRelease": {
+      "counts": {
+        "resources": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "maps": [
+          0
+        ]
+      },
+      "expected": {
+        "resources": 5,
+        "maps": 1
+      },
+      "backgroundRestored": true,
+      "fogRestored": true,
+      "visibilityRestored": true,
+      "effectsRestored": true,
+      "stageRemoved": true
+    },
+    "cycles": [
+      {
+        "counts": {
+          "resources": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "maps": [
+            0
+          ]
+        },
+        "expected": {
+          "resources": 5,
+          "maps": 1
+        },
+        "backgroundRestored": true,
+        "fogRestored": true,
+        "visibilityRestored": true,
+        "effectsRestored": true,
+        "stageRemoved": true
+      },
+      {
+        "counts": {
+          "resources": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "maps": [
+            0
+          ]
+        },
+        "expected": {
+          "resources": 5,
+          "maps": 1
+        },
+        "backgroundRestored": true,
+        "fogRestored": true,
+        "visibilityRestored": true,
+        "effectsRestored": true,
+        "stageRemoved": true
+      }
+    ],
+    "phoneSaver": {
+      "look": "studio",
+      "background": [
+        0.8796223968851662,
+        0.85499260812105,
+        0.8069522576650873
+      ],
+      "fog": [
+        0.8796223968851662,
+        0.85499260812105,
+        0.8069522576650873
+      ],
+      "stage": "gwe-studio-stage",
+      "resources": 5,
+      "bloomOff": true,
+      "floorReceivesShadow": true,
+      "shadowMaps": false,
+      "contactOpacity": 0.28,
+      "selectedVisible": true,
+      "hiddenObjects": 647,
+      "unrelatedHidden": true,
+      "buttons": [
+        {
+          "text": "Meadow",
+          "pressed": "false",
+          "height": 44
+        },
+        {
+          "text": "Studio",
+          "pressed": "true",
+          "height": 44
+        }
+      ],
+      "projected": [
+        [
+          -0.029401547459653617,
+          -0.08404236611705711,
+          0.9972401382691668
+        ],
+        [
+          -0.6900885236605362,
+          -0.2290208406982715,
+          0.9967087843546016
+        ],
+        [
+          -0.030985567417121128,
+          0.29958209294771454,
+          0.9970375472853652
+        ],
+        [
+          -0.7328463308911985,
+          0.20318711036220652,
+          0.9964428701209085
+        ],
+        [
+          0.6635397735592482,
+          -0.1839713504957328,
+          0.9968738931615293
+        ],
+        [
+          0.037338205566812346,
+          -0.3610021924089877,
+          0.9962250655950847
+        ],
+        [
+          0.7029769436491475,
+          0.23329814234850965,
+          0.9966286302366345
+        ],
+        [
+          0.039930531089504354,
+          0.11413876489588166,
+          0.9958935156196567
+        ]
+      ],
+      "aspect": 0.48081841432225064,
+      "canvas": [
+        376,
+        782
+      ],
+      "overflow": false
+    },
+    "downloadBytes": 86409,
+    "exitRelease": {
+      "counts": {
+        "resources": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "maps": []
+      },
+      "expected": {
+        "resources": 5,
+        "maps": 0
+      },
+      "backgroundRestored": true,
+      "fogRestored": true,
+      "visibilityRestored": false,
+      "effectsRestored": true,
+      "stageRemoved": true
+    },
+    "shaderErrors": [],
+    "teardown": {
+      "removed": true,
+      "disposed": {
+        "resources": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "maps": []
+      },
+      "expected": {
+        "resources": 5,
+        "maps": 0
+      }
+    }
+  },
+  "consoleErrors": [],
+  "passed": true
+}

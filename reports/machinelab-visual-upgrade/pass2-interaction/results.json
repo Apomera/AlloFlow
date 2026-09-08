@@ -1,0 +1,19 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 390,
+      "overflow": false,
+      "canvas": true,
+      "guide": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "canvas": true,
+      "guide": true
+    }
+  ],
+  "started": true,
+  "finished": true
+}

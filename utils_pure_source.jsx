@@ -971,6 +971,28 @@ function _renderDiagramSvg(tool, state, titleText) {
   if (!tool || !state) return null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
   var num = function (v, d) { var n = Number(v); return isFinite(n) ? n : d; };
+  var unavailable = function(label) {
+    var text = esc(label + '. Interactive preview unavailable for this representation.');
+    return '<svg viewBox="0 0 420 80" role="img" aria-label="' + text + '" width="100%" style="max-width:460px"><title>' + esc(titleText || label) + '</title><desc>' + text + '</desc><text x="10" y="25" font-size="14">' + esc(label) + '</text><text x="10" y="52" font-size="12">Preview unavailable for this representation.</text></svg>';
+  };
+  if (tool === 'base10' && state.mode && state.mode !== 'blocks') {
+    if (state.mode === 'fracBars') return _renderDiagramSvg('fractions', state, titleText);
+    if (state.mode === 'tenFrame' || state.mode === 'counters') {
+      var count = state.mode === 'tenFrame' ? Number(state.count) : Math.abs(Number(state.value));
+      if (!Number.isInteger(count) || count < 0 || count > 20) return unavailable('Model value ' + (state.count ?? state.value));
+      var frame = state.mode === 'tenFrame', slots = frame ? (count > 10 ? 20 : 10) : count, parts = '';
+      for (var cell = 0; cell < slots; cell++) {
+        var x = 14 + (cell % 5) * 44, y = 14 + Math.floor(cell / 5) * 44;
+        if (frame) parts += '<rect x="' + x + '" y="' + y + '" width="44" height="44" fill="white" stroke="#475569"/>';
+        if (cell < count) parts += '<circle cx="' + (x+22) + '" cy="' + (y+22) + '" r="15" fill="' + (!frame && state.value < 0 ? '#dc2626' : frame ? '#4f46e5' : '#facc15') + '" stroke="#334155"/>';
+        if (!frame && cell < count) parts += '<text x="' + (x+22) + '" y="' + (y+27) + '" text-anchor="middle" fill="' + (state.value < 0 ? 'white' : '#111827') + '">' + (state.value < 0 ? '−' : '+') + '</text>';
+      }
+      var label = frame ? 'Ten-frame: ' + count : 'Counters: ' + state.value + '. Yellow is positive; red is negative';
+      var vh = Math.max(110, Math.ceil(slots / 5) * 44 + 46);
+      return '<svg viewBox="0 0 260 ' + vh + '" role="img" aria-label="' + esc(label) + '" width="100%" style="max-width:320px"><title>' + esc(titleText || label) + '</title><desc>' + esc(label) + '</desc>' + parts + '<text x="14" y="' + (vh-12) + '" font-size="14">' + esc(frame ? String(count) : String(state.value)) + '</text></svg>';
+    }
+    return unavailable('Unsupported manipulative mode');
+  }
   if (tool === 'numberline') {
     var range = state.range || {};
     var min = num(range.min, 0), max = num(range.max, 10);
@@ -1005,7 +1027,7 @@ function _renderDiagramSvg(tool, state, titleText) {
     var pts = Array.isArray(state.points) ? state.points.filter(function (p) { return p && isFinite(Number(p.x)) && isFinite(Number(p.y)); }) : [];
     var coords = pts.map(function (p) { return Math.abs(Number(p.x)); }).concat(pts.map(function (p) { return Math.abs(Number(p.y)); }));
     var R = coords.length ? Math.max(5, Math.ceil(Math.max.apply(null, coords))) : 10;
-    if (R > 20) R = 20;
+    if (R > 20) return unavailable('Coordinates: ' + pts.map(function(p) { return '(' + p.x + ', ' + p.y + ')'; }).join('; '));
     var S = 240, pad = 16, origin = S / 2, unit = (S / 2 - pad) / R;
     var cx = function (x) { return origin + num(x, 0) * unit; };
     var cy = function (y) { return origin - num(y, 0) * unit; };
@@ -1030,56 +1052,63 @@ function _renderDiagramSvg(tool, state, titleText) {
       + grid + axes + plotted + '</svg>';
   }
   if (tool === 'fractions') {
-    var fDen = Math.max(1, Math.round(num(state.denominator, 1)));
-    var fNum = Math.max(0, Math.min(fDen, Math.round(num(state.numerator, 0))));
-    var fW = 320, fBarY = 12, fBarH = 38, fPadX = 10, fBarW = fW - 2 * fPadX, fpw = fBarW / fDen;
-    var fCells = '';
-    var maxFractionCells = 64;
-    if (fDen <= maxFractionCells) {
-      for (var fi = 0; fi < fDen; fi++) {
-        fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + fBarY + '" width="' + fpw + '" height="' + fBarH + '" fill="' + (fi < fNum ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+    var fDen = num(state.denominator, 1), fNum = num(state.numerator, 0);
+    var fLabel = fNum + '/' + fDen;
+    if (!Number.isSafeInteger(fDen) || fDen < 1 || !Number.isSafeInteger(fNum) || fNum < 0 || fNum / fDen > 8) return unavailable('Fraction ' + fLabel);
+    var wholes = Math.max(1, Math.ceil(fNum / fDen));
+    var fW = 320, fPadX = 10, fBarW = 300, fpw = fBarW / fDen, fCells = '';
+    for (var whole = 0; whole < wholes; whole++) {
+      var shaded = Math.min(fDen, Math.max(0, fNum - whole * fDen)), y = 12 + whole * 50;
+      if (fDen <= 64) {
+        for (var fi = 0; fi < fDen; fi++) fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + y + '" width="' + fpw + '" height="38" fill="' + (fi < shaded ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+      } else {
+        fCells += '<rect x="10" y="' + y + '" width="300" height="38" fill="#ffffff" stroke="#475569"/>'
+          + (shaded > 0 ? '<rect x="10" y="' + y + '" width="' + (fBarW * shaded / fDen) + '" height="38" fill="#4f46e5"/>' : '');
       }
-    } else {
-      // Restored/imported data can contain an enormous denominator. Preserve
-      // the exact ratio and label without creating one SVG node per part.
-      var filledWidth = fBarW * (fNum / fDen);
-      fCells = '<rect x="' + fPadX + '" y="' + fBarY + '" width="' + fBarW + '" height="' + fBarH + '" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>'
-        + (filledWidth > 0 ? '<rect x="' + fPadX + '" y="' + fBarY + '" width="' + filledWidth + '" height="' + fBarH + '" fill="#4f46e5"/>' : '');
     }
-    var frTitle = esc(titleText || ('Fraction ' + fNum + '/' + fDen));
-    var frDesc = esc(fNum + ' of ' + fDen + ' equal parts shaded (' + fNum + '/' + fDen + ').');
-    return '<svg viewBox="0 0 ' + fW + ' 78" role="img" aria-label="' + frTitle + ': ' + frDesc + '" width="100%" style="max-width:360px"><title>' + frTitle + '</title><desc>' + frDesc + '</desc>'
-      + fCells + '<text x="' + (fW / 2) + '" y="' + (fBarY + fBarH + 22) + '" font-size="14" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(fNum + '/' + fDen) + '</text></svg>';
+    var frTitle = esc(titleText || ('Fraction ' + fLabel));
+    var frDesc = esc(fNum + ' parts shaded, with ' + fDen + ' equal parts per whole (' + fLabel + ').');
+    var height = wholes * 50 + 28;
+    return '<svg viewBox="0 0 320 ' + height + '" role="img" aria-label="' + frTitle + ': ' + frDesc + '" width="100%" style="max-width:360px"><title>' + frTitle + '</title><desc>' + frDesc + '</desc>' + fCells
+      + '<text x="160" y="' + (height - 8) + '" font-size="14" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(fLabel) + '</text></svg>';
   }
   if (tool === 'base10') {
     var bH = Math.max(0, Math.round(num(state.hundreds, 0))), bT = Math.max(0, Math.round(num(state.tens, 0))), bO = Math.max(0, Math.round(num(state.ones, 0)));
-    var bu = 5, bx = 8, by0 = 8, bParts = '';
-    for (var bhi = 0; bhi < Math.min(bH, 9); bhi++) {
+    var bK = num(state.thousands, 0);
+    if (!['thousands', 'hundreds', 'tens', 'ones'].every(function(key) { var count = num(state[key], 0); return Number.isSafeInteger(count) && count >= 0 && count <= 20; })) return unavailable('Base ten: ' + ['thousands', 'hundreds', 'tens', 'ones'].map(function(key) { return num(state[key], 0) + ' ' + key; }).join(', '));
+    var bu = 10, bx = 8, by0 = 8, bParts = '';
+    for (var bki = 0; bki < bK; bki++) {
+      bParts += '<rect x="' + bx + '" y="8" width="50" height="50" fill="#fbcfe8" stroke="#9d174d" stroke-width="2"/><text x="' + (bx + 25) + '" y="38" font-size="12" text-anchor="middle">1000</text>';
+      bx += 60;
+    }
+    for (var bhi = 0; bhi < bH; bhi++) {
       bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + (bu * 10) + '" height="' + (bu * 10) + '" fill="#c7d2fe" stroke="#4f46e5" stroke-width="1.5"/>';
       for (var bk = 1; bk < 10; bk++) bParts += '<line x1="' + (bx + bk * bu) + '" y1="' + by0 + '" x2="' + (bx + bk * bu) + '" y2="' + (by0 + bu * 10) + '" stroke="#4f46e5" stroke-width="0.4"/><line x1="' + bx + '" y1="' + (by0 + bk * bu) + '" x2="' + (bx + bu * 10) + '" y2="' + (by0 + bk * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
       bx += bu * 10 + 10;
     }
-    for (var bti = 0; bti < Math.min(bT, 9); bti++) {
+    for (var bti = 0; bti < bT; bti++) {
       bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + (bu * 10) + '" fill="#a5b4fc" stroke="#4f46e5" stroke-width="1"/>';
       for (var bk2 = 1; bk2 < 10; bk2++) bParts += '<line x1="' + bx + '" y1="' + (by0 + bk2 * bu) + '" x2="' + (bx + bu) + '" y2="' + (by0 + bk2 * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
       bx += bu + 4;
     }
     bx += 8;
-    for (var boi = 0; boi < Math.min(bO, 9); boi++) { bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + bu + '" fill="#818cf8" stroke="#4f46e5" stroke-width="1"/>'; bx += bu + 3; }
-    var bTotal = bH * 100 + bT * 10 + bO, bVW = Math.max(bx + 8, 80);
+    for (var boi = 0; boi < bO; boi++) { bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + bu + '" fill="#818cf8" stroke="#4f46e5" stroke-width="1"/>'; bx += bu + 3; }
+    var bTotal = bK * 1000 + bH * 100 + bT * 10 + bO, bVW = Math.max(bx + 8, 80);
     var bTitle = esc(titleText || ('Base-ten blocks showing ' + bTotal));
-    var bDesc = esc(bH + ' hundreds, ' + bT + ' tens, ' + bO + ' ones = ' + bTotal + '.');
-    return '<svg viewBox="0 0 ' + bVW + ' 70" role="img" aria-label="' + bTitle + ': ' + bDesc + '" width="100%" style="max-width:' + Math.min(bVW, 460) + 'px"><title>' + bTitle + '</title><desc>' + bDesc + '</desc>' + bParts + '</svg>';
+    var bDesc = esc(bK + ' thousands, ' + bH + ' hundreds, ' + bT + ' tens, ' + bO + ' ones = ' + bTotal + '.');
+    return '<svg viewBox="0 0 ' + bVW + ' 120" role="img" aria-label="' + bTitle + ': ' + bDesc + '" width="100%" style="max-width:' + Math.min(bVW, 460) + 'px"><title>' + bTitle + '</title><desc>' + bDesc + '</desc>' + bParts + '<text x="8" y="118" font-size="12">' + esc(bTotal) + '</text></svg>';
   }
   if (tool === 'protractor') {
-    var pAng = Math.max(0, Math.min(180, num(state.angle, 45)));
-    var pRad = pAng * Math.PI / 180, pvx = 100, pvy = 112, pLen = 84;
+    var pAng = num(state.angle, 45);
+    if (pAng < 0 || pAng > 360) return unavailable('Angle ' + pAng + ' degrees');
+    var pRad = pAng * Math.PI / 180, pvx = 100, pvy = 110, pLen = 84;
     var pex = (pvx + pLen * Math.cos(pRad)).toFixed(1), pey = (pvy - pLen * Math.sin(pRad)).toFixed(1);
     var prTitle = esc(titleText || (pAng + ' degree angle'));
     var prDesc = esc('An angle of ' + pAng + ' degrees between a horizontal ray and a second ray.');
-    return '<svg viewBox="0 0 220 140" role="img" aria-label="' + prTitle + ': ' + prDesc + '" width="100%" style="max-width:240px"><title>' + prTitle + '</title><desc>' + prDesc + '</desc>'
+    return '<svg viewBox="0 0 220 220" role="img" aria-label="' + prTitle + ': ' + prDesc + '" width="100%" style="max-width:240px"><title>' + prTitle + '</title><desc>' + prDesc + '</desc>'
       + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + (pvx + pLen) + '" y2="' + pvy + '" stroke="#475569" stroke-width="2"/>'
       + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + pex + '" y2="' + pey + '" stroke="#4f46e5" stroke-width="2"/>'
+      + (pAng === 360 ? '<circle cx="' + pvx + '" cy="' + pvy + '" r="32" fill="none" stroke="#4f46e5"/>' : pAng > 0 ? '<path d="M ' + (pvx + 32) + ' ' + pvy + ' A 32 32 0 ' + (pAng > 180 ? 1 : 0) + ' 0 ' + (pvx + 32 * Math.cos(pRad)) + ' ' + (pvy - 32 * Math.sin(pRad)) + '" fill="none" stroke="#4f46e5"/>' : '')
       + '<circle cx="' + pvx + '" cy="' + pvy + '" r="3" fill="#475569"/>'
       + '<text x="' + (pvx + 30) + '" y="' + (pvy - 14) + '" font-size="14" font-weight="bold" fill="#4f46e5">' + esc(pAng + '°') + '</text></svg>';
   }

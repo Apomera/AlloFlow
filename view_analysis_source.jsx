@@ -27,6 +27,10 @@ var _lazyIcon = function (name) {
   function AnalysisView(props) {
     // State reads
     var t = props.t;
+    var analysisLabel = function (key, fallback) {
+      var value = typeof t === 'function' ? t(key) : '';
+      return value && value !== key ? value : fallback;
+    };
     var generatedContent = props.generatedContent;
     var selectedDiscrepancies = props.selectedDiscrepancies;
     var selectedGrammarErrors = props.selectedGrammarErrors;
@@ -93,7 +97,7 @@ var _lazyIcon = function (name) {
           return <div className={`mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 ${hasDiscrepancies ? 'md:grid-cols-2' : ''} gap-4`}>{hasVerifiedFacts && <div className="bg-green-50 p-3 rounded border border-green-100"><h5 className="text-[11px] font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1"><CheckCircle2 size={10} /> {t('analysis.verified_facts')}</h5><div className="text-xs text-slate-700 leading-relaxed space-y-1">{generatedContent?.data.accuracy.verifiedFacts.map((f, i) => <div key={i} className="flex items-start gap-2"><span className="font-bold text-green-800 min-w-[2em] text-right shrink-0">{i + 1}.</span><div className="flex-1"><BilingualFieldRenderer text={f} /></div></div>)}</div></div>}{hasDiscrepancies && <div className="bg-red-50 p-3 rounded border border-red-100 relative"><h5 className="text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertCircle size={10} /> {t('analysis.discrepancies')}</h5><div className="space-y-2 mb-3">{rawDiscrepancies.map((d, i) => {
                   if (isInvalidDiscrepancy(d)) return null;
                   const isSelected = selectedDiscrepancies.has(i);
-                  return <div key={i} className={`flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`}>{isTeacherMode && <input aria-label={t('common.toggle_is_selected')} type="checkbox" checked={isSelected} onChange={() => toggleDiscrepancySelection(i)} className="mt-1 w-4 h-4 text-red-600 border-red-300 rounded focus:ring-red-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}<div className={`text-xs text-slate-700 leading-relaxed ${!isSelected ? 'line-through text-slate-600' : ''} w-full`}><BilingualFieldRenderer text={d} /></div></div>;
+                  return <div key={i} className={`flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`}>{isTeacherMode && <input aria-label={analysisLabel('analysis.select_factual_note', 'Include factual note in correction') + ' ' + (i + 1) + ': ' + d} type="checkbox" checked={isSelected} onChange={() => toggleDiscrepancySelection(i)} className="mt-1 w-4 h-4 text-red-600 border-red-300 rounded focus:ring-red-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}<div className={`text-xs text-slate-700 leading-relaxed ${!isSelected ? 'line-through text-slate-600' : ''} w-full`}><BilingualFieldRenderer text={d} /></div></div>;
                 })}</div>{isTeacherMode && <button aria-label={t('common.auto_correct_selected_errors')} onClick={handleAutoCorrectSource} disabled={isProcessing || selectedDiscrepancies.size === 0} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-red-600 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Wrench size={12} />}{t('analysis.fix_button')} ({selectedDiscrepancies.size})</button>}</div>}</div>;
         })()}{generatedContent?.data.accuracy.citations && <div className="mt-4 pt-4 border-t border-slate-100"><div className="text-xs text-slate-600 leading-relaxed">{renderFormattedText(generatedContent?.data.accuracy.citations, false)}</div></div>}</div>{(() => {
         const rawGrammarNotes = generatedContent?.data.grammar || [];
@@ -176,10 +180,11 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
             try {
               if (window.ai && window.ai.languageModel && typeof window.ai.languageModel.create === 'function') {
                 const session = await window.ai.languageModel.create();
-                raw = await session.prompt(fixPrompt);
                 try {
-                  session.destroy();
-                } catch (_) {}
+                  raw = await session.prompt(fixPrompt);
+                } finally {
+                  try { session.destroy(); } catch (_) {}
+                }
               }
             } catch (e) {
               warnLog('Built-in AI failed, falling back to Gemini:', e);
@@ -230,7 +235,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
                 const bareNote = isFixed ? note.replace(GRAMMAR_FIXED_PREFIX, '')
                   : isDismissed ? note.slice(GRAMMAR_DISMISSED_PREFIX.length)
                   : note;
-                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{isTeacherMode && !isFixed && !isDismissed && <input aria-label={t('common.toggle_is_selected')} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" aria-hidden="true" />}{isDismissed && <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />}<div className={`flex-1 text-sm text-slate-700 leading-relaxed ${(!isSelected && !isFixed && !isDismissed) || isDismissed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(bareNote, false)}{isDismissed && <span className="ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600">{t('analysis.grammar_dismissed_tag') || 'Dismissed'}</span>}</div>{/* Dismiss = "this one is handled" WITHOUT calling the AI: the teacher
+                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{isTeacherMode && !isFixed && !isDismissed && <input aria-label={analysisLabel('analysis.select_grammar_note', 'Include grammar note in correction') + ' ' + (idx + 1) + ': ' + bareNote} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" aria-hidden="true" />}{isDismissed && <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />}<div className={`flex-1 text-sm text-slate-700 leading-relaxed ${(!isSelected && !isFixed && !isDismissed) || isDismissed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(bareNote, false)}{isDismissed && <span className="ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600">{t('analysis.grammar_dismissed_tag') || 'Dismissed'}</span>}</div>{/* Dismiss = "this one is handled" WITHOUT calling the AI: the teacher
                      fixed it by hand, or the flag was simply wrong. Restore is the
                      undo, so a mis-click never silently buries a real issue. */}
                 {isTeacherMode && !isFixed && !isDismissed && <button type="button" onClick={() => dismissGrammarNote(idx)} title={t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)'} aria-label={`${t('analysis.grammar_dismiss_one') || 'Dismiss notice'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 px-1.5 py-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"><X size={14} aria-hidden="true" /></button>}

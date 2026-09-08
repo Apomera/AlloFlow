@@ -79,6 +79,15 @@ function ImageView(props) {
   var setGeneratedContent = props.setGeneratedContent;
   var setImageRefinementInput = props.setImageRefinementInput;
   var handleUpdateVisualPanel = props.handleUpdateVisualPanel;
+  const uploadRequestsRef = React.useRef(new Map());
+  React.useEffect(() => () => {
+    uploadRequestsRef.current.forEach(request => {
+      try {
+        request.reader.abort();
+      } catch (_) {}
+    });
+    uploadRequestsRef.current.clear();
+  }, []);
   const [altRequest, setAltRequest] = React.useState(null);
   const altRequestRef = React.useRef(null);
   const currentImageRef = React.useRef(null);
@@ -125,12 +134,30 @@ function ImageView(props) {
       addToast(t('toasts.image_too_large_10mb_alt'), 'warning');
       return;
     }
+    const resourceId = generatedContent && generatedContent.id;
+    const previousImageUrl = generatedContent && generatedContent.data && generatedContent.data.imageUrl;
+    const previousRequest = uploadRequestsRef.current.get(resourceId);
+    if (previousRequest) {
+      try {
+        previousRequest.reader.abort();
+      } catch (_) {}
+    }
     const reader = new FileReader();
-    reader.onerror = () => addToast(t('visuals.upload_failed') || 'The image could not be read. Please try another file.', 'error');
+    const request = {
+      reader
+    };
+    uploadRequestsRef.current.set(resourceId, request);
+    reader.onerror = () => {
+      if (uploadRequestsRef.current.get(resourceId) !== request) return;
+      uploadRequestsRef.current.delete(resourceId);
+      addToast(t('visuals.upload_failed') || 'The image could not be read. Please try another file.', 'error');
+    };
     reader.onload = event => {
+      if (uploadRequestsRef.current.get(resourceId) !== request) return;
+      uploadRequestsRef.current.delete(resourceId);
       const imageUrl = event.target && event.target.result;
       if (typeof imageUrl !== 'string' || !imageUrl.startsWith('data:image/')) return;
-      updateImageResource(item => replaceSingleImage(item, imageUrl));
+      updateImageResource(item => item.data && item.data.imageUrl === previousImageUrl ? replaceSingleImage(item, imageUrl) : item);
     };
     reader.readAsDataURL(file);
   };

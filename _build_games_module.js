@@ -98,7 +98,7 @@ console.log(`[icon-scan] auto-detected ${ICONS.length} Lucide icons: ${ICONS.joi
 const GAMES = [
   'MemoryGame', 'MatchingGame', 'TimelineGame', 'ConceptSortGame',
   'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame', 'CrosswordGame', 'SyntaxScramble',
-  'BingoGame', 'StudentBingoGame', 'WordScrambleGame',
+  'BingoGame', 'StudentBingoGame', 'WordScrambleGame', 'DefinitionDetectiveGame',
   'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
   'FishboneSortGame', 'ProblemSolutionSortGame',
   'MultiZoneSortGame', 'FrayerSortGame', 'SeeThinkWonderSortGame', 'StoryMapSortGame'

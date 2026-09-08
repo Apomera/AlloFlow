@@ -7,12 +7,13 @@ const publicModule = fs.readFileSync('desktop/web-app/public/view_simplified_mod
 
 describe('Simplified View WCAG controls', () => {
   it('gives every interactive word a strong keyboard focus indicator', () => {
-    expect(source.match(/focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1/g)).toHaveLength(5);
+    expect(source.match(/focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1/g)).toHaveLength(1); // One shared word component serves every reading layout.
   });
 
   it('uses explicit non-submit types for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(49);
-    expect(source.match(/\btype="button"/g)).toHaveLength(49);
+    const buttonCount = source.match(/<button\b/g).length;
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(source.match(/\btype="button"/g)).toHaveLength(buttonCount);
   });
 
   it('keeps cloze completion a non-modal live status', () => {
@@ -32,7 +33,7 @@ describe('Simplified View read-aloud sentence alignment', () => {
     expect(source).toContain('var simplifiedReferences = resolveSimplifiedReferences(simplifiedDisplayBody, simplifiedContentParts.references, simplifiedInputReferences, adaptedCitationAudit);');
     expect(source).toContain("if (!auditAllowsFallback || !simplifiedBodyHasCitationMarkers(adaptedBody)) return '';");
     expect(source).toContain("if (ownedReferences) return ownedReferences;");
-    expect(source).toContain('const _references = simplifiedReferences;');
+    expect(source).toContain('<SourceReferencesPanel referencesText={simplifiedReferences} />');
     expect(source).not.toContain('_refsInputCount > _refsContentCount');
 
     // Sentence enumeration is centralized so display, playback, preparation,
@@ -49,18 +50,10 @@ describe('Simplified View read-aloud sentence alignment', () => {
     expect(source).not.toContain('const paragraphs = generatedContent?.data.split(/\\n{2,}/);');
   });
 
-  it('offsets side-by-side target indexes after non-table source sentences', () => {
-    expect(source).toContain(
-      "const sourceSentencesTotal = source.flatMap(p => p.trim().startsWith('|') || p.includes('\\n|') ? [] : splitTextToSentences(p)).length;"
-    );
-    expect(source).toContain('let currentTargetSentenceIdx = sourceSentencesTotal;');
-    expect(source).toContain(
-      "const sourceParaSentences = source[i] && !(source[i].trim().startsWith('|') || source[i].includes('\\n|')) ? splitTextToSentences(source[i]) : [];"
-    );
-    expect(source).toContain(
-      "const targetParaSentences = target[i] && !(target[i].trim().startsWith('|') || target[i].includes('\\n|')) ? splitTextToSentences(target[i]) : [];"
-    );
-  });
+  // Runtime coverage for source/translation offsets, including tables, lives
+  // in adapted_reading_enhancements.test.js. The old duplicated renderer
+  // variable-name assertions no longer describe the shared renderer.
+
 });
 
 describe('Simplified View reduced motion and generated copies', () => {

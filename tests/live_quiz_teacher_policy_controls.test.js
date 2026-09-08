@@ -37,12 +37,12 @@ describe('teacher live response policy controls', () => {
 });
 
 describe('teacher-paced game scoring policy', () => {
-  it('uses fractional earned credit over the roster/evaluated denominator in Boss Battle', () => {
+  it('uses fractional earned credit over the roster/evaluated denominator excluding receipt-only delivery in Boss Battle', () => {
     expect(liveControls).toMatch(
       /const\s+earnedCredit\s*=\s*evaluatedResponses\.reduce\([\s\S]*?accuracyWeightForGrade/,
     );
     expect(liveControls).toMatch(
-      /const\s+eligibleCount\s*=\s*Math\.max\(\s*totalStudents,\s*totalResponses,\s*1\s*\)/,
+      /const\s+eligibleCount\s*=\s*Math\.max\(\s*totalStudents\s*-\s*unscoredReceiptCount,\s*totalResponses,\s*1\s*\)/,
     );
     expect(liveControls).toMatch(
       /const\s+answerAccuracy\s*=\s*earnedCredit\s*\/\s*eligibleCount/,
@@ -75,7 +75,7 @@ describe('teacher reveal answer guide', () => {
   it('uses the shared type-aware description and never renders the raw MCQ-only field', () => {
     expect(liveControls).toMatch(/describePresentationCorrectAnswer\(\s*question\s*\|\|\s*\{\}\s*\)/);
     expect(liveControls).toMatch(
-      /phase\s*===\s*['"]revealed['"]\s*&&\s*!liveQuestionSummary\.unscored\s*&&\s*liveAnswerGuide/,
+      /\(phase\s*===\s*['"]revealed['"]\s*\|\|\s*bossBattleEnded\)\s*&&\s*!liveQuestionSummary\.unscored\s*&&\s*liveAnswerGuide/,
     );
 
     const revealLabel = liveControls.lastIndexOf("t('quiz.correct_answer_label')");

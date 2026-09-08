@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 2,
+  "evidenceKind": "synthetic",
+  "description": "Mixed education policy regression snapshots. Expectations are authored tests, not expert judgments or live-provider results.",
+  "entries": [
+    {
+      "id": "worksheet-clean",
+      "documentKind": "worksheet",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "ready",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "reading-equal-access-barrier",
+      "documentKind": "reading",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 60,
+            "failViolations": 1,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 60,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "failed",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "table-value-conflict",
+      "documentKind": "table",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100,
+          "fidelityNotes": [
+            {
+              "kind": "numeric",
+              "msg": "Synthetic score-cell mismatch"
+            }
+          ],
+          "needsExpertReview": true,
+          "expertReviewReason": "content-fidelity"
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "review-required",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "scan-ocr-review",
+      "documentKind": "scan",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100,
+          "fidelityNotes": [
+            {
+              "kind": "lowOcrConfidence",
+              "msg": "Synthetic OCR ambiguity"
+            }
+          ],
+          "fidelityLimited": true,
+          "needsExpertReview": true,
+          "expertReviewReason": "content-fidelity"
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "review-required",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "form-manual-review",
+      "documentKind": "form",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 1
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "review-required",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "figure-validator-unavailable",
+      "documentKind": "figure",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": true,
+          "taggedPdfVerified": true,
+          "validation": {
+            "status": "unavailable",
+            "reason": "validator_not_available"
+          }
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "reading-below-target",
+      "documentKind": "reading",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 90,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "caution",
+        "governingLayerScore": 90,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "worksheet-ai-partial",
+      "documentKind": "worksheet",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 20,
+            "issues": [],
+            "_partialAudit": true,
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          },
+          "aiIncomplete": true
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "partial",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "table-validator-failed",
+      "documentKind": "table",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": true,
+          "taggedPdfVerified": true,
+          "validation": {
+            "status": "noncompliant",
+            "validator": "veraPDF",
+            "profile": "ua1",
+            "validatorVersion": "synthetic-test",
+            "failedRules": 1,
+            "failedChecks": 1,
+            "passedRules": 1,
+            "passedChecks": 1,
+            "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "inputBytes": 1024,
+            "validatedAt": "2026-09-07T12:00:00.000Z",
+            "validationDurationMs": 1
+          }
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "failed"
+        }
+      }
+    },
+    {
+      "id": "figure-validator-unbound",
+      "documentKind": "figure",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": true,
+          "taggedPdfVerified": true,
+          "validation": {
+            "status": "compliant",
+            "validator": "veraPDF",
+            "profile": "ua1",
+            "validatorVersion": "synthetic-test",
+            "failedRules": 0,
+            "failedChecks": 0,
+            "passedRules": 1,
+            "passedChecks": 1,
+            "inputSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "inputBytes": 1024,
+            "validatedAt": "2026-09-07T12:00:00.000Z",
+            "validationDurationMs": 1
+          }
+        }
+      },
+      "expected": {
+        "readiness": "review-required",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "scan-all-engines-unavailable",
+      "documentKind": "scan",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": null,
+          "axe": null,
+          "equalAccess": null
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        }
+      },
+      "expected": {
+        "readiness": "unavailable",
+        "governingLayerScore": null,
+        "layerStatuses": {
+          "ai": "unavailable",
+          "axe": "unavailable",
+          "equalAccess": "unavailable",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "worksheet-in-progress",
+      "documentKind": "worksheet",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": false
+        },
+        "inProgress": true
+      },
+      "expected": {
+        "readiness": "caution",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "figure-validated-export",
+      "documentKind": "figure",
+      "evidenceKind": "synthetic",
+      "description": "Synthetic policy-input snapshot; no document was remediated or manually reviewed.",
+      "artifact": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 1024
+      },
+      "observed": {
+        "targetScore": 95,
+        "verification": {
+          "ai": {
+            "score": 100,
+            "issues": [],
+            "chunksRequested": 1,
+            "chunksAudited": 1
+          },
+          "axe": {
+            "score": 100,
+            "totalViolations": 0,
+            "totalIncomplete": 0
+          },
+          "equalAccess": {
+            "score": 100,
+            "failViolations": 0,
+            "potentialViolations": 0,
+            "manualViolations": 0
+          }
+        },
+        "result": {
+          "integrityCoverage": 100
+        },
+        "pdf": {
+          "produced": true,
+          "taggedPdfVerified": true,
+          "validation": {
+            "status": "compliant",
+            "validator": "veraPDF",
+            "profile": "ua1",
+            "validatorVersion": "synthetic-test",
+            "failedRules": 0,
+            "failedChecks": 0,
+            "passedRules": 1,
+            "passedChecks": 1,
+            "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "inputBytes": 1024,
+            "validatedAt": "2026-09-07T12:00:00.000Z",
+            "validationDurationMs": 1
+          }
+        }
+      },
+      "expected": {
+        "readiness": "ready",
+        "governingLayerScore": 100,
+        "layerStatuses": {
+          "ai": "passed",
+          "axe": "passed",
+          "equalAccess": "passed",
+          "fidelity": "passed",
+          "export": "passed"
+        }
+      }
+    }
+  ]
+}

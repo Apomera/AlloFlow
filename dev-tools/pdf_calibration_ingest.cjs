@@ -1,123 +1,66 @@
 #!/usr/bin/env node
-/**
- * pdf_calibration_ingest.cjs — friction-free way to add an expert-scored PDF to the
- * calibration corpus (tests/fixtures/pdf_calibration/manifest.json) without hand-editing JSON.
- *
- * The calibration corpus answers "is AlloFlow's PDF score actually right?" by comparing it to a
- * REAL ground-truth score (a WCAG reviewer's verdict, or a PAC 2024 / veraPDF result). This tool
- * does NOT invent any scores — you supply the expert number you read off the tool/your judgement,
- * plus the AI / axe numbers from AlloFlow's results panel. It just validates + writes the JSON and
- * tells you when the harness will activate (>= 3 scored PDFs).
- *
- * USAGE (direct — always reliable):
- *   node dev-tools/pdf_calibration_ingest.cjs \
- *     --id scanned-iep-packet --file scanned-iep-packet.pdf \
- *     --expert 62 --source PAC2024 \
- *     --ai 88 --axe 95 [--blended 92] [--notes "AlloFlow over-scored; PAC failed the tag tree"]
- *
- * USAGE (auto-derive the expert score from a veraPDF JSON report — best-effort convenience):
- *   verapdf --format json mydoc.pdf > report.json
- *   node dev-tools/pdf_calibration_ingest.cjs --id mydoc --file mydoc.pdf \
- *     --verapdf report.json --ai 88 --axe 95
- *
- * Flags: --manifest <path> (override target), --dry-run (print, don't write), --help.
- */
-const fs = require('fs');
-const path = require('path');
-
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { randomUUID } = require('node:crypto');
+const { createEntry, summarizeCorpus } = require('./lib/pdf_calibration.cjs');
+const DEFAULT_MANIFEST = path.resolve(__dirname, '../tests/fixtures/pdf_calibration/manifest.json');
+const HELP = `Import an observation and optional completed human findings for the same artifact.
+  node dev-tools/pdf_calibration_ingest.cjs --observation observation.json --artifact output.pdf [--review findings.json] [--id slug] [--manifest path] [--dry-run]
+  node dev-tools/pdf_calibration_ingest.cjs --template
+Without --review, the entry remains unreviewed. No expert scores are inferred from validator results.
+--template prints a pending review record; complete it only after an actual human review.
+`;
 function parseArgs(argv) {
-  const a = {};
-  for (let i = 2; i < argv.length; i++) {
-    const t = argv[i];
-    if (t === '--dry-run') { a.dryRun = true; continue; }
-    if (t === '--help' || t === '-h') { a.help = true; continue; }
-    if (t.startsWith('--')) { a[t.slice(2)] = argv[i + 1]; i++; }
+  const out = {};
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (['--help', '-h', '--dry-run', '--template'].includes(arg)) { out[arg.replace(/^--?/, '')] = true; continue; }
+    if (!['--observation', '--artifact', '--review', '--id', '--manifest'].includes(arg)) throw new Error('Unknown option ' + arg + '. Old --expert/--verapdf/--blended score imports are retired; use an observation and explicit human findings.');
+    if (!argv[i + 1] || argv[i + 1].startsWith('--')) throw new Error(arg + ' requires a value.');
+    out[arg.slice(2)] = argv[++i];
   }
-  return a;
+  return out;
 }
-
-function fail(msg) { console.error('ERROR: ' + msg); process.exit(1); }
-
-function num(v, name) {
-  if (v === undefined) return undefined;
-  const n = Number(v);
-  if (!Number.isFinite(n) || n < 0 || n > 100) fail(`${name} must be a number 0-100 (got "${v}")`);
-  return n;
+// Publish only complete JSON. The cooperative lock also fences concurrent imports
+// between the final history check and rename; an existing lock is never removed.
+function publishManifest(manifestPath, before, next) {
+  const lockPath = manifestPath + '.lock';
+  const temporary = manifestPath + '.tmp-' + randomUUID();
+  let lock;
+  try { lock = fs.openSync(lockPath, 'wx', 0o600); }
+  catch (error) {
+    if (error.code === 'EEXIST') throw new Error('Manifest import is locked: ' + lockPath + '. Retry after the other import finishes; remove a stale lock only after confirming no importer is running.');
+    throw error;
+  }
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(next, null, 2) + '\n', { flag: 'wx', mode: 0o600, flush: true });
+    if (fs.readFileSync(manifestPath, 'utf8') !== before) throw new Error('Manifest changed during import; retry with the latest version.');
+    fs.renameSync(temporary, manifestPath);
+  } finally {
+    try { fs.unlinkSync(temporary); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    finally { try { fs.closeSync(lock); } finally { fs.unlinkSync(lockPath); } }
+  }
 }
-
-// Best-effort veraPDF JSON → 0-100 expert score. veraPDF field names vary across versions, so this
-// is defensive: it walks for a validationResult with compliant + passed/failed check counts. On any
-// uncertainty it bails and tells you to pass --expert directly (never guesses silently).
-function scoreFromVeraPdf(jsonPath) {
-  let raw;
-  try { raw = JSON.parse(fs.readFileSync(jsonPath, 'utf8')); }
-  catch (e) { fail(`could not read/parse veraPDF JSON at ${jsonPath}: ${e.message}`); }
-  // Find the first object that looks like a validation result.
-  let vr = null;
-  (function walk(o) {
-    if (vr || !o || typeof o !== 'object') return;
-    const hasCompliant = typeof o.compliant === 'boolean' || typeof o.isCompliant === 'boolean';
-    const d = o.details || o;
-    const hasCounts = d && (Number.isFinite(d.passedChecks) || Number.isFinite(d.failedChecks));
-    if (hasCompliant && hasCounts) { vr = { compliant: o.compliant ?? o.isCompliant, passed: d.passedChecks || 0, failed: d.failedChecks || 0 }; return; }
-    for (const k of Object.keys(o)) walk(o[k]);
-  })(raw);
-  if (!vr) fail('could not locate a validationResult (compliant + passed/failed checks) in the veraPDF JSON — pass --expert <0-100> --source veraPDF directly instead.');
-  const total = vr.passed + vr.failed;
-  // Compliant => high (PDF/UA-1 conformant). Else: pass-rate, capped below 90 so a failing doc
-  // can never look "excellent". This is a transparent heuristic; the human can override with --expert.
-  const score = vr.compliant ? Math.max(90, Math.round(100 * (total ? vr.passed / total : 1)))
-                             : Math.min(89, Math.round(100 * (total ? vr.passed / total : 0)));
-  console.log(`[verapdf] compliant=${vr.compliant} passed=${vr.passed} failed=${vr.failed} -> expertScore=${score}`);
-  return score;
+function main(argv, io = console) {
+  const args = parseArgs(argv);
+  if (args.help || args.h) { io.log(HELP); return null; }
+  if (args.template) { const template = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../tests/fixtures/pdf_calibration/review_template.json'), 'utf8')); io.log(JSON.stringify(template, null, 2)); return template; }
+  if (!args.observation || !args.artifact) throw new Error('--observation and --artifact are required.');
+  const readJson = filename => JSON.parse(fs.readFileSync(path.resolve(filename), 'utf8').replace(/^\uFEFF/, ''));
+  const entry = createEntry(readJson(args.observation), args.review ? readJson(args.review) : null,
+    fs.readFileSync(path.resolve(args.artifact)), { id: args.id, sourcePath: path.resolve(args.artifact) });
+  const manifestPath = path.resolve(args.manifest || DEFAULT_MANIFEST);
+  const before = fs.readFileSync(manifestPath, 'utf8');
+  const manifest = JSON.parse(before.replace(/^\uFEFF/, ''));
+  if (!Array.isArray(manifest.entries)) throw new Error('Manifest requires an entries array.');
+  if (manifest.entries.some(item => item.id === entry.id)) throw new Error('Duplicate id: ' + entry.id + '. Preserve review history by choosing a new artifact/run id.');
+  const next = { ...manifest, schemaVersion: 2, entries: [...manifest.entries, entry] };
+  const summary = summarizeCorpus(next);
+  if (args['dry-run']) { io.log(JSON.stringify({ dryRun: true, entry, coverage: summary.coverage }, null, 2)); return entry; }
+  publishManifest(manifestPath, before, next);
+  io.log(JSON.stringify({ added: entry.id, evidenceKind: entry.evidenceKind, coverage: summary.coverage }, null, 2));
+  return entry;
 }
-
-const args = parseArgs(process.argv);
-if (args.help) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 24).join('\n')); process.exit(0); }
-
-const manifestPath = args.manifest
-  ? path.resolve(args.manifest)
-  : path.resolve(__dirname, '../tests/fixtures/pdf_calibration/manifest.json');
-
-if (!args.id) fail('--id <slug> is required');
-const ai = num(args.ai, '--ai');
-const axe = num(args.axe, '--axe');
-if (ai === undefined || axe === undefined) fail('--ai <0-100> and --axe <0-100> (from AlloFlow\'s results panel) are required');
-
-let expert, source;
-if (args.verapdf) { expert = scoreFromVeraPdf(args.verapdf); source = 'veraPDF'; }
-else { expert = num(args.expert, '--expert'); source = args.source; }
-if (expert === undefined) fail('provide --expert <0-100> --source <PAC2024|veraPDF|human-WCAG>, or --verapdf <report.json>');
-if (!source) fail('--source <PAC2024|veraPDF|human-WCAG> is required with --expert');
-
-const blended = num(args.blended, '--blended');
-const entry = {
-  id: String(args.id),
-  file: args.file || (String(args.id) + '.pdf'),
-  expertScore: expert,
-  expertSource: source,
-  alloflowAiScore: ai,
-  alloflowAxeScore: axe,
-  alloflowBlendedScore: blended !== undefined ? blended : Math.round((ai + axe) / 2),
-  notes: args.notes || '',
-};
-
-let manifest;
-try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); }
-catch (e) { fail(`could not read manifest at ${manifestPath}: ${e.message}`); }
-if (!Array.isArray(manifest.entries)) manifest.entries = [];
-if (manifest.entries.some(e => e && e.id === entry.id)) fail(`an entry with id "${entry.id}" already exists — pick a unique id (or remove the old one).`);
-
-manifest.entries.push(entry);
-
-if (args.dryRun) {
-  console.log('[dry-run] would append:\n' + JSON.stringify(entry, null, 2));
-  process.exit(0);
-}
-
-fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
-const scored = manifest.entries.filter(e => e && Number.isFinite(e.expertScore) && Number.isFinite(e.alloflowAiScore) && Number.isFinite(e.alloflowAxeScore)).length;
-console.log(`✓ added "${entry.id}" (expert ${expert} via ${source} | AlloFlow ai ${ai}/axe ${axe}/blended ${entry.alloflowBlendedScore}).`);
-console.log(`  corpus now has ${scored} fully-scored PDF(s).` + (scored >= 3
-  ? ' The calibration harness is ACTIVE — run: npx vitest run tests/pdf_score_calibration.test.js'
-  : ` ${3 - scored} more needed before the harness activates.`));
+if (require.main === module) { try { main(process.argv.slice(2)); } catch (error) { console.error('ERROR: ' + error.message); process.exitCode = 1; } }
+module.exports = { parseArgs, main };

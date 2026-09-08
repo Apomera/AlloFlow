@@ -1,0 +1,102 @@
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+const {chromium} = require('playwright');
+const out = 'reports/video-studio-usability-2026-09-08';
+(async () => {
+ const browser=await chromium.launch({headless:true});
+ try {
+  const page=await browser.newPage({viewport:{width:1360,height:960}});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',route=>route.request().url().startsWith('http://studio.test/')?route.fulfill({contentType:'text/html',body:fs.readFileSync('video_studio/video_studio.html','utf8')}):route.abort());
+  await page.goto('http://studio.test/');
+  const bytes=await page.evaluate(async()=>{
+   const c=document.createElement('canvas');c.width=640;c.height=360;const ctx=c.getContext('2d');let frame=0;
+   const draw=()=>{ctx.fillStyle='#164e63';ctx.fillRect(0,0,640,360);ctx.fillStyle='#e0f2fe';ctx.font='32px sans-serif';ctx.fillText('Exploring equivalent fractions',40,150);ctx.fillStyle='#67e8f9';ctx.fillRect(40,210,++frame%500,12);};draw();
+   const stream=c.captureStream(15), rec=new MediaRecorder(stream,{mimeType:'video/webm'}), chunks=[];rec.ondataavailable=e=>chunks.push(e.data);const done=new Promise(r=>rec.onstop=r);const timer=setInterval(draw,60);rec.start();await new Promise(r=>setTimeout(r,2500));rec.stop();await done;clearInterval(timer);stream.getTracks().forEach(t=>t.stop());return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
+  });
+  const video=name=>({name,mimeType:'video/webm',buffer:Buffer.from(bytes)});
+  await page.locator('#importInput').setInputFiles([video('Lesson one.webm'),{name:'broken.allopack',mimeType:'application/octet-stream',buffer:Buffer.from('broken project')},video('Lesson two.webm')]);
+  await page.waitForFunction(()=>document.querySelector('#importStatus').textContent.startsWith('Imported 2 of 3 files.'));
+  assert.match(await page.locator('#studioImportFeedback').textContent(),/broken.allopack/);
+  assert.equal(await page.locator('#takesList .take').count(),2);
+  assert.match(await page.locator('#takesList [aria-current="true"] .nm').textContent(),/Lesson two/);
+  await page.locator('#editVideo').evaluate(v=>{v.currentTime=0.6;});
+  await page.waitForFunction(()=>!document.querySelector('#editVideo').seeking);
+  await page.getByRole('button',{name:/Select.*Lesson two/}).click();
+  assert.ok(Math.abs(await page.locator('#editVideo').evaluate(v=>v.currentTime)-0.6)<0.1,'Selecting the current take preserves the playhead');
+  await page.getByRole('button',{name:/Rename.*Lesson two/}).click();
+  await page.getByRole('textbox',{name:'Take name',exact:true}).fill('Equivalent fractions');
+  await page.getByRole('button',{name:'Save name',exact:true}).click();
+  assert.equal(await page.locator('#takesList [aria-current="true"] .nm').textContent(),'Equivalent fractions');
+  assert.match(await page.locator('#studioSelection').textContent(),/Equivalent fractions/);
+  assert.equal(await page.evaluate(()=>document.activeElement.textContent),'Equivalent fractions');
+  assert.ok(Math.abs(await page.locator('#editVideo').evaluate(v=>v.currentTime)-0.6)<0.1);
+  await page.getByRole('button',{name:'Rename Equivalent fractions',exact:true}).click();
+  await page.getByRole('textbox',{name:'Take name',exact:true}).fill('Discard this rename');
+  await page.getByRole('textbox',{name:'Take name',exact:true}).press('Escape');
+  assert.equal(await page.locator('#takesList [aria-current="true"] .nm').textContent(),'Equivalent fractions');
+  await page.locator('#previewSpeed').selectOption('1.5');
+  assert.equal(await page.locator('#editVideo').evaluate(v=>v.playbackRate),1.5);
+  await page.locator('#trimStart').fill('0.3');await page.locator('#trimEnd').fill('0.4');
+  await page.locator('#previewTrimBtn').click();
+  await page.waitForFunction(()=>document.querySelector('#previewTrimBtn').getAttribute('aria-pressed')==='false');
+  const endpoint=await page.locator('#editVideo').evaluate(v=>({paused:v.paused,time:v.currentTime,duration:v.duration}));
+  assert.equal(endpoint.paused,true);assert.ok(Math.abs(endpoint.time-(endpoint.duration-0.4))<0.12,'Preview stops at the kept endpoint');
+  await page.locator('#previewSpeed').selectOption('0.5');
+  await page.locator('#previewTrimBtn').click();await page.locator('#previewTrimBtn').click();
+  assert.equal(await page.locator('#editVideo').evaluate(v=>v.paused),true);
+  await page.locator('#trimStart').fill('0.4');await page.locator('#previewTrimBtn').click();
+  await page.getByRole('button',{name:/Select.*Lesson one/}).click();
+  assert.equal(await page.locator('#previewTrimBtn').getAttribute('aria-pressed'),'false');
+  await page.waitForFunction(()=>document.querySelector('#editVideo').readyState>=2);
+  // Old preview listeners must not pause the newly selected take at an old endpoint.
+  await page.locator('#editVideo').evaluate(v=>{v.currentTime=2.2;v.dispatchEvent(new Event('timeupdate'));});
+  assert.equal(await page.locator('#previewTrimBtn').getAttribute('aria-pressed'),'false');
+  await page.locator('#waveCanvas').focus();await page.locator('#waveCanvas').press('Home');
+  assert.equal(await page.locator('#editVideo').evaluate(v=>v.currentTime),0);
+  await page.locator('#waveCanvas').press('Space');
+  await page.waitForFunction(()=>!document.querySelector('#editVideo').paused);
+  await page.locator('#waveCanvas').press('Space');
+  await page.waitForFunction(()=>document.querySelector('#editVideo').paused);
+  await page.locator('#waveCanvas').press('End');
+  assert.ok(await page.locator('#editVideo').evaluate(v=>Math.abs(v.duration-v.currentTime)<0.1));
+  // Add a real caption through the UI, then verify nodes survive playback frames and ticks.
+  await page.locator('#editVideo').evaluate(v=>{v.currentTime=0;});
+  await page.locator('#addCueBtn').click();
+  await page.getByRole('textbox', {name:'text for caption 1',exact:true}).first().fill('One half equals two quarters.');
+  await page.getByRole('textbox', {name:'text for caption 1',exact:true}).first().press('Tab');
+  assert.match(await page.locator('#takesList [aria-current="true"] .meta').textContent(),/1 cues/);
+  await page.locator('#editorFocusMode').selectOption('all');await page.locator('#editMapScope').selectOption('all');
+  await page.locator('#previewSpeed').selectOption('0.5');
+  await page.locator('#waveCanvas').scrollIntoViewIfNeeded();
+  await page.evaluate(async()=>{
+   const v=document.querySelector('#editVideo');v.currentTime=0;await v.play();
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   window.laneNode=document.querySelector('.timeline-lane-segment');window.mapNode=document.querySelector('.edit-map-item');
+   window.mapNode.focus();
+  });
+  await page.waitForFunction(()=>document.querySelector('#editVideo').currentTime>0.5);
+  assert.equal(await page.evaluate(()=>window.laneNode===document.querySelector('.timeline-lane-segment')),true,'Lane controls survive animation frames');
+  assert.equal(await page.evaluate(()=>window.mapNode===document.querySelector('.edit-map-item')),true,'Map controls survive playback ticks');
+  assert.equal(await page.evaluate(()=>document.activeElement===window.mapNode),true,'Playback keeps keyboard focus');
+  await page.locator('#editVideo').evaluate(v=>v.pause());
+  await page.locator('#editorFocusMode').selectOption('basics');
+  await page.locator('#tabEdit').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/editor-desktop.png'});
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('#takesList').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/takes-mobile.png'});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+  await page.locator('#trimStart').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/trim-mobile.png'});
+  await page.waitForFunction(()=>new Promise(resolve=>{const req=indexedDB.open('allo_video_studio');req.onsuccess=()=>{const db=req.result;const get=db.transaction('takes').objectStore('takes').getAll();get.onsuccess=()=>{resolve(get.result.some(t=>t.name==='Equivalent fractions'));db.close();};};}));
+  await page.reload();await page.locator('#recoverBtn').click();
+  await page.getByRole('button',{name:'Select Equivalent fractions',exact:true}).click();
+  assert.equal(await page.locator('#trimStart').inputValue(),'0.4');
+  assert.equal(await page.locator('#trimEnd').inputValue(),'0.4');
+  // Single-file failures must be visible too, with no unhandled promise rejection.
+  await page.locator('#importInput').setInputFiles({name:'invalid.allopack',mimeType:'application/octet-stream',buffer:Buffer.from('PK garbage')});
+  await page.waitForFunction(()=>/invalid.allopack/.test(document.querySelector('#studioImportFeedback').textContent)&&/bad|warn/.test(document.querySelector('#importStatus').className));
+  assert.deepEqual(errors,[]);
+  fs.writeFileSync(out+'/results.json',JSON.stringify({passed:true,checks:['batch import preserves file order and continues after invalid project','visible single and batch import failures','selecting current take retains playhead','rename saves and Escape cancels with focus restored','preview speed','trim preview endpoint and stop control','take switching clears trim preview','Home/End timeline navigation','stable timeline and map DOM during playback','keyboard focus during playback','mobile fit at 390px','renamed draft and trims survive reload','no page errors'],errors},null,2));
+  console.log('Video Studio usability checks passed');
+ } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
+

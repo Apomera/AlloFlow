@@ -1,0 +1,25 @@
+{
+  "mirrors": {
+    "doc_pipeline_module.js": {
+      "equal": true,
+      "sha256": "a611e6299e7589c1597604c1d403f5e3d3e218409a832a8d688c5cc5e8ac0496"
+    },
+    "view_pdf_audit_module.js": {
+      "equal": true,
+      "sha256": "ba3836ab38739926dd51d32b0dea9e1bb84c6c0e3be2658eabf807f8afac797d"
+    }
+  },
+  "tests": {
+    "reference-tests": {
+      "passed": 28,
+      "failed": 0,
+      "files": 1
+    },
+    "integration-tests": {
+      "passed": 30,
+      "failed": 0,
+      "files": 3
+    }
+  },
+  "priorViewModuleSha256": "b3e499c57dc57e2423b572ded5fcee3474f5d79394f1da38362d3a501d3dc87a"
+}

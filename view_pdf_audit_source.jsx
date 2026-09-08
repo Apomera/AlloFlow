@@ -3130,6 +3130,17 @@ const DOC_MODES = {
 async function _buildAccessibleOfficeExport({ html, title, format }) {
   if (!html || typeof html !== 'string') throw new Error('No document content is available.');
   const safeTitle = String(title || 'AlloFlow Document').replace(/[\\/:*?"<>|]+/g, '-').trim().substring(0, 100) || 'AlloFlow Document';
+  if (format === 'pptx') {
+    const P = await _ensurePptxLib();
+    if (!P) throw new Error('The PowerPoint library could not load. Check the connection and try again.');
+    const spec = _htmlToDocxSpec(html);
+    if (title) spec.title = String(title);
+    const deck = _docxSpecToSlides(spec);
+    if (!deck.slides.length) throw new Error('The document has no content that can be exported to slides.');
+    const blob = await _buildPptxBlobFromSlides(deck, P);
+    return { blob, fileName: safeTitle + '.pptx', counts: deck.counts,
+      message: 'PowerPoint prepared from the current document. Review slide layout and image descriptions before sharing.' };
+  }
   if (format === 'docx') {
     const d = await _ensureDocxLib();
     if (!d) throw new Error('The Word export library could not load. Check the connection and try again.');
@@ -9740,6 +9751,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             autoFixPasses: project.autoFixPasses || 0,
                             // Collaboration provenance (2026-08-23): who-did-what survives the file.
                             humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+                            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
                             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
                             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
                             reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
@@ -12805,6 +12818,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     );
                   })()}
 
+                  {pdfFixResult && pdfFixResult.accessibleHtml && <_PdfPreservationReview key={pdfDocumentEpoch} result={pdfFixResult} captureToken={_captureAsyncHtmlToken} commitMetadata={_commitAsyncHtmlIfCurrent} onWorkbench={command => {
+                    setExpertCommandInput(command);
+                    const section = document.getElementById('allo-sec-workbench');
+                    if (section) { section.open = true; section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                  }} />}
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
@@ -15629,7 +15647,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe); const _jsonVerification = _verificationForExport(pdfFixResult);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: _jsonVerification.afterScoreVerified, verificationState: _jsonVerification.verificationState, verificationReasons: _jsonVerification.reasons, verificationHtmlBinding: _jsonVerification.verificationHtmlBinding, afterScoreBasis: _jsonVerification.afterScoreVerified ? 'min(content,automated) — weakest-layer governing score, NOT an average' : 'unverified (' + _jsonVerification.verificationState + '): ' + (_jsonVerification.reasons || []).join(' '), integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _jsonVerification.coverage, requiresManualReview: _jsonVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null, htmlFoundations: _foundationMatrix, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.2 AA', engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.2 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.2 AA)'] : []); })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: _jsonVerification.afterScoreVerified, verificationState: _jsonVerification.verificationState, verificationReasons: _jsonVerification.reasons, verificationHtmlBinding: _jsonVerification.verificationHtmlBinding, afterScoreBasis: _jsonVerification.afterScoreVerified ? 'min(content,automated) — weakest-layer governing score, NOT an average' : 'unverified (' + _jsonVerification.verificationState + '): ' + (_jsonVerification.reasons || []).join(' '), integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _jsonVerification.coverage, requiresManualReview: _jsonVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null, htmlFoundations: _foundationMatrix, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.2 AA', engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.2 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.2 AA)'] : []); })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null, preservationReview: { ...window.AlloModules.RemediationReview.evidence(pdfFixResult), acknowledgments: window.AlloModules.RemediationReview.acknowledgments(pdfFixResult.preservationAcknowledgments) } };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
@@ -16005,7 +16023,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
                                   autoFixPasses: project.autoFixPasses || 0,
                                   humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-                                  candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
+                                  sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+                            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
+                            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
                                   candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
                                   reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
@@ -16423,6 +16443,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const cmd = expertCommandInput.trim();
                           const _commitToken = _captureAsyncHtmlToken();
                           const _commandSourceHtml = String((_commitToken && _commitToken.html) || '');
+                          let _commandEvidence = { candidateRejectionCount: 0, candidateRejections: [] };
+                          const _reviewApi = window.AlloModules && window.AlloModules.RemediationReview;
                           setExpertCommandInput('');
                           setIsAgentRunning(true);
                           console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd));
@@ -16431,11 +16453,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           try {
                             const result = await processExpertCommand(cmd, _commandSourceHtml, {
                               onProgress: () => {},
+                              onPassEvidence: delta => { if (_reviewApi) _commandEvidence = _reviewApi.mergeEvidence(_commandEvidence, delta); },
                               onActivity: (entry) => {
                                 console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
                                 setAgentActivityLog(prev => [...prev, entry]);
                               }
                             });
+                            // The result contains cumulative evidence; callbacks are retained for failed commands. Never add both.
+                            if (_reviewApi && result && Number.isSafeInteger(result.candidateRejectionCount)) _commandEvidence = _reviewApi.evidence(result);
                             if (result && result.html && result.html !== _commandSourceHtml) {
                               // Snapshot the command's before/after TEXT so "See what changed" can
                               // open a word-level diff of just this command (not the whole remediation).
@@ -16458,7 +16483,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   setIsAgentRunning(false); return;
                                 }
                               }
-                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, ...(_reviewApi ? _reviewApi.mergeEvidence(prev, _commandEvidence) : {}), accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
                                 setAgentActivityLog(prev => [...prev, { text: '? Stale result discarded ? document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
                                 addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running ? its stale result was discarded.', 'info');
                                 setIsAgentRunning(false); return;
@@ -16479,11 +16504,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast(t('toasts.command_applied'), 'success');
                               }
                             } else {
+                              if (_reviewApi && _commandEvidence.candidateRejectionCount) _commitAsyncHtmlIfCurrent(_commitToken, prev => ({ ...prev, ..._reviewApi.mergeEvidence(prev, _commandEvidence) }));
                               console.warn('[ExpertWorkbench] noop command=' + JSON.stringify(cmd) + ' — no HTML changes');
                               setAgentActivityLog(prev => [...prev, { text: 'ℹ No changes applied', type: 'info', time: new Date().toLocaleTimeString() }]);
                               addToast(t('toasts.changes_applied'), 'info');
                             }
                           } catch (err) {
+                            if (_reviewApi && _commandEvidence.candidateRejectionCount) _commitAsyncHtmlIfCurrent(_commitToken, prev => ({ ...prev, ..._reviewApi.mergeEvidence(prev, _commandEvidence) }));
                             console.error('[ExpertWorkbench] error command=' + JSON.stringify(cmd), err);
                             setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
                             addToast(t('toasts.workbench_failed') + (err && (err.message || err) || 'unknown error'), 'error');

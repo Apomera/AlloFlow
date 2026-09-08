@@ -1,0 +1,18 @@
+[
+  {
+    "workspace": "transistor",
+    "violations": []
+  },
+  {
+    "workspace": "solarcell",
+    "violations": []
+  },
+  {
+    "workspace": "amplifier",
+    "violations": []
+  },
+  {
+    "workspace": "ivcurve",
+    "violations": []
+  }
+]

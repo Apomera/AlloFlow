@@ -1,0 +1,366 @@
+[
+  {
+    "name": "sidebar-teacher",
+    "errors": [],
+    "height": 1339,
+    "width": 380,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": false,
+        "top": 32,
+        "height": 29,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": false,
+        "top": 114,
+        "height": 29,
+        "value": "Normal"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": false,
+        "top": 195,
+        "height": 29,
+        "value": "English"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Custom Instructions (Optional)",
+        "disabled": false,
+        "top": 273,
+        "height": 30,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle adventure free response enabled",
+        "disabled": false,
+        "top": 324,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle adventure chance mode",
+        "disabled": false,
+        "top": 370,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is social story mode",
+        "disabled": false,
+        "top": 424,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is adventure story mode",
+        "disabled": false,
+        "top": 478,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle consistent characters",
+        "disabled": false,
+        "top": 524,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "🎨 Art Style",
+        "disabled": false,
+        "top": 610,
+        "height": 28,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle use low quality visuals",
+        "disabled": false,
+        "top": 670,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is adventure cloud enabled",
+        "disabled": false,
+        "top": 718,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle lock all settings || false",
+        "disabled": false,
+        "top": 764,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle allow cloud image storage !== false",
+        "disabled": false,
+        "top": 837,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 975,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 1098,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Earliest finale round (open-ended)",
+        "disabled": true,
+        "top": 1126,
+        "height": 26,
+        "value": "20"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Force Trigger Finale",
+        "disabled": false,
+        "top": 1214,
+        "height": 31,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Next",
+        "disabled": false,
+        "top": 1278,
+        "height": 48,
+        "value": ""
+      }
+    ],
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-slate-400"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.47 (foreground color: #94a3b8, background color: #fdfaff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "label[for=\"advLowQuality\"] > .opacity-70.font-normal.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #965fc2, background color: #f8f1ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-green-800 > .opacity-70.font-normal.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.42 (foreground color: #57926d, background color: #ecfbf3, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-red-800 > .opacity-70.font-normal.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.04 (foreground color: #b75a5b, background color: #feeef1, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-amber-800 > .opacity-70.font-normal.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.47 (foreground color: #b2774e, background color: #fef7e3, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-amber-700"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.32 (foreground color: #b45309, background color: #fdeeb6, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sidebar-locked",
+    "errors": [],
+    "height": 1193,
+    "width": 380,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": true,
+        "top": 32,
+        "height": 29,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": true,
+        "top": 114,
+        "height": 29,
+        "value": "Normal"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Selection",
+        "disabled": true,
+        "top": 195,
+        "height": 29,
+        "value": "English"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Custom Instructions (Optional)",
+        "disabled": true,
+        "top": 273,
+        "height": 30,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle adventure free response enabled",
+        "disabled": true,
+        "top": 324,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle adventure chance mode",
+        "disabled": true,
+        "top": 370,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is social story mode",
+        "disabled": true,
+        "top": 424,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is adventure story mode",
+        "disabled": true,
+        "top": 478,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle consistent characters",
+        "disabled": true,
+        "top": 524,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "🎨 Art Style",
+        "disabled": true,
+        "top": 610,
+        "height": 28,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle use low quality visuals",
+        "disabled": true,
+        "top": 670,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Toggle is adventure cloud enabled",
+        "disabled": false,
+        "top": 718,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": true,
+        "top": 829,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": true,
+        "top": 952,
+        "height": 16,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Earliest finale round (open-ended)",
+        "disabled": true,
+        "top": 980,
+        "height": 26,
+        "value": "20"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Force Trigger Finale",
+        "disabled": false,
+        "top": 1068,
+        "height": 31,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Next",
+        "disabled": false,
+        "top": 1132,
+        "height": 48,
+        "value": ""
+      }
+    ],
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-green-800 > .opacity-70.font-normal.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.42 (foreground color: #57926d, background color: #ecfbf3, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  }
+]

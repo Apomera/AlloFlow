@@ -1,90 +1,62 @@
-# PDF score calibration corpus
+# Document remediation calibration
 
-**Status: NOT YET POPULATED — needs a human WCAG reviewer (rank 11 of the 2026-06-08 pipeline audit).**
+This harness evaluates the **current** verification, distribution, and PDF delivery policies. It calls the repository's canonical functions; it does not fit a blended score or turn validator pass counts into expert scores.
 
-> **Fixture note (2026-07-09):** This is a calibration harness, not public compliance documentation. Use it to compare AlloFlow's advisory PDF score against expert/tool-grade ground truth; do not cite an empty or partially populated corpus as proof of WCAG, PDF/UA, or accessibility conformance.
+## Evidence is kept separate
 
-## Why this exists
+- `synthetic_cases.json`: 13 authored policy snapshots covering worksheets, readings, tables, scans, forms, and figures. These test expected behavior; no documents were remediated or reviewed to create them.
+- `manifest.json`: observations of actual artifacts. It is **empty** until observations are imported. An entry without completed human findings remains `unreviewed`.
+- `review_template.json`: an unfinished review form. It supplies no reviewer, verdict, or findings.
 
-AlloFlow's PDF accessibility score is a 50/50 blend of an **AI rubric** score and an **axe-core**
-score (doc_pipeline_source.jsx). Two honesty gaps the audit flagged:
+A passing synthetic suite is not human calibration, live-provider quality evidence, a usability test, or conformance certification. Empty/unreviewed corpora report `humanMetrics: null`; synthetic counts never enter human metrics. Imported reviewer identity and independence are declarations, not authenticated credentials.
 
-1. **The 50/50 weight is an unjustified prior.** Nobody has checked whether `0.5*ai + 0.5*axe`
-   actually tracks an expert's WCAG verdict — the weight was picked, not derived.
-2. **The axe half scores a *text reconstruction* of the extracted content, not the PDF bytes**
-   (it runs axe on AlloFlow's own `minimalHtml`), so page-structure/landmark rules pass by
-   construction and can inflate the number. (The live UI now discloses this; see the axe tile.)
+## Run
 
-The only way to fix this honestly is to compare AlloFlow's score against **expert / tool-grade
-ground truth** on a real set of PDFs, then re-derive the weight from evidence. That requires
-human-supplied scores — which is what this corpus holds.
-
-## What a reviewer needs to provide
-
-For **5–10 representative PDFs** (mix: born-digital, scanned, mixed, a heavily-tagged "good" one,
-an untagged "bad" one), record an expert score 0–100 from ONE of:
-
-- a **WCAG reviewer's holistic judgement** (preferred — a human who does this professionally), or
-- **PAC 2024** (PDF Accessibility Checker) pass-rate, or
-- **veraPDF** PDF/UA-1 conformance (pass = high, fail with N violations = scaled down).
-
-Then run each PDF through AlloFlow's PDF Accessibility audit and record the three numbers the
-results panel shows: the **AI Rubric** score, the **axe-core** score, and the **Blended** score.
-
-## How to populate
-
-**Easiest — use the ingest helper (no hand-editing JSON):**
-
-```bash
-# You read the expert score off PAC 2024 / veraPDF / your own WCAG judgement, and the AI + axe
-# numbers off AlloFlow's results panel. The helper validates + writes the JSON for you:
-node dev-tools/pdf_calibration_ingest.cjs \
-  --id scanned-iep-packet --file scanned-iep-packet.pdf \
-  --expert 62 --source PAC2024 --ai 88 --axe 95 \
-  --notes "AlloFlow over-scored; PAC failed the tag tree"
-
-# Or auto-derive the expert score from a veraPDF JSON report (best-effort):
-verapdf --format json mydoc.pdf > report.json
-node dev-tools/pdf_calibration_ingest.cjs --id mydoc --verapdf report.json --ai 88 --axe 95
+```powershell
+node dev-tools/evaluate_pdf_calibration.cjs
+node dev-tools/evaluate_pdf_calibration.cjs --synthetic
+node node_modules/vitest/vitest.mjs run tests/pdf_score_calibration.test.js tests/pdf_calibration_ingest.test.js --maxWorkers=1
 ```
 
-It prints how many PDFs are scored and tells you when the harness activates (≥3). `--dry-run`
-previews without writing; `--help` shows all flags. It never invents a score — you always supply
-the real expert/tool number.
+Use `--output report.json` to save a report. The synthetic report includes explicit expectation mismatches. The two test files fail when those expectations drift.
 
-**Or by hand —** edit `manifest.json` directly, one entry per PDF (drop the PDF itself in this folder):
+## Record observations and human findings
+
+1. Save the exact output artifact and its observed result/audits. Use a unique run/artifact ID; a new version gets a new ID. The observation JSON contains:
 
 ```json
 {
-  "entries": [
-    {
-      "id": "scanned-iep-packet",
-      "file": "scanned-iep-packet.pdf",
-      "expertScore": 64,
-      "expertSource": "PAC2024",
-      "alloflowAiScore": 88,
-      "alloflowAxeScore": 95,
-      "alloflowBlendedScore": 92,
-      "notes": "AlloFlow over-scored — axe passed wrapper rules on the text proxy; PAC failed it on tag-tree."
-    }
-  ]
+  "id": "worksheet-run-001",
+  "documentKind": "worksheet",
+  "evidenceKind": "unreviewed",
+  "artifact": { "sha256": "SHA-256 of the exact output bytes" },
+  "observed": {
+    "targetScore": 95,
+    "verification": { "ai": null, "axe": null, "equalAccess": null },
+    "result": {},
+    "pdf": { "produced": false }
+  }
 }
 ```
 
-`expertScore` + (`alloflowAiScore` & `alloflowAxeScore`) are the required fields; the rest are
-documentation. As soon as ≥3 entries have both an `expertScore` and the AlloFlow sub-scores,
-`tests/pdf_score_calibration.test.js` stops skipping and starts reporting:
+Replace the nulls with **actual** audit objects, including their finding/review counts and actual AI chunksRequested/chunksAudited. Copy measured `afterScore`, `integrityCoverage`, `fidelityNotes`, `needsExpertReview`, `expertReviewReason`, and `fidelityLimited` into `result` when available. Missing measurements stay missing. Include `aiIncomplete` in `verification` and `inProgress` in `observed` if applicable. For a PDF, provide `pdf.produced: true`, its actual `taggedPdfVerified`, and `pdf.validation` in the shared `normalizePdfUaValidation` schema. Validator evidence must identify the same PDF hash/size/profile; invalid or unbound validation remains unavailable.
 
-- **MAE** of the current 50/50 blend vs the expert scores,
-- the **Pearson correlation**, and
-- the **blend weight that minimises error** — i.e. the evidence-based answer to "should it be 50/50?"
+2. Import an observation without implying a human review:
 
-If the optimal weight is far from 0.5 or the MAE is large, that's the signal to re-weight the blend
-(and/or drop the wrapper-artifact axe rules) — with data, not a guess.
+```powershell
+node dev-tools/pdf_calibration_ingest.cjs --observation observation.json --artifact output.pdf --dry-run
+node dev-tools/pdf_calibration_ingest.cjs --observation observation.json --artifact output.pdf
+```
 
-## Why the harness can't auto-run the audit
+3. After an actual independent human review, copy the template and enter `status: "completed"`, `method: "human"`, `independent: true`, a reviewer identifier, ISO review time, a reference to review notes, and the exact artifact SHA-256. Set `readiness` to `ready`, `caution`, `review-required`, or `unavailable`. Record assessed `layers` using `ai`, `axe`, `equalAccess`, `fidelity`, and `export`, with outcomes `passed`, `failed`, `review-required`, `partial`, `unavailable`, or `not-applicable`. Omit unassessed layers.
 
-AlloFlow's audit needs a real DOM + network (axe-core in an iframe, pdf.js to canvas, Gemini
-Vision) — it can't run under headless vitest (the project's documented headless ceiling). So the
-AlloFlow sub-scores are recorded by hand from the app once per PDF; the harness does the math and
-the calibration verdict. This is a deliberate human-in-the-loop step, not an automation gap.
+Each finding contains `id`, `layer`, `summary`, and a human-checked `detectedByAutomation` boolean. The notes should explain what was checked and where the issue appears. Then import with `--review findings.json` and a new ID if the earlier observation is already stored. Review and observation hashes must match the actual `--artifact` file. Use `--manifest path` for a private corpus; do not commit sensitive learner documents or reviewer information.
+
+## What the report measures
+
+- Current verification coverage/status for AI, axe, and Equal Access; fidelity warning status; independently validated PDF export status.
+- Null-safe weakest-layer score and the actual reported score separately. This is a snapshot-policy replay, not a re-execution of extraction, remediation, browser proof binding, or final score deductions.
+- Declared human review outcomes versus predicted distribution: false-ready outcomes, unnecessary review, and per-layer disagreements.
+- Human-recorded findings missed by automation, per layer. These are counts of the findings reviewed, not a claim that the finding list is exhaustive.
+
+`ready` and `caution` count as distributable in the comparison; `review-required` and `unavailable` do not. Always inspect scope and provisional-run notes. A layer's advisory status is not an expert score. No MAE or reweighting recommendation is produced from unrelated validator counts.

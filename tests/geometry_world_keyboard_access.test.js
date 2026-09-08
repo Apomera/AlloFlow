@@ -284,9 +284,9 @@ describe('Geometry World keyboard building', () => {
     expect((SOURCE.match(/checkBreakFrustration\(\);/g) || [])).toHaveLength(1);
   });
 
-  it('keeps the block limit and lesson-block protection on the shared path', () => {
-    // The keyboard route must not become a way around either guard.
-    expect(SOURCE).toMatch(/interactAtCrosshair = function[\s\S]{0,4000}Object\.keys\(engine\.blocks\)\.length >= MAX_BLOCKS/);
+  it('keeps lesson-block protection on the shared path', () => {
+    // Capacity is exercised through the real shared action in
+    // geometry_world_placement_transaction.test.js, including rejected side effects.
     // Protection lives in removeBlock itself, which the shared path calls.
     expect(SOURCE).toContain('if (mesh.userData._lessonBlock && !forceRemove) {');
   });
@@ -596,7 +596,7 @@ describe('Geometry World mobile action WCAG parity', () => {
       // The name is now a translated key with the English as its fallback, so
       // match the fallback rather than a bare literal.
       expect(SOURCE).toMatch(new RegExp("type: 'button', className: 'gw-focusable', 'aria-label': __alloT\\('[^']+', '" + pair[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-      expect(SOURCE).toContain(`onClick: function() { runMobileButtonAction('${pair[1]}', ${pair[2]}); },`);
+      expect(SOURCE).toContain(`onClick: function(ev) { runMobileButtonAction('${pair[1]}', ${pair[2]}, ev); },`);
     });
     expect(SOURCE).toContain("engine._lastTouchAction = { key: actionKey, at: Date.now() };");
     expect(SOURCE).toContain("Date.now() - lastTouch.at < 700");

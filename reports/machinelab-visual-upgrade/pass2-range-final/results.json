@@ -1,0 +1,17 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "08-range-fresh",
+    "08b-range-odd-stone",
+    "08c-range-running",
+    "08d-range-strobe"
+  ]
+}

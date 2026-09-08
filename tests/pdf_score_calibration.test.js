@@ -1,101 +1,109 @@
-// PDF score calibration harness (rank 11 of the 2026-06-08 pipeline audit).
-//
-// HISTORICAL NOTE (2026-06-21): AlloFlow's PDF score is NO LONGER a 50/50 blend — the headline is now
-// min(AI rubric, axe/EqualAccess), the lower (governing) layer, never an average (weakest-layer-governs
-// redesign). So the "is 50/50 the right weight" question below is obsolete for the shipped model. What
-// REMAINS useful here is the corpus correlation analysis (do the AI / axe / min scores track expert
-// ground truth at all?) and the calibration MATH self-tests (mae / pearson / bestBlendWeight on
-// synthetic data), which are model-agnostic and still run every time. The weight-search is kept only as
-// an analytical lens on the historical blend, not a claim about the current score.
-//
-// It CANNOT run AlloFlow's audit itself (needs a real DOM + network — the documented headless
-// ceiling), so a reviewer records each PDF's AI/axe/expert scores into
-// tests/fixtures/pdf_calibration/manifest.json (see that folder's README). Until >=3 entries are
-// scored, the corpus test SKIPS (green). The pure calibration math is self-tested on synthetic
-// data every run, so the harness itself is always verified.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-
-// ── Pure calibration math ────────────────────────────────────────────────────────────────────
-function mae(predicted, actual) {
-  if (!predicted.length || predicted.length !== actual.length) return NaN;
-  let s = 0;
-  for (let i = 0; i < predicted.length; i++) s += Math.abs(predicted[i] - actual[i]);
-  return s / predicted.length;
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { evaluateObservation, summarizeCorpus, classifyEvidence, reviewProblems } = require('../dev-tools/lib/pdf_calibration.cjs');
+const read = name => JSON.parse(fs.readFileSync(path.resolve('tests/fixtures/pdf_calibration', name), 'utf8').replace(/^\uFEFF/, ''));
+const synthetic = read('synthetic_cases.json');
+function reviewedCase(overrides = {}) {
+  const entry = structuredClone(synthetic.entries[0]);
+  entry.evidenceKind = 'independent-human-review';
+  delete entry.expected;
+  entry.review = { status: 'completed', method: 'human', independent: true,
+    reviewer: 'UNIT TEST ONLY', reviewedAt: '2026-09-07T12:00:00.000Z', evidenceRef: 'unit-test:review-record',
+    artifactSha256: entry.artifact.sha256, readiness: 'ready', layers: { ai: 'passed', fidelity: 'passed' }, findings: [], ...overrides };
+  return entry;
 }
-function pearson(xs, ys) {
-  const n = xs.length;
-  if (n < 2 || n !== ys.length) return NaN;
-  const mx = xs.reduce((a, b) => a + b, 0) / n;
-  const my = ys.reduce((a, b) => a + b, 0) / n;
-  let num = 0, dx = 0, dy = 0;
-  for (let i = 0; i < n; i++) { const a = xs[i] - mx, b = ys[i] - my; num += a * b; dx += a * a; dy += b * b; }
-  if (dx === 0 || dy === 0) return NaN;
-  return num / Math.sqrt(dx * dy);
-}
-// Sweep blend weight w in [0,1]; prediction = w*ai + (1-w)*axe. Return the w minimising MAE vs expert.
-function bestBlendWeight(ai, axe, expert) {
-  let best = { w: 0.5, mae: Infinity };
-  for (let wi = 0; wi <= 100; wi++) {
-    const w = wi / 100;
-    const pred = ai.map((a, i) => w * a + (1 - w) * axe[i]);
-    const m = mae(pred, expert);
-    if (m < best.mae) best = { w, mae: m };
-  }
-  return best;
-}
-
-describe('calibration math (self-test on synthetic data — always runs)', () => {
-  it('mae is 0 for a perfect prediction, positive otherwise', () => {
-    expect(mae([80, 60], [80, 60])).toBe(0);
-    expect(mae([80, 60], [70, 70])).toBeCloseTo(10, 5);
+describe('mixed education policy calibration — synthetic regression evidence', () => {
+  it.each(synthetic.entries)('$id uses current layer, fidelity, and export readiness policy', entry => {
+    const actual = evaluateObservation(entry);
+    expect(actual.readiness).toBe(entry.expected.readiness);
+    expect(actual.governingLayerScore).toBe(entry.expected.governingLayerScore);
+    expect(Object.fromEntries(Object.entries(actual.layers).map(([key, value]) => [key, value.status]))).toEqual(entry.expected.layerStatuses);
+    expect(actual.policyFingerprint).toMatch(/^[a-f0-9]{64}$/);
   });
-  it('pearson is 1 for perfectly correlated, -1 for anti-correlated', () => {
-    expect(pearson([1, 2, 3, 4], [10, 20, 30, 40])).toBeCloseTo(1, 5);
-    expect(pearson([1, 2, 3, 4], [40, 30, 20, 10])).toBeCloseTo(-1, 5);
+  it('uses current audit completeness predicates before letting a score govern', () => {
+    const entry = structuredClone(synthetic.entries[0]);
+    entry.observed.verification.ai.score = 20;
+    delete entry.observed.verification.ai.chunksAudited;
+    expect(evaluateObservation(entry).governingLayerScore).toBe(100);
+    entry.observed.verification.ai.chunksAudited = 1;
+    entry.observed.verification.axe.score = 10;
+    delete entry.observed.verification.axe.totalViolations;
+    expect(evaluateObservation(entry).governingLayerScore).toBe(20);
   });
-  it('bestBlendWeight recovers a known weight: expert = 0.7*ai + 0.3*axe', () => {
-    const ai = [90, 80, 70, 60, 50];
-    const axe = [50, 60, 70, 80, 95];
-    const expert = ai.map((a, i) => 0.7 * a + 0.3 * axe[i]);
-    const best = bestBlendWeight(ai, axe, expert);
-    expect(best.w).toBeCloseTo(0.7, 1);
-    expect(best.mae).toBeLessThan(0.5);
+  it('requires an explicit PDF output declaration rather than assuming missing validation is irrelevant', () => {
+    const entry = structuredClone(synthetic.entries[0]); delete entry.observed.pdf;
+    expect(() => evaluateObservation(entry)).toThrow(/pdf.produced/);
+  });
+  it('reports synthetic expectations separately from human calibration', () => {
+    const report = summarizeCorpus(synthetic);
+    expect(report.corpusStatus).toBe('synthetic-only');
+    expect(report.coverage.independentlyReviewed).toBe(0);
+    expect(report.syntheticMetrics).toEqual({ evaluated: synthetic.entries.length, mismatched: 0 });
+    expect(report.humanMetrics).toBeNull();
+  });
+  it('surfaces a synthetic expectation mismatch', () => {
+    const entry = structuredClone(synthetic.entries[0]); entry.expected.readiness = 'review-required';
+    const report = summarizeCorpus({ entries: [entry] });
+    expect(report.syntheticMetrics.mismatched).toBe(1);
+    expect(report.rows[0].expectationMismatches).toContain('readiness');
+  });
+  it('preserves an actually reported post-fidelity score separately from the governing layer calculation', () => {
+    const entry = structuredClone(synthetic.entries[0]); entry.observed.result.afterScore = 87;
+    const actual = evaluateObservation(entry);
+    expect(actual.governingLayerScore).toBe(100);
+    expect(actual.reportedScore).toBe(87);
+    expect(actual.readiness).toBe('caution');
+  });
+  it('does not infer fidelity evidence when coverage was not measured', () => {
+    const entry = structuredClone(synthetic.entries[0]); delete entry.observed.result.integrityCoverage;
+    expect(evaluateObservation(entry).layers.fidelity.status).toBe('unavailable');
   });
 });
-
-describe('PDF score calibration corpus', () => {
-  const manifestPath = path.resolve(__dirname, 'fixtures/pdf_calibration/manifest.json');
-  let entries = [];
-  try {
-    const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    entries = (m.entries || []).filter(e =>
-      e && Number.isFinite(e.expertScore) && Number.isFinite(e.alloflowAiScore) && Number.isFinite(e.alloflowAxeScore));
-  } catch (_) { /* manifest missing/empty → skip below */ }
-
-  it('reports calibration once >=3 PDFs are expert-scored (skips until then)', () => {
-    if (entries.length < 3) {
-      // eslint-disable-next-line no-console
-      console.log(`[calibration] corpus has ${entries.length}/3 scored PDFs — not yet active. See tests/fixtures/pdf_calibration/README.md.`);
-      expect(entries.length).toBeGreaterThanOrEqual(0); // green until populated
-      return;
-    }
-    const ai = entries.map(e => e.alloflowAiScore);
-    const axe = entries.map(e => e.alloflowAxeScore);
-    const expert = entries.map(e => e.expertScore);
-    const current = ai.map((a, i) => 0.5 * a + 0.5 * axe[i]); // the shipped 50/50 blend
-    const current5050Mae = mae(current, expert);
-    const corr = pearson(current, expert);
-    const best = bestBlendWeight(ai, axe, expert);
-    const recommend = Math.abs(best.w - 0.5) > 0.15 || current5050Mae > 12
-      ? `RE-WEIGHT: error-minimising blend is ${best.w.toFixed(2)}*AI + ${(1 - best.w).toFixed(2)}*axe (MAE ${best.mae.toFixed(1)}) vs the shipped 50/50 (MAE ${current5050Mae.toFixed(1)}).`
-      : `50/50 is defensible (MAE ${current5050Mae.toFixed(1)}, best weight ${best.w.toFixed(2)}).`;
-    // eslint-disable-next-line no-console
-    console.log(`[calibration] n=${entries.length} | 50/50 MAE=${current5050Mae.toFixed(1)} | r=${corr.toFixed(2)} | best w=${best.w.toFixed(2)} (MAE ${best.mae.toFixed(1)}) → ${recommend}`);
-    // Sanity bounds only (this surfaces the calibration verdict for a human; it does not block CI
-    // on the blend being imperfect — acting on the recommendation is the human's call):
-    expect(Number.isFinite(current5050Mae)).toBe(true);
-    expect(current5050Mae).toBeLessThan(60); // catches a grossly broken/inverted scorer
+describe('human review calibration provenance and quality measures', () => {
+  it('reports an empty corpus as uncalibrated with no invented metric', () => {
+    const report = summarizeCorpus({ entries: [] });
+    expect(report.corpusStatus).toBe('empty'); expect(report.humanMetrics).toBeNull();
+  });
+  it('leaves legacy scores and unreviewed entries outside human metrics', () => {
+    const entry = { ...structuredClone(synthetic.entries[0]), evidenceKind: 'unreviewed' };
+    const report = summarizeCorpus({ entries: [entry, { id: 'old', expertScore: 99, alloflowAiScore: 100, alloflowAxeScore: 100 }] });
+    expect(report.corpusStatus).toBe('unreviewed'); expect(report.coverage.unreviewed).toBe(2);
+    expect(report.coverage.invalidObservations).toBe(1); expect(report.humanMetrics).toBeNull();
+  });
+  it.each(['pending', 'validator', 'other-artifact', 'no-reviewer'])('excludes %s evidence from independently reviewed metrics', reason => {
+    const entry = reviewedCase();
+    if (reason === 'pending') entry.review.status = 'pending';
+    if (reason === 'validator') entry.review.method = 'veraPDF';
+    if (reason === 'other-artifact') entry.review.artifactSha256 = 'b'.repeat(64);
+    if (reason === 'no-reviewer') entry.review.reviewer = '';
+    expect(reviewProblems(entry).length).toBeGreaterThan(0);
+    expect(classifyEvidence(entry)).toBe('unreviewed');
+  });
+  it('never promotes synthetic expectations even if review fields are present', () => {
+    const entry = reviewedCase(); entry.evidenceKind = 'synthetic';
+    expect(classifyEvidence(entry)).toBe('synthetic');
+  });
+  it('measures false-ready outcomes, unnecessary review, and missed findings only on declared completed reviews', () => {
+    const falseReady = reviewedCase({ readiness: 'review-required', layers: { ai: 'failed', fidelity: 'review-required' },
+      findings: [{ id: 'lost-instruction', layer: 'fidelity', summary: 'Unit-test omission', detectedByAutomation: false }] });
+    const unnecessary = reviewedCase(); unnecessary.observed.result.needsExpertReview = true;
+    const correctReady = reviewedCase();
+    const report = summarizeCorpus({ entries: [falseReady, unnecessary, correctReady, ...synthetic.entries] });
+    expect(report.humanMetrics.reviewedDocuments).toBe(3);
+    expect(report.humanMetrics.matrix).toEqual({ correctlyDistributable: 1, falseReady: 1, unnecessaryReview: 1, correctlyRequiresReview: 0 });
+    expect(report.humanMetrics.falseReadyRateAmongDistributable).toBe(0.5);
+    expect(report.humanMetrics.layers.fidelity).toMatchObject({ reviewedFindings: 1, missedFindings: 1, outcomeDisagreements: 1 });
+    expect(report.humanMetrics.layers.export.reviewed).toBe(0);
+  });
+  it('keeps the committed human corpus separate and validates every declared review', () => {
+    const manifest = read('manifest.json');
+    expect(manifest.schemaVersion).toBe(2);
+    expect(manifest.entries.every(entry => entry.evidenceKind !== 'synthetic')).toBe(true);
+    for (const entry of manifest.entries.filter(entry => entry.evidenceKind === 'independent-human-review')) expect(reviewProblems(entry)).toEqual([]);
+    const report = summarizeCorpus(manifest);
+    if (!manifest.entries.length) expect(report.humanMetrics).toBeNull();
   });
 });

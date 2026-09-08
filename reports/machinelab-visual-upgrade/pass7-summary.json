@@ -1,0 +1,79 @@
+{
+  "tests": {
+    "passed": 734,
+    "failed": 0,
+    "success": true,
+    "report": "pass7-tests-final.json"
+  },
+  "browser": [
+    {
+      "directory": "pass7-light",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "ruler-neutral",
+        "ruler-landed",
+        "ruler-drift",
+        "ruler-negative",
+        "ruler-short",
+        "ruler-flight"
+      ]
+    },
+    {
+      "directory": "pass7-dark",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "ruler-neutral",
+        "ruler-landed",
+        "ruler-drift",
+        "ruler-negative",
+        "ruler-short",
+        "ruler-flight"
+      ]
+    },
+    {
+      "directory": "pass7-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "ruler-neutral",
+        "ruler-landed",
+        "ruler-drift",
+        "ruler-negative",
+        "ruler-short",
+        "ruler-flight"
+      ]
+    }
+  ],
+  "viewports": [
+    1180,
+    390,
+    320
+  ],
+  "mirrorMatches": true,
+  "sha256": "772dbedbe917c85eaa616706c69605eef56c7e88a3ce836a2a4e1b2d32274dd5",
+  "syntax": "passed",
+  "whitespace": "passed"
+}

@@ -1,0 +1,131 @@
+{
+  "slug": "weathering_erosion_grade4",
+  "status": "planned",
+  "assets": [
+    {
+      "id": "we-term-1",
+      "target": "we-glossary.data[0].image",
+      "prompt": "Show Weathering using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-2",
+      "target": "we-glossary.data[1].image",
+      "prompt": "Show Erosion using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-3",
+      "target": "we-glossary.data[2].image",
+      "prompt": "Show Sediment using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-4",
+      "target": "we-glossary.data[3].image",
+      "prompt": "Show Deposition using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-5",
+      "target": "we-glossary.data[4].image",
+      "prompt": "Show Slope using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-6",
+      "target": "we-glossary.data[5].image",
+      "prompt": "Show Runoff using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-7",
+      "target": "we-glossary.data[6].image",
+      "prompt": "Show Evidence using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-term-8",
+      "target": "we-glossary.data[7].image",
+      "prompt": "Show Model using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "we-anchor-1",
+      "target": "we-anchor.data.sections[0].iconUrl",
+      "prompt": "Rock with a root growing in a crack"
+    },
+    {
+      "id": "we-anchor-2",
+      "target": "we-anchor.data.sections[1].iconUrl",
+      "prompt": "Stream carrying grains then depositing a fan"
+    },
+    {
+      "id": "we-anchor-3",
+      "target": "we-anchor.data.sections[2].iconUrl",
+      "prompt": "Two soil trays at different slopes with collection cups"
+    },
+    {
+      "id": "we-sort-1",
+      "target": "we-sort.data.items[0].image",
+      "prompt": "Illustrate this exact card: A root widens a crack in a rock. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-sort-2",
+      "target": "we-sort.data.items[1].image",
+      "prompt": "Illustrate this exact card: Repeated freezing helps split a rock. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-sort-3",
+      "target": "we-sort.data.items[2].image",
+      "prompt": "Illustrate this exact card: A stream carries sand downstream. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-sort-4",
+      "target": "we-sort.data.items[3].image",
+      "prompt": "Illustrate this exact card: Wind blows dry sand across a path. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-sort-5",
+      "target": "we-sort.data.items[4].image",
+      "prompt": "Illustrate this exact card: Sand settles where a stream slows. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-sort-6",
+      "target": "we-sort.data.items[5].image",
+      "prompt": "Illustrate this exact card: A river leaves mud on a floodplain. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "we-lesson-1",
+      "target": "future native image resource panel 1",
+      "prompt": "Rock with a root growing in a crack"
+    },
+    {
+      "id": "we-lesson-2",
+      "target": "future native image resource panel 2",
+      "prompt": "Stream carrying grains then depositing a fan"
+    },
+    {
+      "id": "we-lesson-3",
+      "target": "future native image resource panel 3",
+      "prompt": "Two soil trays at different slopes with collection cups"
+    },
+    {
+      "id": "we-lesson-4",
+      "target": "future native image resource panel 4",
+      "prompt": "Illustrate a correct example: Weathering changes rock in place."
+    },
+    {
+      "id": "we-lesson-5",
+      "target": "future native image resource panel 5",
+      "prompt": "Compare two cases from the reading without adding claims."
+    },
+    {
+      "id": "we-lesson-6",
+      "target": "future native image resource panel 6",
+      "prompt": "Show the materials or examples for this task: A school garden path loses soil during rain. Our class can compare small soil trays to study one factor before suggesting a change."
+    },
+    {
+      "id": "we-lesson-7",
+      "target": "future native image resource panel 7",
+      "prompt": "Show a learner recording evidence for: How does tray slope affect the sediment moved by equal water inputs in our model?"
+    },
+    {
+      "id": "we-lesson-8",
+      "target": "future native image resource panel 8",
+      "prompt": "Show the limits of the model discussed in the reading."
+    }
+  ]
+}

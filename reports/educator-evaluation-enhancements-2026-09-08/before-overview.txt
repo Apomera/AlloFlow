@@ -1,0 +1,205 @@
+A✓
+Educator Growth & Evaluation
+
+Sample School District · 2026-27
+
+Evaluator
+Fictional educator
+Practice ▾
+Manual
+Simulated data
+Details
+Guided sample tour closed. You can replay it from the header.
+Dismiss
+Saved on this device Sep 8, 2026, 7:18 AM
+Overview
+Trends
+Staff
+Walkthroughs
+Formal observations
+SPM / SLO
+Reports & audit
+Setup
+Evaluation overview
+
+Completion means the final rating record has been finalized, not that a walkthrough occurred.
+
+Selected educator
+Choose an educator
+Teacher 01 · T-01
+Teacher 02 · T-02
+Teacher 03 · T-03
+Teacher 04 · T-04
+Teacher 05 · T-05
+Teacher 06 · T-06
+Teacher 07 · T-07
+Teacher 08 · T-08
+Practice one complete fictional evaluation
+
+A guided evaluator-to-educator rehearsal using Teacher 08 (T-08). Every entry stays inside simulated data.
+
+Ready to begin
+0 / 10
+formal steps complete
+Not recorded
+fictional final release
+Evaluator
+next owner
+Begin with an evaluator assignment.
+Assign a formal observation, then follow the role prompts through educator prework, conferences, evidence, reflection, ratings, acknowledgement, finalization, and annual release.
+Start rehearsal with Teacher 08
+Role changes are interactive only because this workspace is explicitly fictional. Real local work keeps educator preview read-only.
+Coming due
+
+Open cycles by due date. A band is triage for your calendar, not a judgment about anyone.
+
+1
+past due date
+0
+due within 14 days
+0
+due in 15 to 30 days
+Needs your attention
+
+Your next evaluator-owned steps, ordered by cycle due date. Open an action to select the educator and go directly to the right workflow.
+
+5 shown
+Evaluator next-action queue
+Educator	Next step	Why	Cycle due
+Teacher 06
+T-06 · Main Building	Assign formal observation	Formal cycle not started	Aug 1, 2026
+Teacher 04
+T-04 · Main Building	Record post-conference	Formal observation step 6 of 10	May 14, 2027
+Teacher 05
+T-05 · Main Building	Record pre-conference	Formal observation step 2 of 10	May 15, 2027
+Teacher 07
+T-07 · North Campus	Assign formal observation	Formal cycle not started	May 17, 2027
+Teacher 08
+T-08 · North Campus	Assign formal observation	Formal cycle not started	May 18, 2027
+Teachers evaluated
+
+Active educators due in 2026-27
+
+2 / 8
+finalized
+Finalized
+2
+Not finalized
+6
+Evaluation status counts
+Status	Teachers
+Finalized	2
+Awaiting teacher	1
+Awaiting evaluator	1
+In progress	1
+Overdue	1
+Not started	2
+Weight in final evaluation
+
+Teacher 01 · Continuing contract
+
+Finalized
+100%
+Professional Practice
+Professional Practice (100%, set an SLG split in About if your plan includes one)
+100%
+Within Professional Practice the four rubric domains average equally in this generic planning profile; your district’s PEPG plan and adapted rubric govern any official aggregation.
+Roster status
+
+Select a row to open the educator’s working record.
+
+Manage staff
+Educator	Next action	Assignment	Evaluator	Formal observation	Walkthroughs	SPM / SLO	Final record	Next due
+Teacher 01
+T-01 · Main Building	Review released record
+Cycle finalized	Elementary	A. Principal	Finalized	2	Locked	Finalized	May 11, 2027
+Teacher 02
+T-02 · Main Building	Review released record
+Cycle finalized	ELA	A. Principal	Not started	0	Not started	Finalized	May 12, 2027
+Teacher 03
+T-03 · Main Building	Waiting for educator acknowledgment
+Formal observation step 8 of 10	Mathematics	A. Principal	In progress	1	Approved	Awaiting teacher	May 13, 2027
+Teacher 04
+T-04 · Main Building	Record post-conference
+Formal observation step 6 of 10	ELA	A. Principal	In progress	0	Submitted	Awaiting evaluator	May 14, 2027
+Teacher 05
+T-05 · Main Building	Record pre-conference
+Formal observation step 2 of 10	Elementary	A. Principal	In progress	0	Not started	In progress	May 15, 2027
+Teacher 06
+T-06 · Main Building	Assign formal observation
+Formal cycle not started	Mathematics	J. Rivera	Not started	0	Not started	Overdue	Aug 1, 2026
+Teacher 07
+T-07 · North Campus	Assign formal observation
+Formal cycle not started	Elementary	J. Rivera	Not started	0	Not started	Not started	May 17, 2027
+Teacher 08
+T-08 · North Campus	Assign formal observation
+Formal cycle not started	ELA	J. Rivera	Not started	0	Not started	Not started	May 18, 2027
+Annual summative calculation preview
+
+Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.
+
+2.25 · Effective
+Check the evidence before you finalise
+Professional Responsibilities carries a rating but no evidence is tagged to it.
+No evidence is tagged to Professional Responsibilities.
+
+Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.
+
+1. Planning and Preparation equal weight
+Human-selected rating
+Not rated
+0 · Ineffective
+1 · Developing
+2 · Effective
+3 · Distinguished
+Annual rationale
+Supporting published or locked evidence
+Walkthrough · Jul 15, 2026 · Grade 4 Mathematics
+Walkthrough · Jul 22, 2026 · Grade 4 Mathematics
+Formal observation · Aug 1, 2026 · tagged to this domain
+Locked SPM / SLO · By the spring administration, at least 17 of 24 students score at or above benchmark on th · Aug 9, 2026
+2. Classroom Environment equal weight
+Human-selected rating
+Not rated
+0 · Ineffective
+1 · Developing
+2 · Effective
+3 · Distinguished
+Annual rationale
+Supporting published or locked evidence
+Walkthrough · Jul 15, 2026 · Grade 4 Mathematics · tagged to this domain
+Walkthrough · Jul 22, 2026 · Grade 4 Mathematics · tagged to this domain
+Formal observation · Aug 1, 2026 · tagged to this domain
+Locked SPM / SLO · By the spring administration, at least 17 of 24 students score at or above benchmark on th · Aug 9, 2026
+3. Instruction equal weight
+Human-selected rating
+Not rated
+0 · Ineffective
+1 · Developing
+2 · Effective
+3 · Distinguished
+Annual rationale
+Supporting published or locked evidence
+Walkthrough · Jul 15, 2026 · Grade 4 Mathematics · tagged to this domain
+Walkthrough · Jul 22, 2026 · Grade 4 Mathematics · tagged to this domain
+Formal observation · Aug 1, 2026 · tagged to this domain
+Locked SPM / SLO · By the spring administration, at least 17 of 24 students score at or above benchmark on th · Aug 9, 2026
+4. Professional Responsibilities equal weight
+Human-selected rating
+Not rated
+0 · Ineffective
+1 · Developing
+2 · Effective
+3 · Distinguished
+Annual rationale
+Supporting published or locked evidence
+Walkthrough · Jul 15, 2026 · Grade 4 Mathematics
+Walkthrough · Jul 22, 2026 · Grade 4 Mathematics
+Formal observation · Aug 1, 2026
+Locked SPM / SLO · By the spring administration, at least 17 of 24 students score at or above benchmark on th · Aug 9, 2026
+This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms; record the official summative rating in the district-authorized system.
+Final release recorded · 2.25
+Released Aug 11, 2026, 7:18 AM. This local receipt does not replace the official record.
+No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model
+Maine DOE Educator Effectiveness · PEPG Rule Ch. 180
+Guided sample tour closed. You can replay it from the header.

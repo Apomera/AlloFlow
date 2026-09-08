@@ -305,7 +305,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(relationshipTargets.length).toBeGreaterThan(80);
       for (const target of relationshipTargets) expect(structureIds.has(target)).toBe(true);
       expect(source).toContain('angleControl: Math.round(angleControl * 100)');
-      expect(source).toContain("ctx.fillText('Layer cross-section'");
+      expect(source).toContain("ctx.fillText('Layer map'");
       expect(source).toContain('anatomicalView: anatomicalView');
       expect(source).toContain('renderQuality: renderQuality');
       expect(source).toContain('Scenario assessment thresholds');
@@ -4091,7 +4091,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     });
     expect(wormHtml).toContain('Earthworm dorsal longitudinal access');
     expect(wormHtml).toContain('shallow dorsal longitudinal corridor');
-    expect(wormHtml).toContain('Aortic Arches (5 Hearts), Cerebral Ganglia, Intestine');
+    expect(wormHtml).toContain('Aortic Arches (5 pairs), Cerebral Ganglia, Intestine');
     expect(wormHtml).toContain('Stabilize ends');
     expect(wormHtml).toContain('Place the first body-wall anchor');
     expect(wormHtml).toContain('Extend lengthwise');
@@ -4207,7 +4207,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
 
     expect(html).toContain('Visuals: Guided');
     expect(html).toContain('View: lateral');
-    expect(html).toContain('Cross-section on');
+    expect(html).toContain('Layer map on');
     expect(html).toContain('Condition: cloudy');
     expect(html).toContain('Relationships on');
     expect(html).toContain('Curated anatomical relationships');
@@ -4764,7 +4764,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("title: 'Peristaltic locomotion', motion: 'worm-peristalsis'");
       expect(source).toContain("title: 'Opercular ventilation', motion: 'fish-operculum'");
       expect(source).toContain("title: 'Gill-bailer ventilation', motion: 'crayfish-gills'");
-      expect(source).toContain("title: 'Diaphragmatic ventilation', motion: 'pig-diaphragm'");
+      expect(source).toContain("title: 'Diaphragmatic ventilation (postnatal model)', motion: 'pig-diaphragm'");
       expect(source).toContain("title: 'Pupillary light reflex', motion: 'eye-pupil'");
       expect(source).toContain("title: 'Coordinated cardiac cycle', motion: 'heart-cycle'");
       expect(source).toContain('The living-function model is opt-in and explicitly distinct from preserved specimen behavior.');

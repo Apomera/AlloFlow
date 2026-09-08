@@ -1,0 +1,19 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "11b-field-castle",
+    "11c-field-machine",
+    "field-castle",
+    "field-night",
+    "field-camp",
+    "field-engine"
+  ]
+}

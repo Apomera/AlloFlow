@@ -60,7 +60,7 @@ describe('Aquarium live 3D viewport behavior', () => {
     window.matchMedia = vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     engines = [];
     sceneFactory = vi.fn((canvas, options) => {
-      const engine = { canvas, options, update: vi.fn(next => { engine.options = next; }), setView: vi.fn(), nudgeCamera: vi.fn(), dispose: vi.fn() };
+      const engine = { canvas, options, update: vi.fn(next => { engine.options = next; }), setView: vi.fn(() => engine.options.onFocusChange?.(null)), nudgeCamera: vi.fn(action => { if (action === 'reset') engine.options.onFocusChange?.(null); }), focusSelection: vi.fn(target => { engine.options.onFocusChange?.(target); return true; }), dispose: vi.fn() };
       engines.push(engine);
       return engine;
     });
@@ -342,6 +342,88 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(host.querySelector('.aquarium-resident-detail').textContent).toContain('Biomass index 0.00 / 4.00');
     expect(host.querySelector('.aquarium-resident-detail').textContent).toContain('No foliage at this snapshot.');
     expect(sceneFactory).not.toHaveBeenCalled();
+  });
+
+  it('focuses the selected individual, follows selection changes, and leaves source state untouched', async () => {
+    const options = scene({ fish: [{ ...firstFish, selected: true }, secondFish], paused: true });
+    const before = JSON.stringify(options);
+    await renderViewport({ sceneOptions: options });
+    const engine = engines[0], canvas = host.querySelector('canvas');
+    canvas.scrollIntoView = vi.fn();
+    await click(exactButton(host, 'Focus selected'));
+    expect(engine.focusSelection).toHaveBeenLastCalledWith({ kind: 'fish', id: 'fish-11' });
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('fish:fish-11');
+    expect(host.querySelector('.aquarium-closeup-controls [role=status]').textContent).toContain('Amber');
+    expect(document.activeElement).toBe(canvas);
+    expect(canvas.scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' });
+    expect(JSON.stringify(options)).toBe(before);
+    await renderViewport({ sceneOptions: scene({ fish: [firstFish, { ...secondFish, selected: true }], paused: true }) });
+    expect(engine.focusSelection).toHaveBeenLastCalledWith({ kind: 'fish', id: 'fish-12' });
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('fish:fish-12');
+    expect(sceneFactory).toHaveBeenCalledTimes(1);
+    await click(exactButton(host, 'Whole tank'));
+    expect(engine.setView).toHaveBeenLastCalledWith('front');
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+    expect(exactButton(host, 'Focus selected').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('handles zero foliage, missing selections, and explicit focus failure without a misleading close-up state', async () => {
+    await renderViewport({ sceneOptions: scene({ fish: [], plants: [{ ...plant, selected: true, biomass: 0, biomassRatio: 0 }] }) });
+    expect(exactButton(host, 'Focus selected').disabled).toBe(true);
+    expect(host.textContent).toContain('No live foliage');
+    await renderViewport({ sceneOptions: scene({ fish: [], plants: [{ ...plant, selected: true, biomass: 1, biomassRatio: .5 }] }) });
+    await click(exactButton(host, 'Focus selected'));
+    expect(engines[0].focusSelection).toHaveBeenLastCalledWith({ kind: 'plant', id: 'java-fern' });
+    await renderViewport({ sceneOptions: scene({ fish: [], plants: [] }) });
+    expect(exactButton(host, 'Focus selected').disabled).toBe(true);
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+    await renderViewport({ sceneOptions: scene({ fish: [{ ...firstFish, selected: true }], plants: [] }) });
+    engines[0].focusSelection.mockImplementationOnce(() => false);
+    await click(exactButton(host, 'Focus selected'));
+    expect(host.textContent).toContain('not visible in the current scene');
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+  });
+
+  it('keeps close-up through appearance and keyboard orbit, and clears it on reset or renderer retry', async () => {
+    const selected = scene({ fish: [{ ...firstFish, selected: true }], paused: true });
+    await renderViewport({ sceneOptions: selected });
+    await click(exactButton(host, 'Focus selected'));
+    const engine = engines[0], count = engine.focusSelection.mock.calls.length;
+    await renderViewport({ sceneOptions: { ...selected, appearance: { backdrop: 'blue', quality: 'low' } } });
+    expect(engine.focusSelection).toHaveBeenCalledTimes(count);
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('fish:fish-11');
+    await act(async () => { host.querySelector('canvas').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })); });
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('fish:fish-11');
+    await act(async () => { host.querySelector('canvas').dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true })); });
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+    await click(exactButton(host, 'Focus selected'));
+    await act(async () => { engine.options.onContextLost(); });
+    await click(exactButton(host, 'Retry 3D view'));
+    expect(engine.dispose).toHaveBeenCalledOnce();
+    expect(engines).toHaveLength(2);
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+  });
+
+  it('puts selection next to the scene and opens the exact plant biomass input from its inspector', async () => {
+    const onResizePlant = vi.fn();
+    // Native navigation targets use the same public IDs as the separately tested sizing form.
+    await act(async () => { root.render(React.createElement(React.Fragment, null,
+      React.createElement(LiveDisplay, { React, id: 'live', instanceKey: 'freshwater', name: 'Plant inspection', label: 'Selected fern', lightLabel: 'Day', mode: '3d', paused: true,
+        onView: vi.fn(), onPause: vi.fn(), onSelect: vi.fn(), onSelectFish: vi.fn(), onSelectPlant: vi.fn(), onResizePlant,
+        sceneOptions: scene({ fish: [], plants: [{ ...plant, selected: true }] }) }),
+      React.createElement('details', { id: 'aquarium-size-controls' }, React.createElement('summary', null, 'Tank & plant size'),
+        React.createElement('input', { id: 'aquarium-plant-biomass-java-fern', type: 'number', defaultValue: '2' }),
+        React.createElement('input', { id: 'aquarium-plant-biomass-other', type: 'number', defaultValue: '4' })))); });
+    const viewport = host.querySelector('.aquarium-3d-viewport'), inspector = host.querySelector('.aquarium-resident-inspector');
+    expect(host.querySelector('.aquarium-inspection-picker').nextElementSibling).toBe(viewport);
+    expect(viewport.nextElementSibling).toBe(inspector);
+    const input = host.querySelector('#aquarium-plant-biomass-java-fern'); input.scrollIntoView = vi.fn();
+    await click(exactButton(host, 'Adjust plant size'));
+    expect(host.querySelector('#aquarium-size-controls').open).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe('2');
+    expect(input.scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' });
+    expect(onResizePlant).not.toHaveBeenCalled();
   });
 
 });

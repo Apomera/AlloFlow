@@ -1,0 +1,37 @@
+[
+  {
+    "file": "math_manipulative_grader_module.js",
+    "identical": true,
+    "sha256": "69c507a39fdbc6265d94e7fbeac1b584f6a687e529af1ba5ab04e47dda9338f6"
+  },
+  {
+    "file": "math_create_module.js",
+    "identical": true,
+    "sha256": "20fca4194aa14df9211af49d566f997c00771d9662dc37b2c132f3e4bcfaa5c5"
+  },
+  {
+    "file": "view_math_module.js",
+    "identical": true,
+    "sha256": "64bb39f3ff97864437e99d272d2f23a828eabf55a8ffa04e6fcdfe3410d29687"
+  },
+  {
+    "file": "generation_helpers_module.js",
+    "identical": true,
+    "sha256": "aa609a4eca95a94935a9ac24c7e12276106e655148fffc9faeff6673c7c506e9"
+  },
+  {
+    "file": "utils_pure_module.js",
+    "identical": true,
+    "sha256": "cc22fe5d7560fd660934e578146230fbf465a008ede6db4425410a57338660c6"
+  },
+  {
+    "file": "stem_lab/stem_tool_manipulatives.js",
+    "identical": true,
+    "sha256": "61a6f3d198f8d2759ed59521032efedf65be57d0c2a0ed36cb32878ec78f406a"
+  },
+  {
+    "file": "stem_lab/stem_tool_chembalance.js",
+    "identical": true,
+    "sha256": "d41204317d0962a1aefa34c99e7fffbbf470f632e9190f7a1691297a3aef2360"
+  }
+]

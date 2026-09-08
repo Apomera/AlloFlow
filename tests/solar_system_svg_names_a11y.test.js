@@ -18,8 +18,8 @@ describe('Solar System SVG accessible names', () => {
   it('gives every SVG declaration an accessible name', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const svgLines = lines.filter((line) => /h\(\s*['"]svg['"]|createElement\(\s*['"]svg['"]/.test(line));
-    expect(svgLines).toHaveLength(74);
-    expect(svgLines.filter((line) => line.includes('aria-label'))).toHaveLength(74);
+    expect(svgLines).toHaveLength(75);
+    expect(svgLines.filter((line) => line.includes('aria-label'))).toHaveLength(75);
     expect(svgLines.filter((line) => line.includes("role: 'group'"))).toHaveLength(64);
   });
 
@@ -36,13 +36,19 @@ describe('Solar System SVG accessible names', () => {
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', showStellarEvo: true },
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', showOrbital: true },
       { tutorialDismissed: true, orreryMode: true, orr_stab: 8 },
+      { tutorialDismissed: true, orreryMode: true, orr_tab: 0, orr_sel: 'mercury', orr_paused: true },
     ];
     let renderedSvgCount = 0;
     for (const state of views) {
       document.body.innerHTML = renderTool('solarSystem', { solarSystem: state });
       const svgs = [...document.querySelectorAll('svg')];
       renderedSvgCount += svgs.length;
-      expect(svgs.filter((svg) => !(svg.getAttribute('aria-label') || '').trim()).map((svg) => svg.outerHTML)).toEqual([]);
+      expect(svgs.filter((svg) => {
+        const direct = (svg.getAttribute('aria-label') || '').trim();
+        const labels = (svg.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean);
+        const referenced = labels.length > 0 && labels.every(id => document.getElementById(id)?.textContent?.trim());
+        return !direct && !referenced;
+      }).map((svg) => svg.outerHTML)).toEqual([]);
     }
     expect(renderedSvgCount).toBeGreaterThan(0);
   });

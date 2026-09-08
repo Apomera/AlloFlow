@@ -771,6 +771,99 @@
     }
   }
 
+  // Shared reading structure and word targets. All layouts use the same helpers.
+  function simplifiedLanguageTag(language) {
+    var value = String(language || '').trim();
+    var names = { english: 'en', spanish: 'es', french: 'fr', german: 'de', italian: 'it', portuguese: 'pt', arabic: 'ar', hebrew: 'he', persian: 'fa', urdu: 'ur', hindi: 'hi', bengali: 'bn', punjabi: 'pa', tamil: 'ta', telugu: 'te', marathi: 'mr', gujarati: 'gu', russian: 'ru', ukrainian: 'uk', polish: 'pl', turkish: 'tr', vietnamese: 'vi', korean: 'ko', chinese: 'zh', 'mandarin chinese': 'zh', 'simplified chinese': 'zh-Hans', 'traditional chinese': 'zh-Hant', japanese: 'ja', thai: 'th', lao: 'lo', khmer: 'km', burmese: 'my', indonesian: 'id', malay: 'ms', swahili: 'sw', somali: 'so', haitian: 'ht', 'haitian creole': 'ht' };
+    if (names[value.toLowerCase()]) return names[value.toLowerCase()];
+    if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(value)) return undefined;
+    try { return Intl.getCanonicalLocales(value)[0]; } catch (_) { return undefined; }
+  }
+  function simplifiedWordSegments(text, language) {
+    var value = String(text || '');
+    try {
+      if (typeof Intl.Segmenter === 'function') {
+        return Array.from(new Intl.Segmenter(simplifiedLanguageTag(language), { granularity: 'word' }).segment(value), function (part) {
+          return { text: part.segment, word: !!part.isWordLike };
+        });
+      }
+    } catch (_) {}
+    // Keep punctuation and spacing as text; unspaced scripts retain selectable
+    // graphemes if the runtime cannot provide dictionary-based segmentation.
+    return (value.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]\p{M}*|[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*|[^\p{L}\p{N}]+/gu) || []).map(function (part) {
+      return { text: part, word: /[\p{L}\p{N}]/u.test(part) };
+    });
+  }
+  function simplifiedPlainInline(text) {
+    return String(text || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\*([^*]+)\*/g, '$1');
+  }
+  function simplifiedInline(text, leaf) {
+    // Structure remains intact in word-help and selection modes. Links remain
+    // ordinary links; punctuation is never a definition or phonics target.
+    return String(text || '').split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^\)]+\))/g).map(function (part, index) {
+      if (/^(\*\*|__)/.test(part)) return <strong key={index}>{simplifiedInline(part.slice(2, -2), leaf)}</strong>;
+      if (/^\*[^*]/.test(part)) return <em key={index}>{simplifiedInline(part.slice(1, -1), leaf)}</em>;
+      if (/^`/.test(part)) return <code key={index}>{part.slice(1, -1)}</code>;
+      var link = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
+      if (link) return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600" onClick={e => e.stopPropagation()}>{link[1]}</a> : <React.Fragment key={index}>{link[1]}</React.Fragment>;
+      return <React.Fragment key={index}>{leaf(part)}</React.Fragment>;
+    });
+  }
+  function simplifiedParagraphBlocks(text) {
+    var lines = String(text || '').split('\n');
+    var output = [], paragraph = [];
+    var flush = function () { if (paragraph.length) output.push({ type: 'p', raw: paragraph.join('\n') }); paragraph = []; };
+    for (var i = 0; i < lines.length; i += 1) {
+      var line = lines[i];
+      var heading = line.match(/^\s{0,3}(#{1,6})\s+(.+)$/) || line.match(/^\s*<h([1-6])[^>]*>(.*?)<\/h[1-6]>\s*$/i);
+      var item = line.match(/^(\s*)([-+*]|\d+[.)])\s+(.+)$/);
+      if (heading) { flush(); output.push({ type: 'heading', level: /^#/.test(heading[1]) ? heading[1].length : Number(heading[1]), raw: line, text: heading[2] }); }
+      else if (item) {
+        flush();
+        output.push({ type: 'li', indent: item[1].replace(/\t/g, '    ').length, ordered: /^\d/.test(item[2]), value: parseInt(item[2], 10) || 1, raw: line, text: item[3] });
+      } else if (/^\s*>\s?/.test(line)) { flush(); output.push({ type: 'quote', raw: line, text: line.replace(/^\s*>\s?/, '') }); }
+      else if (output.length && output[output.length - 1].type === 'li' && /^\s+\S/.test(line)) {
+        var previous = output[output.length - 1]; previous.raw += '\n' + line; previous.text += '\n' + line.trimStart();
+      } else { paragraph.push(line); }
+    }
+    flush();
+    return output;
+  }
+  function simplifiedNestLists(blocks, renderBlock) {
+    var roots = [], stack = [];
+    blocks.forEach(function (block, index) {
+      if (block.type !== 'li') { stack = []; roots.push({ blockRoot: block, index: index }); return; }
+      while (stack.length && (stack[stack.length - 1].indent > block.indent || (stack[stack.length - 1].indent === block.indent && stack[stack.length - 1].ordered !== block.ordered))) stack.pop();
+      var current = stack[stack.length - 1];
+      if (!current || current.indent < block.indent) {
+        var list = { indent: block.indent, ordered: block.ordered, start: block.value, items: [], key: index };
+        if (current && current.items.length) current.items[current.items.length - 1].children.push(list); else roots.push(list);
+        stack.push(list); current = list;
+      }
+      current.items.push({ block: block, index: index, children: [] });
+    });
+    var materialize = function (entry) {
+      if (entry.blockRoot) return renderBlock(entry.blockRoot, entry.index);
+      var Tag = entry.ordered ? 'ol' : 'ul';
+      return <Tag key={'list-' + entry.key} start={entry.ordered ? entry.start : undefined} className="my-3 space-y-2" style={{ paddingInlineStart: '1.6em', listStyleType: entry.ordered ? 'decimal' : 'disc' }}>{entry.items.map(function (item) {
+        return <li key={item.index} value={entry.ordered ? item.block.value : undefined}>{renderBlock(item.block, item.index)}{item.children.map(materialize)}</li>;
+      })}</Tag>;
+    };
+    return roots.map(materialize);
+  }
+
+  function simplifiedPopupStyle(point, widthRem) {
+    var fontSize = 16;
+    try { fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16; } catch (_) {}
+    var width = Math.min(widthRem * fontSize, Math.max(0, window.innerWidth - 16));
+    return {
+      width: width + 'px', maxWidth: 'calc(100vw - 16px)',
+      left: Math.max(8, Math.min(window.innerWidth - width - 8, (Number(point.x) || 0) - 20)) + 'px',
+      top: Math.max(8, Math.min((window.innerHeight - 16) / 2, (Number(point.y) || 0) + 10)) + 'px',
+      maxHeight: 'calc(50dvh - 8px)', overflowY: 'auto'
+    };
+  }
+
   function SimplifiedView(props) {
     // State reads
     var t = props.t;
@@ -806,7 +899,7 @@
     var generatedContent = props.generatedContent;
     var inputText = props.inputText;
     var gradeLevel = props.gradeLevel;
-    var leveledTextLanguage = props.leveledTextLanguage;
+    var leveledTextLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || props.leveledTextLanguage;
     var studentInterests = props.studentInterests;
     var standardsInput = props.standardsInput;
     var sourceTopic = props.sourceTopic;
@@ -984,7 +1077,8 @@
       try {
         if (typeof splitReferencesFromBody === 'function') split = splitReferencesFromBody(fullText) || split;
       } catch (_) {}
-      var normalizedBody = String(split.body || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, function (_match, _stars, inner) {
+      var normalizedBody = String(split.body || '').replace(/\r\n?/g, '\n').replace(/^[ \t]*<h([1-6])[^>]*>(.*?)<\/h[1-6]>[ \t]*$/gmi, (_match, level, text) => '#'.repeat(Number(level)) + ' ' + text).replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, function (_match, _stars, inner) {
+        if (/[.!?。！？؟:：]$/.test(inner.trim())) return _match;
         return '## ' + inner.trim();
       });
       return { body: normalizedBody, references: String(split.references || '') };
@@ -1012,6 +1106,24 @@
     var ttsPrepState_state = React.useState({ busy: false, done: 0, total: 0 });
     var ttsPrepState = ttsPrepState_state[0];
     var setTtsPrepState = ttsPrepState_state[1];
+    var ttsPrepNoticeState = React.useState('');
+    var ttsPrepNotice = ttsPrepNoticeState[0], setTtsPrepNotice = ttsPrepNoticeState[1];
+    var ttsPrepRequestRef = React.useRef(null);
+    var ttsPrepContext = JSON.stringify([generatedContent && generatedContent.id, simplifiedReadAloudText, selectedVoice, leveledTextLanguage]);
+    var ttsPrepContextRef = React.useRef(ttsPrepContext);
+    ttsPrepContextRef.current = ttsPrepContext;
+    React.useEffect(function () {
+      setTtsPrepNotice('');
+      setTtsPrepState({ busy: false, done: 0, total: 0 });
+      return function () {
+        var request = ttsPrepRequestRef.current;
+        ttsPrepRequestRef.current = null;
+        if (request && request.controller) request.controller.abort();
+      };
+    }, [ttsPrepContext]);
+    var ownsTtsPreparation = function (request) {
+      return ttsPrepRequestRef.current === request && ttsPrepContextRef.current === request.context;
+    };
     var saveTtsAsPlayed_state = React.useState(function () {
       // Default ON (2026-07-09): capture-as-you-play costs no extra synthesis;
       // '0' is the explicit per-device opt-out via the checkbox below.
@@ -1519,25 +1631,40 @@
       return 'Reading sentence ' + (currentIndex + 1) + ': ' + String(currentSentence);
     }, [isPlaying, playingContentId, playbackState && playbackState.currentIdx, playbackState && playbackState.sentences, karaokeReaderSentences]);
     var handlePrepareReadAloudAudio = async function () {
-      if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
+      if (ttsPrepRequestRef.current) return;
+      if (typeof window.__alloPrepareReadAloud !== 'function') {
+        setTtsPrepNotice('Audio tools are still loading. Please try again.');
+        return;
+      }
       var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
       var sentences = entries.map(function (entry) { return entry.text; });
       if (!sentences.length) return;
       // Note: prep saves every sentence regardless of the capture toggle, and
       // capture now defaults ON — no longer force-enable it here, so a
       // teacher's explicit opt-out survives pressing Save TTS.
+      var request = { context: ttsPrepContext, controller: typeof AbortController === 'function' ? new AbortController() : null };
+      ttsPrepRequestRef.current = request;
+      setTtsPrepNotice('');
       setTtsPrepState({ busy: true, done: 0, total: sentences.length });
       try {
         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
-          setTtsPrepState({ busy: true, done: done, total: total || sentences.length });
-        }, { entries: entries });
+          if (ownsTtsPreparation(request)) setTtsPrepState({ busy: true, done: done, total: total || sentences.length });
+        }, { entries: entries, signal: request.controller && request.controller.signal });
+        if (!ownsTtsPreparation(request)) return;
         if (result && result.remaining) {
-          setEditAudioNotice((result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
+          setTtsPrepNotice((result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
         } else if (result && result.ok) {
-          setEditAudioNotice('Read-aloud audio is saved for all sentences.');
+          setTtsPrepNotice('Read-aloud audio is saved for all sentences.');
         }
+      } catch (_) {
+        if (ownsTtsPreparation(request)) setTtsPrepNotice(request.controller && request.controller.signal.aborted
+          ? 'Audio saving stopped. Save TTS again to finish any missing clips.'
+          : 'Audio could not be saved. Please try again.');
       } finally {
-        setTtsPrepState({ busy: false, done: 0, total: 0 });
+        if (ownsTtsPreparation(request)) {
+          ttsPrepRequestRef.current = null;
+          setTtsPrepState({ busy: false, done: 0, total: 0 });
+        }
       }
     };
     var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
@@ -1922,8 +2049,157 @@
         });
       }
     };
-    var instructionalRoleControl = !isZenMode && generatedContent ? <div className="mb-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm" data-instructional-role={instructionalRole} data-help-key="simplified_instructional_role"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex flex-wrap items-center gap-2"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Instructional use</span><span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${instructionalRoleTone}`}>{instructionalRoleLabel}</span></div>{isTeacherMode && <label className="flex items-center gap-2 text-xs font-semibold text-slate-700"><span className="sr-only">Set instructional text role</span><select value={instructionalRole} onChange={handleInstructionalRoleChange} aria-label="Set instructional text role" className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"><option value="supplemental">Supplemental access version</option><option value="primary">Primary replacement (educator authorization)</option><option value="unspecified">Not designated</option></select></label>}</div>{isTeacherMode && <p className="mt-1.5 text-[11px] leading-relaxed text-slate-600">Adapted text remains supplemental by default. Choosing Primary replacement records your educator authorization; use it only when the instructional plan permits replacing the primary text.</p>}{isTeacherMode && isSupplementalSourceUnlinked && <p role="status" className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] font-semibold text-amber-900"><AlertCircle size={13} className="mt-0.5 shrink-0" /><span>This supplemental version is not linked to a source or primary artifact. Keep the source text in the resource history before sharing this version.</span></p>}</div> : null;
+    var instructionalRoleControl = !isZenMode && generatedContent ? <div className="mb-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm" data-instructional-role={instructionalRole} data-help-key="simplified_instructional_role"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex flex-wrap items-center gap-2"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Instructional use</span><span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${instructionalRoleTone}`}>{instructionalRoleLabel}</span></div>{isTeacherMode && <label className="flex min-w-0 max-w-full items-center gap-2 text-xs font-semibold text-slate-700"><span className="sr-only">Set instructional text role</span><select value={instructionalRole} onChange={handleInstructionalRoleChange} aria-label="Set instructional text role" className="min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"><option value="supplemental">Supplemental access version</option><option value="primary">Primary replacement (educator authorization)</option><option value="unspecified">Not designated</option></select></label>}</div>{isTeacherMode && <p className="mt-1.5 text-[11px] leading-relaxed text-slate-600">Adapted text remains supplemental by default. Choosing Primary replacement records your educator authorization; use it only when the instructional plan permits replacing the primary text.</p>}{isTeacherMode && isSupplementalSourceUnlinked && <p role="status" className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] font-semibold text-amber-900"><AlertCircle size={13} className="mt-0.5 shrink-0" /><span>This supplemental version is not linked to a source or primary artifact. Keep the source text in the resource history before sharing this version.</span></p>}</div> : null;
     var simplifiedComplexityDisplay = getSimplifiedComplexityDisplay(generatedContent, gradeLevel);
+    var readingColumnState = React.useState(72);
+    var readingColumn = readingColumnState[0], setReadingColumn = readingColumnState[1];
+    var readingEndRef = React.useRef(null);
+    var comparisonLanguageState = React.useState('auto');
+    var comparisonLanguage = comparisonLanguageState[0], setComparisonLanguage = comparisonLanguageState[1];
+    React.useEffect(function () { setComparisonLanguage('auto'); }, [generatedContent && generatedContent.id]);
+    var readerText = function (key, fallback) { var value = t(key); return value && value !== key ? value : fallback; };
+    var readingLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || leveledTextLanguage || 'English';
+    var wordHelpHint = readerText('simplified.word_navigation_hint', 'Choose a word for help. Use Left and Right arrows to move between words.');
+    var comparisonSourceState = React.useState('linked');
+    var comparisonSourceId = comparisonSourceState[0], setComparisonSourceId = comparisonSourceState[1];
+    React.useEffect(function () { setComparisonSourceId('linked'); }, [generatedContent && generatedContent.id]);
+    function renderSimplifiedComparison() {
+      var resolved = resolveSimplifiedCompareSource(history, generatedContent, inputText);
+      var candidates = (history || []).filter(item => item.id !== generatedContent.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
+      var selected = candidates.find(item => String(item.id) === comparisonSourceId);
+      var original = selected ? { text: getArtifactReadingText(selected), artifact: selected, selection: 'educator-selected' } : resolved;
+      var originalLanguage = original.artifact?.config?.language || original.artifact?.instructionalText?.complexity?.language || '';
+      var adaptedParts = getSideBySideContent(simplifiedDisplayBody);
+      var sourceParts = getSideBySideContent(original.text);
+      var effectiveLanguage = comparisonLanguage === 'auto' ? (adaptedParts && simplifiedLanguageTag(originalLanguage)?.startsWith('en') ? 'english' : 'adapted') : comparisonLanguage;
+      var targetText = adaptedParts ? effectiveLanguage === 'english' ? adaptedParts.targetFull : adaptedParts.sourceFull : simplifiedDisplayBody;
+      var sourceText = sourceParts ? effectiveLanguage === 'english' ? sourceParts.targetFull : sourceParts.sourceFull : original.text;
+      var targetLanguage = effectiveLanguage === 'english' && adaptedParts ? 'English' : readingLanguage;
+      if (sourceParts && effectiveLanguage === 'english') originalLanguage = 'English';
+      var stripReferences = value => { try { return splitReferencesFromBody ? splitReferencesFromBody(String(value || '')).body : String(value || ''); } catch (_) { return String(value || ''); } };
+      sourceText = stripReferences(sourceText); targetText = stripReferences(targetText);
+      // Tokenize whitespace too, so comparison preserves paragraphs and line breaks.
+      // Bound the quadratic work; long texts use complete, unchanged source panels.
+      var oldTokens = sourceText.match(/\s+|\S+/g) || [], newTokens = targetText.match(/\s+|\S+/g) || [];
+      var tooLarge = oldTokens.length * newTokens.length > 1000000;
+      var mismatch = simplifiedLanguageTag(originalLanguage) && simplifiedLanguageTag(targetLanguage) && simplifiedLanguageTag(originalLanguage).split('-')[0] !== simplifiedLanguageTag(targetLanguage).split('-')[0];
+      var showDiff = !tooLarge && !mismatch && sourceText && targetText;
+      var diff = [];
+      if (showDiff) {
+        var matrix = Array.from({ length: oldTokens.length + 1 }, () => new Uint32Array(newTokens.length + 1));
+        for (var a = 1; a <= oldTokens.length; a++) for (var b = 1; b <= newTokens.length; b++) matrix[a][b] = oldTokens[a - 1] === newTokens[b - 1] ? matrix[a - 1][b - 1] + 1 : Math.max(matrix[a - 1][b], matrix[a][b - 1]);
+        var x = oldTokens.length, y = newTokens.length;
+        while (x || y) {
+          if (x && y && oldTokens[x - 1] === newTokens[y - 1]) { diff.push({ type: 'same', value: oldTokens[--x] }); --y; }
+          else if (x && (!y || matrix[x - 1][y] >= matrix[x][y - 1])) diff.push({ type: 'del', value: oldTokens[--x] });
+          else diff.push({ type: 'add', value: newTokens[--y] });
+        }
+        diff.reverse();
+      }
+      var count = text => simplifiedWordSegments(simplifiedPlainInline(text), targetLanguage).filter(part => part.word).length;
+      var renderVersion = (kind, raw) => showDiff ? diff.filter(part => part.type !== (kind === 'source' ? 'add' : 'del')).map((part, i) => part.type === 'same' ? <React.Fragment key={i}>{part.value}</React.Fragment> : part.type === 'del' ? <del key={i} className="bg-red-100 text-red-900">{part.value}</del> : <ins key={i} className="bg-green-100 text-green-900">{part.value}</ins>) : raw;
+      return <div data-reading-comparison="true" className="space-y-4">
+        <div className="flex flex-wrap gap-3 rounded-xl bg-white p-4 border border-slate-200">
+          <label className="min-w-0 flex-1 text-sm font-semibold">{readerText('simplified.compare_source', 'Source version')}<select value={comparisonSourceId} onChange={e => setComparisonSourceId(e.target.value)} className="mt-1 block w-full min-w-0 rounded border border-slate-300 p-2"><option value="linked">{readerText('simplified.linked_source', 'Linked source / original')}</option>{candidates.map(item => <option key={item.id} value={String(item.id)}>{item.title || item.topic || item.id}</option>)}</select></label>
+          {adaptedParts && <label className="min-w-0 flex-1 text-sm font-semibold">{readerText('simplified.compare_language', 'Adapted version')}<select value={comparisonLanguage} onChange={e => setComparisonLanguage(e.target.value)} className="mt-1 block w-full rounded border border-slate-300 p-2"><option value="auto">{readerText('simplified.compare_auto', 'Match source language when known')}</option><option value="adapted">{readingLanguage}</option><option value="english">{simplifiedEnglishTranslationLabel}</option></select></label>}
+        </div>
+        {original.selection.endsWith('fallback') && <p role="status" className="rounded bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.compare_fallback', 'The linked original is unavailable. Check the selected source before reviewing changes.')}</p>}
+        {(tooLarge || mismatch) && <p role="status" className="rounded bg-indigo-50 p-3 text-sm text-indigo-900">{mismatch ? readerText('simplified.compare_different_languages', 'These versions use different languages. Read them side by side; word change highlighting is unavailable.') : readerText('simplified.compare_long_text', 'For this long reading, complete versions are shown without word change highlighting.')}</p>}
+        <p className="text-sm text-slate-600">{readerText('simplified.compare_word_count', 'Word counts')}: {count(sourceText)} → {count(targetText)}. {readerText('simplified.compare_review_hint', 'Check key ideas, terminology, examples, and citations before sharing. Word changes alone do not establish accuracy.')}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ key: 'source', title: t('simplified.diff_original'), text: sourceText, language: originalLanguage }, { key: 'adapted', title: t('simplified.diff_adapted'), text: targetText, language: targetLanguage }].map(version => <section key={version.key} className="min-w-0 rounded-xl border border-slate-300 bg-white p-4"><h3 className="mb-3 font-bold">{version.title}{version.language ? ' · ' + version.language : ''}</h3><div data-compare-version={version.key} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div></section>)}</div>
+      </div>;
+    }
+
+    function renderSimplifiedReading() {
+      var parts = getSideBySideContent(simplifiedReadAloudText);
+      var languages = parts ? [{ key: 'src', label: readingLanguage, paragraphs: parts.source }, { key: 'tgt', label: 'English', paragraphs: parts.target }] : [{ key: 'mono', label: readingLanguage, paragraphs: simplifiedReadAloudText.split(/\n{2,}/) }];
+      var isWordMode = ['define', 'phonics', 'add-glossary'].includes(interactionMode);
+      var isSelectionMode = ['explain', 'revise'].includes(interactionMode);
+      var sentenceCursor = 0;
+      var rendered = languages.map(function (section) {
+        return section.paragraphs.map(function (paragraph, paragraphIndex) {
+          var paragraphId = section.key === 'mono' ? paragraphIndex : section.key + '-' + paragraphIndex;
+          if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return <div key={paragraphId} data-reading-table="true" lang={simplifiedLanguageTag(section.label)} dir={section.key === 'tgt' ? 'ltr' : getContentDirection(section.label)} className="my-4 max-w-full overflow-x-auto" tabIndex={0} role="region" aria-label={readerText('simplified.table_label', 'Reading table')}>{renderFormattedText(paragraph, false)}</div>;
+          var startIdx = sentenceCursor;
+          var blocks = simplifiedParagraphBlocks(paragraph).map(function (block) {
+            block.start = sentenceCursor;
+            block.sentences = splitTextToSentences(block.raw);
+            sentenceCursor += block.sentences.length;
+            return block;
+          });
+          var endIdx = sentenceCursor;
+          var shouldFocus = isPlaying ? playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx : focusedParagraphIndex === paragraphId;
+          var wordIndex = 0;
+          var renderWords = function (text) {
+            return simplifiedWordSegments(text, section.label).map(function (part, index) {
+              if (!part.word) return <React.Fragment key={index}>{part.text}</React.Fragment>;
+              var order = wordIndex++;
+              var label = interactionMode === 'phonics' ? simplifiedHearPhonicsLabel : interactionMode === 'add-glossary' ? readerText('common.click_add_glossary', 'Add to glossary') : simplifiedDefineLabel;
+              var activate = function (event) {
+                event.stopPropagation();
+                if (interactionMode === 'phonics') handlePhonicsClick(part.text, event);
+                else if (interactionMode === 'add-glossary') handleQuickAddGlossary(part.text, true);
+                else handleWordClick(part.text, event);
+              };
+              return <span key={index} data-reading-word={order} role="button" tabIndex={order === 0 ? 0 : -1} aria-label={label + ': ' + part.text} title={label} onClick={activate} onFocus={function (event) {
+                var group = event.currentTarget.closest('[data-reading-paragraph]');
+                if (group) group.querySelectorAll('[data-reading-word]').forEach(function (node) { node.tabIndex = node === event.currentTarget ? 0 : -1; });
+              }} onKeyDown={function (event) {
+                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); return; }
+                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                var group = event.currentTarget.closest('[data-reading-paragraph]');
+                if (!group) return;
+                var words = Array.from(group.querySelectorAll('[data-reading-word]'));
+                var rtl = group.dir === 'rtl';
+                var delta = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
+                var next = event.key === 'Home' ? 0 : event.key === 'End' ? words.length - 1 : Math.max(0, Math.min(words.length - 1, words.indexOf(event.currentTarget) + delta));
+                event.preventDefault(); words[next]?.focus();
+              }} className="cursor-help rounded px-0.5 hover:bg-yellow-100 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{part.text}</span>;
+            });
+          };
+          var renderBlock = function (block, key) {
+            var Tag = block.type === 'heading' ? 'h' + Math.min(6, block.level) : block.type === 'quote' ? 'blockquote' : block.type === 'li' ? 'span' : 'p';
+            var text = block.text === undefined ? block.raw : block.text;
+            var content;
+            if (isWordMode || isSelectionMode) content = simplifiedInline(text, isWordMode ? renderWords : value => value);
+            else content = block.sentences.map(function (sentence, index) {
+              var currentGlobalIdx = block.start + index;
+              var cleanText = sentence.replace(/^\s*#{1,6}\s+/, '').replace(/^\s*<\/?h[1-6][^>]*>/gi, '').replace(/<\/h[1-6]>\s*$/i, '').replace(/^\s*(?:[-+*]|\d+[.)])\s+/, '').replace(/^\s*>\s?/, '');
+              var active = playbackState.currentIdx === currentGlobalIdx;
+              if (interactionMode === 'cloze') return <span key={index}>{formatInteractiveText(cleanText, true, !!isLineFocusMode)} </span>;
+              var speakSentence = function (event) { if (event.target.closest('a,button,input,select,textarea')) return; event.stopPropagation(); handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx); };
+              return <span key={index} id={'sentence-' + currentGlobalIdx} data-reading-sentence={currentGlobalIdx} role="button" tabIndex={0} aria-current={active ? 'true' : undefined} aria-label={simplifiedReadSentenceLabel + ': ' + simplifiedPlainInline(cleanText)} onClick={speakSentence} onKeyDown={function (event) {
+                if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+                event.preventDefault(); speakSentence(event);
+              }} className={`rounded px-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${active ? 'bg-yellow-300 text-slate-950' : 'hover:bg-indigo-100/30'}`} title={t('common.click_read_from_here')}>{formatInteractiveText(cleanText, false, !!isLineFocusMode)} </span>;
+            });
+            var style = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 'inherit' };
+            if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
+            return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-3' : undefined}>{content}</Tag>;
+          };
+          return <div key={paragraphId} data-reading-paragraph={paragraphId} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={section.key === 'tgt' ? 'ltr' : getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode ? handleTextMouseUp : undefined} className={`mb-4 rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>;
+        });
+      });
+      var sourceDirection = getContentDirection(readingLanguage);
+      return <div data-simplified-reading-body="true" className="w-full min-w-0 text-lg font-medium leading-relaxed font-sans" style={{ maxWidth: parts && isSideBySide ? '100%' : 'min(' + readingColumn + 'ch, 100%)', marginInline: 'auto' }}>
+        <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+          <label className="flex items-center gap-2">{readerText('simplified.reading_width', 'Reading width')}<select aria-label={readerText('simplified.reading_width', 'Reading width')} value={readingColumn} onChange={e => setReadingColumn(Number(e.target.value))} className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-slate-800"><option value={40}>{readerText('simplified.width_narrow', 'Narrow')}</option><option value={56}>{readerText('simplified.width_medium', 'Medium')}</option><option value={72}>{readerText('simplified.width_wide', 'Wide')}</option></select></label>
+          <button type="button" className="underline underline-offset-2 rounded px-2 py-2 focus-visible:ring-2 focus-visible:ring-indigo-600" onClick={() => readingEndRef.current?.focus()}>{readerText('simplified.skip_passage', 'Skip reading controls')}</button>
+          {props.onReadReflect && <button type="button" onClick={openReadingReflection} className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800">{readerText('simplified.read_reflect', 'Read & reflect')}</button>}
+        </div>
+        {isWordMode && <p className="mb-3 text-sm text-slate-600">{wordHelpHint}</p>}
+        <div className={isLineFocusMode ? 'bg-slate-950 rounded-xl p-4' : ''}>
+          {parts && isSideBySide ? <>
+            {parts.source.length !== parts.target.length && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.unmatched_paragraphs', 'The versions have different paragraph counts. They are shown in order; a row may not be an exact translation match.')}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? 'ltr' : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
+          </> : languages.map((section, i) => <section key={section.key} lang={simplifiedLanguageTag(section.label)} dir={i === 1 ? 'ltr' : sourceDirection}>{i === 1 && <h2 className="my-6 border-t border-indigo-200 pt-4 text-lg font-bold">{simplifiedEnglishTranslationLabel}</h2>}{rendered[i]}</section>)}
+        </div>
+        <SourceReferencesPanel referencesText={simplifiedReferences} />
+        <div ref={readingEndRef} tabIndex={-1} className="mt-4 rounded focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={readerText('simplified.end_of_reading', 'End of reading')} />
+        {isProcessing && <p role="status" className="mt-4 text-sm text-indigo-700">{simplifiedGeneratingMoreLabel}</p>}
+      </div>;
+    }
+
     return <div className="space-y-6">{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onPointerMove={e => { if (immersiveSettings.lineFocus && e.clientY > immersiveToolbarBottom) setImmersiveRulerY(e.clientY); }} onFocusCapture={e => { if (immersiveSettings.lineFocus && !e.target.closest("[data-immersive-toolbar]") && e.target.closest("[role=dialog]") === immersiveDialogRef.current) { const rect = e.target.getBoundingClientRect(); setImmersiveRulerY(Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, rect.top + Math.min(rect.height / 2, immersiveSettings.textSize * 2.5))); } }}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
@@ -2118,10 +2394,10 @@
             })()}</div></div></div>}{interactionMode === 'cloze' && isClozeComplete && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center" data-a11y-overlay="nonmodal-status" role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in motion-reduce:animate-none zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" aria-hidden="true" /> {simplifiedActivityCompleteLabel}</div></div>}{!isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('simplified.udl_goal').split(':')[1]}</p></div>}{instructionalRoleControl}<div className={`bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`}>{!isZenMode && <div className="flex justify-center items-center mb-2 flex-wrap gap-2">{(() => {
             const displayGrade = generatedContent?.config?.grade || gradeLevel;
             const displayLang = generatedContent?.config?.language || leveledTextLanguage;
-            const displayInterests = generatedContent?.config?.interests || studentInterests;
+            const displayInterests = generatedContent?.config?.interests || studentInterests || [];
             const displayStandards = generatedContent?.config?.standards || standardsInput;
             return <div className="flex items-center gap-2"><h4 className="font-comic font-bold text-xl text-orange-800">{isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : sourceTopic || simplifiedReadingSelectionLabel}</h4>{displayLang !== 'English' && <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold border border-blue-200">{displayLang}</span>}{displayInterests.length > 0 && <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold border border-red-200 flex items-center gap-1"><Heart size={10} /> {t('simplified.engagement_optimized')}</span>}{displayStandards && <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold border border-green-200 flex items-center gap-1 cursor-help" title={`${t('simplified.label_standard')}: ${displayStandards}`}><CheckCircle size={10} />{displayStandards.length > 20 ? displayStandards.substring(0, 20) + '...' : displayStandards}</span>}</div>;
-          })()}</div>}<div className={`flex items-center gap-2 ${isZenMode ? 'justify-center mb-4' : 'justify-center'}`}><div className="flex flex-col gap-1 items-center"><div className="flex flex-wrap justify-center bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm sm:flex-nowrap gap-y-1"><button type="button" onClick={() => {
+          })()}</div>}<div className={`flex items-center gap-2 ${isZenMode ? 'justify-center mb-4' : 'justify-center'}`}><div className="flex flex-col gap-1 items-center min-w-0 w-full"><div className="flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm gap-y-1"><button type="button" onClick={() => {
                 setInteractionMode('read');
                 stopPlayback();
                 setSelectionMenu(null);
@@ -2176,13 +2452,7 @@
                 } else {
                   handleAnalyzePOS();
                 }
-              }} disabled={isAnalyzingPos || isEditingLeveledText} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title={t('simplified.tip_immersive_btn')}>{isAnalyzingPos ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <BookOpen size={14} />}{isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')}</button><select value={readingTheme} onChange={e => setReadingTheme(e.target.value)} aria-label={simplifiedReadingThemeLabel} className={`px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`}><option value="default">{t('header.reading_theme_default')}</option><option value="warm">{t('header.reading_theme_warm')}</option><option value="sepia">{t('header.reading_theme_sepia')}</option>{theme !== 'dark' && <option value="dark">{t('header.reading_theme_dark')}</option>}<option value="highContrast">{t('header.reading_theme_contrast')}</option><option value="blue">{t('header.reading_theme_blue')}</option><option value="green">{t('header.reading_theme_green')}</option><option value="rose">{t('header.reading_theme_rose')}</option><option value="dyslexia">{t('header.reading_theme_easy_read')}</option></select>{isTeacherMode && <div className="flex items-center mr-2"><button type="button" aria-label={t('common.settings')} data-help-key="simplified_teacher_tools" onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span className="hidden sm:inline">{t('simplified.teacher_tools_label')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button><div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`}><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} aria-label={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} aria-label={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} aria-label={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => { if (isSimplifiedAudioDownloading) { try { window.__alloCancelAudioDownload?.(); } catch (_) {} return; } handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'); }} title={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : (t('simplified.tip_download_audio') || t('common.download_audio'))} aria-label={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('common.download_audio')} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{isSimplifiedAudioDownloading ? <StopCircle size={14} /> : <Download size={14} />}{isSimplifiedAudioDownloading ? (t('common.stop') || simplifiedAudioStopLabel) : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? (t('common.stop') || simplifiedAudioStopLabel) : (t('immersive.prepare_all') || simplifiedAudioSaveLabel)} aria-label={ttsPrepState.busy ? (t('common.stop') || simplifiedAudioStopLabel) : (t('immersive.prepare_all') || simplifiedAudioSaveLabel)} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel}</button></div></div>}{isTeacherMode && <button type="button" aria-label={t('common.toggle_edit_text')} onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}</div></div>{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={{
-          top: Math.min(window.innerHeight - 300, definitionData.y + 10) + 'px',
-          left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
-        }}><div className="flex justify-between items-start mb-2"><h5 id="simplified-definition-title" className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div>{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button type="button" onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={{
-          top: Math.min(window.innerHeight - 300, phonicsData.y + 10) + 'px',
-          left: Math.min(window.innerWidth - 300, phonicsData.x - 20) + 'px'
-        }}><div className="flex justify-between items-start mb-3"><h5 id="phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button type="button" aria-label={t('common.volume')} onClick={() => {
+              }} disabled={isAnalyzingPos || isEditingLeveledText} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title={t('simplified.tip_immersive_btn')}>{isAnalyzingPos ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <BookOpen size={14} />}{isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')}</button><select value={readingTheme} onChange={e => setReadingTheme(e.target.value)} aria-label={simplifiedReadingThemeLabel} className={`px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`}><option value="default">{t('header.reading_theme_default')}</option><option value="warm">{t('header.reading_theme_warm')}</option><option value="sepia">{t('header.reading_theme_sepia')}</option>{theme !== 'dark' && <option value="dark">{t('header.reading_theme_dark')}</option>}<option value="highContrast">{t('header.reading_theme_contrast')}</option><option value="blue">{t('header.reading_theme_blue')}</option><option value="green">{t('header.reading_theme_green')}</option><option value="rose">{t('header.reading_theme_rose')}</option><option value="dyslexia">{t('header.reading_theme_easy_read')}</option></select>{isTeacherMode && <div className="flex items-center mr-2"><button type="button" aria-label={t('common.settings')} data-help-key="simplified_teacher_tools" aria-expanded={!!isTeacherToolbarExpanded} aria-controls="simplified-teacher-tools-panel" onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span className="hidden sm:inline">{t('simplified.teacher_tools_label')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button><div id="simplified-teacher-tools-panel" hidden={!isTeacherToolbarExpanded} style={{ display: isTeacherToolbarExpanded ? undefined : 'none' }} className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`}><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} aria-label={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} aria-label={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} aria-label={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => { if (isSimplifiedAudioDownloading) { try { window.__alloCancelAudioDownload?.(); } catch (_) {} return; } handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'); }} title={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : (t('simplified.tip_download_audio') || t('common.download_audio'))} aria-label={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('common.download_audio')} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{isSimplifiedAudioDownloading ? <StopCircle size={14} /> : <Download size={14} />}{isSimplifiedAudioDownloading ? (t('common.stop') || simplifiedAudioStopLabel) : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { var request = ttsPrepRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? (t('common.stop') || simplifiedAudioStopLabel) : (t('immersive.prepare_all') || simplifiedAudioSaveLabel)} aria-label={ttsPrepState.busy ? (t('common.stop') || simplifiedAudioStopLabel) : (t('immersive.prepare_all') || simplifiedAudioSaveLabel)} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel}</button></div></div>}{isTeacherMode && <button type="button" aria-label={t('common.toggle_edit_text')} onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}</div></div>{ttsPrepNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900">{ttsPrepNotice}</p>}{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(definitionData, 16)}><div className="flex justify-between items-start mb-2"><h5 id="simplified-definition-title" className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div>{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button type="button" onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(phonicsData, 18)}><div className="flex justify-between items-start mb-3"><h5 id="phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button type="button" aria-label={t('common.volume')} onClick={() => {
                 if (phonicsData.audioUrl) {
                   const audio = new Audio(phonicsData.audioUrl);
                   audio.playbackRate = voiceSpeed || 1;
@@ -2253,373 +2523,11 @@
               };
               delete updated.alignmentCheck;
               setGeneratedContent(updated);
-            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}{isCompareMode ? <div className="w-full h-full min-h-[500px] animate-in motion-reduce:animate-none fade-in duration-300"><div className="bg-slate-50 border-b border-slate-200 p-4 mb-4 flex justify-between items-center rounded-t-lg"><span className="text-sm font-bold text-slate-700 flex items-center gap-2"><GitCompare size={16} className="text-indigo-600" /> {t('simplified.diff_view')}</span><div className="flex gap-4 text-xs font-medium"><span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-100 border border-red-300 rounded" /> {t('simplified.diff_removed')}</span><span className="flex items-center gap-1"><div className="w-3 h-3 bg-green-100 border border-green-300 rounded" /> {t('simplified.diff_added')}</span></div></div>{(() => {
-            const compareSource = resolveSimplifiedCompareSource(history, generatedContent, inputText);
-            const sourceContent = compareSource.text;
-            let originalText = sourceContent.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-            let adaptedText = generatedContent?.data;
-            const sideBySide = getSideBySideContent(adaptedText);
-            if (sideBySide) {
-              adaptedText = sideBySide.targetFull;
-            }
-            adaptedText = adaptedText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-            const diff = diffWords(originalText, adaptedText);
-            return <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full pb-8"><div className="bg-white p-6 rounded-lg border border-slate-400 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_original')}</h4><div className="text-sm text-slate-700 leading-relaxed font-serif whitespace-pre-wrap">{diff.map((part, i) => {
-                    if (part.type === 'add') return null;
-                    if (part.type === 'del') {
-                      return <span key={i} className="bg-red-100 text-red-800 line-through decoration-red-400 decoration-2 px-0.5 rounded mx-0.5">{part.value}</span>;
-                    }
-                    return <span key={i} className="opacity-70">{part.value} </span>;
-                  })}</div></div><div className="bg-white p-6 rounded-lg border border-slate-400 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar"><h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_adapted')}</h4><div className="text-sm text-slate-800 leading-relaxed font-medium font-serif whitespace-pre-wrap">{diff.map((part, i) => {
-                    if (part.type === 'del') return null;
-                    if (part.type === 'add') {
-                      return <span key={i} className="bg-green-100 text-green-900 font-bold border-b-2 border-green-300 px-0.5 rounded mx-0.5">{part.value}</span>;
-                    }
-                    return <span key={i}>{part.value} </span>;
-                  })}</div></div></div>;
-          })()}</div> : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : isSideBySide && getSideBySideContent(generatedContent?.data) ? <div className={`w-full min-h-[500px] font-sans ${cursorStyles[interactionMode]}`}>{(() => {
-            const {
-              source,
-              target,
-              sourceFull
-            } = getSideBySideContent(simplifiedReadAloudText);
-            const maxPars = Math.max(source.length, target.length);
-            const rows = Array.from({
-              length: maxPars
-            });
-            const sourceSentencesTotal = source.flatMap(p => p.trim().startsWith('|') || p.includes('\n|') ? [] : splitTextToSentences(p)).length;
-            let currentSourceSentenceIdx = 0;
-            let currentTargetSentenceIdx = sourceSentencesTotal;
-            const renderTextContent = (sentences, startIdx, isHeaderStyle) => {
-              if (interactionMode === 'explain' || interactionMode === 'revise') {
-                const cleanText = sentences.join(' ').replace(/\*\*|\*/g, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-                return <div className={`cursor-text selection:text-teal-900 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'}`} onMouseUp={handleTextMouseUp}>{cleanText}</div>;
-              } else if (interactionMode === 'add-glossary') {
-                const textBlock = sentences.join(' ').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
-                const parts = highlightGlossaryTerms(textBlock, latestGlossary, false);
-                const partsArray = Array.isArray(parts) ? parts : [parts];
-                return partsArray.map((part, ptIdx) => {
-                  if (React.isValidElement(part)) {
-                    return <span key={ptIdx} className="bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"><span className="text-[11px] mr-1 text-indigo-600 font-bold">✓</span>{part}</span>;
-                  }
-                  if (typeof part !== 'string') return null;
-                  return part.split(/(\s+)/).map((subPart, spIdx) => {
-                    if (subPart.match(/^\s+$/)) return <span key={`${ptIdx}-${spIdx}`}>{subPart}</span>;
-                    const cleanWord = subPart.replace(/\*\*|\*/g, '');
-                    return <span key={`${ptIdx}-${spIdx}`} onClick={e => {
-                      e.stopPropagation();
-                      handleQuickAddGlossary(cleanWord, true);
-                    }} onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleQuickAddGlossary(cleanWord, true);
-                      }
-                    }} tabIndex={0} role="button" className="cursor-copy hover:bg-green-200 text-slate-800 hover:text-green-900 rounded px-0.5 transition-colors inline-block border-b border-transparent hover:border-green-400 select-none" title={t('common.click_add_glossary')}>{cleanWord}</span>;
-                  });
-                });
-              } else if (interactionMode === 'phonics' || interactionMode === 'define') {
-                const textBlock = sentences.join(' ').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
-                return textBlock.split(/(\s+)/).map((part, i) => {
-                  if (part.match(/^\s+$/)) return <span key={i}>{part}</span>;
-                  const cleanWord = part.replace(/\*\*|\*/g, '');
-                  const handleClick = e => {
-                    if (interactionMode === 'phonics') handlePhonicsClick(cleanWord, e);
-                    if (interactionMode === 'define') handleWordClick(cleanWord, e);
-                  };
-                  return <span key={i} onClick={handleClick} onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleClick(e);
-                    }
-                  }} tabIndex="0" role="button" aria-label={interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${cleanWord}` : `${simplifiedDefineLabel} ${cleanWord}`} className={`cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 inline-block border-b border-transparent hover:border-emerald-200 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1`} title={interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')}>{cleanWord}</span>;
-                });
-              } else {
-                return sentences.map((s, sIdx) => {
-                  const globalIdx = startIdx + sIdx;
-                  const isActive = globalIdx === playbackState.currentIdx;
-                  const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
-                  const isHeader = s.trim().startsWith('#') || isHtmlHeader;
-                  const headerLevel = isHeader ? isHtmlHeader ? parseInt((s.trim().match(/^<h([1-6])/) || [0, 2])[1]) : (s.trim().match(/^#+/) || [''])[0].length : 0;
-                  const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
-                  const headerClass = isHeader ? headerLevel === 1 ? "text-2xl font-bold text-orange-900 block mb-2 mt-4" : headerLevel === 2 ? "text-xl font-bold text-orange-900 block mb-2 mt-3" : "text-lg font-bold text-orange-900 block mb-1 mt-2" : "";
-                  return <span key={sIdx} id={`sentence-${globalIdx}`} onClick={e => {
-                    if (interactionMode === 'cloze') return;
-                    e.stopPropagation();
-                    handleSpeak(simplifiedReadAloudText, 'simplified-main', globalIdx);
-                  }} onKeyDown={e => {
-                    if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
-                      e.preventDefault();
-                      handleSpeak(simplifiedReadAloudText, 'simplified-main', globalIdx);
-                    }
-                  }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`${simplifiedReadSentenceLabel}: ${cleanText}`} className={`transition-colors duration-300 rounded px-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200' : ''} ${isActive ? 'bg-yellow-200 text-black shadow-sm' : ''} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
-                });
-              }
-            };
-            return <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="hidden md:block font-bold text-orange-800 text-sm uppercase tracking-wider border-b-2 border-orange-200 pb-2 mb-2">{leveledTextLanguage}</div><div className="hidden md:block font-bold text-orange-800 text-sm uppercase tracking-wider border-b-2 border-orange-200 pb-2 mb-2">{t('common.english_translation')}</div>{rows.map((_, i) => {
-                const sourceParaSentences = source[i] && !(source[i].trim().startsWith('|') || source[i].includes('\n|')) ? splitTextToSentences(source[i]) : [];
-                const targetParaSentences = target[i] && !(target[i].trim().startsWith('|') || target[i].includes('\n|')) ? splitTextToSentences(target[i]) : [];
-                const rowSourceStartIdx = currentSourceSentenceIdx;
-                const rowTargetStartIdx = currentTargetSentenceIdx;
-                const rowSourceEndIdx = rowSourceStartIdx + sourceParaSentences.length;
-                const rowTargetEndIdx = rowTargetStartIdx + targetParaSentences.length;
-                currentSourceSentenceIdx += sourceParaSentences.length;
-                currentTargetSentenceIdx += targetParaSentences.length;
-                return <><div className={`bg-white/60 rounded-lg p-4 border border-orange-100 hover:border-orange-300 transition-colors ${isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'text-right' : 'text-left'}`} dir={isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'rtl' : 'ltr'}><div className="md:hidden font-bold text-orange-800 text-xs uppercase tracking-wider mb-2">{leveledTextLanguage}</div><div className="text-lg text-slate-800 font-medium leading-relaxed">{renderTextContent(sourceParaSentences, rowSourceStartIdx, false)}</div></div><div className="bg-indigo-50/60 rounded-lg p-4 border border-indigo-100 hover:border-indigo-300 transition-colors relative text-left" dir="ltr"><div className="md:hidden font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 mt-2 md:mt-0">{t('common.english')}</div><div className="text-base text-slate-700 leading-relaxed">{renderTextContent(targetParaSentences, rowTargetStartIdx, false)}</div></div></>;
-              })}</div>;
-          })()}<SourceReferencesPanel referencesText={simplifiedContentParts.references} />{isProcessing && <div className="mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {simplifiedGeneratingMoreLabel}</div>}</div> : <div data-simplified-reading-body="true" className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`} style={{ maxWidth: 'min(72ch, 100%)', marginLeft: 'auto', marginRight: 'auto' }} dir={getContentDirection(generatedContent?.config?.language || leveledTextLanguage)}>{generatedContent?.data ? <div className="space-y-4">{(() => {
-              // Normalize AI heading lines wrapped in * / ** (e.g. "*Dreams*",
-              // "**How Do We Dream?**") into real Markdown headings, so the reader
-              // styles them as bold section headers instead of showing the raw
-              // asterisks. Only matches a WHOLE line that is a single * / ** span
-              // with no other asterisks — inline emphasis inside a sentence is
-              // untouched.
-              const _bodyNoRefs = simplifiedDisplayBody;
-              const _references = simplifiedReferences;
-              const _bilingualIdx = _bodyNoRefs.indexOf('--- ENGLISH TRANSLATION ---');
-              const _hasBilingual = _bilingualIdx !== -1;
-              const safeData = _hasBilingual ? _bodyNoRefs.substring(0, _bilingualIdx).trim() : _bodyNoRefs;
-              const _englishBlock = _hasBilingual ? _bodyNoRefs.substring(_bilingualIdx + '--- ENGLISH TRANSLATION ---'.length).trim() : '';
-              const _bodyEl = (() => {
-                const sideBySideData = getSideBySideContent(safeData);
-                if (sideBySideData) {
-                  let sentenceCounter = 0;
-                  const {
-                    source,
-                    target
-                  } = sideBySideData;
-                  const renderParagraphs = (paragraphs, keyPrefix, isEnglish = false) => paragraphs.map((para, pIdx) => {
-                    if (para.trim().startsWith('|') || para.includes('\n|')) {
-                      return <div key={`${keyPrefix}-table-${pIdx}`} className="mb-6 overflow-x-auto">{renderFormattedText(para, false)}</div>;
-                    }
-                    const paragraphId = `${keyPrefix}-${pIdx}`;
-                    const sentencesInPara = splitTextToSentences(para);
-                    const startIdx = sentenceCounter;
-                    const endIdx = startIdx + sentencesInPara.length;
-                    if (interactionMode !== 'explain' && interactionMode !== 'revise' && interactionMode !== 'add-glossary' && interactionMode !== 'define' && interactionMode !== 'phonics') {
-                      sentenceCounter += sentencesInPara.length;
-                    } else {
-                      sentenceCounter += sentencesInPara.length;
-                    }
-                    const isReadingThisParagraph = isPlaying && playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx;
-                    const shouldFocus = isPlaying ? isReadingThisParagraph : focusedParagraphIndex === paragraphId;
-                    const isDimmed = isLineFocusMode && !shouldFocus;
-                    if (interactionMode === 'explain' || interactionMode === 'revise') {
-                      const cleanText = para.replace(/\*\*|\*/g, '');
-                      // focusedParagraphIndex is compared against paragraphId
-                      // (`${keyPrefix}-${pIdx}`) in this side-by-side branch, so
-                      // hover must set the same string — setting bare pIdx left
-                      // the hovered paragraph permanently dimmed/blurred in
-                      // line-focus mode.
-                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} {...lineFocusParagraphProps(paragraphId)}>{cleanText}</p>;
-                    }
-                    if (sentencesInPara.length === 0) return null;
-                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} {...lineFocusParagraphProps(paragraphId)}>{interactionMode === 'add-glossary' ? (() => {
-                        const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
-                        const parts = highlightGlossaryTerms(cleanPara, latestGlossary, false);
-                        const partsArray = Array.isArray(parts) ? parts : [parts];
-                        return partsArray.map((part, ptIdx) => {
-                          if (React.isValidElement(part)) {
-                            return <span key={ptIdx} className="bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"><span className="text-[11px] mr-1 text-indigo-600 font-bold">✓</span>{part}</span>;
-                          }
-                          if (typeof part !== 'string') return null;
-                          return part.split(/(\s+)/).map((subPart, spIdx) => {
-                            if (subPart.match(/^\s+$/)) return <span key={`${ptIdx}-${spIdx}`}>{subPart}</span>;
-                            const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(subPart);
-                            const isHeader = subPart.startsWith('#') || isHtmlHeader;
-                            let displayPart = isHeader ? isHtmlHeader ? subPart.replace(/<\/?h[1-6][^>]*>/gi, '') : subPart.replace(/^#+\s*/, '') : subPart;
-                            displayPart = displayPart.replace(/\*\*|\*/g, '');
-                            return <span key={`${ptIdx}-${spIdx}`} onClick={e => {
-                              e.stopPropagation();
-                              handleQuickAddGlossary(displayPart, true);
-                            }} className={`rounded px-0.5 transition-colors duration-200 ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''} cursor-copy hover:bg-green-200 border-b border-transparent hover:border-green-400 select-none`} title={t('common.click_add_glossary')}>{displayPart}</span>;
-                          });
-                        });
-                      })() : interactionMode === 'define' ? para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '').split(/(\s+)/).map((part, i) => {
-                        if (part.match(/^\s+$/)) return <span key={i}>{part}</span>;
-                        const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(part);
-                        const isHeader = part.startsWith('#') || isHtmlHeader;
-                        let displayPart = isHeader ? isHtmlHeader ? part.replace(/<\/?h[1-6][^>]*>/gi, '') : part.replace(/^#+\s*/, '') : part;
-                        displayPart = displayPart.replace(/\*\*|\*/g, '');
-                        const handleClick = e => handleWordClick(displayPart, e);
-                        return <span key={i} onClick={handleClick} onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleClick(e);
-                          }
-                        }} tabIndex={0} role="button" className={`cursor-help hover:bg-yellow-200 rounded px-0.5 transition-colors duration-200 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`}>{displayPart}</span>;
-                      }) : interactionMode === 'phonics' ? para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '').split(/(\s+)/).map((part, i) => {
-                        if (part.match(/^\s+$/)) return <span key={i}>{part}</span>;
-                        const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(part);
-                        const isHeader = part.startsWith('#') || isHtmlHeader;
-                        let displayPart = isHeader ? isHtmlHeader ? part.replace(/<\/?h[1-6][^>]*>/gi, '') : part.replace(/^#+\s*/, '') : part;
-                        displayPart = displayPart.replace(/\*\*|\*/g, '');
-                        const handleClick = e => handlePhonicsClick(displayPart, e);
-                        return <span key={i} onClick={handleClick} onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleClick(e);
-                          }
-                        }} tabIndex={0} role="button" className={`cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? isEnglish ? 'font-bold text-indigo-900' : 'font-bold text-orange-900' : ''}`} title={t('common.click_hear_phonics')}>{displayPart}</span>;
-                      }) : sentencesInPara.map((sentence, sIdx) => {
-                        const currentGlobalIdx = startIdx + sIdx;
-                        const isActive = currentGlobalIdx === playbackState.currentIdx;
-                        const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(sentence.trim());
-                        const isHeader = sentence.trim().startsWith('#') || isHtmlHeader;
-                        const headerLevel = isHeader ? isHtmlHeader ? parseInt((sentence.trim().match(/^<h([1-6])/) || [0, 2])[1]) : (sentence.trim().match(/^#+/) || [''])[0].length : 0;
-                        const cleanText = isHeader ? isHtmlHeader ? sentence.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : sentence.trim().replace(/^#+\s*/, '') : sentence;
-                        const headerClass = isHeader ? headerLevel === 1 ? `text-2xl font-bold ${isEnglish ? isLineFocusMode ? 'text-indigo-300' : 'text-indigo-900' : isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-2 mt-6 border-b ${isEnglish ? 'border-indigo-200' : 'border-orange-200'} pb-1` : headerLevel === 2 ? `text-xl font-bold ${isEnglish ? isLineFocusMode ? 'text-indigo-300' : 'text-indigo-900' : isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-2 mt-4` : `text-lg font-bold ${isEnglish ? isLineFocusMode ? 'text-indigo-300' : 'text-indigo-900' : isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-1 mt-3` : "";
-                        return <span key={sIdx} id={`sentence-${currentGlobalIdx}`} onClick={e => {
-                          if (interactionMode === 'cloze') return;
-                          e.stopPropagation();
-                          handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
-                        }} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
-                      })}</p>;
-                  });
-                  return <>{renderParagraphs(source, 'src')}<div className={`my-8 flex items-center gap-4 text-indigo-600 font-bold text-sm tracking-wider uppercase select-none transition-opacity duration-300 ${isLineFocusMode && focusedParagraphIndex !== null ? 'opacity-20' : 'opacity-100'}`}><div className="h-px bg-indigo-200 flex-grow" />{t('common.english_translation')}<div className="h-px bg-indigo-200 flex-grow" /></div><div dir="ltr" className="text-left">{renderParagraphs(target, 'tgt', true)}</div></>;
-                } else {
-                  const paragraphs = safeData.split(/\n{2,}/);
-                  let sentenceCounter = 0;
-                  return paragraphs.map((para, pIdx) => {
-                    if (para.trim().startsWith('|') || para.includes('\n|')) {
-                      return <div key={`mono-table-${pIdx}`} className="mb-6 overflow-x-auto">{renderFormattedText(para, false)}</div>;
-                    }
-                    const sentencesInPara = splitTextToSentences(para);
-                    const startIdx = sentenceCounter;
-                    const endIdx = startIdx + sentencesInPara.length;
-                    sentenceCounter += sentencesInPara.length;
-                    const isReadingThisParagraph = isPlaying && playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx;
-                    const shouldFocus = isPlaying ? isReadingThisParagraph : focusedParagraphIndex === pIdx;
-                    const isDimmed = isLineFocusMode && !shouldFocus;
-                    if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'add-glossary') {
-                      const cleanText = para.replace(/\*\*|\*/g, '');
-                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} {...lineFocusParagraphProps(pIdx)}>{cleanText}</p>;
-                    }
-                    if (sentencesInPara.length === 0) return null;
-                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} {...lineFocusParagraphProps(pIdx)}>{interactionMode === 'cloze' ? sentencesInPara.map((sentence, sIdx) => {
-                        const currentGlobalIdx = startIdx + sIdx;
-                        const cleanText = sentence.trim().replace(/^#+\s*/, '');
-                        return <span key={sIdx}>{formatInteractiveText(cleanText, true)} </span>;
-                      }) : interactionMode === 'phonics' || interactionMode === 'define' ? para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '').split(/(\s+)/).map((part, i) => {
-                        if (part.match(/^\s+$/)) return <span key={i}>{part}</span>;
-                        const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(part);
-                        const isHeader = part.startsWith('#') || isHtmlHeader;
-                        let displayPart = isHeader ? isHtmlHeader ? part.replace(/<\/?h[1-6][^>]*>/gi, '') : part.replace(/^#+\s*/, '') : part;
-                        displayPart = displayPart.replace(/\*\*|\*/g, '');
-                        const handleClick = e => {
-                          if (interactionMode === 'phonics') handlePhonicsClick(displayPart, e);
-                          if (interactionMode === 'define') handleWordClick(displayPart, e);
-                        };
-                        return <span key={i} onClick={handleClick} onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleClick(e);
-                          }
-                        }} tabIndex="0" role="button" aria-label={interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${displayPart}` : `${simplifiedDefineLabel} ${displayPart}`} className={`cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? 'font-bold text-orange-900' : ''}`} title={interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')}>{displayPart}</span>;
-                      }) : sentencesInPara.map((sentence, sIdx) => {
-                        const currentGlobalIdx = startIdx + sIdx;
-                        const isActive = currentGlobalIdx === playbackState.currentIdx;
-                        const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(sentence.trim());
-                        const isHeader = sentence.trim().startsWith('#') || isHtmlHeader;
-                        const headerLevel = isHeader ? isHtmlHeader ? parseInt((sentence.trim().match(/^<h([1-6])/) || [0, 2])[1]) : (sentence.trim().match(/^#+/) || [''])[0].length : 0;
-                        const cleanText = isHeader ? isHtmlHeader ? sentence.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : sentence.trim().replace(/^#+\s*/, '') : sentence;
-                        const headerClass = isHeader ? headerLevel === 1 ? `text-2xl font-bold ${isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-2 mt-6 border-b border-orange-200 pb-1` : headerLevel === 2 ? `text-xl font-bold ${isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-2 mt-4` : `text-lg font-bold ${isLineFocusMode ? 'text-orange-300' : 'text-orange-900'} block mb-1 mt-3` : "";
-                        return <span key={sIdx} id={`sentence-${currentGlobalIdx}`} onClick={e => {
-                          if (interactionMode === 'cloze') return;
-                          e.stopPropagation();
-                          handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
-                        }} onKeyDown={e => {
-                          if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
-                            e.preventDefault();
-                            handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
-                          }
-                        }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`${simplifiedReadSentenceLabel}: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
-                      })}</p>;
-                  });
-                }
-              })();
-              return <>{_bodyEl}{_hasBilingual && _englishBlock && (() => {
-                  const _isTable = p => p.trim().startsWith('|') || p.includes('\n|');
-                  const _srcParas = safeData.split(/\n{2,}/).filter(p => p.trim());
-                  const _srcSentCount = _srcParas.flatMap(p => _isTable(p) ? [] : splitTextToSentences(p)).length;
-                  const _engParas = _englishBlock.split(/\n{2,}/).filter(p => p.trim());
-                  let _engSentCounter = _srcSentCount;
-                  return <div className="mt-6 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl"><div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">{simplifiedEnglishTranslationLabel}</div><div className="text-slate-700 leading-relaxed">{_engParas.map((para, pIdx) => {
-                        if (_isTable(para)) {
-                          return <div key={`eng-table-${pIdx}`} className="mb-6 overflow-x-auto">{renderFormattedText(para, false)}</div>;
-                        }
-                        const sentencesInPara = splitTextToSentences(para);
-                        if (sentencesInPara.length === 0) return null;
-                        const startIdx = _engSentCounter;
-                        _engSentCounter += sentencesInPara.length;
-                        if (interactionMode === 'explain' || interactionMode === 'revise') {
-                          const cleanText = para.replace(/\*\*|\*/g, '');
-                          return <p key={`eng-p-${pIdx}`} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'}`} onMouseUp={handleTextMouseUp}>{cleanText}</p>;
-                        }
-                        if (interactionMode === 'add-glossary') {
-                          const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
-                          const parts = highlightGlossaryTerms(cleanPara, latestGlossary, false);
-                          const partsArray = Array.isArray(parts) ? parts : [parts];
-                          return <p key={`eng-p-${pIdx}`} className="mb-4 leading-relaxed">{partsArray.map((part, ptIdx) => {
-                              if (React.isValidElement(part)) {
-                                return <span key={ptIdx} className="bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"><span className="text-[11px] mr-1 text-indigo-600 font-bold">✓</span>{part}</span>;
-                              }
-                              if (typeof part !== 'string') return null;
-                              return part.split(/(\s+)/).map((subPart, spIdx) => {
-                                if (subPart.match(/^\s+$/)) return <span key={`${ptIdx}-${spIdx}`}>{subPart}</span>;
-                                const isHtmlHeader2 = /^<h([1-6])[^>]*>/i.test(subPart);
-                                const isHeader2 = subPart.startsWith('#') || isHtmlHeader2;
-                                let displayPart2 = isHeader2 ? isHtmlHeader2 ? subPart.replace(/<\/?h[1-6][^>]*>/gi, '') : subPart.replace(/^#+\s*/, '') : subPart;
-                                displayPart2 = displayPart2.replace(/\*\*|\*/g, '');
-                                return <span key={`${ptIdx}-${spIdx}`} onClick={e => {
-                                  e.stopPropagation();
-                                  handleQuickAddGlossary(displayPart2, true);
-                                }} className={`rounded px-0.5 transition-colors duration-200 ${isHeader2 ? 'font-bold text-indigo-900' : ''} cursor-copy hover:bg-green-200 border-b border-transparent hover:border-green-400 select-none`} title={t('common.click_add_glossary')}>{displayPart2}</span>;
-                              });
-                            })}</p>;
-                        }
-                        if (interactionMode === 'phonics' || interactionMode === 'define') {
-                          return <p key={`eng-p-${pIdx}`} className="mb-4 leading-relaxed">{para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '').split(/(\s+)/).map((part, i) => {
-                              if (part.match(/^\s+$/)) return <span key={i}>{part}</span>;
-                              const isHtmlHeader3 = /^<h([1-6])[^>]*>/i.test(part);
-                              const isHeader3 = part.startsWith('#') || isHtmlHeader3;
-                              let displayPart3 = isHeader3 ? isHtmlHeader3 ? part.replace(/<\/?h[1-6][^>]*>/gi, '') : part.replace(/^#+\s*/, '') : part;
-                              displayPart3 = displayPart3.replace(/\*\*|\*/g, '');
-                              const handleClick = e => {
-                                if (interactionMode === 'phonics') handlePhonicsClick(displayPart3, e);
-                                if (interactionMode === 'define') handleWordClick(displayPart3, e);
-                              };
-                              return <span key={i} onClick={handleClick} onKeyDown={e => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  handleClick(e);
-                                }
-                              }} tabIndex="0" role="button" aria-label={interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${displayPart3}` : `${simplifiedDefineLabel} ${displayPart3}`} className={`cursor-help hover:bg-indigo-100 text-slate-700 hover:text-indigo-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-indigo-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader3 ? 'font-bold text-indigo-900' : ''}`} title={interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')}>{displayPart3}</span>;
-                            })}</p>;
-                        }
-                        return <p key={`eng-p-${pIdx}`} className="mb-4 leading-relaxed">{sentencesInPara.map((sentence, sIdx) => {
-                            const currentGlobalIdx = startIdx + sIdx;
-                            const isActive = currentGlobalIdx === playbackState.currentIdx;
-                            const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(sentence.trim());
-                            const isHeader = sentence.trim().startsWith('#') || isHtmlHeader;
-                            const headerLevel = isHeader ? isHtmlHeader ? parseInt((sentence.trim().match(/^<h([1-6])/) || [0, 2])[1]) : (sentence.trim().match(/^#+/) || [''])[0].length : 0;
-                            const cleanText = isHeader ? isHtmlHeader ? sentence.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : sentence.trim().replace(/^#+\s*/, '') : sentence;
-                            const headerClass = isHeader ? headerLevel === 1 ? 'text-2xl font-bold text-indigo-900 block mb-2 mt-6 border-b border-indigo-200 pb-1' : headerLevel === 2 ? 'text-xl font-bold text-indigo-900 block mb-2 mt-4' : 'text-lg font-bold text-indigo-900 block mb-1 mt-3' : "";
-                            return <span key={sIdx} id={`sentence-${currentGlobalIdx}`} onClick={e => {
-                              if (interactionMode === 'cloze') return;
-                              e.stopPropagation();
-                              handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
-                            }} onKeyDown={e => {
-                              if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
-                                e.preventDefault();
-                                handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
-                              }
-                            }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`${simplifiedReadSentenceLabel}: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'text-slate-700'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
-                          })}</p>;
-                      })}</div></div>;
-                })()}<SourceReferencesPanel referencesText={_references} /></>;
-            })()}</div> : null}{isProcessing && <div className="mt-4 flex items-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {simplifiedGeneratingMoreLabel}</div>}</div>}</div></div>;
+            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : renderSimplifiedReading()}</div></div>;
   }
+  SimplifiedView.languageTag = simplifiedLanguageTag;
+  SimplifiedView.wordSegments = simplifiedWordSegments;
+  SimplifiedView.paragraphBlocks = simplifiedParagraphBlocks;
   SimplifiedView.resolveReferences = resolveSimplifiedReferences;
   SimplifiedView.hasCitationMarkers = simplifiedBodyHasCitationMarkers;
   SimplifiedView.getInstructionalText = getSimplifiedInstructionalText;

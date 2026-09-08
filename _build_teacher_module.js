@@ -22,6 +22,8 @@
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
+// Replace generated files atomically when a browser or test worker has them open.
+function writeAtomic(file, content, encoding) { const temporary = file + '.build-tmp'; fs.writeFileSync(temporary, content, encoding); fs.renameSync(temporary, file); }
 const path = require('path');
 
 const ROOT = __dirname;
@@ -78,10 +80,10 @@ try { fs.unlinkSync(TMP_COMPILED); } catch (_) {}
 const identitySeam = `\nwindow.AlloModules.RosterIdentityInternals = {\n  ensureRosterIdentity: alloEnsureTeacherRosterIdentity,\n  normalizeLearnerReadingPreference: alloNormalizeTeacherLearnerPreference,\n  normalizeRosterImport: alloNormalizeTeacherRosterImport,\n  removeGroupReferences: alloRemoveTeacherGroupReferences,\n  buildCodenameWorksheetHtml: buildRosterCodenameWorksheetHtml,\n  readingThemeIds: ALLO_TEACHER_READING_THEME_IDS.slice()\n};\n`;
 const outputCode = header + compiled + tail.replace("window.AlloModules.TeacherModule = true;", identitySeam + "window.AlloModules.TeacherModule = true;");
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+writeAtomic(OUTPUT, outputCode, 'utf-8');
 try {
   if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-  fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+  writeAtomic(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) { console.warn('Sync failed:', e.message); }
 
 try {

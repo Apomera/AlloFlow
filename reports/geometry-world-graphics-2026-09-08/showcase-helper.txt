@@ -1,0 +1,46 @@
+  function showcaseBuild(ctx) {
+    var selected = selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx, false);
+    var THREE = window.THREE;
+    if (!selected || !THREE) return;
+    var engine = selected.engine, camera = engine.camera;
+    if (!camera || engine._showcase) return;
+    var box = new THREE.Box3();
+    selected.measurement.blocks.forEach(function(p){box.expandByObject(engine.blocks[keyFor(p)]);});
+    if (box.isEmpty()) return;
+    if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+    try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (_) {}
+    var saved = {position:camera.position.clone(),quaternion:camera.quaternion.clone(),fov:camera.fov,
+      collapsed:!!(ctx.toolData.geometryWorld || {}).sandboxDockCollapsed, hidden:[]};
+    [engine._dimLines,engine._selectionGlows,engine._layerGhosts].forEach(function(list){(list || []).forEach(function(o){saved.hidden.push([o,o.visible]);o.visible=false;});});
+    engine._showcase = saved; engine.isLocked=false;engine._touchActive=false;engine._entryAnim=null;engine._viewPresetAnim=null;
+    if(engine.velocity)engine.velocity.set(0,0,0);
+    Object.keys(engine.moveState || {}).forEach(function(key){engine.moveState[key]=false;});
+    var center=box.getCenter(new THREE.Vector3()),radius=Math.max(0.8,box.getSize(new THREE.Vector3()).length()/2);
+    engine.fitShowcase=function(){
+      camera.fov=42;camera.updateProjectionMatrix();
+      var vertical=camera.fov*Math.PI/360,horizontal=Math.atan(Math.tan(vertical)*camera.aspect);
+      var distance=radius/Math.sin(Math.min(vertical,horizontal))*1.16;
+      camera.position.copy(center).addScaledVector(new THREE.Vector3(1.25,0.72,1.55).normalize(),distance);
+      camera.lookAt(center);if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);
+    };
+    engine.endShowcase=function(){
+      var previous=engine._showcase;if(!previous)return;
+      camera.position.copy(previous.position);camera.quaternion.copy(previous.quaternion);camera.fov=previous.fov;camera.updateProjectionMatrix();
+      if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);
+      previous.hidden.forEach(function(entry){entry[0].visible=entry[1];});
+      engine._showcase=null;engine.fitShowcase=null;engine.endShowcase=null;
+      patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});focusWorldSurface(30);
+    };
+    engine.fitShowcase();
+    patchGeometryState(ctx,{showcaseActive:true,sandboxDockCollapsed:true});
+    setTimeout(function(){var button=document.getElementById('gwe-showcase-close');if(button)button.focus();},30);
+    announce(ctx,'Showcase view. Your creation is framed for viewing. Press Escape to return to building.','success');
+  }
+  function saveShowcaseImage(ctx) {
+    var engine=window[ENGINE_KEY];if(!engine || !engine.renderer)return;
+    try {
+      if(engine.composer && engine._postFxEnabled!==false)engine.composer.render();else engine.renderer.render(engine.scene,engine.camera);
+      engine.renderer.domElement.toBlob(function(blob){if(blob)downloadBlob(blob,'geometry-world-creation.png');else announce(ctx,'The image could not be captured.','error');},'image/png');
+    }catch(error){announce(ctx,'The image could not be captured. Try again after the scene finishes loading.','error');}
+  }
+

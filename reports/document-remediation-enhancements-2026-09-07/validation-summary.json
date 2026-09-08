@@ -1,0 +1,93 @@
+{
+  "description": "Latest scoped result per test file across separate focused invocations; browser and MCP evidence reported separately.",
+  "files": 12,
+  "passed": 159,
+  "failed": 0,
+  "skipped": 0,
+  "results": [
+    {
+      "file": "tests/auto_continue_candidate_evidence.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/auto_continue_canonical_verification.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/doc_pipeline_build_parity.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/project_load_async_ownership.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/remediation_evidence_invariants_20260723.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/remediation_view_verification.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/root-regression.json",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/remediation_review_evidence.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/review-evidence-tests.json",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/pdf_calibration_ingest.test.js",
+      "report": "reports/document-remediation-improvements-2026-09-07/core/calibration-tests.json",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/pdf_score_calibration.test.js",
+      "report": "reports/document-remediation-improvements-2026-09-07/core/calibration-tests.json",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/remediation_review_helpers.test.js",
+      "report": "reports/document-remediation-improvements-2026-09-07/core/review-helper-tests.json",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/workbench_candidate_evidence.test.js",
+      "report": "reports/document-remediation-improvements-2026-09-07/core/workbench-evidence-tests.json",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "tests/document_remediation_benchmark.test.js",
+      "report": "reports/document-remediation-enhancements-2026-09-07/benchmark/tests-after-ui.json",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

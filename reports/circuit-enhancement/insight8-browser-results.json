@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "warningAxeViolations": [],
+  "checks": [
+    "selected LED readings",
+    "contextual explanation",
+    "LED reverse and restore",
+    "undo and redo",
+    "switch open and close",
+    "edit focus handoff",
+    "live resistance update",
+    "type change resets invalid draft",
+    "390px layout",
+    "ambiguous voltage explanation"
+  ]
+}

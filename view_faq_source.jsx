@@ -73,6 +73,28 @@ var _lazyIcon = function (name) {
     var regenAudioKey = regenAudioKey_state[0];
     var setRegenAudioKey = regenAudioKey_state[1];
     var setAudioStatusTick = React.useState(0)[1];
+    var audioNoticeState = React.useState('');
+    var audioNotice = audioNoticeState[0], setAudioNotice = audioNoticeState[1];
+    var audioRequestRef = React.useRef(null);
+    var audioContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.data, selectedVoice, effectiveLanguage]);
+    var audioContextRef = React.useRef(audioContext);
+    audioContextRef.current = audioContext;
+    React.useEffect(function () {
+      setExpandedSet(new Set());
+    }, [generatedContent && generatedContent.id]);
+    React.useEffect(function () {
+      setPrepState({ busy: false, done: 0, total: 0 });
+      setRegenAudioKey(null);
+      setAudioNotice('');
+      return function () {
+        var request = audioRequestRef.current;
+        audioRequestRef.current = null;
+        if (request && request.controller) request.controller.abort();
+      };
+    }, [audioContext]);
+    var isCurrentAudioRequest = function (request) {
+      return audioRequestRef.current === request && audioContextRef.current === request.context;
+    };
     React.useEffect(function () {
       if (typeof window === 'undefined') return;
       var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
@@ -132,25 +154,66 @@ var _lazyIcon = function (name) {
       return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
     };
     var handlePrepareFaqAudio = async function () {
-      if (prepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
+      if (audioRequestRef.current) return;
+      if (typeof window.__alloPrepareReadAloud !== 'function') {
+        setAudioNotice(label('faq.audio_tools_loading', 'Audio tools are still loading. Please try again.'));
+        return;
+      }
       var sentences = getFaqAudioSentences();
       if (!sentences.length) return;
+      var request = { context: audioContext, controller: typeof AbortController === 'function' ? new AbortController() : null };
+      audioRequestRef.current = request;
+      setAudioNotice('');
       setPrepState({ busy: true, done: 0, total: sentences.length });
       try {
-        await window.__alloPrepareReadAloud(sentences, function (done, total) {
-          setPrepState({ busy: true, done: done, total: total || sentences.length });
-        });
+        var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
+          if (isCurrentAudioRequest(request)) setPrepState({ busy: true, done: done, total: total || sentences.length });
+        }, { signal: request.controller && request.controller.signal });
+        if (!isCurrentAudioRequest(request)) return;
+        if (request.controller && request.controller.signal.aborted) {
+          setAudioNotice(label('faq.audio_save_stopped', 'Audio saving stopped. Save TTS again to finish any missing clips.'));
+        } else if (result && result.remaining) {
+          setAudioNotice(label('faq.audio_save_incomplete', 'Some audio clips are still missing. Save TTS again to retry.'));
+        } else if (result && result.ok) {
+          setAudioNotice(label('faq.audio_saved', 'Audio is saved for all FAQ sentences.'));
+        }
+        setAudioStatusTick(function (n) { return n + 1; });
+      } catch (_) {
+        if (isCurrentAudioRequest(request)) setAudioNotice(label(
+          request.controller && request.controller.signal.aborted ? 'faq.audio_save_stopped' : 'faq.audio_save_failed',
+          request.controller && request.controller.signal.aborted ? 'Audio saving stopped. Save TTS again to finish any missing clips.' : 'Audio could not be saved. Please try again.'
+        ));
       } finally {
-        setPrepState({ busy: false, done: 0, total: 0 });
+        if (isCurrentAudioRequest(request)) {
+          audioRequestRef.current = null;
+          setPrepState({ busy: false, done: 0, total: 0 });
+        }
       }
     };
     var handleRegenerateFaqAudioSentence = async function (sentence, key) {
-      if (!sentence || regenAudioKey || typeof window.__alloRegenerateSentenceAudio !== 'function') return;
+      if (!sentence || audioRequestRef.current) return;
+      if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
+        setAudioNotice(label('faq.audio_tools_loading', 'Audio tools are still loading. Please try again.'));
+        return;
+      }
+      var request = { context: audioContext };
+      audioRequestRef.current = request;
       setRegenAudioKey(key);
+      setAudioNotice('');
       try {
-        await window.__alloRegenerateSentenceAudio(cleanSentenceForAudio(sentence));
+        var url = await window.__alloRegenerateSentenceAudio(cleanSentenceForAudio(sentence));
+        if (!url) throw new Error('No audio returned');
+        if (isCurrentAudioRequest(request)) {
+          setAudioStatusTick(function (n) { return n + 1; });
+          setAudioNotice(label('faq.audio_sentence_saved', 'Sentence audio saved.'));
+        }
+      } catch (_) {
+        if (isCurrentAudioRequest(request)) setAudioNotice(label('faq.audio_sentence_failed', 'Sentence audio could not be generated. Please try again.'));
       } finally {
-        setRegenAudioKey(null);
+        if (isCurrentAudioRequest(request)) {
+          audioRequestRef.current = null;
+          setRegenAudioKey(null);
+        }
       }
     };
     var renderFaqEditAudioTools = function (text, keyPrefix) {
@@ -162,17 +225,17 @@ var _lazyIcon = function (name) {
         var key = keyPrefix + '-' + sIdx;
         var busy = regenAudioKey === key;
         var audioStatus = getReadAloudAudioStatus(sentence);
-        return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`} title={`${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : audioStatus === 'ready' ? <CheckCircle2 size={12} /> : audioStatus === 'stale' ? <RefreshCw size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
+        return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey || prepState.busy} className={`min-h-11 min-w-11 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`} title={`${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : audioStatus === 'ready' ? <CheckCircle2 size={12} /> : audioStatus === 'stale' ? <RefreshCw size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
       })}</div>;
     };
-    return <div className="space-y-6">{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" defaultValue={voiceSpeed} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
+    return <div className="space-y-6">{audioNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
             e.stopPropagation();
             audioRef.current?.pause();
             playbackSessionRef.current = null;
-            window.speechSynthesis.cancel();
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
             setIsPlaying(false);
             setPlayingContentId(null);
-          }} className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">{label('common.stop', 'Stop')}</span></button></div></div>}<div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={prepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'}</button><button aria-label={t('common.toggle_edit_faq')} onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>{
+          }} className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">{label('common.stop', 'Stop')}</span></button></div></div>}<div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { var request = audioRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} disabled={!!regenAudioKey} aria-busy={prepState.busy} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={prepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'}</button><button aria-label={t('common.toggle_edit_faq')} onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>{
       // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
       !isEditingFaq && generatedContent?.data?.length > 0 && <div className="flex items-center gap-2 mb-2"><button onClick={expandAll} className="px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors" aria-label={t("a11y.show_all_faq")}>▾ {label('faq.show_all', 'Show all')}</button><button onClick={collapseAll} className="px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors" aria-label={t("a11y.hide_all_faq")}>▸ {label('faq.hide_all', 'Hide all')}</button><span className="text-[11px] text-slate-500 italic ml-1">{label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.')}</span></div>}<div className="space-y-4">{(() => {
           // PASS 1: precompute sentence index ranges per FAQ so we can derive
@@ -230,22 +293,22 @@ var _lazyIcon = function (name) {
                         return qSentences.map((s, sIdx) => {
                           const currentGlobalIdx = qBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;
                         });
-                      })()}</h4>{isExpanded && faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}{isExpanded && <div id={`faq-answer-${idx}`} className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">{(() => {
+                      })()}</h4>{isExpanded && faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}{isExpanded && <div id={`faq-answer-${idx}`} className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">{(() => {
                         const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
                         return aSentences.map((s, sIdx) => {
                           const currentGlobalIdx = aBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;
                         });
-                      })()}{faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div>}</>}</div>{!isEditingFaq && <button type="button" onClick={() => toggleFaq(idx)} aria-expanded={isExpanded} aria-controls={`faq-answer-${idx}`} aria-label={isExpanded ? label('faq.collapse_answer', 'Collapse FAQ answer') : label('faq.expand_answer', 'Expand FAQ answer')} className="shrink-0 mt-2 w-8 h-8 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"><ChevronDown size={20} aria-hidden="true" className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></button>}</div></div>;
+                      })()}{faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div>}</>}</div>{!isEditingFaq && <button type="button" onClick={() => toggleFaq(idx)} aria-expanded={isExpanded} aria-controls={`faq-answer-${idx}`} aria-label={isExpanded ? label('faq.collapse_answer', 'Collapse FAQ answer') : label('faq.expand_answer', 'Expand FAQ answer')} className="shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"><ChevronDown size={20} aria-hidden="true" className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></button>}</div></div>;
           });
         })()}</div></div>;
   }

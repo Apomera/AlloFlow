@@ -381,6 +381,7 @@ describe('Applied Challenge Studio interactions', () => {
     });
     expect(latest.id).toBe('challenge-replacement');
     expect(latest.data.feedback).toBeNull();
-    expect(toasts.some((toast) => toast.message.includes('work changed while feedback'))).toBe(true);
+    // Navigating away abandons the request; do not announce another resource's result.
+    expect(toasts).toEqual([]);
   });
 });

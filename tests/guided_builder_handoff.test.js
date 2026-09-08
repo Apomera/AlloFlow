@@ -102,12 +102,23 @@ describe('Guided lesson to Document Builder handoff', () => {
     expect(html).not.toContain('OTHER_LESSON_TEXT');
   });
 
+  it('forwards the live slide snapshot while retaining the scoped History', () => {
+    const match = host.match(/handleExportSlides: (\(options = \{\}\) => handleExportSlides\(\{ \.\.\.options, history: getBuilderHistory\(\) \}\))/);
+    expect(match).not.toBeNull();
+    const exportSlides = vi.fn();
+    const callback = new Function('handleExportSlides', 'getBuilderHistory', 'return ' + match[1])(exportSlides, () => [current]);
+    callback({ liveHtml: '<h1>Edited current lesson</h1>', liveTitle: 'Edited title', history: [old] });
+    expect(exportSlides).toHaveBeenCalledWith({ liveHtml: '<h1>Edited current lesson</h1>', liveTitle: 'Edited title', history: [current] });
+    callback();
+    expect(exportSlides).toHaveBeenLastCalledWith({ history: [current] });
+  });
+
   it('wires the same selection into the guided button, renderer, download handler, and Builder view', () => {
     expect(host).toContain("openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)}");
     expect(host).toContain('const exportableResources = getBuilderExportableHistory();');
     expect(host).toContain('return generateFullPackHTML(exportableResources, sourceTopic');
     expect(host).toContain('getExportableHistory: getBuilderExportableHistory, getSkippedResources: getBuilderSkippedResources');
-    expect(host).toContain('handleExportSlides: () => handleExportSlides({ history: getBuilderHistory() })');
+    expect(host).toContain('handleExportSlides: (options = {}) => handleExportSlides({ ...options, history: getBuilderHistory() })');
     expect(host).toContain('history: getBuilderHistory(), builderResourceIds, isAgentRunning');
   });
 });

@@ -352,14 +352,8 @@ describe('colour pipeline source contract', () => {
     expect(label).not.toContain('new THREE.CanvasTexture(c), transparent: true, depthTest: false');
   });
 
-  it('lets the placement ghost step aside while a measurement is on screen', () => {
-    // the preview sat in front of the measured structure competing with the
-    // layer glows and dimension lines a student is meant to read
-    expect(src).toContain('var measuring = engine._dimLines && engine._dimLines.length > 0;');
-    expect(src).toContain('engine._ghostMesh.material.opacity = measuring ? 0.03 :');
-    expect(src).toContain('engine._ghostEdges.material.opacity = measuring ? 0.22 :');
-    expect(src).toContain("* (engine._dimLines && engine._dimLines.length > 0 ? 0.35 : 1)");
-  });
+  // Placement/hover opacity during measurement is verified on real THREE
+  // materials in geometry_world_placement_transaction.test.js.
 
   it('keeps hidden layers countable as outlines in the layer explorer', () => {
     // a hidden layer used to vanish outright, so revealing 'through layer 1' of a
@@ -370,9 +364,9 @@ describe('colour pipeline source contract', () => {
     expect(src.split('if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);').length - 1).toBe(2);
     // outlines are rebuilt from scratch on every focus change and dropped with the block map
     expect(src).toContain('engine._layerFocus = next;\n          engine.clearLayerGhosts();');
-    expect(src).toContain('engine.clearWorld = function() {\n          if (engine.clearLayerGhosts) engine.clearLayerGhosts();');
+    expect(src).toContain('if (engine.clearLayerGhosts) engine.clearLayerGhosts();');
     // and the hidden layers\' glow slabs soften so the outlines are what the eye reads
-    expect(src).toContain('g.material.opacity = hidden ? 0.07 : 0.22;');
+    expect(src).toContain('g.material.opacity = hidden ? 0.015 : 0.06;');
   });
 
   it('puts the lesson-complete card in front of the player, not at a fixed world point', () => {

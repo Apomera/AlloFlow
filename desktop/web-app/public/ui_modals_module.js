@@ -878,14 +878,21 @@ const StudentQuizOverlay = React.memo(({
         return 'bg-slate-600 text-white';
     }
   };
-  const isRevealed = phase === 'revealed';
+  const isRevealed = ['revealed', 'boss-defeated', 'class-defeated', 'battle-complete'].includes(phase);
+  const battleEnded = mode === 'boss-battle' && ['boss-defeated', 'class-defeated', 'battle-complete'].includes(phase);
   const correctAnswerIndex = isUnscoredLiveQuestion ? -1 : resolveLiveQuizCorrectOptionIndex(currentQuestion, liveOptions);
   const isCorrect = isRevealed && hasAnswered && correctAnswerIndex >= 0 && selectedOptionIndex === correctAnswerIndex;
   const submittedAdvancedAnswer = getLiveQuizSubmittedAnswer(submittedResponse);
   const advancedStatus = submittedAdvancedAnswer && typeof submittedAdvancedAnswer.status === 'string' ? submittedAdvancedAnswer.status : hasAnswered ? 'submitted' : 'no-response';
   const normalizedBossPhase = String(bossStats?.phaseName || 'watchful').trim().toLowerCase().replace(/\s+/g, '_');
   const bossPhaseId = ['watchful', 'enraged', 'final_form'].includes(normalizedBossPhase) ? normalizedBossPhase : 'watchful';
-  const bossPhaseLabel = t(`concept_quest.boss_phase_${bossPhaseId}`);
+  const bossPhaseKey = `concept_quest.boss_phase_${bossPhaseId}`;
+  const translatedBossPhase = t(bossPhaseKey);
+  const bossPhaseLabel = translatedBossPhase && translatedBossPhase !== bossPhaseKey ? translatedBossPhase : {
+    watchful: 'Watchful',
+    enraged: 'Enraged',
+    final_form: 'Final form'
+  }[bossPhaseId];
   const bossGmEventText = bossStats?.gmEventKey ? t(`concept_quest.${bossStats.gmEventKey}`) : bossStats?.gmEvent;
   return /*#__PURE__*/React.createElement("div", {
     ref: quizRef,
@@ -901,14 +908,18 @@ const StudentQuizOverlay = React.memo(({
     role: "alert",
     className: "m-4 rounded-lg border border-red-300 bg-red-950 px-4 py-3 font-semibold text-white"
   }, submitError), /*#__PURE__*/React.createElement("div", {
-    className: "p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "p-4 flex flex-wrap gap-3 justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("h2", {
     id: "student-quiz-title",
-    className: `font-black text-xl uppercase tracking-widest ${styles.accent} flex items-center gap-2 drop-shadow-md`,
+    className: `font-black text-lg sm:text-xl uppercase tracking-wide ${styles.accent} flex items-center gap-2 drop-shadow-md`,
     "data-help-key": "quiz_student_mode_header"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, styles.icon), /*#__PURE__*/React.createElement("span", null, mode.replace(/-/g, ' '))), teamColor && /*#__PURE__*/React.createElement("span", {
+  }, styles.icon), /*#__PURE__*/React.createElement("span", null, t('quiz.modes.' + mode.replace(/-/g, '_'), {
+    defaultValue: mode.replace(/-/g, ' ')
+  }))), teamColor && /*#__PURE__*/React.createElement("span", {
     className: `text-[11px] font-bold px-2 py-0.5 rounded uppercase mt-2 inline-block shadow-sm ${getTeamBadgeColor(teamColor)}`
   }, t('quiz.team_label', {
     color: teamColor
@@ -920,40 +931,27 @@ const StudentQuizOverlay = React.memo(({
     className: "text-3xl font-mono font-black text-white leading-none"
   }, currentQuestionIndex + 1, " ", /*#__PURE__*/React.createElement("span", {
     className: "text-lg text-white/50"
-  }, "/ ", generatedContent?.data?.questions?.length || 0)))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow flex flex-col items-center justify-center p-6 text-center overflow-y-auto"
-  }, phase === 'boss-defeated' && /*#__PURE__*/React.createElement("div", {
+  }, "/ ", generatedContent?.data?.questions?.length || 0))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setIsLocallyDismissed(true),
+    className: "shrink-0 min-h-11 rounded-lg border-2 border-white/70 bg-slate-950/90 px-3 py-2 text-sm font-bold text-white shadow-lg",
+    "aria-label": "Leave live quiz view"
+  }, "Minimize")), /*#__PURE__*/React.createElement("div", {
+    className: "flex-grow min-h-0 flex flex-col items-center justify-start p-4 sm:p-6 text-center overflow-y-auto"
+  }, battleEnded && /*#__PURE__*/React.createElement("section", {
+    "aria-label": "Battle result",
+    className: "mb-5 w-full max-w-3xl shrink-0 rounded-2xl border border-indigo-300 bg-indigo-950 p-5 text-left"
+  }, /*#__PURE__*/React.createElement("h3", {
     role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
+    className: "text-2xl font-black text-white"
+  }, phase === 'boss-defeated' ? 'Class victory!' : phase === 'battle-complete' ? 'Battle complete' : 'A chance to regroup'), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm leading-relaxed text-indigo-100"
+  }, bossStats?.endReason === 'no-scored-items' ? 'These questions were for discussion or teacher review. No battle score was assigned.' : bossStats?.endReason === 'questions-complete' ? 'All questions are complete. The result compares the percentage of health remaining; ties favor the class.' : phase === 'boss-defeated' ? 'Your class defeated the monster together.' : 'Use the explanation below to plan your next attempt together.'), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm text-indigo-100"
+  }, "Review the last question below. Your teacher can restart the battle.")), mode === 'boss-battle' && bossStats && /*#__PURE__*/React.createElement("div", {
+    className: "mb-5 w-full max-w-lg shrink-0 flex flex-col items-center animate-in fade-in zoom-in duration-700 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-center p-8"
-  }, /*#__PURE__*/React.createElement("div", {
-    "aria-hidden": "true",
-    className: "text-8xl mb-6"
-  }, "🎉"), /*#__PURE__*/React.createElement("h2", {
-    className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
-  }, t('quiz.boss.victory_msg')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xl text-green-200"
-  }, bossStats?.name || t('quiz.boss.name_fallback'), " ", t('quiz.boss.defeat_suffix')))), phase === 'class-defeated' && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-center p-8"
-  }, /*#__PURE__*/React.createElement("div", {
-    "aria-hidden": "true",
-    className: "text-8xl mb-6"
-  }, "💀"), /*#__PURE__*/React.createElement("h2", {
-    className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
-  }, t('quiz.boss.class_defeat_msg')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xl text-red-200"
-  }, t('quiz.boss.class_fallen_msg')))), mode === 'boss-battle' && bossStats && /*#__PURE__*/React.createElement("div", {
-    className: "mb-8 w-full max-w-lg flex flex-col items-center animate-in fade-in zoom-in duration-700"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: `relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`
+    className: `relative mb-6 ${isRevealed && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`
   }, bossStats.image ? /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: bossStats.image,
@@ -969,7 +967,7 @@ const StudentQuizOverlay = React.memo(({
     className: "animate-spin text-red-400 motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "👾")), phase === 'revealed' && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "👾")), isRevealed && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] motion-reduce:animate-none z-20 stroke-white drop-shadow-md"
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
@@ -996,11 +994,11 @@ const StudentQuizOverlay = React.memo(({
     role: "progressbar",
     "aria-label": `${bossStats.name || "Boss"} health`,
     "aria-valuemin": "0",
-    "aria-valuemax": bossStats.maxHP,
-    "aria-valuenow": Math.max(0, Math.round(bossStats.currentHP)),
+    "aria-valuemax": bossStats.maxHP || 1,
+    "aria-valuenow": Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0))),
     className: "h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out motion-reduce:transition-none",
     style: {
-      width: `${Math.max(0, bossStats.currentHP / bossStats.maxHP * 100)}%`
+      width: `${Math.min(100, Math.max(0, (bossStats.currentHP || 0) / (bossStats.maxHP || 1) * 100))}%`
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-3"
@@ -1013,12 +1011,12 @@ const StudentQuizOverlay = React.memo(({
     "aria-label": t('quiz.boss.class_hp'),
     "aria-valuemin": "0",
     "aria-valuemax": bossStats.classMaxHP || 100,
-    "aria-valuenow": Math.max(0, Math.round(bossStats.classHP ?? 100)),
+    "aria-valuenow": Math.min(bossStats.classMaxHP || 100, Math.max(0, Math.round(bossStats.classHP ?? 100))),
     className: "h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out motion-reduce:transition-none",
     style: {
-      width: `${Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100)}%`
+      width: `${Math.min(100, Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100))}%`
     }
-  })), phase === 'revealed' && bossStats.lastClassDamage > 0 && /*#__PURE__*/React.createElement("div", {
+  })), isRevealed && bossStats.lastClassDamage > 0 && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "text-orange-400 text-xs font-bold mt-1 animate-pulse motion-reduce:animate-none text-center"
   }, t('quiz.boss.counter_attack_msg', {
@@ -1029,18 +1027,18 @@ const StudentQuizOverlay = React.memo(({
     className: "mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100"
   }, "🎲 ", t('concept_quest.boss_teacher_gm', {
     event: bossGmEventText
-  })), phase === 'revealed' && bossStats.roundFeedback && /*#__PURE__*/React.createElement("details", {
+  })), isRevealed && bossStats.roundFeedback && /*#__PURE__*/React.createElement("details", {
     className: "mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-bold"
-  }, t('concept_quest.boss_round_recap', {
+  }, bossStats.roundFeedback.scoringPaused ? 'Battle scoring paused' : t('concept_quest.boss_round_recap', {
     accuracy: bossStats.roundFeedback.accuracy
   })), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
   }, bossStats.roundFeedback.explanation) : /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
   }, t('concept_quest.boss_discuss_evidence'))))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
+    className: "shrink-0 bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
   }, currentQuestion?.imageUrl && /*#__PURE__*/React.createElement("img", {
     src: currentQuestion.imageUrl,
     alt: String(currentQuestion.imageAlt || currentQuestion.question || t('quiz.question_image') || 'Question image'),
@@ -1211,7 +1209,7 @@ const StudentQuizOverlay = React.memo(({
     className: "relative inline-flex rounded-full h-3 w-3 bg-green-500"
   })), deliveryStatus === 'sending' ? 'Sending your response…' : deliveryStatus === 'receipt' ? 'Participation recorded. Your answer has not reached the teacher for scoring.' : t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
     className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none"
-  }, isAdvancedLiveQuestion ? 'Complete and submit your response' : t('quiz.status.choose_option'))), phase === 'revealed' && isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, isAdvancedLiveQuestion ? 'Complete and submit your response' : t('quiz.status.choose_option'))), isRevealed && isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1220,14 +1218,26 @@ const StudentQuizOverlay = React.memo(({
     className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, hasAnswered ? t('quiz.poll_completed') || 'Thanks for sharing your take.' : 'This opinion prompt has closed.'))), phase === 'revealed' && isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, hasAnswered ? t('quiz.poll_completed') || 'Thanks for sharing your take.' : 'This opinion prompt has closed.'))), isRevealed && (!hasAnswered || deliveryStatus === 'receipt') && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mb-4 rounded-xl border border-slate-400 bg-slate-800 p-4 text-slate-100"
+  }, deliveryStatus === 'receipt' ? 'Your teacher received participation only. This answer was not scored.' : 'No answer was submitted for this question. Review it with your class.'), isRevealed && !isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("section", {
+    "aria-label": "Answer review",
+    className: "mb-4 w-full max-w-2xl rounded-xl border border-indigo-300 bg-indigo-950 p-4 text-left text-indigo-100"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-white"
+  }, "Review the answer"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm"
+  }, window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {}) || 'Discuss the response with your teacher.'), (currentQuestion?.explanation || currentQuestion?.rationale) && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed"
+  }, currentQuestion.explanation || currentQuestion.rationale)), isRevealed && isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "flex w-full max-w-2xl items-center justify-center px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: `w-full rounded-3xl border-2 px-8 py-6 text-center text-lg font-bold shadow-xl ${advancedStatus === 'correct' ? 'border-green-300 bg-green-50 text-green-900' : advancedStatus === 'partially-correct' ? 'border-amber-300 bg-amber-50 text-amber-950' : advancedStatus === 'incorrect' ? 'border-red-300 bg-red-50 text-red-900' : 'border-indigo-300 bg-indigo-50 text-indigo-950'}`
-  }, advancedStatus === 'correct' ? 'Correct response.' : advancedStatus === 'partially-correct' ? 'Partially correct response.' : advancedStatus === 'incorrect' ? 'This response needs another look.' : advancedStatus === 'no-response' ? 'No response was submitted.' : 'Response submitted for review.')), phase === 'revealed' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, advancedStatus === 'correct' ? 'Correct response.' : advancedStatus === 'partially-correct' ? 'Partially correct response.' : advancedStatus === 'incorrect' ? 'This response needs another look.' : advancedStatus === 'no-response' ? 'No response was submitted.' : 'Response submitted for review.')), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1269,12 +1279,7 @@ const StudentQuizOverlay = React.memo(({
     className: "mt-3 pt-3 border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 italic whitespace-pre-wrap"
-  }, currentQuestion.factCheck_en)))))), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => setIsLocallyDismissed(true),
-    className: "absolute right-4 top-4 z-[60] min-h-11 rounded-lg border-2 border-white/70 bg-slate-950/90 px-4 py-2 text-sm font-bold text-white shadow-lg",
-    "aria-label": "Leave live quiz view"
-  }, "Exit quiz view"));
+  }, currentQuestion.factCheck_en)))))));
 });
 const TeacherGate = React.memo(({
   isOpen,

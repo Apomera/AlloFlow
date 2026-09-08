@@ -83,6 +83,21 @@ describe('Aquarium simulation to visual-state bridge', () => {
     expect(scene.fish[3].locomotion).toBe('sessile');
     expect(scene.fish.map(item => item.instanceId)).toEqual(['a', 'b', 'c', 'd']);
   });
+  it('uses exact nonfish profiles and readable attached or substrate behavior, with a legacy kelp fallback', () => {
+    const input = fixture();
+    input.fish = [
+      { id: 'kelp', instanceId: 'profile-kelp', bodyPlan: 'tetra', visualProfile: { locomotion: 'sessile' }, behaviorMode: 'open-water', behaviorLabel: 'Cruising' },
+      { id: 'copepods', instanceId: 'profile-copepods', bodyPlan: 'shrimp', visualProfile: { locomotion: 'swim' }, behaviorMode: 'open-water', behaviorLabel: 'Swimming in the water column' },
+      { id: 'nerite', instanceId: 'profile-nerite', visualProfile: { locomotion: 'crawl' }, behaviorMode: 'bottom-foraging', behaviorLabel: 'Cruising' },
+      { id: 'kelp', instanceId: 'legacy-kelp', bodyPlan: 'fish', behaviorMode: 'open-water', behaviorLabel: 'Cruising' }
+    ];
+    const before = copy(input), scene = helpers.buildAquariumSceneDynamics(input);
+    expect(scene.fish.map(resident => resident.locomotion)).toEqual(['sessile', 'swim', 'crawl', 'sessile']);
+    for (const index of [0, 3]) expect(scene.fish[index]).toMatchObject({ behaviorMode: 'attached', behaviorLabel: 'Attached at its modeled habitat position', schooling: false });
+    expect(scene.fish[1]).toMatchObject({ behaviorMode: 'open-water', behaviorLabel: 'Swimming in the water column', schooling: false });
+    expect(scene.fish[2]).toMatchObject({ behaviorMode: 'bottom-foraging', behaviorLabel: 'Moving along the substrate near its habitat position', schooling: false });
+    expect(input).toEqual(before);
+  });
   it('uses the actual biomass index ratio, including zero, without a display-only full-size fallback', () => {
     const input = fixture(); input.plants = [{ id: 'zero', biomass: 0, maxBiomass: 4, health: 80 }, { id: 'half', biomass: 2, maxBiomass: 4, health: 80 }, { id: 'full', biomass: 4, maxBiomass: 4, health: 0 }];
     const scene = helpers.buildAquariumSceneDynamics(input);

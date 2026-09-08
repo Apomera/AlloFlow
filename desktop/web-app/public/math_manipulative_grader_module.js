@@ -93,8 +93,8 @@ const optionalClose = (actual, expected, key, tolerance) => !hasOwn(expected, ke
 const optionalTight = (actual, expected, key, tolerance) => !hasOwn(expected, key) || tight(actual[key], expected[key], tolerance);
 
 const pointKey = point => isRecord(point) && finite(point.x) && finite(point.y) ? `${point.x},${point.y}` : null;
-const roundedPointKey = point => isRecord(point) && finite(point.x) && finite(point.y)
-  ? `${Math.round(point.x)},${Math.round(point.y)}`
+const precisePointKey = point => isRecord(point) && finite(point.x) && finite(point.y)
+  ? `${Number(point.x.toFixed(6))},${Number(point.y.toFixed(6))}`
   : null;
 const markerValue = marker => isRecord(marker) ? marker.value : marker;
 const formulaDigits = Object.freeze({ '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' });
@@ -164,7 +164,15 @@ const graders = {
   },
   base10(actual, target) {
     if (!isRecord(actual) || !isRecord(target)) return false;
-    return finite(actual.hundreds) && finite(actual.tens) && finite(actual.ones) &&
+    if (target.mode && target.mode !== 'blocks') {
+      if (actual.mode !== target.mode) return false;
+      if (target.mode === 'tenFrame') return actual.tenFrameFilled === target.count;
+      if (target.mode === 'counters') return actual.counters.yellow - actual.counters.red === target.value;
+      if (target.mode === 'fracBars') return (actual.fbSelected[target.denominator] || []).length === target.numerator;
+      return false;
+    }
+    if (target.match === 'value') return ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (actual[key] || 0) * [1000, 100, 10, 1][i], 0) === ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (target[key] || 0) * [1000, 100, 10, 1][i], 0);
+    return (actual.thousands ?? 0) === (target.thousands ?? 0) && finite(actual.hundreds) && finite(actual.tens) && finite(actual.ones) &&
       actual.hundreds === (target.hundreds ?? 0) &&
       actual.tens === (target.tens ?? 0) &&
       actual.ones === (target.ones ?? 0);
@@ -189,12 +197,16 @@ const graders = {
   },
   fractions(actual, target) {
     return isRecord(actual) && isRecord(target) && finite(actual.numerator) && finite(actual.denominator) &&
-      actual.numerator === (target.numerator ?? 0) && actual.denominator === (target.denominator ?? 1);
+      (target.match === 'equivalent'
+        ? actual.numerator * target.denominator === (target.numerator ?? 0) * actual.denominator
+        : actual.numerator === (target.numerator ?? 0) && actual.denominator === (target.denominator ?? 1));
   },
   volume(actual, target) {
     const dims = isRecord(target) && isRecord(target.dims) ? target.dims : {};
     return isRecord(actual) && isRecord(target) && finite(actual.l) && finite(actual.w) && finite(actual.h) &&
-      actual.l === (dims.l ?? 1) && actual.w === (dims.w ?? 1) && actual.h === (dims.h ?? 1);
+      (target.match === 'volume'
+        ? close(actual.l * actual.w * actual.h, (dims.l ?? 1) * (dims.w ?? 1) * (dims.h ?? 1), 0.000001)
+        : actual.l === (dims.l ?? 1) && actual.w === (dims.w ?? 1) && actual.h === (dims.h ?? 1));
   },
   protractor(actual, target) {
     return isRecord(target) && close(actual, target.angle ?? 0, 2);
@@ -211,7 +223,7 @@ const graders = {
   },
   chemBalance(actual, target) {
     if (!isRecord(actual) || !isRecord(target)) return false;
-    return sameOrdered(actual.coefficients, target.coefficients, (value, expected) => finite(value) && finite(expected) && value === expected);
+    return (!hasOwn(target, 'equation') || normalizeEquation(actual.equation) === normalizeEquation(target.equation)) && sameOrdered(actual.coefficients, target.coefficients, (value, expected) => finite(value) && finite(expected) && value === expected);
   },
   punnett(actual, target) {
     if (!isRecord(actual) || !isRecord(target) || !Array.isArray(target.parent1) || !Array.isArray(target.parent2)) return false;
@@ -226,7 +238,7 @@ const graders = {
   },
   dataPlot(actual, target) {
     return isRecord(actual) && isRecord(target) && Array.isArray(target.points) &&
-      sameUnorderedKeys(actual.points, target.points, roundedPointKey);
+      sameUnorderedKeys(actual.points, target.points, precisePointKey);
   },
   inequality(actual, target) {
     if (!isRecord(actual) || !isRecord(target)) return false;
@@ -270,22 +282,40 @@ const graders = {
   }
 };
 
+const validHubActivity = target => {
+  if (!isRecord(target)) return false;
+  if (target.mode === 'tenFrame') return nonNegativeInteger(target.count) && target.count <= 20;
+  if (target.mode === 'counters') return finiteInteger(target.value) && Math.abs(target.value) <= 20;
+  if (target.mode === 'fracBars') return [1,2,3,4,6,8,12].includes(target.denominator) && nonNegativeInteger(target.numerator) && target.numerator <= target.denominator;
+  return false;
+};
+const validHubActual = (actual, target) => {
+  if (!isRecord(actual) || actual.mode !== target.mode) return false;
+  if (target.mode === 'tenFrame') return nonNegativeInteger(actual.tenFrameFilled) && actual.tenFrameFilled <= 20;
+  if (target.mode === 'counters') return isRecord(actual.counters) && ['red','yellow'].every(k => nonNegativeInteger(actual.counters[k]));
+  if (target.mode === 'fracBars') {
+    const selected = isRecord(actual.fbSelected) ? (actual.fbSelected[target.denominator] || []) : null;
+    return denseEvery(selected, part => nonNegativeInteger(part) && part < target.denominator) && new Set(selected).size === selected.length;
+  }
+  return false;
+};
 const validators = {
   coordinate: {
     target: target => isRecord(target) && denseEvery(target.points, point => pointKey(point) != null, false),
     actual: actual => denseEvery(actual, point => pointKey(point) != null)
   },
   base10: {
-    target: target => isRecord(target) && hasAny(target, ['hundreds', 'tens', 'ones']) &&
-      ['hundreds', 'tens', 'ones'].every(key => optionalNonNegativeInteger(target, key)),
-    actual: actual => isRecord(actual) && ['hundreds', 'tens', 'ones'].every(key => nonNegativeInteger(actual[key]))
+    target: target => validHubActivity(target) || (isRecord(target) && (!hasOwn(target, 'mode') || target.mode === 'blocks') && hasAny(target, ['thousands', 'hundreds', 'tens', 'ones']) &&
+      (!hasOwn(target, 'match') || ['exact', 'value'].includes(target.match)) &&
+      ['thousands', 'hundreds', 'tens', 'ones'].every(key => optionalNonNegativeInteger(target, key))),
+    actual: (actual, target) => target.mode && target.mode !== 'blocks' ? validHubActual(actual, target) : isRecord(actual) && optionalNonNegativeInteger(actual, 'thousands') && ['hundreds', 'tens', 'ones'].every(key => nonNegativeInteger(actual[key]))
   },
   numberline: {
     target: target => isRecord(target) && denseEvery(target.markers, marker => finite(markerValue(marker)), false),
     actual: actual => denseEvery(actual, marker => finite(markerValue(marker)))
   },
   fractions: {
-    target: target => isRecord(target) && hasOwn(target, 'denominator') &&
+    target: target => isRecord(target) && (!hasOwn(target, 'match') || ['exact', 'equivalent'].includes(target.match)) && hasOwn(target, 'denominator') &&
       (!hasOwn(target, 'numerator') || nonNegativeInteger(target.numerator)) &&
       positiveInteger(target.denominator) &&
       target.denominator >= 2 && target.denominator <= MAX_FRACTION_DENOMINATOR &&
@@ -297,16 +327,17 @@ const validators = {
   },
   volume: {
     target: target => isRecord(target) && isRecord(target.dims) && hasAny(target.dims, ['l', 'w', 'h']) &&
-      ['l', 'w', 'h'].every(key => optionalFinite(target.dims, key)),
-    actual: actual => isRecord(actual) && ['l', 'w', 'h'].every(key => finite(actual[key]))
+      (!hasOwn(target, 'match') || ['exact', 'volume'].includes(target.match)) &&
+      ['l', 'w', 'h'].every(key => !hasOwn(target.dims, key) || (finite(target.dims[key]) && target.dims[key] >= 0.5 && target.dims[key] <= 10 && Number.isInteger(target.dims[key] * 2))),
+    actual: actual => isRecord(actual) && ['l', 'w', 'h'].every(key => finite(actual[key]) && actual[key] > 0)
   },
   protractor: {
-    target: target => isRecord(target) && hasOwn(target, 'angle') && finite(target.angle),
+    target: target => isRecord(target) && hasOwn(target, 'angle') && finite(target.angle) && target.angle >= 0 && target.angle <= 360,
     actual: actual => finite(actual)
   },
   funcGrapher: {
     target: target => isRecord(target) && hasAny(target, ['type', 'a', 'b', 'c']) &&
-      optionalString(target, 'type') && ['a', 'b', 'c'].every(key => optionalFinite(target, key)) && optionalString(target, 'eq'),
+      (!hasOwn(target, 'type') || ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute', 'sqrt', 'log', 'rational'].includes(target.type)) && ['a', 'b', 'c'].every(key => optionalFinite(target, key)) && optionalString(target, 'eq'),
     actual: actual => isRecord(actual) && nonEmptyString(actual.type) && ['a', 'b', 'c'].every(key => finite(actual[key]))
   },
   physics: {
@@ -334,8 +365,8 @@ const validators = {
       (!hasOwn(target, 'components') || denseEvery(hasOwn(actual, 'components') ? actual.components : [], validActualComponent, true, MAX_CIRCUIT_COMPONENTS))
   },
   dataPlot: {
-    target: target => isRecord(target) && denseEvery(target.points, point => roundedPointKey(point) != null, false),
-    actual: actual => isRecord(actual) && denseEvery(actual.points, point => roundedPointKey(point) != null)
+    target: target => isRecord(target) && denseEvery(target.points, point => precisePointKey(point) != null, false),
+    actual: actual => isRecord(actual) && denseEvery(actual.points, point => precisePointKey(point) != null)
   },
   inequality: {
     target: target => isRecord(target) && hasOwn(target, 'expr') && nonEmptyString(target.expr) && optionalString(target, 'variable'),
@@ -386,6 +417,11 @@ const evaluateManipulativeResponse = (tool, actual, target) => {
   }
 };
 
+const normalizeEquation = input => {
+  const value = typeof window.AlloModules?.ChemistryActivity?.resolveEquation === 'function' ? window.AlloModules.ChemistryActivity.resolveEquation(input) : input;
+  return typeof value === 'string' ? value.replace(/[₀-₉]/g, c => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).replace(/→|⟶|=>/g, '->').replace(/\s/g, '') : null;
+};
+
 const gradeManipulativeResponse = (tool, actual, target) => evaluateManipulativeResponse(tool, actual, target).correct;
 
 const mathViewStateKeys = Object.freeze({
@@ -397,18 +433,69 @@ const mathViewStateKeys = Object.freeze({
   protractor: 'angleValue'
 });
 
+// These adapters are shared by preparation, session checks and grading. A present
+// modern namespace is authoritative, even when its value is empty or invalid.
+const workspacePaths = Object.freeze({
+  base10: ['_manipulatives', 'b10'], fractions: ['_fractions', 'pieces'],
+  numberline: ['_numberline', 'markers'], volume: ['_volume', 'dims'],
+  coordinate: ['_coordGrid', 'gridPoints']
+});
+const readMathViewState = (tool, snapshot, target = {}) => {
+  const state = isRecord(snapshot) ? snapshot : {};
+  const data = isRecord(state.labToolData) ? state.labToolData : {};
+  if (tool === 'base10' && target.mode && target.mode !== 'blocks') return data._manipulatives;
+  const path = hasOwn(workspacePaths, tool) ? workspacePaths[tool] : null;
+  if (path && hasOwn(data, path[0])) {
+    const workspace = data[path[0]];
+    if (!isRecord(workspace)) return undefined;
+    if (tool === 'base10' && workspace.mode && workspace.mode !== 'blocks') return undefined;
+    if (tool === 'fractions' && ((workspace.navMode && workspace.navMode !== 'learn') || (workspace.tab && workspace.tab !== 'practice'))) return undefined;
+    if (tool === 'coordinate' && workspace.cgTab && workspace.cgTab !== 'explore') return undefined;
+    if (tool === 'numberline' && workspace.tab && workspace.tab !== 'explore') return undefined;
+    if (tool === 'volume' && workspace.mode && workspace.mode !== 'slider') return undefined;
+    return workspace[path[1]];
+  }
+  if (tool === 'chemBalance' && typeof window.AlloModules?.ChemistryActivity?.readState === 'function' && hasOwn(data, tool)) return window.AlloModules.ChemistryActivity.readState(data[tool]);
+  if (hasOwn(mathViewStateKeys, tool)) return state[mathViewStateKeys[tool]];
+  if (tool === 'circuit' && hasOwn(data, '_circuit')) return data._circuit;
+  return hasOwn(data, tool) ? data[tool] : undefined;
+};
+const writeMathViewState = (tool, previous, value, extra = {}) => {
+  const path = hasOwn(workspacePaths, tool) ? workspacePaths[tool] : null;
+  if (!path) return previous;
+  const data = isRecord(previous) ? previous : {};
+  if (tool === 'base10') value = { ones:0, tens:0, hundreds:0, thousands:0, ...value };
+  const modes = {
+    base10: { mode: 'blocks', b10Challenge: null, b10Feedback: null, b10Solid: false },
+    fractions: { navMode: 'learn', tab: 'practice', mode: 'pie', signedFractions: false, challenge: null, feedback: null },
+    numberline: { tab: 'explore', challenge: null, feedback: null },
+    volume: { mode: 'slider', allowFractional: true, challenge: null, feedback: null, showLayers: null },
+    coordinate: { cgTab: 'explore', gridChallenge: null, gridFeedback: null }
+  };
+  return { ...data, [path[0]]: { ...(isRecord(data[path[0]]) ? data[path[0]] : {}), ...modes[tool], ...extra, [path[1]]: value } };
+};
+const prepareHubActivity = (previous, target, support = false) => {
+  if (!validHubActivity(target)) throw new Error('Invalid hands-on activity');
+  const data = isRecord(previous) ? previous : {};
+  const hub = isRecord(data._manipulatives) ? data._manipulatives : {};
+  let fields;
+  if (target.mode === 'tenFrame') fields = { tenFrameFilled: support ? target.count : 0, tenFrameDouble: target.count > 10, tfChallenge: null, tfFeedback: null };
+  if (target.mode === 'counters') fields = { counters: { yellow: support ? Math.max(0,target.value) : 0, red: support ? Math.max(0,-target.value) : 0 }, counterChallenge: null, counterFeedback: null };
+  if (target.mode === 'fracBars') fields = { fbSelected: support ? { [target.denominator]: Array.from({length:target.numerator},(_,i)=>i) } : {}, fbDenoms: [target.denominator], fbChallenge: null, fbFeedback: null };
+  return {...data, _manipulatives:{...hub,...fields,mode:target.mode}};
+};
+const activityOptions = Object.freeze([
+  {id:'base10',label:'Base-ten blocks'}, {id:'base10:tenFrame',label:'Ten-frames'},
+  {id:'base10:counters',label:'Two-color counters'}, {id:'base10:fracBars',label:'Fraction bars'},
+  {id:'fractions',label:'Fraction circles'}, {id:'numberline',label:'Number line'},
+  {id:'coordinate',label:'Coordinate grid'}, {id:'volume',label:'Volume'}, {id:'protractor',label:'Angles'}
+]);
 const evaluateMathViewManipulativeResponse = (response, state) => {
   let tool = null;
   try {
     tool = isRecord(response) ? response.tool : null;
-    const snapshot = isRecord(state) ? state : {};
-    const directKey = typeof tool === 'string' && hasOwn(mathViewStateKeys, tool) ? mathViewStateKeys[tool] : null;
-    const labToolData = isRecord(snapshot.labToolData) ? snapshot.labToolData : null;
-    let actual;
-    if (directKey) actual = hasOwn(snapshot, directKey) ? snapshot[directKey] : undefined;
-    else if (tool === 'circuit' && labToolData && hasOwn(labToolData, '_circuit')) actual = labToolData._circuit;
-    else actual = labToolData && hasOwn(labToolData, tool) ? labToolData[tool] : undefined;
-    return evaluateManipulativeResponse(tool, actual, isRecord(response) ? response.state : null);
+    const target = isRecord(response) ? response.state : null;
+    return evaluateManipulativeResponse(tool, readMathViewState(tool, state, isRecord(target) ? target : {}), target);
   } catch (_) {
     const supported = typeof tool === 'string' && hasOwn(graders, tool);
     return { correct: false, supported, reason: 'invalid-state', tool };
@@ -419,6 +506,10 @@ const gradeMathViewManipulativeResponse = (response, state) =>
   evaluateMathViewManipulativeResponse(response, state).correct;
 
 window.AlloModules.MathManipulativeGrader = {
+  activityOptions,
+  prepareHubActivity,
+  readMathViewState,
+  writeMathViewState,
   evaluateManipulativeResponse,
   gradeManipulativeResponse,
   evaluateMathViewManipulativeResponse,

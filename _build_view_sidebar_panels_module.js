@@ -14,8 +14,19 @@ const SOURCE = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_sidebar_panels_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
 
+function writeSidebarFile(file, contents) {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    try { fs.writeFileSync(file, contents, 'utf8'); return; }
+    catch (error) {
+      if (attempt === 11 || !['EBUSY', 'EPERM', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 80 * (attempt + 1));
+    }
+  }
+}
+
 function buildSidebarPanelsModule(source) {
-  const compiled = transformSync('/* global React */\n' + source, {
+  const sharedSettings = fs.readFileSync(path.join(ROOT, 'view_adventure_settings_source.jsx'), 'utf8');
+  const compiled = transformSync('/* global React */\n' + sharedSettings + '\n' + source, {
     loader: 'jsx', format: 'esm', jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment', target: 'es2020',
   }).code.replace(/\/\*.*global.*\*\/\n/g, '').trim();
@@ -110,11 +121,11 @@ return outputCode;
 module.exports = { buildSidebarPanelsModule };
 if (require.main === module) {
 const outputCode = buildSidebarPanelsModule(fs.readFileSync(SOURCE, 'utf8'));
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+writeSidebarFile(OUTPUT, outputCode);
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
-} catch (e) { console.warn('[ViewSidebarPanels] sync failed:', e.message); }
+    writeSidebarFile(DEPLOY_OUT, outputCode);
+} catch (e) { console.error('[ViewSidebarPanels] sync failed:', e.message); process.exit(1); }
 
 try { execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' }); }
 catch (e) { console.error('[ViewSidebarPanels] Syntax check failed:', (e.stderr && e.stderr.toString()) || e.message); process.exit(1); }

@@ -1,0 +1,13 @@
+{
+  "browser": "148.0.7778.96",
+  "observed": {
+    "before": {
+      "activeTag": "TD",
+      "cellFocused": true
+    },
+    "after": {
+      "activeTag": "BODY",
+      "cellFocused": false
+    }
+  }
+}

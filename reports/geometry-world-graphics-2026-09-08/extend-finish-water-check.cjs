@@ -1,0 +1,8 @@
+const fs=require('node:fs');
+const p='reports/geometry-world-graphics-2026-09-08/verify-artisan-finishes.cjs';
+let s=fs.readFileSync(p,'utf8');
+s=s.replace("   en.refreshAllAO();", "   ['halfB','halfA','quarter'].forEach((shape,i)=>{const p={x:i*2-2,y:1,z:-4};en.placeBlock(p.x,p.y,p.z,'water',shape,i);__finishBlocks.push(p);});\n   window.__waterPlacement=__finishBlocks.map(p=>en.blocks[[p.x,p.y,p.z].join(',')]).filter(m=>m.userData.blockType==='water').map(m=>({shape:m.userData.shape,position:m.position.toArray()}));\n   en.refreshAllAO();");
+s=s.replace('initial.excluded.length,12','initial.excluded.length,15');
+s=s.replace('stlUnchanged:JSON.stringify(__finishStl)', "waterPlacement:__finishBlocks.map(p=>__geoWorldEngine.blocks[[p.x,p.y,p.z].join(',')]).filter(m=>m.userData.blockType==='water').map(m=>({shape:m.userData.shape,position:m.position.toArray()})),waterPlacementUnchanged:JSON.stringify(__waterPlacement)===JSON.stringify(__finishBlocks.map(p=>__geoWorldEngine.blocks[[p.x,p.y,p.z].join(',')]).filter(m=>m.userData.blockType==='water').map(m=>({shape:m.userData.shape,position:m.position.toArray()}))),stlUnchanged:JSON.stringify(__finishStl)");
+s=s.replace("   assert.ok(status.strengths.every(v=>v===(tier==='saver'?0:0.45)));assert.ok(status.geometryUnchanged&&status.stlUnchanged);results.checks.quality.push({tier,...status});", "   results.checks.quality.push({tier,...status});\n   assert.ok(status.strengths.every(v=>v===(tier==='saver'?0:0.45)));assert.ok(status.geometryUnchanged&&status.stlUnchanged);assert.ok(status.waterPlacementUnchanged);");
+const fd=fs.openSync(p,'r+');fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));fs.closeSync(fd);

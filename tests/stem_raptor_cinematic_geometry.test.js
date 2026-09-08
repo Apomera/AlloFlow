@@ -135,3 +135,25 @@ describe('Raptor curved forest boughs',()=>{
     }
   });
 });
+
+
+describe('Raptor connected ridge silhouettes',()=>{
+  it('varies the seeded skyline while keeping grounded skirts and bounded heights',()=>{
+    const make=sculpt('balanced'),profiles=[];
+    for(const seed of [0,1.7,3.4,5.1]){
+      const g=make(new THREE.ConeGeometry(100,80,36,16),seed),p=g.attributes.position;
+      let max=-Infinity,min=Infinity;const heights=[];
+      for(let i=0;i<p.count;i++){max=Math.max(max,p.getY(i));min=Math.min(min,p.getY(i));heights.push(p.getY(i));expect(Number.isFinite(p.getY(i))).toBe(true);if(Math.hypot(p.getX(i),p.getZ(i))>=100)expect(p.getY(i)).toBeCloseTo(-40,4);}
+      expect(min).toBeGreaterThanOrEqual(-40.00001);expect(max).toBeGreaterThan(8);expect(max).toBeLessThan(52);profiles.push(heights);g.dispose();
+    }
+    for(let i=1;i<profiles.length;i++){const meanDifference=profiles[i].reduce((sum,h,j)=>sum+Math.abs(h-profiles[0][j]),0)/profiles[i].length;expect(meanDifference).toBeGreaterThan(1);}
+  });
+  it('keeps the snow and rock geometry coincident across seeds and quality levels',()=>{
+    for(const quality of ['low','balanced','high'])for(const seed of [0,3.4]){
+      const make=sculpt(quality),rock=make(new THREE.ConeGeometry(100,80,24,16),seed),snow=make(new THREE.ConeGeometry(100*0.35*1.02,80*0.35,24,12),seed,80);
+      const a=rock.attributes.position,b=snow.attributes.position;expect(a.count).toBe(b.count);
+      for(let i=0;i<a.count;i++){expect(a.getX(i)).toBeCloseTo(b.getX(i),4);expect(a.getY(i)).toBeCloseTo(b.getY(i)+26,4);expect(a.getZ(i)).toBeCloseTo(b.getZ(i),4);}
+      expect(Array.from(snow.attributes.rhSnow.array).every(Number.isFinite)).toBe(true);rock.dispose();snow.dispose();
+    }
+  });
+});

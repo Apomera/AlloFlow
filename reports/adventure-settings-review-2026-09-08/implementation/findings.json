@@ -1,0 +1,1480 @@
+[
+  {
+    "name": "teacher-desktop",
+    "errors": [],
+    "height": 1440,
+    "width": 1200,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "View Narrative Ledger (AI Memory)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Enter Immersive Mode",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Turn on Auto-Read (DM Voice)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 822,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 951,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": false,
+        "top": 995,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": false,
+        "top": 1019,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": false,
+        "top": 1099,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": false,
+        "top": 1164,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": false,
+        "top": 1228,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": false,
+        "top": 1072,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": false,
+        "top": 1127,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": false,
+        "top": 1192,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": false,
+        "top": 1125,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": false,
+        "top": 1163,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Lock Settings(Prevents students from changing settings)",
+        "disabled": false,
+        "top": 1228,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Allow Student Cloud StorageWhen enabled, students can toggle cloud image saving.",
+        "disabled": false,
+        "top": 1293,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 1248,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "teacher-phone",
+    "errors": [],
+    "height": 2015,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "View Narrative Ledger (AI Memory)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Enter Immersive Mode",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Turn on Auto-Read (DM Voice)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 265,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 373,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 481,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 589,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 799,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 885,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 1015,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 1100,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 1186,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 1304,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 1455,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": false,
+        "top": 1499,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": false,
+        "top": 1545,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": false,
+        "top": 1644,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": false,
+        "top": 1728,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": false,
+        "top": 1793,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": false,
+        "top": 1620,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": false,
+        "top": 1675,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": false,
+        "top": 1740,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": false,
+        "top": 1695,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": false,
+        "top": 1756,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Lock Settings(Prevents students from changing settings)",
+        "disabled": false,
+        "top": 1821,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Allow Student Cloud StorageWhen enabled, students can toggle cloud image saving.",
+        "disabled": false,
+        "top": 1886,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 1855,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "student-locked",
+    "errors": [],
+    "height": 1518,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "View Narrative Ledger (AI Memory)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Enter Immersive Mode",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Turn on Auto-Read (DM Voice)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": true,
+        "top": 302,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": true,
+        "top": 387,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": true,
+        "top": 517,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": true,
+        "top": 603,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": true,
+        "top": 688,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": true,
+        "top": 807,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": true,
+        "top": 958,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": true,
+        "top": 1002,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": true,
+        "top": 1048,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": true,
+        "top": 1147,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": true,
+        "top": 1231,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": true,
+        "top": 1296,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": true,
+        "top": 1123,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": true,
+        "top": 1178,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": true,
+        "top": 1242,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": true,
+        "top": 1198,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": true,
+        "top": 1259,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 1358,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "social-setup",
+    "errors": [],
+    "height": 1510,
+    "width": 1000,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "View Narrative Ledger (AI Memory)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Enter Immersive Mode",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Turn on Auto-Read (DM Voice)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 822,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social skill to practise",
+        "disabled": false,
+        "top": 881,
+        "height": 44,
+        "value": "Resolving disagreements"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 1021,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": false,
+        "top": 1065,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": false,
+        "top": 1088,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": false,
+        "top": 1169,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": false,
+        "top": 1233,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": false,
+        "top": 1298,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": false,
+        "top": 1141,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": false,
+        "top": 1196,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": false,
+        "top": 1261,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": false,
+        "top": 1194,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": false,
+        "top": 1233,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Lock Settings(Prevents students from changing settings)",
+        "disabled": false,
+        "top": 1298,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Allow Student Cloud StorageWhen enabled, students can toggle cloud image saving.",
+        "disabled": false,
+        "top": 1362,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 1318,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "systems-setup",
+    "errors": [],
+    "height": 1631,
+    "width": 1000,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "View Narrative Ledger (AI Memory)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Enter Immersive Mode",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Turn on Auto-Read (DM Voice)",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 0,
+        "height": 0,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 290,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 398,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "system"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 612,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 742,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 822,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Resource Management(Track thematic variables like Stability, Tension, Progress)",
+        "disabled": false,
+        "top": 866,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Resource setup",
+        "disabled": false,
+        "top": 946,
+        "height": 44,
+        "value": "manual"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Add State Variable",
+        "disabled": false,
+        "top": 1002,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 1142,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": false,
+        "top": 1186,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": false,
+        "top": 1209,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": false,
+        "top": 1289,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": false,
+        "top": 1354,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": false,
+        "top": 1419,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": false,
+        "top": 1262,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": false,
+        "top": 1317,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": false,
+        "top": 1382,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": false,
+        "top": 1315,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": false,
+        "top": 1354,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Lock Settings(Prevents students from changing settings)",
+        "disabled": false,
+        "top": 1418,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Allow Student Cloud StorageWhen enabled, students can toggle cloud image saving.",
+        "disabled": false,
+        "top": 1483,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 1439,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "sidebar-teacher",
+    "errors": [],
+    "height": 2220,
+    "width": 380,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 89,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 175,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 304,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 390,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 475,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 575,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 726,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": false,
+        "top": 770,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": false,
+        "top": 964,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": false,
+        "top": 1063,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": false,
+        "top": 1128,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": false,
+        "top": 1192,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": false,
+        "top": 1367,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": false,
+        "top": 1422,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": false,
+        "top": 1486,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": false,
+        "top": 1661,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": false,
+        "top": 1867,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Lock Settings(Prevents students from changing settings)",
+        "disabled": false,
+        "top": 1932,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Allow Student Cloud StorageWhen enabled, students can toggle cloud image saving.",
+        "disabled": false,
+        "top": 1996,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Next",
+        "disabled": false,
+        "top": 2159,
+        "height": 48,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "sidebar-locked",
+    "errors": [],
+    "height": 2166,
+    "width": 380,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": true,
+        "top": 164,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": true,
+        "top": 250,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": true,
+        "top": 379,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": true,
+        "top": 465,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": true,
+        "top": 550,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": true,
+        "top": 650,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Read each scene automatically",
+        "disabled": true,
+        "top": 801,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Scene reading practiceOffer an optional microphone button for practising the current passage.",
+        "disabled": true,
+        "top": 845,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Energy & rewards",
+        "disabled": true,
+        "top": 1039,
+        "height": 44,
+        "value": "Normal"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Peaceful ModeReduces combat/danger. Focuses on exploration and puzzles.",
+        "disabled": true,
+        "top": 1138,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Enable Chance Mode(d20 Rolls influence outcome)",
+        "disabled": true,
+        "top": 1203,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social Scenario Mode (SEL role-play)Show a target social skill in Essential setup.",
+        "disabled": true,
+        "top": 1267,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Art Style",
+        "disabled": true,
+        "top": 1442,
+        "height": 44,
+        "value": "auto"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Consistent CharactersKeep the same character appearances across scenes",
+        "disabled": true,
+        "top": 1497,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Low Quality / Fast Mode(Faster generation, saves data)",
+        "disabled": true,
+        "top": 1561,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Custom Instructions",
+        "disabled": true,
+        "top": 1736,
+        "height": 100,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "label": "Save Images to Cloud(For Storybook export only)",
+        "disabled": true,
+        "top": 1942,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Next",
+        "disabled": false,
+        "top": 2105,
+        "height": 48,
+        "value": ""
+      }
+    ],
+    "violations": []
+  }
+]

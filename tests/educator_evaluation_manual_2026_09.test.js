@@ -40,7 +40,7 @@ describe('manual additions stay true to the tool', () => {
   });
 
   it('keeps the review date current and the section count unchanged', () => {
-    expect(MANUAL).toContain('<span>reviewed September 2, 2026</span>');
+    expect(MANUAL).toContain('<span>reviewed September 8, 2026</span>');
     expect(MANUAL).toContain('<span>21 sections</span>');
     expect(Array.from(MANUAL.matchAll(/<h2 id="[^"]+">\d+\. /g)).length).toBe(21);
     expect(read('desktop', 'web-app', 'public', 'educator-evaluation-manual.html')).toBe(MANUAL);

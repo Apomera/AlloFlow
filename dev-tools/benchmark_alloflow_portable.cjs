@@ -348,4 +348,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { runBenchmark };
+module.exports = { runBenchmark, definitions, createTextPdf, makePlan, PNG_1X1 };

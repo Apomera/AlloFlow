@@ -46,6 +46,10 @@ var Download = _lazyIcon('Download');
 function AnalysisView(props) {
   // State reads
   var t = props.t;
+  var analysisLabel = function (key, fallback) {
+    var value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
   var generatedContent = props.generatedContent;
   var selectedDiscrepancies = props.selectedDiscrepancies;
   var selectedGrammarErrors = props.selectedGrammarErrors;
@@ -212,7 +216,7 @@ function AnalysisView(props) {
         key: i,
         className: `flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`
       }, isTeacherMode && /*#__PURE__*/React.createElement("input", {
-        "aria-label": t('common.toggle_is_selected'),
+        "aria-label": analysisLabel('analysis.select_factual_note', 'Include factual note in correction') + ' ' + (i + 1) + ': ' + d,
         type: "checkbox",
         checked: isSelected,
         onChange: () => toggleDiscrepancySelection(i),
@@ -323,10 +327,13 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         try {
           if (window.ai && window.ai.languageModel && typeof window.ai.languageModel.create === 'function') {
             const session = await window.ai.languageModel.create();
-            raw = await session.prompt(fixPrompt);
             try {
-              session.destroy();
-            } catch (_) {}
+              raw = await session.prompt(fixPrompt);
+            } finally {
+              try {
+                session.destroy();
+              } catch (_) {}
+            }
           }
         } catch (e) {
           warnLog('Built-in AI failed, falling back to Gemini:', e);
@@ -391,7 +398,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         key: idx,
         className: `flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`
       }, isTeacherMode && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("input", {
-        "aria-label": t('common.toggle_is_selected'),
+        "aria-label": analysisLabel('analysis.select_grammar_note', 'Include grammar note in correction') + ' ' + (idx + 1) + ': ' + bareNote,
         type: "checkbox",
         checked: isSelected,
         onChange: () => toggleGrammarErrorSelection(idx),

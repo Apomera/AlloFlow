@@ -162,18 +162,21 @@ describe('Dopant chemistry', () => {
   });
 });
 
-describe('LED table obeys the photon energy relation', () => {
-  it('has wavelength = 1240 / Eg for every colour', () => {
-    const rows = source.split('\n').filter((l) => /wavelength:\s*\d+,\s*bandGap:/.test(l));
-    expect(rows.length, 'LED table not found').toBeGreaterThanOrEqual(6);
-
-    rows.forEach((line) => {
-      const nm = Number(/wavelength:\s*(\d+)/.exec(line)[1]);
-      const eg = Number(/bandGap:\s*([0-9.]+)/.exec(line)[1]);
-      const expected = 1240 / eg;
-      expect(Math.abs(nm - expected) / expected, 'lambda != 1240/Eg on: ' + line.trim().slice(0, 50))
-        .toBeLessThan(0.02);
-    });
+describe('LED spectra obey the photon energy relation', () => {
+  it('uses photon energy for single emitters and multiple energies for white', () => {
+    const c = window.__SemiconductorCore;
+    const keys = Object.keys(c.ledEmitters);
+    expect(keys.length).toBeGreaterThanOrEqual(9);
+    for (const key of keys) {
+      const led = c.led({ledMaterial:key});
+      if (key === 'white') {
+        expect(led.energy).toBeNull();
+        expect(led.components).toHaveLength(2);
+      } else {
+        expect(led.energy * led.mat.nm).toBeCloseTo(1239.841984, 8);
+        expect(led.mat.bandGap).toBeUndefined();
+      }
+    }
   });
 });
 
@@ -222,7 +225,7 @@ describe('P-N depletion width is physical, not a pixel count', () => {
     // not print a precise width there.
     const html = render(2);
     expect(widthFromLabel(html)).toBeNull();
-    expect(html).toMatch(/collapsed by forward bias/i);
+    expect(html).toMatch(/depletion approximation is no longer reliable/i);
   });
 
   it('reports the width to screen-reader users, not just on the canvas', () => {

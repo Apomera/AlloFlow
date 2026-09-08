@@ -1,0 +1,25 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {loadTool,renderTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let c;beforeAll(()=>{resetStemLab();loadTool('stem_lab/stem_tool_semiconductor.js','semiconductor');c=window.__SemiconductorCore;});
+const cases=[[false,false],[false,true],[true,false],[true,true]];
+describe('Logic truth and constructions',()=>{
+it.each([['NOT',[1,1,0,0]],['AND',[0,0,0,1]],['OR',[0,1,1,1]],['NAND',[1,1,1,0]],['NOR',[1,0,0,0]],['XOR',[0,1,1,0]],['XNOR',[1,0,0,1]]])('%s matches its complete truth table',(type,expected)=>{expect(cases.map(([a,b])=>+c.logic(type,a,b).q)).toEqual(expected);});
+it.each(['NOT','AND','OR','NAND','NOR','XOR','XNOR'])('%s NAND construction is independently consistent',(type)=>{for(const [a,b] of cases){const trace=c.nandTrace(type,a,b),values={A:a,B:b};for(const node of trace.nodes){expect(values).toHaveProperty(node.left);expect(values).toHaveProperty(node.right);expect(node.q).toBe(!(values[node.left]&&values[node.right]));values[node.name]=node.q;}expect(trace.output).toBe(values[trace.outputNode]);expect(trace.output).toBe(c.logic(type,a,b).q);}});
+it.each(['NOT','NAND','NOR'])('%s CMOS paths are complementary for every input',(type)=>{for(const [a,b] of cases){const m=c.cmos(type,a,b);expect(m.pullup).toBe(!m.pulldown);expect(m.pullup).toBe(c.logic(type,a,b).q);}});
+it('uses the correct series/parallel topology',()=>{const nand=c.cmos('NAND',false,true),nor=c.cmos('NOR',false,true);expect(nand.up.map(b=>b.length)).toEqual([1,1]);expect(nand.down.map(b=>b.length)).toEqual([2]);expect(nor.up.map(b=>b.length)).toEqual([2]);expect(nor.down.map(b=>b.length)).toEqual([1,1]);expect(nand.up[0][0].on).toBe(true);expect(nand.up[1][0].on).toBe(false);});
+it('does not invent a single CMOS network for XOR',()=>{expect(c.cmos('XOR',true,false)).toBeNull();expect(c.logic('XOR').definition.count).toBeNull();});
+it('handles invalid saved gate names and Boolean strings safely',()=>{for(const type of ['unknown','constructor','__proto__'])expect(c.logic(type).type).toBe('NOT');expect(c.logic('AND','false','1').q).toBe(false);expect(c.logic('AND','1',1).q).toBe(true);});
+it('ignores the unused NOT input',()=>{for(const a of [false,true])expect(c.logic('NOT',a,false).q).toBe(c.logic('NOT',a,true).q);});
+it('conserves binary value in every half-adder row',()=>{for(const [a,b] of cases){const m=c.logicExperiment({gateExperiment:'halfadder',inputA:a,inputB:b});expect(2*(+m.carry)+(+m.q)).toBe(+a+ +b);expect(m.total).toBe(+a+ +b);expect(m.rows).toHaveLength(4);}});
+it('deduplicates recorded rows and rejects unrelated saved values',()=>{const m=c.logicExperiment({gateType:'NOT',gateRecorded:{NOT:['0','0','1','11',null]}});expect(m.recorded).toEqual(['0','1']);expect(m.rows).toHaveLength(2);});
+it('keeps each gate and the adder checklist separate',()=>{const d={gateRecorded:{NOT:['0'],XOR:['11'],halfadder:['01']}};expect(c.logicExperiment({...d,gateType:'XOR'}).recorded).toEqual(['11']);expect(c.logicExperiment({...d,gateType:'XOR',gateExperiment:'halfadder'}).recorded).toEqual(['01']);});
+it('does not mutate saved observations when selecting a row',()=>{const d={gateType:'NAND',inputA:true,inputB:true,gateRecorded:{NAND:['00']}};const before=JSON.stringify(d);expect(c.logicExperiment(d).key).toBe('11');expect(JSON.stringify(d)).toBe(before);});
+});
+describe('Logic teaching surfaces',()=>{
+it('exposes complete selectable truth rows and the live NOT result',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'gates'}});expect(h).toContain('Use inputs 0');expect(h).toContain('Use inputs 1');expect(h).not.toContain('Use inputs 00');expect(h).toContain('NOT gate: A=0 Q=1');});
+it('shows half-adder arithmetic and accessible output bits',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'gates',gateExperiment:'halfadder',inputA:true,inputB:true}});expect(h).toContain('Sum=0 Carry=1');expect(h).toContain('10₂');expect(h).toContain('no carry-in input');});
+it('describes complementary switch connectivity without invented timing',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'gates',gateType:'NAND',inputA:true,inputB:true}});expect(h).toContain('Pull-up to VDD: open');expect(h).toContain('Pull-down to GND: conducting');expect(h).not.toContain('Prop Delay');expect(h).toContain('does not imply continuous current');});
+it('records outputs and advances guided work when the gate changes at zero inputs',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'gates',gateType:'AND',guidedSetupSubtool:'gates'}});expect(h).toContain('semiconductor-guided-observation');expect(h).toContain('Q=0');});
+it('retains a recorded NOT experiment when returning to the baseline input',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'gates',guidedSetupSubtool:'gates',gateRecorded:{NOT:['1']},inputA:false}});expect(h).toContain('semiconductor-guided-observation');expect(h).toContain('Recorded 1 / 2 input rows');});
+});
+

@@ -1575,6 +1575,27 @@ const createExport = (deps) => {
     const handleExportSlides = async (options = {}) => {
         const { sourceTopic, gradeLevel, addToast, t } = liveRef.current;
         const history = Object.prototype.hasOwnProperty.call(options, 'history') ? (Array.isArray(options.history) ? options.history : []) : liveRef.current.history;
+        if (Object.prototype.hasOwnProperty.call(options, 'liveHtml')) {
+            try {
+                if (typeof options.liveHtml !== 'string' || !options.liveHtml.trim()) throw new Error('The editable preview is not ready.');
+                let api = window.AlloModules?.AccessibleOfficeExport;
+                if (!api?.build && typeof window.__alloEnsurePdfAuditView === 'function') {
+                    await window.__alloEnsurePdfAuditView();
+                    api = window.AlloModules?.AccessibleOfficeExport;
+                }
+                if (!api?.build) throw new Error('The document slide exporter is still loading. Please try again.');
+                const result = await api.build({ html: options.liveHtml, title: options.liveTitle || sourceTopic, format: 'pptx' });
+                if (!result?.blob) throw new Error('The slide export did not produce a file.');
+                const url = URL.createObjectURL(result.blob), anchor = document.createElement('a');
+                try { anchor.href = url; anchor.download = result.fileName; document.body.appendChild(anchor); anchor.click(); }
+                finally { anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); }
+                addToast(result.message, 'success');
+                return true;
+            } catch (error) {
+                addToast('Slides export failed: ' + (error?.message || 'unknown error') + '. Your document remains open.', 'error');
+                return false;
+            }
+        }
         if (!window.PptxGenJS) {
             addToast(t('export_status.ppt_lib_loading'), "error");
             return false;

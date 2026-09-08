@@ -115,6 +115,15 @@
   .clab-root .clab-pit-task>span{font:700 12px var(--mono);color:var(--pit);padding-top:2px}
   .clab-root .clab-pit-task b{font-size:12px;color:var(--ink)}
   .clab-root .clab-pit-task .hint{margin:5px 0 0}
+  .clab-root .clab-pit-notebook{margin:12px 0;border:1px solid var(--line2);border-radius:12px;padding:12px;background:var(--panel2)}
+  .clab-root .clab-pit-notebook h4{margin:0 0 6px;font-size:14px}
+  .clab-root .clab-pit-notebook details{border-top:1px solid var(--line2);padding:8px 0}
+  .clab-root .clab-pit-notebook summary{min-height:44px;padding:8px 0;box-sizing:border-box;line-height:1.5;font-weight:700}
+  .clab-root .clab-pit-notebook summary span{font:700 10px var(--mono);margin-right:5px;opacity:.75}
+  .clab-root .clab-pit-notebook summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+  .clab-root .clab-pit-note-body label{display:block;font-size:12px;line-height:1.5;color:var(--ink);margin-top:8px}
+  .clab-root .clab-pit-note-body textarea{min-height:76px;font-size:13px;line-height:1.5}
+  .clab-root .clab-pit-notebook [data-pit-download]{width:100%;min-height:44px;margin-top:8px;white-space:normal}
   .clab-root #clab-pitExperiment .btnrow{padding-top:10px;border-top:1px dashed var(--line2)}
 
   .clab-root #clab-top{background:linear-gradient(120deg,#142432,#0d1722 70%);border-bottom:1px solid var(--line2)}
@@ -159,6 +168,16 @@
   .clab-root #clab-btnBoldTrack[aria-pressed="true"]{background:var(--accent);color:#14202c;border-color:var(--accent)}
   @media(max-width:600px){.clab-root #clab-viewTools{display:grid;grid-template-columns:repeat(2,1fr)}}
   .clab-root #clab-viewTools button:focus-visible{outline-offset:1px}
+  .clab-root #clab-stationViews{position:absolute;top:12px;left:12px;z-index:5;width:340px;max-width:calc(100% - 24px);box-sizing:border-box;padding:10px;border:1px solid var(--line2);border-radius:12px;background:rgba(12,22,32,.94);box-shadow:0 8px 24px rgba(0,0,0,.2);backdrop-filter:blur(8px)}
+  .clab-root #clab-stationViews[hidden]{display:none!important}
+  .clab-root #clab-stationViews strong{display:block;color:var(--ink3);font:700 10px var(--mono);letter-spacing:.12em;line-height:24px;padding-right:60px;margin-bottom:7px}
+  .clab-root #clab-stationViews [role="group"]{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .clab-root #clab-stationViews button{min-height:36px;padding:6px;border-radius:7px;font-size:12px}
+  .clab-root #clab-stationViews .clab-exitStation{position:absolute;right:8px;top:6px;min-height:30px;padding:4px 10px;font-size:11px}
+  .clab-root #clab-stationViews button[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:rgba(89,201,141,.10)}
+  .clab-root #clab-stationViews p{font-size:12px;line-height:1.35;color:var(--ink2);margin:7px 0 0}
+  .clab-root [data-station-shot] #clab-banner{top:146px}
+  .clab-root #clab-viewport:has(#clab-rideQ:not([hidden]),#clab-rideEnd:not([hidden]),#clab-guide:not([hidden])) #clab-stationViews{display:none}
   .clab-root #clab-btnSceneFocus[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:#142738}
   .clab-root [data-scene-focus="true"] :is(#clab-side,#clab-hud,#clab-lapHud,#clab-buildCoach,#clab-vectorLegend,#clab-xrayLegend){display:none!important}
   .clab-root [data-scene-focus="true"] #clab-viewport{min-height:0;flex:1}
@@ -347,7 +366,7 @@
   CLAB_HTML = CLAB_HTML.replace('id="clab-gvTrack"', 'id="clab-gvTrack" role="img" aria-label="Vertical seat force meter, from minus 2 to plus 7 g"');
   CLAB_HTML = CLAB_HTML.replace('id="clab-glTrack"', 'id="clab-glTrack" role="img" aria-label="Lateral seat force meter, from minus 2 to plus 2 g"');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnGuide"', 'id="clab-btnGuide" aria-label="Open Coaster Lab quick guide; keyboard shortcut H"');
-  CLAB_HTML = CLAB_HTML.replace('</canvas>', '</canvas><div id="clab-viewTools" role="group" aria-label="Coaster view controls"><button id="clab-btnFitCoaster" type="button" title="Center the whole track in the available view">Fit coaster</button><button id="clab-btnTopView" type="button" aria-label="Top view of the coaster" title="See the track layout from above">Top view</button><button id="clab-btnSideView" type="button" aria-label="Side view of the coaster" title="Inspect hills and drops from the side">Side view</button><button id="clab-btnBoldTrack" type="button" aria-pressed="true" title="Keep rails and heatmaps easy to follow in orbit views; changes appearance only">Bold track</button></div>');
+  CLAB_HTML = CLAB_HTML.replace('</canvas>', '</canvas><section id="clab-stationViews" aria-label="Station inspection views" hidden><strong>STATION EXPLORER</strong><button id="clab-btnExitStationView" class="clab-exitStation" type="button" aria-label="Return to editing">Done</button><div role="group" aria-label="Choose a station view"><button type="button" data-station-shot="overview" aria-pressed="true">Overview</button><button type="button" data-station-shot="platform" aria-pressed="false">Platform</button><button type="button" data-station-shot="forecourt" aria-pressed="false">Forecourt</button></div><p id="clab-stationViewHint" role="status" aria-live="polite"></p></section><div id="clab-viewTools" role="group" aria-label="Coaster view controls"><button id="clab-btnFitCoaster" type="button" title="Center the whole track in the available view">Fit coaster</button><button id="clab-btnTopView" type="button" aria-label="Top view of the coaster" title="See the track layout from above">Top view</button><button id="clab-btnSideView" type="button" aria-label="Side view of the coaster" title="Inspect hills and drops from the side">Side view</button><button id="clab-btnBoldTrack" type="button" aria-pressed="true" title="Keep rails and heatmaps easy to follow in orbit views; changes appearance only">Bold track</button></div>');
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n<button id="clab-btnSceneFocus" type="button" aria-pressed="false" title="Hide editing panels and instruments for a clear view of your coaster; select again to restore them">Scene focus</button>');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnFx" title=', 'id="clab-btnFx" aria-pressed="false" title=');
   CLAB_HTML = CLAB_HTML.replace('id="clab-btnFric" title=', 'id="clab-btnFric" aria-pressed="true" title=');
@@ -1035,13 +1054,23 @@ const PHYSICS_PIT_STOPS = [
     measure: 'Seat g around the crest and airtime (s). Also inspect peak forces elsewhere; extra airtime can come with a tradeoff.'
   }
 ];
+const PHYSICS_PIT_NOTE_FIELDS = ['change', 'fixed', 'prediction', 'baseline', 'revised', 'explanation'];
+function physicsPitNotebookText(item, notebook){
+  const labels = ['One change', 'What I kept the same', 'My prediction and reason', 'Baseline observation', 'Revised observation', 'My explanation'];
+  return 'CoasterLab investigation: ' + item.label + '\n\n' +
+    'Evidence to collect: ' + item.measure + '\n\n' +
+    PHYSICS_PIT_NOTE_FIELDS.map((key, index) => labels[index] + '\n' + (notebook[key] || '(No notes yet)')).join('\n\n') +
+    '\n\nThese are learner-recorded observations, not automatically captured telemetry.\n';
+}
 function normalizePhysicsPit(raw){
   const source = raw && typeof raw === 'object' ? raw : {};
   const stops = {};
   for(const item of PHYSICS_PIT_STOPS){
     const value = source.stops && source.stops[item.id] || {};
     const valid = index => Number.isInteger(index) && index >= 0 && index < item.options.length;
-    stops[item.id] = { choice: valid(value.choice) ? value.choice : null, checked: valid(value.checked) ? value.checked : null, reason: typeof value.reason === 'string' ? value.reason.slice(0, 600) : '' };
+    const notebook = {};
+    for(const key of PHYSICS_PIT_NOTE_FIELDS) notebook[key] = value.notebook && typeof value.notebook[key] === 'string' ? value.notebook[key].slice(0, 600) : '';
+    stops[item.id] = { notebook, choice: valid(value.choice) ? value.choice : null, checked: valid(value.checked) ? value.checked : null, reason: typeof value.reason === 'string' ? value.reason.slice(0, 600) : '' };
   }
   const validId = id => PHYSICS_PIT_STOPS.some(item => item.id === id);
   return { active: validId(source.active) ? source.active : 'energy', experiment: validId(source.experiment) ? source.experiment : null, stops };
@@ -1085,13 +1114,37 @@ function renderPhysicsPitIllustration(id){
   }
   return '<figure class="clab-pit-figure"><svg class="clab-pit-viz" viewBox="0 0 320 176" role="img" aria-label="' + label + '">' + grid + drawing + '</svg><figcaption><span>' + view + ' · schematic</span><span>Predict → check → try</span></figcaption></figure>';
 }
+function renderPhysicsPitNotebook(item){
+  const notes = physicsPit.stops[item.id].notebook;
+  const field = (key, label, placeholder) => '<label for="clab-pitNote-' + key + '">' + label + '</label><textarea id="clab-pitNote-' + key + '" data-pit-note="' + key + '" maxlength="600" placeholder="' + placeholder + '">' + guidedHtmlEscape(notes[key]) + '</textarea>';
+  return '<section class="clab-pit-notebook" aria-labelledby="clab-pitNotebookTitle"><h4 id="clab-pitNotebookTitle">My investigation notebook</h4><p class="hint">Keep short notes or keywords. Record your own readings from the run report, including units and where you measured.</p>' +
+    '<details open><summary><span aria-hidden="true">01</span> Plan a fair comparison</summary><div class="clab-pit-note-body">' +
+    field('change', 'One change I will make', 'Name the node or setting and how you will change it.') +
+    field('fixed', 'What I will keep the same', 'List the ride settings and other features you will hold fixed.') +
+    field('prediction', 'My prediction and reason', 'I predict ... because ...') + '</div></details>' +
+    '<details><summary><span aria-hidden="true">02</span> Record both observations</summary><div class="clab-pit-note-body"><p class="hint">' + item.measure + '</p>' +
+    field('baseline', 'Baseline run: before my change', 'Run label, location, reading and units. If it stalled, say where.') +
+    field('revised', 'Revised run: after my change', 'Use a comparable location and the same units. Note other changes too.') + '</div></details>' +
+    '<details><summary><span aria-hidden="true">03</span> Explain what the evidence suggests</summary><div class="clab-pit-note-body"><p class="hint">A result that differs from your prediction is useful. If the runs are hard to compare, explain why and what you would test next.</p>' +
+    field('explanation', 'My explanation', 'My evidence was ... This supports or changes my prediction because ... Next I would ...') + '</div></details>' +
+    '<button type="button" data-pit-download>Download my notes (.txt)</button><p class="chnote" data-pit-save role="status">' + (physicsPitSaved ? 'Notes save on this device.' : 'Device storage is unavailable. Keep this page open to retain your responses.') + '</p></section>';
+}
 function renderPhysicsPitExperiment(){
   const panel = __clabGet('clab-pitExperiment');
   const item = PHYSICS_PIT_STOPS.find(stop => stop.id === physicsPit.experiment);
   panel.hidden = !item;
   if(!item){ panel.innerHTML = ''; return; }
   panel.dataset.idea = item.id;
-  panel.innerHTML = '<p class="eyebrow">Your next experiment · ' + item.label + '</p><div class="clab-pit-heading">' + physicsPitEmblem() + '<h3 tabindex="-1">Try it on your track</h3></div><div class="clab-pit-task"><span aria-hidden="true">01</span><div><b>Change &amp; compare</b><p class="hint">' + item.experiment + '</p></div></div><div class="clab-pit-task"><span aria-hidden="true">02</span><div><b>Evidence to collect</b><p class="hint">' + item.measure + '</p></div></div><div class="btnrow"><button type="button" data-pit-return>Return to my prediction</button><button type="button" data-pit-dismiss>Dismiss plan</button></div>';
+  panel.innerHTML = '<p class="eyebrow">Your next experiment · ' + item.label + '</p><div class="clab-pit-heading">' + physicsPitEmblem() + '<h3 tabindex="-1">Try it on your track</h3></div><div class="clab-pit-task"><span aria-hidden="true">01</span><div><b>Change &amp; compare</b><p class="hint">' + item.experiment + '</p></div></div><div class="clab-pit-task"><span aria-hidden="true">02</span><div><b>Evidence to collect</b><p class="hint">' + item.measure + '</p></div></div>' + renderPhysicsPitNotebook(item) + '<div class="btnrow"><button type="button" data-pit-return>Return to my prediction</button><button type="button" data-pit-dismiss>Dismiss plan</button></div>';
+  panel.querySelectorAll('[data-pit-note]').forEach(input => {
+    input.oninput = () => { physicsPit.stops[item.id].notebook[input.dataset.pitNote] = input.value.slice(0, 600); savePhysicsPit(); };
+  });
+  panel.querySelector('[data-pit-download]').onclick = () => {
+    const blob = new Blob([physicsPitNotebookText(item, physicsPit.stops[item.id].notebook)], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = 'coasterlab-' + item.id + '-investigation.txt';
+    link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   panel.querySelector('[data-pit-return]').onclick = () => { physicsPit.active = item.id; savePhysicsPit(); renderPhysicsPit(); openPhysicsPit(); };
   panel.querySelector('[data-pit-dismiss]').onclick = () => { physicsPit.experiment = null; savePhysicsPit(); renderPhysicsPitExperiment(); __clabGet('clab-btnPhysicsPit').focus(); };
 }
@@ -1440,6 +1493,8 @@ const stationSignalMats = {
 };
 const stationFlags = [];
 const stationGates = [];
+const stationBayPlates = [], stationGateAnchors = new THREE.Group();
+stationGateAnchors.name = 'station-gate-anchors';
 const stationEdgePucks = [];
 let stationLamp = null;
 let stationBoardCtx = null, stationBoardTex = null;
@@ -1477,17 +1532,60 @@ const station = new THREE.Group();
       stationEdgePucks.push({ mesh: puck, step: i + 5 });
     }
   }
-  /* platform gates open with dispatch, reinforcing the station state */
+  /* Grounded platform gates open with dispatch, reinforcing the station state. */
   const gateGeo = new THREE.BoxGeometry(1.45, 0.11, 0.13);
-  for(const dz of [-1.46, 1.46]) for(const dx of [-2.7, 0, 2.7]){
-    const pivot = new THREE.Group();
+  const gatePostGeo = new THREE.BoxGeometry(0.16, 1.42, 0.18);
+  const gateFootGeo = new THREE.BoxGeometry(0.36, 0.07, 0.36);
+  const gateUprightGeo = new THREE.BoxGeometry(0.065, 0.42, 0.07);
+  const gateLowerGeo = new THREE.BoxGeometry(1.45, 0.065, 0.07);
+  const gateHingeGeo = new THREE.CylinderGeometry(0.10, 0.10, 0.12, 10);
+  const bayFaceGeo = new THREE.PlaneGeometry(0.62, 0.52);
+  const bayFrameGeo = new THREE.BoxGeometry(0.70, 0.60, 0.16);
+  const bayMaterials = [1, 2, 3].map(number => {
+    const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 224;
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#142331'; g.fillRect(0, 0, 256, 224);
+    g.strokeStyle = '#b6dccf'; g.lineWidth = 7; g.strokeRect(8, 8, 240, 208);
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#eaf4ea';
+    g.font = '700 38px Segoe UI, sans-serif'; g.fillText('BAY', 128, 51);
+    g.font = '700 112px Segoe UI, sans-serif'; g.fillText(String(number).padStart(2, '0'), 128, 143);
+    const texture = new THREE.CanvasTexture(canvas); texture.encoding = THREE.sRGBEncoding;
+    return new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide, toneMapped: false });
+  });
+  const gateBolts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.025, 0.025, 0.025, 6), stationPostMat, 24);
+  const gateBoltMatrix = new THREE.Matrix4(); let gateBoltCount = 0;
+  for(const dz of [-1.46, 1.46]) for(const [bayIndex, dx] of [-2.7, 0, 2.7].entries()){
+    const post = new THREE.Mesh(gatePostGeo, stationPostMat);
+    post.position.set(dx, 1.26, dz); post.castShadow = post.receiveShadow = true;
+    post.name = 'station-gate-post'; station.add(post);
+    const foot = new THREE.Mesh(gateFootGeo, stationFloorMat);
+    foot.position.set(dx, 0.585, dz); foot.receiveShadow = true; foot.name = 'station-gate-foot'; station.add(foot);
+    for(const x of [-0.12, 0.12]) for(const z of [-0.12, 0.12]){
+      gateBoltMatrix.makeTranslation(dx + x, 0.6325, dz + z); gateBolts.setMatrixAt(gateBoltCount++, gateBoltMatrix);
+    }
+    const frame = new THREE.Mesh(bayFrameGeo, stationPostMat);
+    frame.position.set(dx, 1.91, dz); frame.castShadow = true; station.add(frame);
+    for(const direction of [-1, 1]){
+      const plate = new THREE.Mesh(bayFaceGeo, bayMaterials[bayIndex]);
+      plate.position.set(dx, 1.91, dz + direction * 0.081); plate.rotation.y = direction < 0 ? Math.PI : 0;
+      plate.name = 'station-bay-number'; station.add(plate); stationBayPlates.push(plate);
+    }
+    for(const y of [0.86, 1.25]){
+      const hinge = new THREE.Mesh(gateHingeGeo, stationPostMat);
+      hinge.position.set(dx, y, dz); hinge.castShadow = true; station.add(hinge);
+    }
+    const pivot = new THREE.Group(); pivot.name = 'station-gate-panel';
     pivot.position.set(dx, 1.25, dz);
-    const arm = new THREE.Mesh(gateGeo, stationAccentMat);
-    arm.position.x = 0.72;
-    pivot.add(arm);
-    station.add(pivot);
-    stationGates.push({ pivot, sign: dz > 0 ? -1 : 1 });
+    const arm = new THREE.Mesh(gateGeo, stationAccentMat); arm.position.x = 0.72; pivot.add(arm);
+    const lower = new THREE.Mesh(gateLowerGeo, stationPostMat); lower.position.set(0.72, -0.40, 0); pivot.add(lower);
+    for(const x of [0.18, 0.59, 1.0, 1.41]){
+      const upright = new THREE.Mesh(gateUprightGeo, stationPostMat); upright.position.set(x, -0.20, 0); pivot.add(upright);
+    }
+    pivot.children.forEach(mesh => { mesh.castShadow = mesh.receiveShadow = true; });
+    station.add(pivot); stationGates.push({ pivot, sign: dz > 0 ? -1 : 1 });
   }
+  gateBolts.instanceMatrix.needsUpdate = true; gateBolts.name = 'station-gate-bolts';
+  stationGateAnchors.add(gateBolts); station.add(stationGateAnchors);
   for(const dz of [-2.05, 2.05]){
     const archPost = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.8, 0.16), stationAccentMat);
     archPost.position.set(-5.55, 2.45, dz); station.add(archPost);
@@ -1611,7 +1709,9 @@ const parkBorderMat = new THREE.MeshStandardMaterial({ color: 0x526877, roughnes
 const parkJointMat = new THREE.MeshStandardMaterial({ color: 0x607272, roughness: 1 });
 const parkWoodMat = new THREE.MeshStandardMaterial({ color: 0x987052, roughness: 0.83 });
 const parkLeafMat = new THREE.MeshStandardMaterial({ color: 0x398257, roughness: 0.95 });
-const parkFlowerMat = new THREE.MeshStandardMaterial({ color: 0xf3bf58, roughness: 0.8 });
+const parkFlowerMat = new THREE.MeshStandardMaterial({ color: 0xffe3a3, roughness: 0.8 });
+const parkFlowerCoreMat = new THREE.MeshStandardMaterial({ color: 0xb27827, roughness: 0.92 });
+const parkWayfindingFaces = [];
 const parkLampMat = new THREE.MeshBasicMaterial({ color: 0xffdf9e, toneMapped: false });
 const parkPoolMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, toneMapped: false,
@@ -1638,21 +1738,37 @@ const parkPools = [];
   for(let z=-12.5;z>-20.5;z-=1.5){ matrix.makeScale(3.18,1,1).setPosition(0,0.071,z);joints.setMatrixAt(used++,matrix); }
   joints.count=used;joints.instanceMatrix.needsUpdate=true;joints.receiveShadow=true;forecourtDetails.add(joints);
   const shrubs = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),parkLeafMat,24);
-  const flowers = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.13,0),parkFlowerMat,48);
-  let shrubUsed=0, flowerUsed=0;
+  const flowers = new THREE.InstancedMesh(new THREE.SphereGeometry(0.11,8,6),parkFlowerMat,48*5);
+  const flowerCores = new THREE.InstancedMesh(new THREE.SphereGeometry(0.065,8,6),parkFlowerCoreMat,48);
+  const flowerStems = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.013,0.018,1,5),parkLeafMat,48);
+  flowers.name='garden-petals';flowerCores.name='garden-flower-centers';flowerStems.name='garden-stems';shrubs.name='garden-shrubs';
+  const blossomPalette=[0xffffff,0xffc9b8,0xffe6ba];
+  const foliagePalette=[0xc6e2bd,0x9dc8a6,0xe0edc8];
+  let shrubUsed=0, flowerUsed=0, petalUsed=0;
   for(const x of [-7.3,7.3]) for(const z of [-3.8,-9.1]){
     const bed=parkMesh(new THREE.CylinderGeometry(1.12,1.18,0.38,12),parkBorderMat,x,0.23,z,forecourtPlanting);bed.castShadow=true;
     parkMesh(new THREE.CylinderGeometry(1.01,1.01,0.045,12),MAT.trunk,x,0.44,z,forecourtPlanting);
     for(let k=0;k<6;k++){
       const a=k*Math.PI/3;
-      matrix.makeScale(0.46,0.38+(k%2)*0.12,0.46).setPosition(x+Math.cos(a)*0.48,0.7,z+Math.sin(a)*0.48);shrubs.setMatrixAt(shrubUsed++,matrix);
+      matrix.makeRotationY(a).scale(new THREE.Vector3(0.42+(k%2)*0.05,0.32+(k%3)*0.06,0.43)).setPosition(x+Math.cos(a)*0.43,0.7,z+Math.sin(a)*0.43);
+      shrubs.setMatrixAt(shrubUsed,matrix);shrubs.setColorAt(shrubUsed++,new THREE.Color(foliagePalette[k%3]));
     }
     for(let k=0;k<12;k++){
       const a=k*Math.PI/6;
-      matrix.makeTranslation(x+Math.cos(a)*0.8,0.82+(k%3)*0.04,z+Math.sin(a)*0.8);flowers.setMatrixAt(flowerUsed++,matrix);
+      const fx=x+Math.cos(a)*0.77,fz=z+Math.sin(a)*0.77,fy=1.05+(k%3)*0.09;
+      matrix.makeScale(1,fy-0.45,1).setPosition(fx,(fy+0.45)/2,fz);flowerStems.setMatrixAt(flowerUsed,matrix); flowerStems.setColorAt(flowerUsed,new THREE.Color(0xffffff));
+      matrix.makeScale(1,0.45,1).setPosition(fx,fy+0.018,fz);flowerCores.setMatrixAt(flowerUsed++,matrix);
+      for(let petal=0;petal<5;petal++){
+        const angle=petal*Math.PI*2/5+a;
+        matrix.makeRotationY(-angle).scale(new THREE.Vector3(1.12,0.28,0.66)).setPosition(fx+Math.cos(angle)*0.095,fy,fz+Math.sin(angle)*0.095);
+        flowers.setMatrixAt(petalUsed,matrix);flowers.setColorAt(petalUsed++,new THREE.Color(blossomPalette[k%3]));
+      }
     }
   }
-  shrubs.instanceMatrix.needsUpdate=flowers.instanceMatrix.needsUpdate=true;shrubs.castShadow=true;forecourtPlanting.add(shrubs,flowers);
+  for(const mesh of [shrubs,flowers,flowerCores,flowerStems]){
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor) mesh.instanceColor.needsUpdate=true;mesh.receiveShadow=true;forecourtPlanting.add(mesh);
+  }
+  shrubs.castShadow=true;
   forecourtDetails.add(forecourtPlanting);
   for(const x of [-7.1,7.1]){
     const bench = new THREE.Group();bench.name='park-bench';bench.position.set(x,0,-6.45);bench.rotation.y=x<0?Math.PI/2:-Math.PI/2;
@@ -1676,7 +1792,36 @@ const parkPools = [];
     pool.receiveShadow=false;parkPools.push(pool);
   }
 }
-forecourt.add(forecourtDetails,forecourtStairs);scene.add(forecourt);
+const parkWayfinding = new THREE.Group();parkWayfinding.name='park-wayfinding';parkWayfinding.position.set(3.15,0,-10.05);
+{
+  for(const x of [-1.0,1.0]){
+    const post=new THREE.Mesh(new THREE.BoxGeometry(0.11,1.55,0.11),parkWoodMat);post.position.set(x,0.84,0);post.castShadow=true;parkWayfinding.add(post);
+    const foot=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.16,0.28),parkBorderMat);foot.position.set(x,0.145,0);foot.receiveShadow=true;parkWayfinding.add(foot);
+  }
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(2.7,1.7,0.17),parkBorderMat);frame.position.y=2.0;frame.castShadow=frame.receiveShadow=true;parkWayfinding.add(frame);
+  for(const [direction,label,caption] of [[-1,'BOARDING','STATION AHEAD'],[1,'EXIT','PARK PATH']]){
+    const canvas=document.createElement('canvas');canvas.width=640;canvas.height=384;
+    const texture=new THREE.CanvasTexture(canvas);texture.encoding=THREE.sRGBEncoding;
+    const face=new THREE.Mesh(new THREE.PlaneGeometry(2.5,1.5),new THREE.MeshBasicMaterial({map:texture,side:THREE.FrontSide,toneMapped:false}));
+    face.position.set(0,2.0,direction*0.091);face.rotation.y=direction<0?Math.PI:0;parkWayfinding.add(face);
+    parkWayfindingFaces.push({canvas,texture,label,caption,mesh:face});
+  }
+}
+forecourt.add(forecourtDetails,forecourtStairs,parkWayfinding);scene.add(forecourt);
+function paintParkWayfinding(theme){
+  const daylight=theme==='daylight',accent=theme==='neon'?'#65efff':theme==='blueprint'?'#a5e4ff':'#ffcd72';
+  for(const face of parkWayfindingFaces){
+    const g=face.canvas.getContext('2d');
+    g.fillStyle=daylight?'#f0eadb':theme==='blueprint'?'#12334b':'#10232b';g.fillRect(0,0,640,384);
+    g.strokeStyle=daylight?'#486157':accent;g.lineWidth=5;g.strokeRect(12,12,616,360);
+    g.fillStyle=daylight?'#345347':accent;g.textAlign='center';g.textBaseline='middle';g.font='700 32px Segoe UI, sans-serif';g.fillText('COASTERLAB',320,58);
+    g.fillStyle=daylight?'#173d37':'#f4f8f6';
+    g.beginPath();g.moveTo(104,135);g.lineTo(159,192);g.lineTo(127,192);g.lineTo(127,258);g.lineTo(81,258);g.lineTo(81,192);g.lineTo(49,192);g.closePath();g.fill();
+    g.font='800 64px Segoe UI, sans-serif';g.fillText(face.label,389,210);
+    g.fillStyle=daylight?'#496155':'#c9dde1';g.font='600 28px Segoe UI, sans-serif';g.fillText(face.caption,320,322);
+    face.texture.needsUpdate=true;
+  }
+}
 function rebuildForecourtStairs(){
   const top=station.position.y+0.55, base=0.065, height=Math.max(0.18,top-base);
   if(forecourtStairHeight===top) return;
@@ -6221,6 +6366,46 @@ function fittedOrbitRadius(bounds, theta, phi, aspect, paddingY = 0.8, minimumRa
 }
 /* @clab-camera-fit-end */
 let orbitFrameBounds = null, orbitAutoFit = true, orbitFitRadius = 175, orbitFramePaddingY = 0.8;
+let stationShot = null, stationShotAutoFit = false;
+const stationViews = __clabGet('clab-stationViews');
+const stationShotHints = { overview: 'See the station and approach together.', platform: 'Find your numbered bay and inspect the boarding gates.', forecourt: 'Explore the benches, planting, and paved approach.' };
+function clearStationViews(){
+  stationShot = null; stationShotAutoFit = false; stationViews.hidden = true;
+  delete rootEl.dataset.stationShot;
+}
+function releaseStationShot(){
+  if(!stationShot) return;
+  stationShotAutoFit = false;
+  for(const button of stationViews.querySelectorAll('[data-station-shot]')) button.setAttribute('aria-pressed','false');
+  __clabGet('clab-stationViewHint').textContent = 'Free orbit. Choose a view to recenter.';
+}
+function stationShotBounds(shot){
+  if(shot === 'platform'){
+    station.updateWorldMatrix(true,true);
+    return new THREE.Box3(new THREE.Vector3(-6.6,-0.6,-2.65),new THREE.Vector3(6.6,6.75,2.65)).applyMatrix4(station.matrixWorld);
+  }
+  if(shot === 'forecourt'){
+    forecourt.updateWorldMatrix(true,true);
+    return new THREE.Box3(new THREE.Vector3(-9.15,-0.02,-11.25),new THREE.Vector3(9.15,3.4,-1.85)).applyMatrix4(forecourt.matrixWorld);
+  }
+  return stationVisualBounds();
+}
+function frameStationShot(shot){
+  if(xrOn) return;
+  if(!stationShotHints[shot]) shot = 'overview';
+  stationShot = shot; stationShotAutoFit = true; stationViews.hidden = false; rootEl.dataset.stationShot = shot;
+  for(const button of stationViews.querySelectorAll('[data-station-shot]')) button.setAttribute('aria-pressed',String(button.dataset.stationShot===shot));
+  __clabGet('clab-stationViewHint').textContent = stationShotHints[shot];
+  const bounds = stationShotBounds(shot).expandByScalar(shot==='overview'?1:0.45);
+  camMode = 'orbit'; orbitAutoFit = false; userTouched = true;
+  __clabGet('clab-btnCam').textContent = 'Camera: Orbit'; bounds.getCenter(orbit.target);
+  orbit.theta = station.rotation.y + Math.PI + (shot==='forecourt'?0.35:0.65);
+  orbit.phi = shot==='forecourt'?0.68:shot==='platform'?0.30:0.32;
+  updateViewClearance();
+  orbit.radius = fittedOrbitRadius(bounds,orbit.theta,orbit.phi,canvas.clientWidth/Math.max(1,canvas.clientHeight),orbitFramePaddingY,8);
+  orbitFitRadius = Math.max(orbitFitRadius,orbit.radius);
+  camera.fov=55;camera.updateProjectionMatrix();
+}
 function updateViewClearance(){
   const h = canvas.clientHeight;
   if(h <= 0) return;
@@ -6229,7 +6414,8 @@ function updateViewClearance(){
   rootEl.style.setProperty('--clab-view-bottom', (bottom ? bottom + 8 : 12) + 'px');
   const viewTools = __clabGet('clab-viewTools');
   const controlsHeight = viewTools && viewTools.offsetHeight || 44;
-  orbitFramePaddingY = Math.max(0.25, 1 - 2 * Math.min(h * 0.35, Math.max(64, bottom + controlsHeight + 12)) / h);
+  const top = stationViews && !stationViews.hidden ? stationViews.offsetHeight + 24 : 64;
+  orbitFramePaddingY = Math.max(0.25, 1 - 2 * Math.min(h * 0.35, Math.max(top, bottom + controlsHeight + 12)) / h);
 }
 function stationVisualBounds(){
   station.updateWorldMatrix(true, true);
@@ -6247,6 +6433,7 @@ function trainInspectionBounds(){
 }
 function frameTrainView(){
   if(xrOn) return;
+  clearStationViews();
   const restore = __clabGet('clab-btnSceneFocus');
   if(!sceneFocus) restore.click();
   const bounds = trainInspectionBounds().expandByScalar(0.45);
@@ -6266,21 +6453,13 @@ function frameStationView(){
   if(xrOn) return;
   const restore = __clabGet('clab-btnSceneFocus');
   if(!sceneFocus) restore.click();
-  station.updateWorldMatrix(true, true);
-  const bounds = stationVisualBounds().expandByScalar(1.0);
-  camMode = 'orbit'; orbitAutoFit = false; userTouched = true;
-  __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
-  bounds.getCenter(orbit.target);
-  orbit.theta = station.rotation.y + Math.PI + 0.65; orbit.phi = 0.32;
-  updateViewClearance();
-  orbit.radius = fittedOrbitRadius(bounds, orbit.theta, orbit.phi, canvas.clientWidth / Math.max(1, canvas.clientHeight), orbitFramePaddingY);
-  orbitFitRadius = Math.max(orbitFitRadius, orbit.radius);
-  camera.fov = 55; camera.updateProjectionMatrix();
+  frameStationShot('overview');
   restore.focus();
   banner('Station view. Use Restore panels to return to editing.', '', 2200);
 }
 function fitCoasterView(view = 'overview', announce = true){
   if(xrOn || !orbitFrameBounds) return;
+  clearStationViews();
   camMode = 'orbit';
   __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
   orbit.theta = view === 'overview' ? -0.95 : 0;
@@ -6309,6 +6488,7 @@ function applyOrbit(){
 }
 function updateOrbitTarget(){
   if(!track) return;
+  clearStationViews();
   const box = new THREE.Box3();
   for(let i = 0; i < M; i++) box.expandByPoint(track.pos[i]);
   box.min.y = Math.min(0, box.min.y);
@@ -6348,7 +6528,7 @@ let userTouched = false;
 canvas.addEventListener('pointerdown', e => {
   if(e.button !== 0) return;
   userTouched = true;
-  if(camMode === 'orbit') orbitAutoFit = false;
+  if(camMode === 'orbit'){ orbitAutoFit = false; releaseStationShot(); }
   canvas.setPointerCapture(e.pointerId);
   setNDC(e);
   if(!sceneFocus && !pinnedElementPreview && !sim.running && camMode === 'orbit'){
@@ -6411,7 +6591,7 @@ canvas.addEventListener('pointercancel', endPointer);
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
   if(camMode !== 'orbit') return;
-  orbitAutoFit = false; userTouched = true;
+  orbitAutoFit = false; userTouched = true; releaseStationShot();
   orbit.radius = THREE.MathUtils.clamp(orbit.radius * (1 + e.deltaY * 0.001), 15, Math.max(480, orbitFitRadius * 1.5));
 }, { passive: false });
 
@@ -7485,6 +7665,7 @@ __clabGet('clab-btnRun').addEventListener('click', () => {
   });
 })();
 __clabGet('clab-btnCam').addEventListener('click', e => {
+  clearStationViews();
   const next = (CAMERA_MODES.indexOf(camMode) + 1) % CAMERA_MODES.length;
   camMode = CAMERA_MODES[next];
   e.target.textContent = 'Camera: ' + CAMERA_LABELS[camMode];
@@ -7958,7 +8139,9 @@ function applyVisualTheme(name, announce = true){
   parkJointMat.color.setHex(name === 'daylight' ? 0x697672 : name === 'blueprint' ? 0x75b7d6 : 0x374655);
   parkWoodMat.color.setHex(name === 'daylight' ? 0x986843 : name === 'blueprint' ? 0x598aab : 0x80624d);
   parkLeafMat.color.setHex(name === 'daylight' ? 0x2f7548 : name === 'neon' ? 0x247565 : 0x2d694b);
-  parkFlowerMat.color.setHex(name === 'neon' ? 0xe866b8 : 0xf3bf58);
+  parkFlowerMat.color.setHex(name === 'neon' ? 0xf6a8d6 : 0xffe3a3);
+  parkFlowerCoreMat.color.setHex(name === 'neon' ? 0xffb572 : 0xb27827);
+  paintParkWayfinding(name);
   parkLampMat.color.setHex(cfg.sunGlow);parkPoolMat.uniforms.tint.value.setHex(cfg.sunGlow);
   parkPoolMat.uniforms.strength.value=name==='neon'?0.24:0.16;
   syncForecourt();
@@ -8019,12 +8202,18 @@ boldTrackButton.addEventListener('click', () => {
 });
 __clabGet('clab-btnFitCoaster').addEventListener('click', () => fitCoasterView('overview'));
 __clabGet('clab-btnStationView').addEventListener('click', frameStationView);
+for(const button of stationViews.querySelectorAll('[data-station-shot]')) button.addEventListener('click',()=>frameStationShot(button.dataset.stationShot));
+__clabGet('clab-btnExitStationView').addEventListener('click',()=>{
+  if(sceneFocus) __clabGet('clab-btnSceneFocus').click(); else clearStationViews();
+  __clabGet('clab-btnStationView').focus();
+});
 __clabGet('clab-btnTrainView').addEventListener('click', frameTrainView);
 __clabGet('clab-btnTopView').addEventListener('click', () => fitCoasterView('top'));
 __clabGet('clab-btnSideView').addEventListener('click', () => fitCoasterView('side'));
 const sceneFocusButton = __clabGet('clab-btnSceneFocus');
 sceneFocusButton.addEventListener('click', () => {
   sceneFocus = !sceneFocus;
+  if(!sceneFocus) clearStationViews();
   rootEl.dataset.sceneFocus = String(sceneFocus);
   updateViewClearance();
   sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
@@ -8053,6 +8242,7 @@ applyTrackViz(heatmapMode, false);
 applyVisualTheme(visualTheme, false);
 syncVectorUi();
 function applyFx(){
+  stationGateAnchors.visible = !fxLite;
   renderer.shadowMap.enabled = !fxLite;
   sun.castShadow = !fxLite;
   syncSupportDetails();
@@ -9958,6 +10148,7 @@ function updateParkAtmosphere(dt){
   stationFlags.forEach((flag, i) => { flag.rotation.z = Math.sin(now + i * 0.63) * 0.08; });
 }
 function placeCamera(){
+  if(stationShot && (camMode!=='orbit' || xrOn || !sceneFocus || sim.running)) clearStationViews();
   if(camMode === 'onboard'){
     // The front row rides on the nose. Any other row sits back at its own seat
     // and a little higher, so it looks OVER the car ahead instead of into the
@@ -10014,6 +10205,7 @@ function resize(){
     camera.aspect = w / Math.max(h, 1);
     camera.updateProjectionMatrix();
     updateViewClearance();
+    if(stationShot && stationShotAutoFit && camMode==='orbit' && sceneFocus) frameStationShot(stationShot);
   }
 }
 
@@ -10175,6 +10367,21 @@ renderPhysicsPitExperiment();
 __clabGet('clab-btnPhysicsPit').addEventListener('click', openPhysicsPit);
 
 rootEl._lab = {
+  boardingPresentation: () => ({
+    posts: station.children.filter(mesh => mesh.name === 'station-gate-post').map(mesh => ({ bottom: mesh.position.y - mesh.geometry.parameters.height / 2 })),
+    panels: stationGates.map(gate => ({ angle: gate.pivot.rotation.y, members: gate.pivot.children.length,
+      finite: gate.pivot.children.every(mesh => mesh.position.toArray().every(Number.isFinite)) })),
+    plates: stationBayPlates.map(mesh => ({ frontSide: mesh.material.side === THREE.FrontSide, rotation: mesh.rotation.y })),
+    anchorsVisible: stationGateAnchors.visible
+  }),
+  gardenDetails: () => ({ flowerBatches: forecourtPlanting.children.filter(mesh=>mesh.name.startsWith('garden-')).map(mesh=>({name:mesh.name,count:mesh.count,finite:[...mesh.instanceMatrix.array.slice(0,mesh.count*16)].every(Number.isFinite)})),
+    plantingVisible: forecourtDetails.visible && forecourtPlanting.visible,
+    signVisible: parkWayfinding.visible, signs: parkWayfindingFaces.map(face=>({label:face.label,caption:face.caption,frontSide:face.mesh.material.side===THREE.FrontSide,rotation:face.mesh.rotation.y})),
+    signPosition: parkWayfinding.getWorldPosition(new THREE.Vector3()).toArray() }),
+  stationExplorer: () => ({ shot: stationShot, autoFit: stationShotAutoFit, radius: orbit.radius,
+    projected: (()=>{ if(!stationShot) return []; camera.updateMatrixWorld(); const box=stationShotBounds(stationShot),points=[];
+      for(const x of [box.min.x,box.max.x]) for(const y of [box.min.y,box.max.y]) for(const z of [box.min.z,box.max.z]) points.push(new THREE.Vector3(x,y,z).project(camera));
+      return points.map(p=>({x:p.x,y:p.y,z:p.z})); })() }),
   forecourtPresentation: () => ({ position: forecourt.position.toArray(), heading: forecourt.rotation.y,
     stationPosition: station.position.toArray(), stationHeading: station.rotation.y,
     stairs: { top: forecourtStairHeight, flights: forecourtStairs.userData.flights, steps: forecourtStairs.userData.steps },

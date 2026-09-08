@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-08T21:46:12.352Z",
+  "scope": "Actual browser download and OOXML evidence for synthetic current-HTML route. No destination application or human AT testing.",
+  "status": "passed",
+  "checks": {
+    "coordinatorSucceeded": true,
+    "noHistoryFallback": true,
+    "sharedOfficeBranchOnce": true,
+    "currentHtmlReceived": true,
+    "threeSlides": true,
+    "currentValuesInArtifact": true,
+    "obsoleteContentAbsent": true,
+    "tableAndDiagramRetained": true,
+    "equationTextRetained": true,
+    "noNetworkRequests": true,
+    "noRuntimeErrors": true
+  },
+  "observations": {
+    "validZipWithCRC": true,
+    "slideCount": 3,
+    "editedHeading": true,
+    "editedValue": true,
+    "oldPreviewAbsent": true,
+    "oldHistoryAbsent": true,
+    "editorChromeAbsent": true,
+    "nativeTable": true,
+    "correctedTableValue": true,
+    "diagramDescription": true,
+    "exactDiagramBytesEmbedded": true,
+    "equationTextRetained": true,
+    "nativeMathObject": false
+  },
+  "artifact": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-builder-refinements-2026-09-08\\artifact-check\\run-01\\live-edited-education.pptx",
+    "suggestedFileName": "Water cycle lesson.pptx",
+    "bytes": 2968622,
+    "sha256": "5e02f1c0ffe696d2ff18c00e6b1a31f903726f34fdebcd17949992c55cf62fd6"
+  },
+  "route": "ExportHandlers.executeExportFromPreview -> createExport().handleExportSlides -> AccessibleOfficeExport.build -> PptxGenJS 3.12.0",
+  "routeResult": {
+    "succeeded": true,
+    "fallbackCalls": 0,
+    "officeCalls": [
+      {
+        "format": "pptx",
+        "title": "Water cycle lesson",
+        "hasCurrentValue": true,
+        "hasOldPreview": false,
+        "hasOldHistory": false,
+        "hasEditorChrome": false,
+        "counts": {
+          "slides": 3,
+          "images": 1,
+          "tables": 1,
+          "bullets": 2,
+          "titled": 3
+        },
+        "message": "PowerPoint prepared from the current document. Review slide layout and image descriptions before sharing.",
+        "blobBytes": 2968622
+      }
+    ],
+    "slideCalls": [
+      {
+        "hasLiveHtml": true,
+        "title": "Water cycle lesson"
+      }
+    ],
+    "toasts": [
+      {
+        "text": "PowerPoint prepared from the current document. Review slide layout and image descriptions before sharing.",
+        "type": "success"
+      }
+    ],
+    "closes": [
+      false
+    ],
+    "libraryVersion": "3.12.0"
+  },
+  "browserVersion": "148.0.7778.96",
+  "jszipVersion": "3.10.1",
+  "blockedNetworkRequests": [],
+  "pageErrors": [],
+  "consoleMessages": [
+    {
+      "type": "log",
+      "text": "[Export] Factory registered"
+    },
+    {
+      "type": "log",
+      "text": "[ExportHandlersModule] 23 handlers registered (Phase P bundle)"
+    },
+    {
+      "type": "log",
+      "text": "[CDN] ViewPdfAuditModule loaded — PdfAuditView registered"
+    },
+    {
+      "type": "log",
+      "text": "[Export] ✅ Using edited iframe content, chrome stripped (3863677 chars)"
+    }
+  ],
+  "modules": [
+    {
+      "path": "desktop/web-app/node_modules/react/umd/react.development.js",
+      "sha256": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f"
+    },
+    {
+      "path": "desktop/web-app/public/vendor/pptxgenjs-3.12.0.bundle.js",
+      "sha256": "cd078ca9e91c6f9e061ee0a3c310d6ff157c3a71b1dea7f40fd53818017266ff"
+    },
+    {
+      "path": "export_module.js",
+      "sha256": "c60c5433555ff71e9ae0e34b6fbfd7d12e5f1aaa95ee97874729f7fe10de0e34"
+    },
+    {
+      "path": "export_handlers_module.js",
+      "sha256": "cd773b3e7a0bf6e29e11b5475b5c8e79bcac425cab57ee32da3681007b33ebca"
+    },
+    {
+      "path": "view_pdf_audit_module.js",
+      "sha256": "b17be879faf818e1333ac43b0f8648c76532ca3fbb5f856c72281bf06fed67b2"
+    }
+  ],
+  "sourceMedia": {
+    "path": "allopacks/media/water_cycle_grade6/wc-img-cycle-diagram.png",
+    "bytes": 2897089,
+    "sha256": "812f6e06f933fc750c59be9d7b80f57c9b0959128943b96a753beeed941a169b"
+  },
+  "mediaEntries": [
+    {
+      "name": "ppt/media/image-3-1.png",
+      "bytes": 2897089,
+      "sha256": "812f6e06f933fc750c59be9d7b80f57c9b0959128943b96a753beeed941a169b",
+      "exactSourceBytes": true
+    }
+  ],
+  "limitations": [
+    "Synthetic controlled coordinator host; does not drive the full Builder button UI.",
+    "OOXML inspection does not establish rendered layout or destination-application usability.",
+    "MathML equation is preserved as editable slide text x=42, not native mathematical structure.",
+    "No screen reader or human assistive-technology acceptance was run."
+  ]
+}

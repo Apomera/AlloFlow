@@ -1,0 +1,142 @@
+{
+  "scope": "One live WebGL engine; fixed pavilion, materials, camera and output pipeline across lighting variants",
+  "errors": [],
+  "consoleErrors": [],
+  "captures": [
+    {
+      "preset": "day",
+      "variant": "original",
+      "view": "detail",
+      "file": "artisan-day-original-detail.png",
+      "values": {
+        "ambient": 0.3,
+        "hemi": 0.42,
+        "sun": 1.05,
+        "el": 58,
+        "rim": 0.25,
+        "bias": -0.0005,
+        "normalBias": 0.02
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "day",
+      "variant": "original",
+      "view": "standard pavilion",
+      "file": "artisan-day-original-wide.png",
+      "values": {
+        "ambient": 0.3,
+        "hemi": 0.42,
+        "sun": 1.05,
+        "el": 58,
+        "rim": 0.25,
+        "bias": -0.0005,
+        "normalBias": 0.02
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "day",
+      "variant": "crafted",
+      "view": "detail",
+      "file": "artisan-day-crafted-detail.png",
+      "values": {
+        "ambient": 0.2,
+        "hemi": 0.32,
+        "sun": 1,
+        "el": 48,
+        "rim": 0.16,
+        "bias": -0.00012,
+        "normalBias": 0.012
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "day",
+      "variant": "crafted",
+      "view": "standard pavilion",
+      "file": "artisan-day-crafted-wide.png",
+      "values": {
+        "ambient": 0.2,
+        "hemi": 0.32,
+        "sun": 1,
+        "el": 48,
+        "rim": 0.16,
+        "bias": -0.00012,
+        "normalBias": 0.012
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "day",
+      "variant": "gentle",
+      "view": "detail",
+      "file": "artisan-day-gentle-detail.png",
+      "values": {
+        "ambient": 0.24,
+        "hemi": 0.36,
+        "sun": 1,
+        "el": 50,
+        "rim": 0.18,
+        "bias": -0.00016,
+        "normalBias": 0.015
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "golden",
+      "variant": "original",
+      "view": "detail",
+      "file": "artisan-golden-original-detail.png",
+      "values": {
+        "ambient": 0.4,
+        "hemi": 0.34,
+        "sun": 1,
+        "el": 20,
+        "rim": 0.25,
+        "bias": -0.0005,
+        "normalBias": 0.02
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "golden",
+      "variant": "crafted",
+      "view": "detail",
+      "file": "artisan-golden-crafted-detail.png",
+      "values": {
+        "ambient": 0.22,
+        "hemi": 0.28,
+        "sun": 1,
+        "el": 20,
+        "rim": 0.16,
+        "bias": -0.00012,
+        "normalBias": 0.012
+      },
+      "actualFov": 48
+    },
+    {
+      "preset": "golden",
+      "variant": "gentle",
+      "view": "detail",
+      "file": "artisan-golden-gentle-detail.png",
+      "values": {
+        "ambient": 0.26,
+        "hemi": 0.3,
+        "sun": 1,
+        "el": 20,
+        "rim": 0.18,
+        "bias": -0.00016,
+        "normalBias": 0.015
+      },
+      "actualFov": 48
+    }
+  ],
+  "shaderProbe": {
+    "programs": 24,
+    "errors": [],
+    "finishMaterials": 94
+  },
+  "finalShaders": [],
+  "passed": true
+}

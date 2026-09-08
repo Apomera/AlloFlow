@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "keyboard toggle",
+    "view changes preserve solver and undo",
+    "open switch removes arrows",
+    "undo restores arrows",
+    "selected parallel route",
+    "blocked branch has no arrows",
+    "branch and total currents",
+    "camera extremes",
+    "close-up explanation",
+    "phone overflow",
+    "hide/show overlay"
+  ]
+}

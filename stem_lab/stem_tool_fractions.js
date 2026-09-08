@@ -285,7 +285,33 @@ window.StemLab = window.StemLab || {
     return Object.assign({ index: safeIndex }, SIGNED_OPERATION_CHALLENGES[safeIndex]);
   }
 
+  function buildFractionQuantityModel(operation, n1, d1, n2, d2) {
+    if (['mul', 'div'].indexOf(operation) < 0 || ![n1, d1, n2, d2].every(Number.isInteger) ||
+        n1 < 0 || n1 > 20 || n2 < 0 || n2 > 20 || d1 < 1 || d1 > 20 || d2 < 1 || d2 > 20) return { ok: false, reason: 'range' };
+    if (operation === 'div' && n2 === 0) return { ok: false, reason: 'zero' };
+    var result = normalizeFractionPair(operation === 'mul' ? n1 * n2 : n1 * d2, operation === 'mul' ? d1 * d2 : d1 * n2);
+    var relation = n1 === 0 || n2 === d2 ? 'equal' : operation === 'mul' ? (n2 < d2 ? 'smaller' : 'larger') : (n2 < d2 ? 'larger' : 'smaller');
+    var model = { ok: true, operation: operation, result: result, relation: relation, a: n1 / d1, b: n2 / d2,
+      rows: Math.max(n1, d1), columns: Math.max(n2, d2), selectedCells: n1 * n2, cellDenominator: d1 * d2 };
+    if (operation === 'div') {
+      // Count equal-sized pieces using integer arithmetic before forming groups.
+      var a = d1, b = d2;
+      while (b) { var remainder = a % b; a = b; b = remainder; }
+      var denominator = d1 * d2 / a;
+      var available = n1 * (denominator / d1), perGroup = n2 * (denominator / d2);
+      var fullGroups = Math.floor(available / perGroup), remainderPieces = available % perGroup;
+      Object.assign(model, { commonDenominator: denominator, availablePieces: available, piecesPerGroup: perGroup,
+        fullGroups: fullGroups, remainderPieces: remainderPieces,
+        remainderQuantity: normalizeFractionPair(remainderPieces, denominator),
+        partialGroup: normalizeFractionPair(remainderPieces, perGroup),
+        groupSteps: fullGroups + (remainderPieces ? 1 : 0) });
+    }
+    return model;
+  }
+
+
   window.__FractionsCore = Object.assign({}, window.__FractionsCore || {}, {
+    buildFractionQuantityModel: buildFractionQuantityModel,
     normalizeFractionPair: normalizeFractionPair,
     parseRationalAnswer: parseRationalAnswer,
     evaluateRationalAnswer: evaluateRationalAnswer,
@@ -3217,11 +3243,69 @@ window.StemLab = window.StemLab || {
 
     // ═══ TAB: OPERATIONS ═══
     var renderOperations = function() {
+      var quantityMode = !signedFractions && (opMode === 'mul' || opMode === 'div');
+      var opDark = !!ctx.isDark || isContrast;
+      var opInk = isContrast ? '#ffffff' : opDark ? '#e2e8f0' : '#0f172a';
+      var opSurface = isContrast ? '#000000' : opDark ? '#0f172a' : '#ffffff';
+      var opBorder = isContrast ? '#fbbf24' : opDark ? '#94a3b8' : '#64748b';
+      var opAccent = isContrast ? '#fbbf24' : opDark ? '#67e8f9' : '#0e7490';
+      var opCard = {background:opSurface,color:opInk,border:'1px solid '+opBorder,borderRadius:12,padding:14,overflowWrap:'anywhere'};
+      var opButton = {minHeight:44,padding:'8px 12px',borderRadius:8,border:'1px solid '+opBorder,background:opSurface,color:opInk,fontWeight:700,fontSize:13,cursor:'pointer'};
+      var activeDrafts = _f.opInputDraft && _f.opInputDraft.key === signExpressionKey ? _f.opInputDraft.values || {} : {};
+      function operandReady(key, value) {
+        return !Object.prototype.hasOwnProperty.call(activeDrafts,key) && Number.isInteger(value) && value >= (key.indexOf('den')===0?1:signedFractions?-20:0) && value <= 20;
+      }
+      var operationReady = operandReady('num1',num1) && operandReady('den1',den1) && operandReady('num2',num2) && operandReady('den2',den2);
+      function editOperand(key, raw) {
+        var drafts = Object.assign({},activeDrafts), changes = {signPrediction:null,signFeedback:null,signChallengeIndex:-1,opMagnitudeChoice:null,opMagnitudeChecked:null,opGrouping:null};
+        var value = Number(raw), minimum = key.indexOf('den')===0?1:signedFractions?-20:0;
+        if (raw.trim() !== '' && Number.isInteger(value) && value >= minimum && value <= 20) { changes[key]=value; delete drafts[key]; }
+        else drafts[key]=raw;
+        changes.opInputDraft={key:[opMode,changes.num1==null?num1:changes.num1,changes.den1==null?den1:changes.den1,changes.num2==null?num2:changes.num2,changes.den2==null?den2:changes.den2].join('|'),values:drafts};
+        upd(changes);
+      }
+      var quantityModel = quantityMode && operationReady ? buildFractionQuantityModel(opMode,num1,den1,num2,den2) : null;
+      var magnitudePredicting = quantityMode && !!_f.opMagnitudePredict;
+      var magnitudeChecked = _f.opMagnitudeChecked && _f.opMagnitudeChecked.key === signExpressionKey ? _f.opMagnitudeChecked : null;
+      var operationReveal = operationReady && signReveal && (!magnitudePredicting || !!magnitudeChecked);
+      function fractionText(pair) { return pair[1]===1?String(pair[0]):pair[0]+'/'+pair[1]; }
+      function magnitudeReason() {
+        if(num1===0)return __alloT('stem.fractions.quantity_zero_reason','A is zero. Multiplying it, or dividing it by a nonzero number, gives zero again.');
+        if(num2===den2)return __alloT('stem.fractions.quantity_one_reason','B equals 1, so the numerical value of A stays the same.');
+        if(opMode==='mul')return num2<den2?__alloT('stem.fractions.quantity_mul_small','B is less than 1. Taking that fraction of a positive A gives less than A.'):__alloT('stem.fractions.quantity_mul_large','B is greater than 1. Taking more than one copy of a positive A gives more than A.');
+        return num2<den2?__alloT('stem.fractions.quantity_div_small','B is between 0 and 1. Counting smaller-than-one groups gives a numerical quotient greater than A.'):__alloT('stem.fractions.quantity_div_large','B is greater than 1. Counting larger-than-one groups gives a numerical quotient smaller than a positive A.');
+      }
+      function renderMagnitudePrediction() {
+        if(!quantityMode)return null;
+        var choices=[['smaller',__alloT('stem.fractions.quantity_smaller','Smaller than A')],['equal',__alloT('stem.fractions.quantity_equal','Equal to A')],['larger',__alloT('stem.fractions.quantity_larger','Larger than A')]];
+        return h('section',{'data-fraction-prediction':true,style:opCard},
+          h('label',{style:{display:'flex',gap:10,alignItems:'center',minHeight:44,fontSize:14,fontWeight:700}},
+            h('input',{type:'checkbox',checked:!!_f.opMagnitudePredict,onChange:function(e){upd({opMagnitudePredict:e.target.checked,opMagnitudeChoice:null,opMagnitudeChecked:null});},style:{width:24,height:24,flexShrink:0}}),
+            __alloT('stem.fractions.quantity_predict_toggle','Predict before revealing the result')),
+          magnitudePredicting && h('div',null,
+            h('p',{style:{fontSize:13,margin:'8px 0'}},__alloT('stem.fractions.quantity_predict_question','Compare the numerical result with Fraction A. What do you expect, and how does B help you decide?')),
+            h('fieldset',{disabled:!operationReady||opUndefined||!!magnitudeChecked,style:{border:0,padding:0,margin:0}},
+              h('legend',{className:'sr-only'},__alloT('stem.fractions.quantity_predict_legend','Predict the result compared with A')),
+              h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},choices.map(function(choice){return h('label',{key:choice[0],style:{display:'flex',gap:8,alignItems:'center',minHeight:44,padding:'6px 10px',border:'1px solid '+opBorder,borderRadius:8,fontSize:13}},
+                h('input',{type:'radio',name:'fraction-magnitude',value:choice[0],checked:_f.opMagnitudeChoice===choice[0],onChange:function(){upd({opMagnitudeChoice:choice[0]});},style:{width:20,height:20,flexShrink:0}}),choice[1]);}))
+            ),
+            !magnitudeChecked && h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:10}},
+              h('button',{type:'button',disabled:!operationReady||opUndefined||!_f.opMagnitudeChoice,onClick:function(){if(quantityModel&&quantityModel.ok)upd({opMagnitudeChecked:{key:signExpressionKey,choice:_f.opMagnitudeChoice}});},style:opButton},__alloT('stem.fractions.quantity_check_prediction','Check prediction')),
+              h('button',{type:'button',disabled:!operationReady||opUndefined,onClick:function(){if(quantityModel&&quantityModel.ok)upd({opMagnitudeChecked:{key:signExpressionKey,choice:null}});},style:opButton},__alloT('stem.fractions.quantity_reveal_model','Reveal worked model'))
+            ),
+            magnitudeChecked && quantityModel && quantityModel.ok && h('p',{role:'status','aria-live':'polite','data-fraction-magnitude-feedback':true,style:{fontSize:14,fontWeight:700,marginTop:10}},
+              (magnitudeChecked.choice ? magnitudeChecked.choice===quantityModel.relation?__alloT('stem.fractions.quantity_prediction_confirmed','Prediction confirmed. '):__alloT('stem.fractions.quantity_prediction_review','Compare your prediction with the model. '):'') + choices.filter(function(choice){return choice[0]===quantityModel.relation;})[0][1]+'. '+magnitudeReason())
+          )
+        );
+      }
+
+
       function startNextSignChallenge() {
         var nextIndex = (signChallengeIndex + 1) % SIGNED_OPERATION_CHALLENGES.length;
         var mission = getSignedOperationChallenge(nextIndex);
         sfxNewChallenge();
         upd({
+          opInputDraft:null,opMagnitudeChoice:null,opMagnitudeChecked:null,opGrouping:null,
           signedFractions: true,
           signChallengeIndex: nextIndex,
           opMode: mission.opMode,
@@ -3236,7 +3320,7 @@ window.StemLab = window.StemLab || {
       }
 
       function checkSignPrediction() {
-        if (!signPrediction || opUndefined) return;
+        if (!operationReady || !signPrediction || opUndefined) return;
         var correct = signPrediction === opResultSign;
         var alreadyChecked = !!signChecks[signExpressionKey];
         var nextChecks = Object.assign({}, signChecks);
@@ -3261,7 +3345,7 @@ window.StemLab = window.StemLab || {
       }
 
       var renderSignedOperationNumberLine = function() {
-        if (!signedFractions || !signReveal || opUndefined) return null;
+        if (!signedFractions || !operationReveal || opUndefined) return null;
         var resultValue = opSimplified[0] / opSimplified[1];
         var values = [val1, val2, resultValue];
         var bound = Math.max(1, Math.ceil(Math.max.apply(Math, values.map(function(value) { return Math.abs(value); }))));
@@ -3328,45 +3412,79 @@ window.StemLab = window.StemLab || {
         );
       };
 
-      // Area model for multiplication
-      var renderAreaModel = function() {
-        if (opMode !== 'mul' || signedFractions) return null;
-        var cellW = 28, cellH = 28;
-        var totalW = den2 * cellW + 2;
-        var totalH = den1 * cellH + 2;
-        var cells = [];
-        for (var r = 0; r < den1; r++) {
-          for (var c = 0; c < den2; c++) {
-            var inA = r < num1;
-            var inB = c < num2;
-            var fill = inA && inB ? '#22c55e' : inA ? '#93c5fd' : inB ? '#fca5a5' : '#f1f5f9';
-            cells.push(h('rect', {
-              key: r + '-' + c, x: 1 + c * cellW, y: 1 + r * cellH,
-              width: cellW, height: cellH,
-              fill: fill, stroke: '#94a3b8', strokeWidth: 0.5
-            }));
-          }
+      function renderQuantityModel() {
+        if(!quantityMode || !operationReveal || !quantityModel || !quantityModel.ok)return null;
+        var model=quantityModel;
+        if(opMode==='mul') {
+          var unit=100, margin=12, width=model.columns/den2*unit, height=model.rows/den1*unit, cells=[];
+          for(var row=0;row<model.rows;row++)for(var column=0;column<model.columns;column++)cells.push(h('rect',{key:row+'-'+column,'data-product-piece':row<num1&&column<num2?'selected':'unselected',x:margin+column/den2*unit,y:margin+row/den1*unit,width:unit/den2,height:unit/den1,fill:row<num1&&column<num2?opAccent:opSurface,stroke:row<num1&&column<num2?opSurface:opBorder,strokeWidth:.8}));
+          return h('section',{'data-fraction-product-model':true,style:opCard},
+            h('h3',{style:{fontSize:16,fontWeight:800,margin:'0 0 8px'}},__alloT('stem.fractions.quantity_product_title','Multiplication: an area made from fractional pieces')),
+            h('p',{style:{fontSize:14}},__alloT('stem.fractions.quantity_product_dimensions','Rectangle height A and width B: ')+num1+'/'+den1+' × '+num2+'/'+den2),
+            h('figure',{style:{margin:'12px 0'}},
+              h('svg',{viewBox:'0 0 '+(width+margin*2)+' '+(height+margin*2),'aria-hidden':'true',focusable:'false',style:{display:'block',width:'100%',maxWidth:520,height:'auto',maxHeight:320,margin:'0 auto'}},cells,
+                h('rect',{'data-product-unit':true,x:margin,y:margin,width:unit,height:unit,fill:'none',stroke:opInk,strokeWidth:3,strokeDasharray:'8 5',vectorEffect:'non-scaling-stroke'})
+              ),
+              h('figcaption',{style:{fontSize:13,marginTop:10}},__alloT('stem.fractions.quantity_product_unit','The dashed square is 1 square unit. Each small rectangle is '),'1/'+model.cellDenominator,__alloT('stem.fractions.quantity_square_unit_suffix',' of a square unit. The shaded rectangle can extend beyond one whole.'))
+            ),
+            h('p',{'data-product-piece-count':model.selectedCells,style:{fontSize:15,fontWeight:700}},model.selectedCells+' × 1/'+model.cellDenominator+' = '+fractionText(model.result)),
+            h('p',{style:{fontSize:13,marginTop:8}},model.selectedCells===0?__alloT('stem.fractions.quantity_zero_product','One side length is zero, so no area is shaded.'):__alloT('stem.fractions.quantity_count_product','Count the selected rows times the selected columns. Multiplying the denominators tells you the size of each small piece.')),
+            h('p',{style:{fontSize:13,marginTop:8}},magnitudeReason())
+          );
         }
-        return h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
-          h('p', { className: 'text-[0.6875rem] font-bold text-green-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.area_model', '\uD83D\uDFE9 Area Model')),
-          h('svg', { 'aria-hidden': 'true', viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
-          h('p', { className: 'text-xs text-slate-600 mt-1' },
-            'Green = ' + num1 + '\u00D7' + num2 + ' = ' + (num1 * num2) + ' out of ' + (den1 * den2) + ' total cells'
+        var saved=_f.opGrouping&&_f.opGrouping.key===signExpressionKey?_f.opGrouping.step:model.groupSteps;
+        var step=Math.max(0,Math.min(model.groupSteps,Number.isInteger(saved)?saved:model.groupSteps));
+        var fullShown=Math.min(step,model.fullGroups), partialShown=step>model.fullGroups;
+        var usedPieces=fullShown*model.piecesPerGroup+(partialShown?model.remainderPieces:0);
+        var unused=normalizeFractionPair(model.availablePieces-usedPieces,model.commonDenominator);
+        var displayCount=Math.min(fullShown,8);
+        var setStep=function(next){upd({opGrouping:{key:signExpressionKey,step:next}});};
+        var groupSize=fractionText(normalizeFractionPair(num2,den2));
+        var groupsText=model.fullGroups+(model.remainderPieces?' + '+fractionText(model.partialGroup):'');
+        function groupBar(fraction,label,key) {return h('div',{key:key,'data-division-group':key,style:{minWidth:0,width:'calc((100% - 12px) / 2)',maxWidth:180}},
+          h('p',{style:{fontSize:13,fontWeight:700,marginBottom:6}},label),
+          h('div',{'aria-hidden':'true',style:{height:28,border:'2px solid '+opInk,borderRadius:4,overflow:'hidden',background:opSurface}},h('div',{style:{width:(fraction*100)+'%',height:'100%',background:opAccent}}))
+        );}
+        return h('section',{'data-fraction-division-model':true,style:opCard},
+          h('h3',{style:{fontSize:16,fontWeight:800,margin:'0 0 8px'}},__alloT('stem.fractions.quantity_division_title','Division: how many groups of B fit in A?')),
+          h('p',{style:{fontSize:14}},__alloT('stem.fractions.quantity_available','Available amount: ')+num1+'/'+den1+'. '+__alloT('stem.fractions.quantity_group_size','Size of one group: ')+groupSize+'.'),
+          h('p',{style:{fontSize:13,marginTop:8}},__alloT('stem.fractions.quantity_common_pieces','Use equal-sized pieces: ')+num1+'/'+den1+' = '+model.availablePieces+'/'+model.commonDenominator+'; '+num2+'/'+den2+' = '+model.piecesPerGroup+'/'+model.commonDenominator+'.'),
+          h('p',{style:{fontSize:13,marginTop:8}},__alloT('stem.fractions.quantity_group_outline','Each outlined bar below holds one group, not necessarily one whole unit. A full bar contains ')+groupSize+__alloT('stem.fractions.quantity_units_suffix',' units.')),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,margin:'12px 0'}},
+            [[__alloT('stem.fractions.quantity_start_grouping','Start grouping'),0,step===0],[__alloT('stem.fractions.quantity_previous_group','Previous group'),step-1,step===0],[__alloT('stem.fractions.quantity_next_group','Next group'),step+1,step===model.groupSteps],[__alloT('stem.fractions.quantity_show_groups','Show all groups'),model.groupSteps,step===model.groupSteps]].map(function(button){return h('button',{key:button[0],type:'button',disabled:button[2],onClick:function(){setStep(button[1]);},style:Object.assign({},opButton,{opacity:button[2]?.55:1})},button[0]);})
+          ),
+          h('div',{'data-division-progress':step,role:'status','aria-live':'polite','aria-atomic':true,style:{fontSize:14,fontWeight:700,margin:'10px 0'}},
+            __alloT('stem.fractions.quantity_full_groups','Full groups counted: ')+fullShown+'. '+(partialShown?__alloT('stem.fractions.quantity_partial_added','The partial group is included. '):'')+__alloT('stem.fractions.quantity_amount_remaining','Amount still ungrouped: ')+fractionText(unused)+'.'),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:12}},
+            Array.from({length:displayCount},function(_,index){return groupBar(1,__alloT('stem.fractions.quantity_group_number','Group ')+(index+1),String(index+1));}),
+            !fullShown&&!partialShown&&groupBar(0,__alloT('stem.fractions.quantity_empty_group','One-group outline (empty)'),'empty')
+          ),
+          fullShown>8&&h('p',{'data-division-omitted':fullShown-8,style:{fontSize:13,marginTop:10}},'+ '+(fullShown-8)+' '+__alloT('stem.fractions.quantity_more_full_groups','additional full groups, each with the same amount. The count includes these groups.')),
+          partialShown && h('div',{style:{marginTop:14,paddingTop:12,borderTop:'1px solid '+opBorder},'data-division-partial':fractionText(model.partialGroup)},
+            groupBar(model.remainderPieces/model.piecesPerGroup,__alloT('stem.fractions.quantity_partial_group','Partial group'),'partial'),
+            h('p',{style:{fontSize:14,marginTop:8}},fractionText(model.remainderQuantity)+__alloT('stem.fractions.quantity_remaining_is',' units remain after the full groups. This is ')+fractionText(model.partialGroup)+__alloT('stem.fractions.quantity_of_one_group',' of one group.')),
+            h('p',{style:{fontSize:13,marginTop:6}},model.remainderPieces+' ÷ '+model.piecesPerGroup+' = '+fractionText(model.partialGroup)+'. '+__alloT('stem.fractions.quantity_remainder_explanation','Compare leftover pieces with the pieces in a group, not with the pieces in a whole unit.'))
+          ),
+          step===model.groupSteps && h('div',{'data-division-conclusion':true,style:{marginTop:14,paddingTop:12,borderTop:'1px solid '+opBorder}},
+            h('p',{style:{fontSize:15,fontWeight:800}},num1+'/'+den1+' ÷ '+num2+'/'+den2+' = '+groupsText+(groupsText===fractionText(model.result)?'':' = '+fractionText(model.result))),
+            h('p',{style:{fontSize:13,marginTop:8}},num1===0?__alloT('stem.fractions.quantity_zero_groups','There is no amount to group, so the quotient is zero.'):magnitudeReason()),
+            h('p',{style:{fontSize:13,marginTop:8}},__alloT('stem.fractions.quantity_inverse_check','Check with multiplication: ')+fractionText(model.result)+' × '+groupSize+' = '+fractionText(normalizeFractionPair(num1,den1))+'.')
           )
         );
-      };
+      }
+
 
       var activeMission = signChallengeIndex >= 0 ? getSignedOperationChallenge(signChallengeIndex) : null;
       var signAccuracy = signAttemptCount > 0 ? Math.round(signCorrectCount / signAttemptCount * 100) : 0;
 
-      return h('div', { className: 'space-y-3' },
+      return h('div', { className: 'space-y-3', 'data-fraction-operations':true },
         h('div', { role: 'note', className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center gap-3' },
           h('div', { className: 'flex-1 min-w-[220px]' },
             h('p', { className: 'text-xs font-black text-indigo-800' }, 'Signed fractions'),
             h('p', { className: 'text-[0.6875rem] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
           ),
           h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': __alloT('stem.fractions.a11y_signed_fraction_mode', 'Signed fraction mode'),
-            onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
+            onClick: function() { var next = !signedFractions; upd({opInputDraft:null,opMagnitudeChoice:null,opMagnitudeChecked:null,opGrouping:null, signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
             className: 'px-3 py-2 rounded-lg text-xs font-black transition-all ' + (signedFractions ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300')
           }, signedFractions ? 'Signed mode on' : 'Enable signed mode')
         ),
@@ -3376,7 +3494,7 @@ window.StemLab = window.StemLab || {
               h('h3', { id: 'sign-missions-title', className: 'text-sm font-black' }, 'Sign Detective missions'),
               h('p', { className: 'text-[0.6875rem] text-slate-300 mt-0.5', 'aria-live': 'polite' }, activeMission ? 'Mission ' + (activeMission.index + 1) + ' of ' + SIGNED_OPERATION_CHALLENGES.length + ': ' + activeMission.label : 'Practice a curated mix of signed addition, subtraction, multiplication, and division.')
             ),
-            h('button', { type: 'button', onClick: startNextSignChallenge, className: 'px-3 py-2 rounded-lg bg-cyan-400 text-slate-950 text-xs font-black hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900' }, activeMission ? (signReveal ? 'Next mission' : 'Change mission') : 'Start mission')
+            h('button', { type: 'button', onClick: startNextSignChallenge, className: 'px-3 py-2 rounded-lg bg-cyan-400 text-slate-950 text-xs font-black hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900' }, activeMission ? (operationReveal ? 'Next mission' : 'Change mission') : 'Start mission')
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mt-3 text-center' },
             h('div', null, h('p', { className: 'text-lg font-black text-cyan-300' }, signCorrectCount + '/' + signAttemptCount), h('p', { className: 'text-[0.625rem] text-slate-300' }, 'Correct')),
@@ -3389,7 +3507,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         // Fraction inputs (compact)
-        h('div', { className: 'grid grid-cols-2 gap-4' },
+        h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4' },
           [{ label: 'A', n: num1, d: den1, nk: 'num1', dk: 'den1', color: '#3b82f6' },
            { label: 'B', n: num2, d: den2, nk: 'num2', dk: 'den2', color: '#ef4444' }
           ].map(function(frac) {
@@ -3397,17 +3515,17 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-xs font-bold text-slate-600' }, 'Fraction ' + frac.label),
               h('div', { className: 'flex items-center justify-center gap-1 mt-1' },
                 h('input', {
-                  type: 'number', min: signedFractions ? -20 : 0, max: 20, value: frac.n,
+                  type: 'number', min: signedFractions ? -20 : 0, max: 20, step:1, value: Object.prototype.hasOwnProperty.call(activeDrafts,frac.nk)?activeDrafts[frac.nk]:frac.n, 'aria-invalid':!operandReady(frac.nk,frac.n)||undefined, 'aria-describedby':!operationReady?'fraction-operation-input-help':undefined,
                   'aria-label': 'Fraction ' + frac.label + ' numerator' + (signedFractions ? ', signed values allowed' : ''),
-                  onChange: function(e) { var o = {}; var parsed = parseInt(e.target.value); o[frac.nk] = Math.max(signedFractions ? -20 : 0, Math.min(20, isNaN(parsed) ? 0 : parsed)); o.signPrediction = null; o.signFeedback = null; o.signChallengeIndex = -1; upd(o); },
-                  className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color }
+                  onChange: function(e) { editOperand(frac.nk,e.target.value); },
+                  className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color,background:opSurface,color:opInk,minHeight:44,width:64 }
                 }),
                 h('span', { className: 'text-xl font-bold text-slate-600 mx-1' }, '/'),
                 h('input', {
-                  type: 'number', min: 1, max: 20, value: frac.d,
+                  type: 'number', min: 1, max: 20, step:1, value: Object.prototype.hasOwnProperty.call(activeDrafts,frac.dk)?activeDrafts[frac.dk]:frac.d, 'aria-invalid':!operandReady(frac.dk,frac.d)||undefined, 'aria-describedby':!operationReady?'fraction-operation-input-help':undefined,
                   'aria-label': 'Fraction ' + frac.label + ' denominator',
-                  onChange: function(e) { var o = {}; o[frac.dk] = Math.max(1, parseInt(e.target.value) || 1); o.signPrediction = null; o.signFeedback = null; o.signChallengeIndex = -1; upd(o); },
-                  className: 'w-12 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-blue-400'
+                  onChange: function(e) { editOperand(frac.dk,e.target.value); },
+                  className: 'w-12 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-blue-400',style:{background:opSurface,color:opInk,minHeight:44,width:64}
                 })
               )
             );
@@ -3417,23 +3535,23 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2 justify-center' },
           [['add', '+', 'Add'], ['sub', '\u2212', 'Subtract'], ['mul', '\u00D7', 'Multiply'], ['div', '\u00F7', 'Divide']].map(function(op) {
             return h('button', { key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
-              onClick: function() { sfxClick(); upd({ opMode: op[0], signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
+              onClick: function() { sfxClick(); upd({opInputDraft:null,opMagnitudeChoice:null,opMagnitudeChecked:null,opGrouping:null, opMode: op[0], signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
             }, op[1]);
           })
         ),
-        signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3' },
+        signedFractions && operationReady && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3' },
           h('legend', { className: 'px-1 text-xs font-black text-violet-800' }, 'Sign Detective: predict the result'),
           opUndefined ? h('p', { role: 'status', className: 'text-xs text-red-700' }, 'The second fraction is zero, so division is undefined and has no sign.') : h(React.Fragment, null,
-            !signReveal && h('p', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, 'Strategy: ' + signReasoning.prompt),
+            !operationReveal && h('p', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, 'Strategy: ' + signReasoning.prompt),
             h('div', { className: 'grid grid-cols-3 gap-2' }, ['positive', 'zero', 'negative'].map(function(choice) {
               return h('label', { key: choice, className: 'flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-xs font-bold cursor-pointer ' + (signPrediction === choice ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200') },
-                h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: opUndefined || signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
+                h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: opUndefined || operationReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
                 choice.charAt(0).toUpperCase() + choice.slice(1)
               );
             })),
-            !signReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-700 cursor-not-allowed') }, 'Check sign and reveal'),
+            !operationReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-700 cursor-not-allowed') }, 'Check sign and reveal'),
             signFeedback && signFeedback.key === signExpressionKey && h(React.Fragment, null,
               h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-xs font-bold ' + (signFeedback.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') },
                 (signFeedback.correct ? 'Prediction confirmed. ' : 'Prediction review. ') + 'The exact result is ' + opSimplified[0] + '/' + opSimplified[1] + ', which is ' + opResultSign + '.'
@@ -3447,25 +3565,28 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
+        !operationReady && h('p',{id:'fraction-operation-input-help',role:'status',style:opCard},signedFractions?__alloT('stem.fractions.quantity_signed_input_help','Use whole-number numerators from -20 to 20 and denominators from 1 to 20. Finish the highlighted inputs to update the model.'):__alloT('stem.fractions.quantity_input_help','Use whole-number numerators from 0 to 20 and denominators from 1 to 20. Finish the highlighted inputs to update the model.')),
+        renderMagnitudePrediction(),
+        renderQuantityModel(),
         // Result
-        h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-white rounded-xl border-2 border-orange-200 p-4 text-center' },
+        operationReady && h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-white rounded-xl border-2 border-orange-200 p-4 text-center' },
           h('div', { className: 'text-2xl font-bold text-slate-800 mb-3' },
             h('span', { className: 'text-blue-600' }, num1 + '/' + den1),
             h('span', { className: 'mx-3 text-orange-600' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
             h('span', { className: 'mx-3 text-slate-600' }, '='),
-            h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : signReveal ? opSimplified[0] + '/' + opSimplified[1] : '?')
+            h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : operationReveal ? opSimplified[0] + '/' + opSimplified[1] : '?')
           ),
           // Mixed number result
-          (signReveal && !opUndefined && Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-600 mb-2' },
+          (operationReveal && !opUndefined && Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-700 mb-2' },
             '\uD83D\uDCE6 Mixed: ' + toMixed(opSimplified[0], opSimplified[1])
           ),
           // Decimal result
           h('p', { className: 'text-xs text-slate-600 mb-3' },
-            opUndefined ? 'Division by 0 is undefined. Pick a nonzero second fraction.' : !signReveal ? 'Predict the sign before revealing the exact value.' : '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
+            opUndefined ? 'Division by 0 is undefined. Pick a nonzero second fraction.' : !operationReveal ? (signedFractions?'Predict the sign before revealing the exact value.':__alloT('stem.fractions.quantity_wait_prediction','Check a prediction or reveal the worked model to see the exact value.')) : '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
           ),
           // Step-by-step
-          signReveal && h('div', { className: 'bg-orange-50 rounded-lg p-3 text-xs text-orange-800 space-y-1 text-left' },
+          operationReveal && h('div', { className: 'bg-orange-50 rounded-lg p-3 text-xs text-orange-800 space-y-1 text-left' },
             h('p', { className: 'font-bold' }, __alloT('stem.fractions.step_by_step', '\uD83D\uDCA1 Step by step:')),
             (opMode === 'add' || opMode === 'sub')
               ? h(React.Fragment, null,
@@ -3483,12 +3604,10 @@ window.StemLab = window.StemLab || {
           ),
           // Result bar
           h('div', { className: 'mt-3 flex justify-center' },
-            opUndefined || !signReveal ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
+            opUndefined || !operationReveal ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
           )
         ),
-        renderSignedOperationNumberLine(),
-        // Area model (multiplication only)
-        renderAreaModel()
+        renderSignedOperationNumberLine()
       );
     };
 

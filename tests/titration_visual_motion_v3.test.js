@@ -308,7 +308,7 @@ describe('notebook persistence during addition feedback', () => {
       const save = [...labs[0].querySelectorAll('.titr-notebook button')].find(button => button.textContent === 'Save reading');
       await React.act(async () => save.click());
       expect(labs[0].querySelectorAll('.titr-notebook li')).toHaveLength(1);
-      await React.act(async () => { vi.advanceTimersByTime(900); });
+      await React.act(async () => { vi.advanceTimersByTime(1800); });
       expect(labs[0].querySelectorAll('.titr-notebook li')).toHaveLength(1);
       expect(labs[0].querySelector('.titr-notebook li').textContent).toContain('5.0 mL');
       expect(labs[1].querySelectorAll('.titr-notebook li')).toHaveLength(0);

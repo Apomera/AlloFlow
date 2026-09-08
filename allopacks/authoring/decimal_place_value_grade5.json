@@ -1,0 +1,202 @@
+{
+  "slug": "decimal_place_value_grade5",
+  "prefix": "dpv",
+  "grade": "5th Grade",
+  "title": "Same Digits, Different Values — Decimals",
+  "standard": "CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning)",
+  "source": "https://www.thecorestandards.org/Math/Content/5/NBT/",
+  "reading": "## Same Digits, Different Values\n\nTwo ribbons measure 0.6 meter and 0.45 meter. Which is longer? The number 45 is greater than 6, but that does not settle this question. We must compare the same units.\n\nA **decimal** uses place value to show whole amounts and parts of one. Each **digit** has a value based on its place. The **point** separates the ones place from the tenths place. It is a marker, not a command to ignore units.\n\nSplit one meter into ten equal parts. Each part is a **tenth**. Split a tenth into ten equal parts. Each smaller part is a **hundredth**. Split a hundredth into ten equal parts. Each new part is a **thousandth**. Moving one place right makes the unit one tenth as large.\n\nThe ribbon that is 0.6 meter long is six tenths of a meter. We can also name it as sixty hundredths: 0.60 meter. Now compare 60 hundredths with 45 hundredths. The first ribbon is longer.\n\n**Equivalent** decimals name the same value. Adding a zero at the right end of a decimal's fractional part does not change its value. For example, 2.5 and 2.500 are equal. But inserting a zero between other digits can change the value. The numbers 2.05 and 2.5 are not equal.\n\nTo **compare** two decimals, start with the greatest place and work right. Compare ones, then tenths, then hundredths, as needed. The first unequal place decides which number is greater. With 3.407 and 3.47, the ones and tenths match. Write 3.47 as 3.470. Zero hundredths are fewer than seven hundredths, so 3.407 is less.\n\nA **unit** tells what an amount measures. Use the same unit and the same whole in a drawing. Six tenths of a small ribbon need not be longer than half of a much larger ribbon. A model is useful only when we know what counts as one.\n\nExplain your answer with a place-value name, an equivalent decimal, or a carefully scaled model. Counting written digits is not a comparison rule.",
+  "terms": [
+    [
+      "Decimal",
+      "A number written with base-ten places, including places for parts of one."
+    ],
+    [
+      "Digit",
+      "One symbol from zero through nine used to write a number."
+    ],
+    [
+      "Point",
+      "The mark separating ones from tenths in decimal notation."
+    ],
+    [
+      "Tenth",
+      "One of ten equal parts of a whole."
+    ],
+    [
+      "Hundredth",
+      "One of one hundred equal parts of a whole."
+    ],
+    [
+      "Thousandth",
+      "One of one thousand equal parts of a whole."
+    ],
+    [
+      "Equivalent",
+      "Equal in value even when written in different ways."
+    ],
+    [
+      "Compare",
+      "Decide whether amounts are equal or which is greater."
+    ],
+    [
+      "Unit",
+      "The amount or measure used as a reference."
+    ]
+  ],
+  "anchors": [
+    [
+      "NAME THE PLACE",
+      [
+        "One tenth is ten hundredths",
+        "One hundredth is ten thousandths"
+      ],
+      "Equal whole bars partitioned into tenths and hundredths; exact divisions required"
+    ],
+    [
+      "COMPARE LIKE UNITS",
+      [
+        "Keep the whole and unit the same",
+        "Compare from greatest place to least"
+      ],
+      "Two equal whole bars with six tenths and forty-five hundredths shaded"
+    ],
+    [
+      "ZERO WITH CARE",
+      [
+        "0.6 equals 0.60",
+        "0.06 does not equal 0.6"
+      ],
+      "Equal whole grids showing six tenths and six hundredths"
+    ]
+  ],
+  "cats": [
+    "Equal to 0.5",
+    "Less than 0.5",
+    "Greater than 0.5"
+  ],
+  "sort": [
+    [
+      "0.50",
+      0
+    ],
+    [
+      "0.500",
+      0
+    ],
+    [
+      "0.05",
+      1
+    ],
+    [
+      "0.499",
+      1
+    ],
+    [
+      "0.51",
+      2
+    ],
+    [
+      "0.605",
+      2
+    ]
+  ],
+  "quiz": [
+    [
+      "Which decimal equals 0.6?",
+      [
+        "0.06",
+        "0.006",
+        "6.00",
+        "0.60"
+      ],
+      3,
+      "equivalent values"
+    ],
+    [
+      "Which comparison is true?",
+      [
+        "0.6 > 0.45",
+        "0.6 < 0.45",
+        "0.6 = 0.45",
+        "0.06 = 0.45"
+      ],
+      0,
+      "compare places"
+    ],
+    [
+      "What is the value of 7 in 2.073?",
+      [
+        "Seven tenths",
+        "Seven hundredths",
+        "Seven thousandths",
+        "Seven whole units"
+      ],
+      1,
+      "compare places"
+    ],
+    [
+      "Which decimal equals 3.47?",
+      [
+        "3.047",
+        "3.407",
+        "3.470",
+        "34.70"
+      ],
+      2,
+      "equivalent values"
+    ],
+    [
+      "What must match in two fraction-of-a-whole drawings?",
+      [
+        "The colors of the outlines",
+        "The number of drawn digits",
+        "The names of the students",
+        "The size of the whole unit"
+      ],
+      3,
+      "compare places"
+    ]
+  ],
+  "short": [
+    [
+      "Explain why 0.52 is greater than 0.507.",
+      "Write 0.52 as 0.520. The tenths match, but two hundredths exceed zero hundredths, so 0.520 is greater than 0.507.",
+      "compare places"
+    ],
+    [
+      "Why does 4.20 equal 4.2 while 4.02 does not?",
+      "Twenty hundredths equal two tenths. In 4.02 there are zero tenths and two hundredths, so it is a different value.",
+      "equivalent values"
+    ]
+  ],
+  "faq": [
+    [
+      "Does a longer decimal always have greater value?",
+      "No. The values of its places matter. For example, 0.9 is greater than 0.125."
+    ],
+    [
+      "Can I add a zero anywhere?",
+      "No. A zero at the far right of the fractional part preserves value. Inserting one elsewhere may change the places."
+    ],
+    [
+      "Is 0.500 three times as much as 0.5?",
+      "No. Both name one half. More written digits do not multiply the amount."
+    ],
+    [
+      "Why keep the same whole in a model?",
+      "The parts get their size from the whole. Comparing different wholes can hide which numerical value is greater."
+    ]
+  ],
+  "challenge": [
+    "A craft team has ribbon lengths of 0.6 m, 0.45 m, 0.605 m, and 0.56 m. It needs an order from shortest to longest.",
+    "How can we order the ribbons and prove the order using place value?",
+    "Write equivalent decimals to thousandths. Compare like places. Check with a model that uses the same whole meter.",
+    "Give the order, explain two neighboring comparisons, and correct the claim that more decimal digits always means longer."
+  ],
+  "facts": [
+    "Each place to the right has a unit one tenth as large.",
+    "Trailing zeros in the fractional part do not change value.",
+    "Compare numbers using the same unit and whole."
+  ]
+}

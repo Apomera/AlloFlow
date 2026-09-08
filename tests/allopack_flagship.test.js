@@ -29,7 +29,7 @@ describe('envelope + loader compatibility', () => {
   });
   it('every item carries the envelope: unique id, registered type, title, timestamp, data', () => {
     const seen = new Set();
-    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'anchor-chart']);
+    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'anchor-chart', 'memory-aid', 'applied-challenge']);
     for (const it2 of items) {
       expect(it2.id && !seen.has(it2.id)).toBe(true);
       seen.add(it2.id);
@@ -170,7 +170,7 @@ describe('authoring rules (the ones that bite)', () => {
   });
   it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {
     expect(anti).toContain('_translatedIdMap[item.id] = newItem.id;');
-    expect(anti).toContain("objectives: newItem.data.objectives.map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),");
+    expect(anti).toContain("objectives: (Array.isArray(newItem.data.objectives) ? newItem.data.objectives : []).map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),");
     expect(anti).toContain('_translateFailures.push(item.title || item.type);');
   });
 });

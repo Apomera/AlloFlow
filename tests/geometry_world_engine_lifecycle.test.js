@@ -222,6 +222,40 @@ describe('Geometry World engine lifecycle', () => {
     m.unmount();
   }, 20000);
 
+  it('preserves an active creation when a desktop session narrows before mobile onboarding', () => {
+    const width = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+    const touch = Object.getOwnPropertyDescriptor(window, 'ontouchstart');
+    Object.defineProperty(window, 'innerWidth', {configurable:true, value:1280});
+    Object.defineProperty(window, 'ontouchstart', {configurable:true, value:null});
+    const fake = makeFakeEngine();
+    fake.blocks['2,1,3'] = {userData:{gridPos:{x:2,y:1,z:3},blockType:'wood'}};
+    fake._undoStack.push({action:'place',x:2,y:1,z:3});
+    const originalBlocks = fake.blocks, originalHistory = fake._undoStack, originalCamera = fake.camera;
+    window[ENGINE_KEY] = fake;
+    const m = mountTool(cfg, {_introShownOnce:true, worldActive:true});
+    const surface = m.container.querySelector('#geoworld-fs-wrap');
+    try {
+      expect(m.bucket()._mobileDismissed).toBeUndefined();
+      for (const next of [390,320,1280]) {
+        Object.defineProperty(window, 'innerWidth', {configurable:true, value:next});
+        m.rerender();
+        expect(window[ENGINE_KEY]).toBe(fake);
+        expect(m.container.querySelector('#geoworld-fs-wrap')).toBe(surface);
+        expect(m.container.querySelector('#gw-mobile-title')).toBeNull();
+        expect(fake.blocks).toBe(originalBlocks);
+        expect(fake._undoStack).toBe(originalHistory);
+        expect(fake.camera).toBe(originalCamera);
+        expect(Object.keys(fake.blocks)).toEqual(['2,1,3']);
+        expect(fake._calls.clearWorld).toBe(0);
+        expect(fake._calls.rendererDisposed).toBe(0);
+      }
+    } finally {
+      m.unmount();
+      if(width)Object.defineProperty(window,'innerWidth',width);else delete window.innerWidth;
+      if(touch)Object.defineProperty(window,'ontouchstart',touch);else delete window.ontouchstart;
+    }
+  }, 20000);
+
   it('DOES tear the engine down on a real unmount', () => {
     const fake = makeFakeEngine();
     window[ENGINE_KEY] = fake;

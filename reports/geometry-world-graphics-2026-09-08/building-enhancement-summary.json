@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-09-08T23:13:54.061Z",
+  "syntax": "passed",
+  "desktopMirrors": "byte-identical",
+  "sourceSHA256": {
+    "stem_tool_geometryworld.js": "0936536bfb492ef20901160d39233b29033f3d47bb2e87e2dbc2f9c989f04a56",
+    "stem_tool_geometryworld_builder.js": "0ec4ab891a9c31edf47b13f038506ce31cfd3b3d07c5e56948e24ad758927cde",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "testReports": [
+    "placement-transaction-tests.json",
+    "building-controls-tests.json",
+    "touch-pointer-lock-tests.json",
+    "showcase-views-tests.json",
+    "studio-floor-tests.json"
+  ],
+  "distinctPassedTests": 299,
+  "testsByFile": {
+    "geometry_world_block_fidelity.test.js": 31,
+    "geometry_world_keyboard_access.test.js": 61,
+    "geometry_world_placement_transaction.test.js": 20,
+    "geometry_world_rotated_placement.test.js": 19,
+    "geometry_world_visual_pipeline.test.js": 55,
+    "geometry_world_display_controls.test.js": 27,
+    "geometry_world_engine_lifecycle.test.js": 9,
+    "geometry_world_material_graphics.test.js": 4,
+    "geometry_world_printlab_bridge.test.js": 28,
+    "geometry_world_print_workflow.test.js": 12,
+    "geometry_world_stl_export.test.js": 22,
+    "geometry_world_pointer_lock.test.js": 11
+  }
+}

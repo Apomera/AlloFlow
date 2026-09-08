@@ -97,3 +97,117 @@ describe('Measured page fit', () => {
     expect(width).toBeGreaterThan(page); expect(width * 816).toBeCloseTo(356);
   });
 });
+
+
+describe('Page Designer editing gestures', () => {
+  function titleObject() { return host.querySelector('[role="group"][aria-label*="text: Your Event Title"]'); }
+  function pointer(node, type, x, y, button = 0) { node.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button })); }
+  function recovery() { act(() => window.dispatchEvent(new Event('pagehide'))); return saved().doc; }
+  it('commits the final pointer position when move and release share a React batch', () => {
+    mount(); click('Snap'); const before = recovery(); const obj = before.objects.find(o => o.type === 'text');
+    const scale = parseFloat(host.querySelector('[data-st-canvas-viewport]').firstElementChild.style.width) / before.canvas.w;
+    const node = titleObject();
+    act(() => { pointer(node, 'pointerdown', 100, 100); pointer(node, 'pointermove', 94, 110); pointer(node, 'pointerup', 88, 130); });
+    const moved = recovery().objects.find(o => o.id === obj.id);
+    expect(moved.frame.x).toBeCloseTo(obj.frame.x - 12 / scale, 0);
+    expect(moved.frame.y).toBeCloseTo(obj.frame.y + 30 / scale, 0);
+  });
+  it('cancels a drag with Escape without adding an edit', () => {
+    mount(); const before = recovery(); const node = titleObject();
+    act(() => { pointer(node, 'pointerdown', 100, 100); pointer(node, 'pointermove', 160, 160); });
+    act(() => node.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    act(() => pointer(node, 'pointerup', 160, 160));
+    expect(recovery().objects).toEqual(before.objects); expect(recovery().ledger.ops.length).toBe(before.ledger.ops.length);
+  });
+  it('ignores secondary clicks and small tap movement', () => {
+    mount(); const before = recovery(); const node = titleObject();
+    act(() => { pointer(node, 'pointerdown', 100, 100, 2); pointer(node, 'pointermove', 150, 150, 2); pointer(node, 'pointerup', 150, 150, 2); });
+    act(() => { pointer(node, 'pointerdown', 100, 100); pointer(node, 'pointermove', 101, 101); pointer(node, 'pointerup', 101, 101); });
+    expect(recovery().objects).toEqual(before.objects); expect(recovery().ledger.ops.length).toBe(before.ledger.ops.length);
+  });
+  it('commits a pending field before selecting a canvas object', () => {
+    mount(); const input = host.querySelector('[aria-label="Document title"]');
+    act(() => { input.focus(); input.value = 'Pending text preserved'; });
+    const node = titleObject(); act(() => { pointer(node, 'pointerdown', 100, 100); pointer(node, 'pointerup', 100, 100); });
+    expect(recovery().title).toBe('Pending text preserved');
+  });
+  it('does not open an inline editor on locked text', () => {
+    mount(); const node = titleObject(); act(() => node.focus());
+    const checkbox = host.querySelector('[data-st-panel="inspector"] input[type="checkbox"]');
+    act(() => checkbox.click()); act(() => titleObject().dispatchEvent(new MouseEvent('dblclick', { bubbles: true })));
+    expect(host.querySelector('textarea[aria-label="Edit text"]')).toBeNull();
+  });
+});
+
+
+describe('Page Designer insertion placement', () => {
+  it('finds space without covering existing content on the current page', () => {
+    const canvas = { w: 816, h: 1056 }, initial = { x: 60, y: 60, w: 400, h: 70 };
+    const frame = Studio.stFindInsertFrame(initial, canvas, [{ type: 'text', frame: initial }], 0);
+    expect(frame.y).toBeGreaterThanOrEqual(initial.y + initial.h + 12);
+    expect(frame.x + frame.w).toBeLessThanOrEqual(canvas.w); expect(frame.y + frame.h).toBeLessThanOrEqual(canvas.h);
+  });
+  it('ignores occupied space on other pages and keeps crowded-page placement inside bounds', () => {
+    const canvas = { w: 400, h: 300 }, initial = { x: 20, y: 20, w: 150, h: 60 };
+    expect(Studio.stFindInsertFrame(initial, canvas, [{ page: 1, frame: initial }], 0)).toMatchObject(initial);
+    const frame = Studio.stFindInsertFrame(initial, canvas, [{ frame: { x: 0, y: 0, w: 400, h: 300 } }], 0);
+    expect(frame.x).toBeGreaterThanOrEqual(0); expect(frame.x + frame.w).toBeLessThanOrEqual(400); expect(frame.y + frame.h).toBeLessThanOrEqual(300);
+  });
+});
+
+describe('Page Designer export lifecycle', () => {
+  it('blocks duplicate PDF jobs and reports completion', async () => {
+    let finish; const onExportTaggedPdf = vi.fn(() => new Promise(resolve => { finish = resolve; }));
+    mount({ onExportTaggedPdf }); click('Export'); click('Tagged PDF (accessible)');
+    expect(onExportTaggedPdf).toHaveBeenCalledOnce(); expect(button('Tagged PDF (accessible)').disabled).toBe(true);
+    act(() => button('Tagged PDF (accessible)').click()); expect(onExportTaggedPdf).toHaveBeenCalledOnce();
+    expect(host.querySelector('[data-st-export-status]').textContent).toContain('Preparing');
+    await act(async () => finish(true)); expect(button('Tagged PDF (accessible)').disabled).toBe(false);
+    expect(host.querySelector('[data-st-export-status]').textContent).toContain('export finished');
+  });
+  it('catches synchronous host failures and lets the user retry', async () => {
+    const onExportTaggedPdf = vi.fn().mockImplementationOnce(() => { throw new Error('PDF service unavailable'); }).mockResolvedValue(true);
+    mount({ onExportTaggedPdf }); click('Export'); await act(async () => button('Tagged PDF (accessible)').click());
+    expect(host.querySelector('[data-st-export-status]').textContent).toContain('PDF service unavailable'); expect(button('Tagged PDF (accessible)').disabled).toBe(false);
+    await act(async () => button('Tagged PDF (accessible)').click()); expect(onExportTaggedPdf).toHaveBeenCalledTimes(2);
+    expect(host.querySelector('[data-st-export-status]').textContent).toContain('export finished');
+  });
+  it('shows an incomplete export instead of success when the host returns false', async () => {
+    mount({ onExportTaggedPdf: () => Promise.resolve(false) }); click('Export'); await act(async () => button('Tagged PDF (accessible)').click());
+    expect(host.querySelector('[data-st-export-status]').textContent).toContain('did not complete');
+  });
+});
+
+
+describe('Page Designer review follow-through', () => {
+  it('offers snap candidates only from the current page and excludes the selection', () => {
+    const objects = [{ id: 'active' }, { id: 'same', page: 0 }, { id: 'hidden', page: 1 }, { id: 'locked', page: 0, locked: true }];
+    expect(Studio.stSnapCandidates(objects, 0, ['active']).map(o => o.id)).toEqual(['same', 'locked']);
+    expect(Studio.stSnapCandidates(objects, 1, ['hidden'])).toEqual([]);
+  });
+  it('marks linked Activity work dirty after Undo and Redo', () => {
+    mount({ initialResource: { artifactId: 'test-worksheet', sourceRevision: '1' }, onSaveGeneratedArtifact: () => ({ ok: true, sourceRevision: '2' }) });
+    editTitle('Activity edit'); click('Save to Activity'); expect(host.textContent).toContain('Saved to Activity');
+    click('Undo'); expect(host.textContent).toContain('Unsaved Activity changes');
+    click('Save to Activity'); expect(host.textContent).toContain('Saved to Activity');
+    click('Redo'); expect(host.textContent).toContain('Unsaved Activity changes');
+  });
+  it('selects a group with taps without keyboard modifiers', () => {
+    mount(); click('Select multiple');
+    const objects = [...host.querySelectorAll('[role="group"][aria-label^="text:"]')].slice(0, 2);
+    expect(objects.length).toBe(2);
+    for (const node of objects) act(() => node.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientX: 100, clientY: 100 })));
+    expect(host.textContent).toContain('2 selected'); click('Done selecting');
+    expect(host.textContent).toContain('Selection - 2 objects');
+    expect(host.querySelectorAll('[role="group"][aria-label^="Selected text:"]').length).toBe(2);
+  });
+  it('provides page previews that navigate to the chosen page', () => {
+    mount(); const actions = host.querySelector('[aria-label="Page actions"]');
+    act(() => { actions.value = 'duplicate'; actions.dispatchEvent(new Event('change', { bubbles: true })); });
+    click('Pages'); const previews = host.querySelector('[aria-label="Page previews"]');
+    expect(previews.querySelectorAll('button').length).toBe(2);
+    act(() => previews.querySelector('[aria-label="Go to page 1"]').click());
+    expect(host.querySelector('[aria-label="Select page"]').value).toBe('0');
+    expect(previews.querySelector('[aria-label="Go to page 1"]').getAttribute('aria-current')).toBe('page');
+  });
+});

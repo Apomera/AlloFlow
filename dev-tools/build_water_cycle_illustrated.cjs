@@ -77,6 +77,8 @@ pack.allopack.sourceAuthor=pack.allopack.author;
 pack.allopack.author='AlloFlow flagship; illustrated pilot prepared with AI-generated artwork';
 pack.allopack.title += ' — Illustrated Pilot';
 pack.allopack.illustrations={version:1,createdAt:'2026-09-04',provider:'Built-in image generation',imageCount:24,review:'AI visual review completed; educator review pending',textPolicy:'Text-free artwork; native editable labels and captions',altText:'Image-specific descriptions embedded for all 24 images'};
+require('./refine_illustrated_quality.cjs')(pack,'water_cycle_grade6');
+require('./backfill_allopack_resource_images.cjs')(pack,'water_cycle_grade6');
 const output=JSON.stringify(pack,null,2)+'\n';
 if(output.length>2000000)throw Error('Pack exceeds 2M-character artifact contract: '+output.length);
 fs.mkdirSync(path.join(root,'allopacks/illustrated'),{recursive:true});

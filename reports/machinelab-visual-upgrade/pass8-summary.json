@@ -1,0 +1,81 @@
+{
+  "tests": {
+    "passed": 741,
+    "failed": 0,
+    "success": true,
+    "report": "pass8-tests-final.json"
+  },
+  "browser": [
+    {
+      "directory": "pass8-light",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop-windlass-ready",
+        "workshop-windlass-lift",
+        "workshop-windlass-large",
+        "workshop-screw-ready",
+        "workshop-screw-press",
+        "workshop-screw-coarse"
+      ]
+    },
+    {
+      "directory": "pass8-dark",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop-windlass-ready",
+        "workshop-windlass-lift",
+        "workshop-windlass-large",
+        "workshop-screw-ready",
+        "workshop-screw-press",
+        "workshop-screw-coarse"
+      ]
+    },
+    {
+      "directory": "pass8-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "workshop-windlass-ready",
+        "workshop-windlass-lift",
+        "workshop-windlass-large",
+        "workshop-screw-ready",
+        "workshop-screw-press",
+        "workshop-screw-coarse"
+      ]
+    }
+  ],
+  "viewports": [
+    1180,
+    390,
+    320
+  ],
+  "mobileObstructionChecks": "Passed for both windlass and screw in each theme at 390px and 320px",
+  "reducedMotion": "Captured screw at 320px in each theme; press contact and stationary pose covered by geometry tests",
+  "mirrorMatches": true,
+  "sha256": "8ddc2aae9c89f15c813a631fd914359c28fb482b91c8e6df1fee5510d001e3be",
+  "syntax": "passed",
+  "whitespace": "passed"
+}

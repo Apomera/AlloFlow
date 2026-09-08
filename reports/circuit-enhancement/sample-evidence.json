@@ -1,0 +1,67 @@
+{
+  "format": "circuit-evidence-v1",
+  "model": "steady-dc-led-piecewise",
+  "trials": [
+    {
+      "before": {
+        "components": [
+          {
+            "type": "resistor",
+            "value": 470,
+            "id": 1788870054726
+          },
+          {
+            "type": "led",
+            "value": 40,
+            "id": 1788870055590,
+            "ledColor": "#ef4444"
+          },
+          {
+            "type": "switch",
+            "value": 0,
+            "id": 1788870054519,
+            "closed": true
+          }
+        ],
+        "mode": "series",
+        "voltage": 9
+      },
+      "after": {
+        "components": [
+          {
+            "type": "resistor",
+            "value": 470,
+            "id": 1788870054726
+          },
+          {
+            "type": "led",
+            "value": 40,
+            "id": 1788870055590,
+            "ledColor": "#ef4444"
+          },
+          {
+            "type": "switch",
+            "value": 1,
+            "id": 1788870054519,
+            "closed": true
+          },
+          {
+            "type": "resistor",
+            "value": 100,
+            "id": 1788870059985
+          }
+        ],
+        "mode": "series",
+        "voltage": 9
+      },
+      "prediction": "Adding resistance will reduce the current because the voltage is unchanged.",
+      "delta": -0.0025143582427361658,
+      "explanation": "The added 100 ohms reduced the current at the same source voltage.",
+      "changes": [
+        "part 4: added resistor"
+      ],
+      "controlled": true,
+      "comparisonKey": "[{\"components\":[{\"type\":\"resistor\",\"value\":470,\"id\":1788870054726},{\"type\":\"led\",\"value\":40,\"id\":1788870055590,\"ledColor\":\"#ef4444\"},{\"type\":\"switch\",\"value\":0,\"id\":1788870054519,\"closed\":true}],\"mode\":\"series\",\"voltage\":9},{\"components\":[{\"type\":\"resistor\",\"value\":470,\"id\":1788870054726},{\"type\":\"led\",\"value\":40,\"id\":1788870055590,\"ledColor\":\"#ef4444\"},{\"type\":\"switch\",\"value\":1,\"id\":1788870054519,\"closed\":true},{\"type\":\"resistor\",\"value\":100,\"id\":1788870059985}],\"mode\":\"series\",\"voltage\":9}]"
+    }
+  ]
+}

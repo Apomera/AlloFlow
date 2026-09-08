@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const file=path.join(__dirname,'verify-workspace-pass.cjs');let source=fs.readFileSync(file,'utf8');
+const before="const state=await probe(button);state.key=key;state.index=await page.evaluate(()=>__ctx.toolData.geometryWorld.selectedBlock);frame.shortcuts.push(state);";
+const after="const state=await probe(button);state.key=key;state.index=await page.evaluate(()=>__ctx.toolData.geometryWorld.selectedBlock);state.fullyInPalette=await button.evaluate(node=>{const r=node.getBoundingClientRect(),p=node.closest('.gw-hotbar').getBoundingClientRect();return r.left>=p.left-0.5&&r.right<=p.right+0.5;});frame.shortcuts.push(state);\n          check(state.fullyInPalette,label+': '+key+' reveals the entire selected material tile');\n          check(state.name.replace(/[−–]/g,'-').includes('key '+({Digit0:'0',Minus:'-',Equal:'='}[key])),label+': '+name+' announces its actual keyboard shortcut');";
+assert.equal(source.split(before).length-1,1);source=source.replace(before,after);
+const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,source,'utf8');fs.ftruncateSync(fd,Buffer.byteLength(source));}finally{fs.closeSync(fd);}

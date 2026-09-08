@@ -1,0 +1,201 @@
+{
+  "slug": "probability_models_grade7",
+  "prefix": "prb",
+  "grade": "7th Grade",
+  "title": "Likely Is Not Certain — Probability Models",
+  "standard": "CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabilities); CCSS.MATH.CONTENT.7.SP.C.7 (develop and evaluate probability models)",
+  "source": "https://www.thecorestandards.org/Math/Content/7/SP/C/7/",
+  "reading": "## Likely Is Not Certain\n\nA bag holds three blue counters and one red counter. They have the same size and shape. You mix them, draw without looking, record the color, and put the counter back. Must every four draws include one red? No. A model describes chances, not a schedule.\n\nAn **outcome** is a possible result of one trial. An **event** is a set of outcomes we are interested in. Here the event is drawing red. A **trial** is one run of the chance process.\n\n**Probability** measures how likely an event is, using a number from zero to one. Zero means impossible in the stated model. One means certain in that model. A probability of one half is an even chance. Likely does not mean guaranteed.\n\nA **model** lists possible outcomes and assigns their chances. If each of the four counters is equally likely to be drawn, one of the four is red. The probability of red is one fourth. The probability of blue is three fourths. Colors are not equally likely just because there are two color names.\n\n**Random** selection means using a chance process instead of deliberately choosing a result. Our bag model assumes equal chances for the individual counters. Different sizes, poor mixing, or looking into the bag could make that model unsuitable.\n\n**Replacement** means returning the counter before the next draw. Mixing again keeps the intended setup the same. Without replacement, the bag changes. The next probability then depends on what was removed.\n\nThe **frequency** of red is how many times red occurs. Divide that count by the number of trials to get relative frequency. If red appears seven times in twenty draws, its relative frequency is 7/20, or 0.35. That does not exactly match the model's 0.25.\n\nSmall samples often vary. With many well-run trials, relative frequency tends to be closer to the model probability, but no particular result is promised. A long run of blue does not make red due on the next independent draw.\n\nUse results to question a model. A mismatch might reflect ordinary chance, too few trials, or a poor assumption. Repeat carefully and look for patterns before deciding which explanation fits.",
+  "terms": [
+    [
+      "Outcome",
+      "A possible result of one chance trial."
+    ],
+    [
+      "Event",
+      "A set of possible outcomes of interest."
+    ],
+    [
+      "Trial",
+      "One run of a chance process."
+    ],
+    [
+      "Probability",
+      "A number from zero to one measuring how likely an event is."
+    ],
+    [
+      "Model",
+      "A description of outcomes and the chances assigned to them."
+    ],
+    [
+      "Random",
+      "Selected through a chance process rather than a deliberate choice."
+    ],
+    [
+      "Replacement",
+      "Returning a selected object before another draw."
+    ],
+    [
+      "Frequency",
+      "The number of times a result occurs."
+    ]
+  ],
+  "anchors": [
+    [
+      "STATE THE MODEL",
+      [
+        "List the outcomes",
+        "Explain why chances are assigned",
+        "Two colors need not be equally likely"
+      ],
+      "Exactly three blue counters and one red counter beside an opaque bag"
+    ],
+    [
+      "KEEP THE SETUP CLEAR",
+      [
+        "Say whether each counter is returned",
+        "Mix before another draw",
+        "Do not look when selecting"
+      ],
+      "Hand returning a counter to an opaque bag"
+    ],
+    [
+      "COMPARE MODEL AND DATA",
+      [
+        "Use event count divided by trial count",
+        "Expect variation in short runs",
+        "A streak does not make an outcome due"
+      ],
+      "Repeated counter draws recorded as pictures without implying a fixed sequence"
+    ]
+  ],
+  "cats": [
+    "Impossible in the stated bag",
+    "Possible but not certain",
+    "Certain in the stated bag"
+  ],
+  "sort": [
+    [
+      "Draw a green counter from a bag containing only red and blue",
+      0
+    ],
+    [
+      "Draw a yellow counter from a bag containing only red and blue",
+      0
+    ],
+    [
+      "Draw red from a bag containing three blue and one red",
+      1
+    ],
+    [
+      "Draw blue from a bag containing three blue and one red",
+      1
+    ],
+    [
+      "Draw either red or blue from a bag containing only those colors",
+      2
+    ],
+    [
+      "Draw red from a bag in which every counter is red",
+      2
+    ]
+  ],
+  "quiz": [
+    [
+      "Three of four equally likely counters are blue. What is P(blue)?",
+      [
+        "1/4",
+        "3/4",
+        "1/2",
+        "1"
+      ],
+      1,
+      "probability models"
+    ],
+    [
+      "Red occurs seven times in twenty trials. What is its relative frequency?",
+      [
+        "7/4",
+        "20/7",
+        "7/20",
+        "1/7"
+      ],
+      2,
+      "model and data"
+    ],
+    [
+      "After five blue draws with replacement, what happens to P(red)?",
+      [
+        "It becomes certain",
+        "It becomes impossible",
+        "It must now be one half",
+        "It stays one fourth"
+      ],
+      3,
+      "probability models"
+    ],
+    [
+      "Why return and mix the counter after each draw?",
+      [
+        "To restore the same setup",
+        "To force equal color totals",
+        "To make the next draw red",
+        "To remove all chance variation"
+      ],
+      0,
+      "probability models"
+    ],
+    [
+      "A short trial set differs from the model. What follows?",
+      [
+        "The model must be false",
+        "More evidence may be needed",
+        "The next trial must repair it",
+        "The data should be changed"
+      ],
+      1,
+      "model and data"
+    ]
+  ],
+  "short": [
+    [
+      "Explain why two color names do not imply equal probabilities.",
+      "Probabilities depend on equally likely individual outcomes. Three blue counters and one red counter give different numbers of outcomes for the two colors.",
+      "probability models"
+    ],
+    [
+      "What changes if a red counter is drawn and not replaced?",
+      "The stated bag then contains three blue counters and no red counters, so the next red probability is zero in that setup.",
+      "model and data"
+    ]
+  ],
+  "faq": [
+    [
+      "Does likely mean certain?",
+      "No. A likely event can fail to occur on any particular trial."
+    ],
+    [
+      "Must four trials include one red?",
+      "No. One fourth is a chance for each draw under this model, not a required pattern of four results."
+    ],
+    [
+      "Does a streak make the other color due?",
+      "No. With replacement and proper mixing, earlier results do not change the next draw probability."
+    ],
+    [
+      "Does a larger sample always match better?",
+      "No. Results can fluctuate. Over many trials, relative frequencies tend toward the probabilities of a suitable model."
+    ]
+  ],
+  "challenge": [
+    "Our class has an opaque bag with three blue and one red counter of the same size and shape. We want to compare a model with trial results.",
+    "How closely do repeated draws with replacement match the model probability of red?",
+    "State the model. Draw without looking, return the counter, and mix each time. Record every trial. Compare separate groups of twenty draws before combining counts.",
+    "Report model probability, counts, relative frequencies, and an explanation of variation without claiming a guaranteed pattern."
+  ],
+  "facts": [
+    "Probability is between zero and one.",
+    "Equal chances for counters do not imply equal chances for colors.",
+    "Returning and mixing a counter preserves the intended setup."
+  ]
+}

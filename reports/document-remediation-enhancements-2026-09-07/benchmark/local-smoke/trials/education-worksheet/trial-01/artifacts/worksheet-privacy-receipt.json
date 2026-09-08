@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "worksheet-accessibility-report.json",
+    "accessibleHtml": "worksheet-accessible.html",
+    "privacyReceipt": "worksheet-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-09-08T04:10:36Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "worksheet.pdf",
+    "bytes": 720,
+    "kind": "pdf",
+    "sha256": "36e6e9b8e8a1f95b29762672410c209803272975bad3a934f62d07351eeadd95"
+  },
+  "systemWideNetworkUseVerified": false
+}

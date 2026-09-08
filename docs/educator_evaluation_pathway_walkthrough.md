@@ -27,8 +27,13 @@ assets on localhost; it does not connect to the district repository.
    portal, directory and configuration changes use administrator reviews. Show
    Setup health and the difference between a healthy repository and a recovery
    condition. Local profile and roster editing use their own explicit saves.
-2. **Walkthrough.** Save factual evidence privately, return to the draft, then
-   review and publish it. Show that the educator cannot see the private version.
+2. **Worklist and walkthrough.** On Overview, search by educator name or code,
+   filter by next-step owner or cycle due date, and clear the filters. Completion
+   totals continue to describe the full authorized active roster. Open a next
+   action to reach the exact unfinished record, including when an older record
+   is already finalized. Save factual evidence privately, return to the draft, then
+   review and publish it. Change visits to show that the privacy checkbox resets
+   for the current saved evidence. Show that the educator cannot see the private version.
    After publication, demonstrate comments and acknowledgment. Acknowledgment
    records receipt, not agreement. Published evidence cannot be rewritten.
 3. **Formal observation.** Follow the separate milestones: assignment, educator
@@ -36,8 +41,13 @@ assets on localhost; it does not connect to the district repository.
    reflection, post-conference, evaluator ratings and written rationales,
    educator acknowledgment, and evaluator finalization. Explain that private
    pre-conference notes stay private after finalization.
-4. **SPM / SLO.** Let the educator create and submit the plan. Return it with a
-   reason, revise and resubmit, then approve the reviewed version. Submit
+4. **SPM / SLO.** Show the plan-record chooser and five-stage progress guide.
+   Choose an earlier locked plan, then return to unfinished work. Identify the
+   current owner and demonstrate keyboard scrolling on a phone. Let the educator
+   create and submit the plan. Return it with a
+   reason, revise and resubmit, then approve the reviewed version. Show that an
+   educator can reach their returned plan from My evaluation even while another
+   formal record waits for the evaluator. Submit
    year-end results and reflection; the evaluator enters a rating and rationale
    and reviews the lock. The locked rating and annual LEA rating save together.
 5. **Annual judgment.** Show the active framework and arithmetic, then enter
@@ -69,6 +79,9 @@ assets on localhost; it does not connect to the district repository.
 | A member or assignment is disabled while a request waits | Authorization is checked again after the lock is acquired |
 | Private versus published evidence | Private material remains absent from educator projections and exported packets |
 | Completed formal record followed by SPM work | Unchanged finalized records do not block subsequent authorized work |
+| Several records for one educator | Shortcuts open the intended unfinished record; a completed record does not hide ongoing work |
+| Overview search or filters yield no matches | Clear empty state; Clear filters restores the full worklist and search focus |
+| Changed walkthrough draft or selected visit | A fresh privacy acknowledgment is required before publication |
 | Finalized annual cycle | No new current-cycle records, comments, or edits; rollover opens the next cycle |
 | Reviewed recipient, directory, or record changes | Obtain a new review before the operation can proceed |
 | Unknown notification or artifact outcome | Inspect the recovery result; do not assume success or resend blindly |

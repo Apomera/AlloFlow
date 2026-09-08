@@ -1,0 +1,131 @@
+{
+  "slug": "sound_vibration_grade1",
+  "status": "planned",
+  "assets": [
+    {
+      "id": "sv-term-1",
+      "target": "sv-glossary.data[0].image",
+      "prompt": "Show Sound using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-2",
+      "target": "sv-glossary.data[1].image",
+      "prompt": "Show Vibrate using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-3",
+      "target": "sv-glossary.data[2].image",
+      "prompt": "Show Drum using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-4",
+      "target": "sv-glossary.data[3].image",
+      "prompt": "Show String using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-5",
+      "target": "sv-glossary.data[4].image",
+      "prompt": "Show Loud using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-6",
+      "target": "sv-glossary.data[5].image",
+      "prompt": "Show Quiet using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-7",
+      "target": "sv-glossary.data[6].image",
+      "prompt": "Show Ears using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-term-8",
+      "target": "sv-glossary.data[7].image",
+      "prompt": "Show Test using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "sv-anchor-1",
+      "target": "sv-anchor.data.sections[0].iconUrl",
+      "prompt": "A drumhead beside a plucked string, no motion labels"
+    },
+    {
+      "id": "sv-anchor-2",
+      "target": "sv-anchor.data.sections[1].iconUrl",
+      "prompt": "A child gently touching their throat while humming"
+    },
+    {
+      "id": "sv-anchor-3",
+      "target": "sv-anchor.data.sections[2].iconUrl",
+      "prompt": "Two scenes of a hand tapping then resting on a drum"
+    },
+    {
+      "id": "sv-sort-1",
+      "target": "sv-sort.data.items[0].image",
+      "prompt": "Illustrate this exact card: Gently tap a drum. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-sort-2",
+      "target": "sv-sort.data.items[1].image",
+      "prompt": "Illustrate this exact card: Pluck a guitar string. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-sort-3",
+      "target": "sv-sort.data.items[2].image",
+      "prompt": "Illustrate this exact card: Hum with your voice. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-sort-4",
+      "target": "sv-sort.data.items[3].image",
+      "prompt": "Illustrate this exact card: Rest a hand on a shaking drum top. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-sort-5",
+      "target": "sv-sort.data.items[4].image",
+      "prompt": "Illustrate this exact card: Hold a plucked string still. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-sort-6",
+      "target": "sv-sort.data.items[5].image",
+      "prompt": "Illustrate this exact card: Stop humming. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "sv-lesson-1",
+      "target": "future native image resource panel 1",
+      "prompt": "A drumhead beside a plucked string, no motion labels"
+    },
+    {
+      "id": "sv-lesson-2",
+      "target": "future native image resource panel 2",
+      "prompt": "A child gently touching their throat while humming"
+    },
+    {
+      "id": "sv-lesson-3",
+      "target": "future native image resource panel 3",
+      "prompt": "Two scenes of a hand tapping then resting on a drum"
+    },
+    {
+      "id": "sv-lesson-4",
+      "target": "future native image resource panel 4",
+      "prompt": "Illustrate a correct example: A shaking drum top can make sound."
+    },
+    {
+      "id": "sv-lesson-5",
+      "target": "future native image resource panel 5",
+      "prompt": "Compare two cases from the reading without adding claims."
+    },
+    {
+      "id": "sv-lesson-6",
+      "target": "future native image resource panel 6",
+      "prompt": "Show the materials or examples for this task: Our class wants to show how a drum makes sound. We have a small drum and space for quiet turns."
+    },
+    {
+      "id": "sv-lesson-7",
+      "target": "future native image resource panel 7",
+      "prompt": "Show a learner recording evidence for: What changes when we stop a tapped drum top from shaking?"
+    },
+    {
+      "id": "sv-lesson-8",
+      "target": "future native image resource panel 8",
+      "prompt": "Show the limits of the model discussed in the reading."
+    }
+  ]
+}

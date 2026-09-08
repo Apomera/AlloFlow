@@ -1,0 +1,413 @@
+{
+  "errors": [],
+  "before": {
+    "schema": "alloflow-geometry-world/2",
+    "title": "Geometry World editable build",
+    "coordinateSystem": "x-right,y-up,z-depth",
+    "blocks": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "z": 8,
+        "type": "wood",
+        "shape": "quarter",
+        "rotation": 1
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": 2,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      }
+    ]
+  },
+  "scaleBeforeReturn": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n24\nSHAPED PIECES\n0\nSTL TRIANGLES\n104\nBLOCK ENVELOPE\n2 × 3 × 4 blocks\n\nCURRENT PHYSICAL SIZE\n\n20 × 30 × 40 mm\n\nExact STL mesh envelope at 10 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nDesign with primitives\n\nBuild directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.\n\n+ box\n+ sphere\n+ cylinder\n+ cone\n+ torus\n+ lathe\n+ extrude\n\nNo primitive recipe yet. Add a shape, import a file, or use an optional AI starting point.\n\nOptional AI modeling assistant\n\nDescribe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.\n\nObject to create\nCreate editable recipe\nChange to the current model\nRefine current recipe\nA small turtle with a broad flat base and short thick legs\nA simple rocket trophy attached to a wide circular base\nA chunky flower token with rounded petals on a flat backing\n\nAI is not configured in this session. All manual design and import features remain available.\n\nImport locally\n\nAccepted: primitive recipe JSON, self-contained GLB, or STL. Maximum 5 MB. The file is inspected in this browser and is not uploaded by Print Lab.\n\nChoose RECIPE / GLB / STL\n\nLoaded locally: geometry-world-selected-build.stl. The downloaded handoff substitutes a generic file name and a content hash.\n\n3D preview\n\n3D preview unavailable; use the complete text preflight below.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 20 × 30 × 40 mm (width × depth × height).\n\nWithin the current printer envelope with 5 mm planning clearance. Compared with 220 × 220 × 250 mm. This is a planning buffer only; preflight and staff review are still required.\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+  "after": {
+    "schema": "alloflow-geometry-world/2",
+    "title": "Geometry World editable build",
+    "coordinateSystem": "x-right,y-up,z-depth",
+    "blocks": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": -1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      }
+    ]
+  },
+  "scaleAfterResend": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n24\nSHAPED PIECES\n0\nSTL TRIANGLES\n104\nBLOCK ENVELOPE\n2 × 3 × 4 blocks\n\nCURRENT PHYSICAL SIZE\n\n10 × 15 × 20 mm\n\nExact STL mesh envelope at 5 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nDesign with primitives\n\nBuild directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.\n\n+ box\n+ sphere\n+ cylinder\n+ cone\n+ torus\n+ lathe\n+ extrude\n\nNo primitive recipe yet. Add a shape, import a file, or use an optional AI starting point.\n\nOptional AI modeling assistant\n\nDescribe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.\n\nObject to create\nCreate editable recipe\nChange to the current model\nRefine current recipe\nA small turtle with a broad flat base and short thick legs\nA simple rocket trophy attached to a wide circular base\nA chunky flower token with rounded petals on a flat backing\n\nAI is not configured in this session. All manual design and import features remain available.\n\nImport locally\n\nAccepted: primitive recipe JSON, self-contained GLB, or STL. Maximum 5 MB. The file is inspected in this browser and is not uploaded by Print Lab.\n\nChoose RECIPE / GLB / STL\n\nLoaded locally: geometry-world-selected-build.stl. The downloaded handoff substitutes a generic file name and a content hash.\n\n3D preview\n\nDrag to orbit. Use the controls below for a keyboard path.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 10 × 15 × 20 mm (width × depth × height).\n\nWithin the current printer envelope with 5 mm planning clearance. Compared with 220 × 220 × 250 mm. This is a planning buffer only; preflight and staff review are still required.\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+  "submit": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\nPrepare a staff-review handoff\n\nDescribe the object, not the student. Do not enter a full name, email, student ID, or other personal information. The package is not a purchase and does not deduct points.\n\nModel title\nWhat is it for?\nDesign note for the reviewer\nAI participation\nNo AI assistance\nAI assisted part of the design\nAI created most of the starting geometry\nJob Ticket\n\nFirst slice in the approved school slicer, then import its comments. Print Lab reads metadata comments only: it never interprets or executes G-code commands.\n\nImport local G-code comment metadata\nConfigurable point estimate\nBase points\nSetup points\nPoints / gram\nPoints / hour\nComplexity multiplier\nRound to points\n\nAwaiting estimate\n\nIncludes base, setup, material, time, complexity, minimum, and rounding rules. It is not a charge until staff approves it.\n\nReviewer confirmed the exact material selection\nReviewer confirmed the receiving printer profile\nCreate alloflow-print-job/1 ticket\n\nThe ticket includes a deterministic SHA-256 digest of its normalized payload, excluding the integrity field. It can reveal later edits, but it is not a signature, authenticity proof, staff authorization, or server approval. It contains no commands, credentials, account identifier, or student identifier and does not authorize a physical print.\n\nHandoff summary\nFormat\nSTL\nPreflight\nPASS\nScale\n5 mm per unit\nMaterial study\nPLA\nModel bytes embedded\nNo\nSchool Rewards asset\n0.01 MiB ready\n\nThe .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.\n\nDownload review handoff\n\nConnect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.\n\nOptional STL export\n\nThe receiving school workflow must pair the handoff with the original GLB/STL when needed, verify the content hash, inspect the slicer preview, approve a point quote, and only then create a store request.\n\nSimulator\n\nPractice queue, telemetry, and two-printer capacity planning locally. OctoPrint, Moonraker, PrusaLink, Bambu, CuraEngine, PrusaSlicer, OrcaSlicer, boolean/remesh, wall-thickness, and text-to-mesh adapters remain disabled.\n\nQueue in simulatorAdvance simulated telemetryPlan 3-copy / 2-printer example\nPreflight completed without a blocking geometry error. Staff and slicer review are still required.\nSelected build prepared locally. Opening Print Lab.",
+  "download": "Geometry World build - 24 blocks.stl"
+}

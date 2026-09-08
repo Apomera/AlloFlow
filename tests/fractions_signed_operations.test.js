@@ -156,7 +156,7 @@ describe('Fractions Lab signed operations', () => {
   it('keeps signed controls bounded and invalidates stale predictions', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fractions.js', 'utf8');
     expect(source).toContain("min: signedFractions ? -20 : 0");
-    expect(source).toContain("o.signPrediction = null; o.signFeedback = null;");
+    expect(source).toContain("changes = {signPrediction:null,signFeedback:null,signChallengeIndex:-1");
     expect(source).toContain("opMode: op[0], signPrediction: null, signFeedback: null");
     expect(source).toContain("role: 'switch', 'aria-checked': signedFractions");
   });

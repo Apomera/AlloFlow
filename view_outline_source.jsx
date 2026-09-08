@@ -78,7 +78,7 @@ function OutlineView(props) {
   var ErrorBoundary = props.ErrorBoundary;
   return (
                   <div className="space-y-6 h-full">
-                      <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex justify-between items-start gap-4">
+                      <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4">
                         <div className="text-sm text-orange-800">
                             <strong>UDL Goal:</strong> Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.
                             <div className="mt-2 flex flex-wrap gap-2">
@@ -87,7 +87,7 @@ function OutlineView(props) {
                                 {standardsInput && <span className="inline-block bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1"><CheckCircle size={10}/> {standardsInput}</span>}
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {isTeacherMode && (
 (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && <button
                                     onClick={() => {
@@ -103,7 +103,7 @@ function OutlineView(props) {
                                             setIsInteractiveMap(!isInteractiveMap);
                                         }
                                     }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 animate-[pulse_3s_ease-in-out_infinite]'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`}
                                     title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('outline.tooltip_interactive')}
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/>}
@@ -190,7 +190,7 @@ function OutlineView(props) {
                                 <h2 className="text-3xl font-black text-indigo-900 mb-6">{generatedContent?.data.main}</h2>
                                 <div className="flex flex-wrap justify-center gap-3 mb-8 w-full">
                                     {generatedContent?.data.branches && generatedContent?.data.branches.map((branch, idx) => (
-                                        <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in zoom-in duration-300 flex items-center gap-2 group" style={{ animationDelay: `${idx * 50}ms` }}>
+                                        <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in motion-reduce:animate-none zoom-in duration-300 flex items-center gap-2 group" style={{ animationDelay: `${idx * 50}ms` }}>
                                             {branch.title}
                                             <button
                                                 aria-label={t('common.close')}
@@ -202,7 +202,7 @@ function OutlineView(props) {
                                             </button>
                                         </div>
                                     ))}
-                                    <div className="flex items-center gap-2 animate-in zoom-in duration-300 delay-100">
+                                    <div className="flex items-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 delay-100">
                                         <input aria-label={t('common.enter_map_add_input')}
                                             type="text"
                                             value={mapAddInput}

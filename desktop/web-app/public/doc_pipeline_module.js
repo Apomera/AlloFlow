@@ -1,5 +1,71 @@
 (function(){"use strict";
 if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+// BEGIN SHARED DIRECTIONS MARKDOWN
+function _alloParsePreviewMarkdown(text) {
+    if (!text) return '';
+    const escape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const emphasis = value => value.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, '<strong>$1</strong>').replace(/\*(\S(?:.*?\S)?)\*/g, '<em>$1</em>');
+    const inline = value => {
+        const tokens = [];
+        const hold = html => '\u0000' + (tokens.push(html) - 1) + '\u0000';
+        // Protect code, escaped punctuation, and link URLs from emphasis replacement.
+        const content = escape(value.replace(/\u0000/g, ''))
+            .replace(/\x60([^\x60]+)\x60/g, (_, code) => hold('<code>' + code + '</code>'))
+            .replace(/\\([\\*_{}\[\]()#+.!-])/g, (_, literal) => hold(literal))
+            .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, (_, label, url) => {
+                const safeUrl = /^(?:https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(url) ? url : '#';
+                return hold('<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">' + emphasis(label) + '</a>');
+            });
+        let rendered = emphasis(content);
+        for (let pass = 0; pass <= tokens.length && rendered.includes('\u0000'); pass++) {
+            rendered = rendered.replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)]);
+        }
+        return rendered;
+    };
+    const lines = String(text).replace(/\\n/g, '\n').replace(/\r\n?/g, '\n').split('\n');
+    let html = '';
+    const lists = [];
+    const closeList = () => {
+        const list = lists.pop();
+        if (list) html += (list.itemOpen ? '</li>' : '') + '</' + list.kind + '>';
+    };
+    lines.forEach(line => {
+        const content = line.trim();
+        if (!content) return;
+        const indented = line.replace(/\t/g, '    ');
+        const match = indented.match(/^(\s*)(?:([-*•])|(\d+)[.)])\s+(.+)$/);
+        if (match) {
+            const indent = match[1].length;
+            const kind = match[3] ? 'ol' : 'ul';
+            while (lists.length && indent < lists[lists.length - 1].indent) closeList();
+            if (lists.length && indent === lists[lists.length - 1].indent && kind !== lists[lists.length - 1].kind) closeList();
+            let list = lists[lists.length - 1];
+            if (!list || indent > list.indent) {
+                html += '<' + kind + (match[3] ? ' start="' + Number(match[3]) + '"' : '') + ' style="margin: 5px 0; padding-left: 20px; list-style-type: ' + (match[3] ? 'decimal' : 'disc') + ';">';
+                list = { kind, indent, itemOpen: false };
+                lists.push(list);
+            }
+            if (list.itemOpen) html += '</li>';
+            html += '<li' + (match[3] ? ' value="' + Number(match[3]) + '"' : '') + ' style="margin-bottom: 5px;">' + inline(match[4]);
+            list.itemOpen = true;
+            return;
+        }
+        const indent = indented.length - indented.trimStart().length;
+        if (lists.length && indent > lists[lists.length - 1].indent) {
+            html += '<p style="margin-bottom: 10px;">' + inline(content) + '</p>';
+            return;
+        }
+        while (lists.length) closeList();
+        const heading = content.match(/^(#{1,6})\s+(.+)$/);
+        html += heading
+            ? '<h' + heading[1].length + '>' + inline(heading[2]) + '</h' + heading[1].length + '>'
+            : '<p style="margin-bottom: 10px;">' + inline(content) + '</p>';
+    });
+    while (lists.length) closeList();
+    return html;
+}
+// END SHARED DIRECTIONS MARKDOWN
+
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -446,6 +512,7 @@ function _alloNormalizeStoredVerification(stored, derived) {
 }
 var ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION = '2026.07.03';
 var ALLO_INTERACTIVE_OBJECT_PROFILES = {
+  directions: { label: 'Assignment Directions', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'directions-checklist', notes: 'Exports formatted instructions, goals, and choice-board content.' },
   analysis: { label: 'Source Analysis', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-report', notes: 'Exports as a readable analysis report.' },
   simplified: { label: 'Adapted Text', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'readable-passage', notes: 'Exports as semantic reading content with optional read-aloud processing. Instructional role metadata distinguishes a supplemental companion from an educator-designated primary.' },
   glossary: { label: 'Glossary', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'table', notes: 'Flash-card/self-test modes run in the downloaded HTML; LMS scoring is not reported.' },
@@ -36563,6 +36630,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     let prevScore = 0;
     let plateauCount = 0;
     let changedByAgent = false;
+    let candidateRejectionCount = 0;
+    const candidateRejections = [];
+    const collectPassEvidence = (meta) => {
+      const entries = meta && Array.isArray(meta.candidateRejections) ? meta.candidateRejections : [];
+      const total = meta && Number.isSafeInteger(meta.candidateRejectionCount) ? meta.candidateRejectionCount : entries.length;
+      candidateRejectionCount = Math.min(1000000, candidateRejectionCount + Math.max(0, total, entries.length));
+      const delta = { candidateRejectionCount: Math.min(1000000, Math.max(0, total, entries.length)), candidateRejections: entries.slice(0, 100).map(entry => ({ pass: passCount, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason })) };
+      candidateRejections.push(...delta.candidateRejections.slice(0, Math.max(0, 100 - candidateRejections.length)));
+      try { if (typeof options.onPassEvidence === 'function') options.onPassEvidence(delta); } catch (_) {}
+    };
     // H4 (deep dive 2026-07-02): keep-best. This loop mutates currentHtml in place via surgical
     // tools; plateau detection only STOPPED — it never restored a higher-scoring earlier pass,
     // so a degrading pass (e.g. fix_heading scrambling the outline) SHIPPED. Track the best
@@ -36671,7 +36748,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           logActivity('Local model plan was malformed; falling back to direct chunk remediation for this pass.', 'info');
           try {
             _emitLocalRemediationProgress(0, 1, 'Running local fallback remediation', 'agent-fallback');
-            var fallbackHtml = await aiFixChunked(currentHtml, violationSummary.slice(0, 10).join('\n'), 'local-agent-fallback');
+            var fallbackHtml = await aiFixChunked(currentHtml, violationSummary.slice(0, 10).join('\n'), 'local-agent-fallback', undefined, { onPassEvidence: collectPassEvidence });
             _emitLocalRemediationProgress(1, 1, 'Local fallback remediation complete', 'agent-fallback');
             if (fallbackHtml && fallbackHtml !== currentHtml) {
               currentHtml = fallbackHtml;
@@ -36770,7 +36847,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     }
     logActivity('\uD83C\uDFC1 Agent complete. Final score: ' + finalScore + '/100 after ' + passCount + ' passes.', 'complete');
 
-    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe, headingOutline: _autoHo };
+    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe, headingOutline: _autoHo, candidateRejectionCount, candidateRejections };
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -36913,8 +36990,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       var result = await runAutonomousRemediation(currentHtml, {
         onProgress: options.onProgress || function() {},
         onActivity: function(entry) { onActivity(entry); },
+        onPassEvidence: options.onPassEvidence,
       });
-      return { type: 'agent', html: result.html, score: result.score, log: result.log };
+      return { type: 'agent', html: result.html, score: result.score, log: result.log, candidateRejectionCount: result.candidateRejectionCount || 0, candidateRejections: result.candidateRejections || [] };
     }
     if (cmd === 'score') {
       var ax = await runAxeAudit(currentHtml);
@@ -38461,6 +38539,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // flex-wrap + min-width:0 so the title and its "(meta)" tag drop to a second
       // line instead of running past the card edge when the reader turns text up.
       const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;overflow-wrap:anywhere;">(${item.meta})</span>` : ''}</h2>`;
+      if (item.type === 'directions') {
+          const data = item.data && typeof item.data === 'object' && !Array.isArray(item.data) ? item.data : {};
+          const body = typeof item.data === 'string' ? item.data : (typeof data.body === 'string' ? data.body : '');
+          const label = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
+          const goals = (Array.isArray(data.objectives) ? data.objectives : []).filter(goal => goal && typeof goal.label === 'string' && goal.label.trim());
+          const board = data.choiceBoard && data.choiceBoard.enabled === true ? data.choiceBoard : null;
+          const choices = board && Array.isArray(board.choices) ? board.choices.filter(choice => choice && typeof choice.label === 'string' && choice.label.trim()) : [];
+          const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.your_goals', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
+          const choiceHtml = choices.length ? '<section><h3>' + _escTxt(board.title || label('directions.choose_activity', 'Choose an activity')) + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '';
+          return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
+      }
       if (item.type === 'simplified') {
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
@@ -47475,4 +47564,159 @@ window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // st
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
+(function (root, factory) {
+  'use strict';
+  var api = factory(root);
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.RemediationReview = api; }
+})(typeof window !== 'undefined' ? window : globalThis, function (root) {
+  'use strict';
+  var MAX_RECORDS = 100, MAX_REFERENCES = 700;
+  var reasons = {
+    'no-original': 'The suggestion had no usable source for comparison and was rejected.',
+    'empty-output': 'The suggestion was empty; the original content was retained.',
+    'no-doc-markers': 'The suggestion did not contain a complete document; the original was retained.',
+    'size-shrink': 'The suggestion removed too much document structure; the original was retained.',
+    'text-shrink': 'The suggestion omitted too much text; the original was retained.',
+    'size-growth-unexpected': 'The suggestion added too much document structure; the original was retained.',
+    'text-growth-unexpected': 'The suggestion added too much text; the original was retained.',
+    'table-cell-transposition': 'Table values changed position; the original table content was retained.',
+    'image-reference-uncheckable': 'The image references could not be verified; the original images were retained.',
+    'image-reference-changed': 'Image identity or order changed; the original images were retained.',
+    'invalid-json-wrapper': 'The suggestion could not be read as HTML; the original was retained.',
+    'content-not-preserved': 'The suggestion did not preserve the document; the original was retained.'
+  };
+  function count(value) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 1000000) : 0; }
+  function records(value) {
+    if (!Array.isArray(value)) return [];
+    return value.slice(0, MAX_RECORDS).filter(function (r) {
+      return r && typeof r === 'object' && !Array.isArray(r) && typeof r.chunkId === 'string'
+        && /^(?:all|[0-9]{1,8}(?:\.[0-9]{1,8})?)$/.test(r.chunkId)
+        && ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'].includes(r.phase)
+        && Object.prototype.hasOwnProperty.call(reasons, r.reason);
+    }).map(function (r) {
+      var item = { chunkId: r.chunkId, phase: r.phase, reason: r.reason };
+      if (Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
+      return item;
+    });
+  }
+  function evidence(value) {
+    var list = records(value && value.candidateRejections);
+    return { candidateRejectionCount: Math.max(count(value && value.candidateRejectionCount), list.length), candidateRejections: list };
+  }
+  // Each pass callback carries a delta once. Metadata never changes readiness or HTML.
+  function mergeEvidence(previous, delta) {
+    var a = evidence(previous), b = evidence(delta);
+    return { candidateRejectionCount: Math.min(1000000, a.candidateRejectionCount + b.candidateRejectionCount), candidateRejections: a.candidateRejections.concat(b.candidateRejections).slice(0, MAX_RECORDS) };
+  }
+  function acknowledgments(value) {
+    var result = {};
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
+    Object.keys(value).slice(0, MAX_RECORDS).forEach(function (key) {
+      if (/^preservation\|/.test(key) && key.length <= 180 && Number.isSafeInteger(value[key]) && value[key] > 0) result[key] = value[key];
+    });
+    return result;
+  }
+  function reviewItems(value, reviewed) {
+    return records(value && value.candidateRejections).map(function (r, index) {
+      var key = ['preservation', index, r.pass, r.chunkId, r.phase, r.reason].join('|');
+      return Object.assign({}, r, { key: key, reviewed: !!(reviewed && reviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
+        referenceKind: /table/i.test(r.reason) ? 'table' : /image|asset|placeholder/i.test(r.reason) ? 'figure' : null });
+    });
+  }
+  function text(value) { return String(value || '').normalize('NFKC').replace(/\s+/g, ' ').trim(); }
+  function documentFor(html, options) {
+    var Parser = (options && options.DOMParser) || (root && root.DOMParser);
+    if (!Parser) throw new Error('Document references need an HTML parser.');
+    return new Parser().parseFromString(String(html || ''), 'text/html');
+  }
+  async function hash(value, options) {
+    if (options && typeof options.digest === 'function') return options.digest(String(value));
+    var subtle = root && root.crypto && root.crypto.subtle;
+    if (!subtle) throw new Error('Document references need SHA-256 support.');
+    var Encoder = root.TextEncoder || globalThis.TextEncoder;
+    var bytes = await subtle.digest('SHA-256', new Encoder().encode(String(value)));
+    return Array.from(new Uint8Array(bytes)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function ownedRows(table) { return Array.from(table.querySelectorAll('tr')).filter(function (row) { return row.closest('table') === table; }); }
+  // This sidecar identifies source elements. It is not accessibility or fidelity proof.
+  // No IDs/attributes are injected into the document being verified.
+  async function inventory(doc, options) {
+    var refs = [], tables = Array.from(doc.querySelectorAll('table')).slice(0, 100), images = Array.from(doc.querySelectorAll('img')).slice(0, 200);
+    for (var ti = 0; ti < tables.length && refs.length < MAX_REFERENCES; ti++) {
+      var table = tables[ti], rows = ownedRows(table), cellData = [];
+      rows.forEach(function (row, ri) {
+        Array.from(row.children).filter(function (cell) { return /^(TD|TH)$/.test(cell.tagName); }).forEach(function (cell, ci) {
+          cellData.push({ node: cell, row: ri, column: ci, value: text(cell.textContent), rowSpan: cell.rowSpan || 1, colSpan: cell.colSpan || 1 });
+        });
+      });
+      var fingerprint = await hash(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })), options);
+      var caption = Array.from(table.children).find(function (child) { return child.tagName === 'CAPTION'; });
+      refs.push({ kind: 'table', table: ti, fingerprint: fingerprint, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
+      for (var ci = 0; ci < cellData.length && refs.length < MAX_REFERENCES; ci++) {
+        var cell = cellData[ci];
+        refs.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFingerprint: fingerprint,
+          fingerprint: await hash(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan]), options),
+          label: 'Table ' + (ti + 1) + ', row ' + (cell.row + 1) + ', cell ' + (cell.column + 1), node: cell.node });
+      }
+    }
+    for (var ii = 0; ii < images.length && refs.length < MAX_REFERENCES; ii++) {
+      var img = images[ii];
+      refs.push({ kind: 'figure', index: ii, fingerprint: await hash(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || '']), options),
+        label: 'Image ' + (ii + 1) + (img.getAttribute('alt') ? ': ' + text(img.getAttribute('alt')).slice(0, 120) : ''), node: img });
+    }
+    var signature = await hash(JSON.stringify([text(doc.body && doc.body.textContent), refs.map(function (ref) { return [ref.kind, ref.fingerprint]; })]), options);
+    return { refs: refs, signature: signature, truncated: refs.length >= MAX_REFERENCES || doc.querySelectorAll('table').length > tables.length || doc.querySelectorAll('img').length > images.length };
+  }
+  async function createSourceModel(html, options) {
+    try {
+      var doc = documentFor(html, options), inv = await inventory(doc, options), sourceDigest = await hash(String(html || ''), options);
+      return { version: 1, sourceDigest: sourceDigest, signature: inv.signature, truncated: inv.truncated,
+        references: inv.refs.map(function (ref, index) {
+          var result = Object.assign({}, ref, { id: 'src-' + sourceDigest.slice(0, 16) + '-' + (index + 1) });
+          delete result.node;
+          return result;
+        }) };
+    } catch (_) { return null; }
+  }
+  function normalizeSourceModel(value) {
+    if (!value || value.version !== 1 || !/^[a-f0-9]{64}$/.test(value.sourceDigest || '') || !/^[a-f0-9]{64}$/.test(value.signature || '') || !Array.isArray(value.references)) return null;
+    var ids = new Set(), refs = [];
+    for (var raw of value.references.slice(0, MAX_REFERENCES)) {
+      if (!raw || !['table', 'cell', 'figure'].includes(raw.kind) || !new RegExp('^src-' + value.sourceDigest.slice(0, 16) + '-[1-9][0-9]{0,3}$').test(raw.id || '') || ids.has(raw.id) || !/^[a-f0-9]{64}$/.test(raw.fingerprint || '')) return null;
+      var ref = { id: raw.id, kind: raw.kind, fingerprint: raw.fingerprint, label: String(raw.label || '').slice(0, 160) };
+      var keys = raw.kind === 'figure' ? ['index'] : raw.kind === 'cell' ? ['table', 'row', 'column'] : ['table'];
+      for (var key of keys) { if (!Number.isSafeInteger(raw[key]) || raw[key] < 0 || raw[key] > 100000) return null; ref[key] = raw[key]; }
+      if (raw.kind === 'cell') { if (!/^[a-f0-9]{64}$/.test(raw.tableFingerprint || '')) return null; ref.tableFingerprint = raw.tableFingerprint; }
+      ids.add(ref.id); refs.push(ref);
+    }
+    return { version: 1, sourceDigest: value.sourceDigest, signature: value.signature, truncated: value.truncated === true || value.references.length >= MAX_REFERENCES, references: refs };
+  }
+  async function resolveSourceReference(doc, model, id, options) {
+    model = normalizeSourceModel(model);
+    var ref = model && model.references.find(function (item) { return item.id === id; });
+    if (!ref || !doc) return { status: 'unavailable', node: null };
+    // An incomplete sidecar or current inventory cannot establish uniqueness: an
+    // unseen duplicate may be the surviving element. Never infer identity from a cap.
+    if (model.truncated) return { status: 'unavailable', node: null, reason: 'reference-inventory-truncated' };
+    var inv;
+    try { inv = await inventory(doc, options); } catch (_) { return { status: 'unavailable', node: null }; }
+    if (inv.truncated) return { status: 'unavailable', node: null, reason: 'reference-inventory-truncated' };
+    var sameIdentity = function (item) {
+      return item.kind === ref.kind && item.fingerprint === ref.fingerprint
+        && (ref.kind !== 'cell' || (item.tableFingerprint === ref.tableFingerprint && item.row === ref.row && item.column === ref.column));
+    };
+    var sourceCandidates = model.references.filter(sameIdentity);
+    var candidates = inv.refs.filter(sameIdentity);
+    if (!candidates.length) return { status: 'changed', node: null };
+    // Both sides must identify a unique element. Matching the remaining target
+    // alone maps two old IDs onto one survivor after a duplicate is removed.
+    // Document signatures and positions do not prove which identical duplicate
+    // survived or moved, even if unchanged text makes the signatures equal.
+    if (sourceCandidates.length !== 1 || candidates.length !== 1) return { status: 'ambiguous', node: null };
+    return { status: 'matched', node: candidates[0].node, reference: ref };
+  }
+  return { reasons: reasons, acknowledgments: acknowledgments, evidence: evidence, mergeEvidence: mergeEvidence, reviewItems: reviewItems,
+    createSourceModel: createSourceModel, normalizeSourceModel: normalizeSourceModel, resolveSourceReference: resolveSourceReference };
+});
 })();

@@ -466,6 +466,16 @@ function GlossaryView(props) {
   // Components from host scope
   var ErrorBoundary = props.ErrorBoundary;
   var SpeakButton = props.SpeakButton;
+  var detectiveState = React.useState(false);
+  var detectiveOpen = detectiveState[0],
+    setDetectiveOpen = detectiveState[1];
+  var detectiveRefresh = React.useState(0);
+  var DefinitionDetectiveGame = window.AlloModules && window.AlloModules.DefinitionDetectiveGame || props.DefinitionDetectiveGame;
+  React.useEffect(function () {
+    setDetectiveOpen(false);
+  }, [generatedContent && generatedContent.id]);
+  var detectiveLabel = t('games.detective.title');
+  if (!detectiveLabel || detectiveLabel === 'games.detective.title') detectiveLabel = 'Definition Detective';
   var MemoryGame = props.MemoryGame;
   var CrosswordGame = props.CrosswordGame;
   var MatchingGame = props.MatchingGame;
@@ -1800,6 +1810,15 @@ function GlossaryView(props) {
       "aria-hidden": "true"
     }), " ", gameMode === 'wordsearch' ? t('common.regenerate') : t('glossary.word_search'))), /*#__PURE__*/React.createElement("button", {
       type: "button",
+      "aria-label": detectiveLabel,
+      "data-help-key": "glossary_definition_detective",
+      onClick: () => setDetectiveOpen(true),
+      className: secondaryButton
+    }, /*#__PURE__*/React.createElement(Search, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", detectiveLabel), /*#__PURE__*/React.createElement("button", {
+      type: "button",
       "aria-label": t('glossary.memory_game'),
       "data-help-key": "glossary_memory_game",
       onClick: handleSetIsMemoryGameToTrue,
@@ -2329,7 +2348,26 @@ function GlossaryView(props) {
       "aria-label": `${t('common.read_translated_definition')}: ${flashcardLang}`,
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transDef)));
-  })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
+  })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), detectiveOpen && (DefinitionDetectiveGame ? /*#__PURE__*/React.createElement(ErrorBoundary, {
+    fallbackMessage: "Definition Detective encountered an error."
+  }, /*#__PURE__*/React.createElement(DefinitionDetectiveGame, {
+    data: generatedContent?.data,
+    onClose: () => setDetectiveOpen(false),
+    playSound: playSound,
+    onScoreUpdate: handleGameScoreUpdate,
+    onGameComplete: handleGameCompletion
+  })) : /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900"
+  }, /*#__PURE__*/React.createElement("p", null, t('common.loading')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 p-3 font-bold",
+    onClick: () => detectiveRefresh[1](value => value + 1)
+  }, t('common.refresh')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 p-3 font-bold",
+    onClick: () => setDetectiveOpen(false)
+  }, t('common.close')))), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Memory Game encountered an error."
   }, /*#__PURE__*/React.createElement(MemoryGame, {
     data: generatedContent?.data,

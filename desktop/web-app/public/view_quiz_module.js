@@ -6280,7 +6280,56 @@ function AssessmentPresentationItem(p) {
     className: "mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700"
   }, typeof p.renderFormattedText === 'function' ? p.renderFormattedText(q.factCheck) : q.factCheck)));
 }
+function _quizCreateAuthoringRequests(readProps) {
+  var requests = new Map();
+  function snapshot(props) {
+    return JSON.stringify([props.generatedContent, props.inputText || '', props.gradeLevel || '', !!props.isTeacherMode]);
+  }
+  return {
+    begin: function (key) {
+      var props = readProps();
+      var signature = snapshot(props);
+      var existing = requests.get(key);
+      if (existing && existing.signature === signature) return null;
+      var request = {
+        key: key,
+        signature: signature
+      };
+      requests.set(key, request);
+      return request;
+    },
+    current: function (request) {
+      return !!request && requests.get(request.key) === request && request.signature === snapshot(readProps());
+    },
+    end: function (request) {
+      if (!request || requests.get(request.key) !== request) return false;
+      requests.delete(request.key);
+      return true;
+    },
+    clear: function () {
+      requests.clear();
+    }
+  };
+}
 function QuizView(props) {
+  var authoringPropsRef = React.useRef(props);
+  authoringPropsRef.current = props;
+  var authoringRequestsRef = React.useRef(null);
+  if (!authoringRequestsRef.current) authoringRequestsRef.current = _quizCreateAuthoringRequests(function () {
+    return authoringPropsRef.current;
+  });
+  var authoringRequests = authoringRequestsRef.current;
+  React.useEffect(function () {
+    authoringRequests.clear();
+    setRegeneratingQuestions({});
+    setRepairingAssessment(false);
+    setIsRefiningQuizImage({});
+    setIsImprovingDistractor({});
+    setIsBulkImproving(false);
+    return function () {
+      authoringRequests.clear();
+    };
+  }, [props.generatedContent && props.generatedContent.id, props.isTeacherMode]);
   var t = props.t;
   var isTeacherMode = props.isTeacherMode;
   var isParentMode = props.isParentMode;
@@ -6312,6 +6361,8 @@ function QuizView(props) {
   var setRepairingAssessment = repairingState[1];
   async function regenerateAssessmentQuestion(questionIdx, question) {
     if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;
+    var request = authoringRequests.begin('question:' + questionIdx);
+    if (!request) return;
     setRegeneratingQuestions(function (previous) {
       var next = Object.assign({}, previous);
       next[questionIdx] = true;
@@ -6325,12 +6376,14 @@ function QuizView(props) {
       var parsed = _quizExtractJson(raw);
       var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
       if (!replacement || typeof replacement !== 'object') throw new Error('The AI did not return a valid question.');
+      if (!authoringRequests.current(request)) return;
       replacement.type = type;
       props.handleQuizQuestionAction(questionIdx, 'replace', replacement);
       if (typeof props.addToast === 'function') props.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
     } catch (error) {
-      if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
+      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
     } finally {
+      if (!authoringRequests.end(request)) return;
       setRegeneratingQuestions(function (previous) {
         var next = Object.assign({}, previous);
         delete next[questionIdx];
@@ -6340,6 +6393,8 @@ function QuizView(props) {
   }
   async function repairAssessmentQuality() {
     if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function') return;
+    var request = authoringRequests.begin('repair');
+    if (!request) return;
     setRepairingAssessment(true);
     try {
       var requestedMix = assessmentAudit.requestedMix || assessmentAudit.actualMix;
@@ -6356,13 +6411,15 @@ function QuizView(props) {
       var parsed = _quizExtractJson(raw);
       var questions = parsed && Array.isArray(parsed.questions) ? parsed.questions : null;
       if (!questions || questions.length === 0) throw new Error('The AI did not return a repaired assessment.');
+      if (!authoringRequests.current(request)) return;
       props.handleQuizQuestionAction(0, 'replace-all', {
         questions: questions
       });
       if (typeof props.addToast === 'function') props.addToast('Assessment repaired. Review the quality panel before sharing.', 'success');
     } catch (error) {
-      if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Assessment repair failed.', 'error');
+      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Assessment repair failed.', 'error');
     } finally {
+      if (!authoringRequests.end(request)) return;
       setRepairingAssessment(false);
     }
   }
@@ -6717,6 +6774,8 @@ function QuizView(props) {
       if (typeof addToast === 'function') addToast(t('toasts.image_edit_unavailable_callgeminiimageedit_provide'), 'error');
       return;
     }
+    var request = authoringRequests.begin('image:' + key);
+    if (!request) return;
     setIsRefiningQuizImage(function (prev) {
       var next = Object.assign({}, prev);
       next[key] = true;
@@ -6729,12 +6788,13 @@ function QuizView(props) {
       var styleClause = styleHint ? ' Required visual style: ' + styleHint + '.' : '';
       var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity).' + styleClause + ' Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
       var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
+      if (!authoringRequests.current(request)) return;
       if (typeof handleQuizImageRefine === 'function') {
         handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
       }
       setQuizImageRefineInputs(function (prev) {
         var next = Object.assign({}, prev);
-        delete next[key];
+        if (next[key] === instruction) delete next[key];
         return next;
       });
       setRefineOpen(function (prev) {
@@ -6744,8 +6804,9 @@ function QuizView(props) {
       });
       if (typeof addToast === 'function') addToast(t('toasts.image_refined'), 'success');
     } catch (err) {
-      if (typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
+      if (authoringRequests.current(request) && typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
     } finally {
+      if (!authoringRequests.end(request)) return;
       setIsRefiningQuizImage(function (prev) {
         var next = Object.assign({}, prev);
         delete next[key];
@@ -6762,6 +6823,8 @@ function QuizView(props) {
     if (typeof props.callGemini !== 'function' || typeof handleQuizChange !== 'function') return;
     var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
     if (!q) return;
+    var request = authoringRequests.begin('distractor:' + key);
+    if (!request) return;
     setIsImprovingDistractor(function (prev) {
       var next = Object.assign({}, prev);
       next[key] = true;
@@ -6774,11 +6837,13 @@ function QuizView(props) {
       var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
       newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
       if (!newText) throw new Error('Empty rewrite');
+      if (!authoringRequests.current(request)) return;
       handleQuizChange(qIdx, 'option', newText, optIdx);
       if (typeof addToast === 'function') addToast(t('toasts.distractor_rewritten'), 'success');
     } catch (err) {
-      if (typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
+      if (authoringRequests.current(request) && typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
     } finally {
+      if (!authoringRequests.end(request)) return;
       setIsImprovingDistractor(function (prev) {
         var next = Object.assign({}, prev);
         delete next[key];
@@ -6817,6 +6882,8 @@ function QuizView(props) {
       if (typeof addToast === 'function') addToast(t('toasts.weak_distractors_improve'), 'info');
       return;
     }
+    var request = authoringRequests.begin('bulk-distractors');
+    if (!request) return;
     setIsBulkImproving(true);
     setIsImprovingDistractor(function (prev) {
       var next = Object.assign({}, prev);
@@ -6830,7 +6897,9 @@ function QuizView(props) {
     var results = await Promise.all(tasks.map(function (task) {
       var q = generatedContent.data.questions[task.qIdx];
       var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n' + 'QUESTION: "' + (q.question || '') + '"\n' + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n' + 'CURRENT WEAK DISTRACTOR: "' + task.currentDistractor + '"\n' + 'WHY IT IS WEAK: "' + task.reason + '"\n\n' + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
-      return Promise.resolve(props.callGemini(prompt, false)).then(function (raw) {
+      return Promise.resolve().then(function () {
+        return props.callGemini(prompt, false);
+      }).then(function (raw) {
         var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
         newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
         if (!newText) return {
@@ -6849,6 +6918,14 @@ function QuizView(props) {
         };
       });
     }));
+    if (!authoringRequests.current(request)) {
+      if (authoringRequests.end(request)) {
+        setIsBulkImproving(false);
+        setIsImprovingDistractor({});
+      }
+      return;
+    }
+    authoringRequests.end(request);
     var updates = results.filter(function (r) {
       return r.ok;
     }).map(function (r) {

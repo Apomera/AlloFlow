@@ -1,0 +1,34 @@
+[
+  {
+    "variant": "NOT",
+    "violations": []
+  },
+  {
+    "variant": "AND",
+    "violations": []
+  },
+  {
+    "variant": "OR",
+    "violations": []
+  },
+  {
+    "variant": "NAND",
+    "violations": []
+  },
+  {
+    "variant": "NOR",
+    "violations": []
+  },
+  {
+    "variant": "XOR",
+    "violations": []
+  },
+  {
+    "variant": "XNOR",
+    "violations": []
+  },
+  {
+    "variant": "Half adder",
+    "violations": []
+  }
+]

@@ -1,0 +1,130 @@
+        // A quiet, faceted valley around the lesson. These four decorative meshes
+        // never join engine.blocks, collision geometry, picking or printable work.
+        (function initLandscape() {
+          var landscapeKey = '';
+          function number(v, fallback) { var n = Number(v); return isFinite(n) ? n : fallback; }
+          function disposeLandscape() {
+            if (!engine._landscape) return;
+            var group = engine._landscape;
+            if (group.parent) group.parent.remove(group);
+            group.children.forEach(function(mesh) {
+              if (mesh.geometry) mesh.geometry.dispose();
+              if (mesh.material) mesh.material.dispose();
+            });
+            engine._landscape = null;
+            landscapeKey = '';
+          }
+          function makeBuffer() { return { positions: [], colors: [] }; }
+          function triangle(buffer, a, b, c, color, shade) {
+            buffer.positions.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
+            for (var k = 0; k < 3; k++) buffer.colors.push(color.r * shade, color.g * shade, color.b * shade);
+          }
+          function meshFrom(buffer, name) {
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(buffer.positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(buffer.colors, 3));
+            geometry.computeVertexNormals();
+            geometry.computeBoundingSphere();
+            var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: true });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.name = name;
+            mesh.userData.gwLandscape = true;
+            mesh.raycast = function() {};
+            mesh.castShadow = false;
+            mesh.receiveShadow = false;
+            return mesh;
+          }
+          function ridgeHeight(t, ring, far) {
+            var tau = Math.PI * 2;
+            var wave = 0.57 + Math.sin(t * tau * 3 + (far ? 1.8 : 0.4)) * 0.23
+              + Math.sin(t * tau * 7 + (far ? 0.2 : 1.3)) * 0.13
+              + Math.sin(t * tau * 11 + 0.9) * 0.07;
+            var profile = far ? [0, 0.63, 1, 0.47, 0] : [0, 0.50, 1, 0.65, 0.18, 0];
+            var elevation = far ? 12 + wave * 16 : 5.5 + wave * 6.5;
+            return elevation * profile[ring];
+          }
+          function cone(buffer, x, y, z, radius, height, color, twist) {
+            for (var k = 0; k < 6; k++) {
+              var a = twist + k * Math.PI / 3, b = twist + (k + 1) * Math.PI / 3;
+              var va = [x + Math.cos(a) * radius, y, z + Math.sin(a) * radius];
+              var vb = [x + Math.cos(b) * radius, y, z + Math.sin(b) * radius];
+              triangle(buffer, va, [x, y + height, z], vb, color, 0.96 + (k % 3) * 0.035);
+              triangle(buffer, [x, y, z], va, vb, color, 0.84);
+            }
+          }
+          engine.disposeLandscape = disposeLandscape;
+          engine.refreshLandscape = function(ground) {
+            if (engine._destroyed || !engine.scene) return;
+            ground = ground || {};
+            var x0 = number(ground.xMin, -8), x1 = number(ground.xMax, 24);
+            var z0 = number(ground.zMin, -8), z1 = number(ground.zMax, 24);
+            if (x0 > x1) { var swapX = x0; x0 = x1; x1 = swapX; }
+            if (z0 > z1) { var swapZ = z0; z0 = z1; z1 = swapZ; }
+            var baseY = number(ground.y, 0) - 0.12;
+            var nextKey = [x0, x1, z0, z1, baseY].join(':');
+            if (landscapeKey === nextKey && engine._landscape) return;
+            disposeLandscape();
+            landscapeKey = nextKey;
+            var centerX = (x0 + x1) / 2, centerZ = (z0 + z1) / 2;
+            // Include the half-cell beyond the lesson's outer block centers.
+            var halfX = (x1 - x0) / 2 + 0.5, halfZ = (z1 - z0) / 2 + 0.5;
+            var outline = [], segments = 8;
+            // Rounded rectangles retain a generous empty margin even for long,
+            // narrow and very large lesson grounds. Circular scenery does not.
+            for (var side = 0; side < 4; side++) {
+              for (var s = 0; s < segments; s++) {
+                var f = s / segments;
+                if (side === 0) outline.push({ x: halfX, z: -halfZ + 2 * halfZ * f, nx: 1, nz: 0 });
+                if (side === 1) outline.push({ x: halfX - 2 * halfX * f, z: halfZ, nx: 0, nz: 1 });
+                if (side === 2) outline.push({ x: -halfX, z: halfZ - 2 * halfZ * f, nx: -1, nz: 0 });
+                if (side === 3) outline.push({ x: -halfX + 2 * halfX * f, z: -halfZ, nx: 0, nz: -1 });
+              }
+              for (var arc = 0; arc < segments; arc++) {
+                var angle = side * Math.PI / 2 + arc / segments * Math.PI / 2;
+                outline.push({ x: side === 0 || side === 3 ? halfX : -halfX,
+                  z: side < 2 ? halfZ : -halfZ, nx: Math.cos(angle), nz: Math.sin(angle) });
+              }
+            }
+            var nearBands = [30, 40, 52, 66, 78, 91], farBands = [66, 83, 103, 123, 143];
+            function point(i, ring, far) {
+              var d = outline[i], distance = (far ? farBands : nearBands)[ring];
+              return [centerX + d.x + d.nx * distance, baseY + ridgeHeight(i / outline.length, ring, far), centerZ + d.z + d.nz * distance];
+            }
+            var group = new THREE.Group();
+            group.name = 'gw-landscape';
+            group.userData.gwLandscape = true;
+            [true, false].forEach(function(far) {
+              var terrain = makeBuffer(), bands = far ? farBands : nearBands;
+              var low = geometryWorldSrgbColor(THREE, far ? 0x778e8d : 0x617d53);
+              var high = geometryWorldSrgbColor(THREE, far ? 0x94a4a2 : 0x82966e);
+              var tint = new THREE.Color();
+              for (var r = 0; r < bands.length - 1; r++) {
+                for (var i = 0; i < outline.length; i++) {
+                  var next = (i + 1) % outline.length;
+                  var a = point(i, r, far), b = point(next, r, far), c = point(i, r + 1, far), d = point(next, r + 1, far);
+                  var heightTint = Math.min(1, Math.max(0, (a[1] + b[1] + c[1] + d[1] - baseY * 4) / (far ? 90 : 35)));
+                  tint.copy(low).lerp(high, heightTint);
+                  var variation = 0.975 + ((i * 13 + r * 7) % 5) * 0.0125;
+                  triangle(terrain, a, b, c, tint, variation);
+                  triangle(terrain, b, d, c, tint, variation + 0.009);
+                }
+              }
+              group.add(meshFrom(terrain, far ? 'gw-distant-ridges' : 'gw-rolling-hills'));
+            });
+            var trunks = makeBuffer(), foliage = makeBuffer();
+            var trunkColor = geometryWorldSrgbColor(THREE, 0x705b43);
+            var leafColors = [0x3e6656, 0x52765e, 0x64836a].map(function(hex) { return geometryWorldSrgbColor(THREE, hex); });
+            // Four small, uneven clusters leave most of the skyline open.
+            [2, 3, 5, 18, 20, 21, 34, 36, 38, 49, 50, 53].forEach(function(i, tree) {
+              var p = point(i, 2, false), height = 2.8 + ((i * 17) % 11) * 0.13;
+              var radius = height * 0.28, twist = (i * 0.73) % Math.PI;
+              cone(trunks, p[0], p[1], p[2], 0.17, height * 0.88, trunkColor, twist);
+              cone(foliage, p[0], p[1] + height * 0.18, p[2], radius, height * 0.67, leafColors[tree % 3], twist);
+              cone(foliage, p[0], p[1] + height * 0.49, p[2], radius * 0.73, height * 0.53, leafColors[(tree + 1) % 3], twist + 0.17);
+            });
+            group.add(meshFrom(trunks, 'gw-distant-tree-trunks'));
+            group.add(meshFrom(foliage, 'gw-distant-tree-canopies'));
+            engine._landscape = group;
+            engine.scene.add(group);
+          };
+        })();

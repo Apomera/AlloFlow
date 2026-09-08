@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "multi-column-scrambled-accessibility-report.json",
+    "accessibleHtml": "multi-column-scrambled-accessible.html",
+    "privacyReceipt": "multi-column-scrambled-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-09-08T04:10:53Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "multi-column-scrambled.pdf",
+    "bytes": 1433,
+    "kind": "pdf",
+    "sha256": "c8a68f4feb2e9e5fe5bbd5e978bedbbf4ed7855080dfe4a20bcc541ea4cc8751"
+  },
+  "systemWideNetworkUseVerified": false
+}

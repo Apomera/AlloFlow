@@ -1,0 +1,77 @@
+{
+  "scope": "Actual Three r128/WebGL geometry allocations at 640×480, DPR 1, Battery saver; six repeated 43-block lessons",
+  "errors": [],
+  "cycles": {
+    "counts": [
+      {
+        "cycle": 0,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      },
+      {
+        "cycle": 1,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      },
+      {
+        "cycle": 2,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      },
+      {
+        "cycle": 3,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      },
+      {
+        "cycle": 4,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      },
+      {
+        "cycle": 5,
+        "blocks": 43,
+        "geometries": 94,
+        "textures": 6,
+        "landscapeMeshes": 4
+      }
+    ],
+    "renderQuality": "saver",
+    "dpr": 1,
+    "pass": true
+  },
+  "removal": {
+    "removedGeometryDisposes": 2,
+    "sharedMaterialDisposes": {
+      "cube-ground": 0,
+      "cube-build": 0
+    },
+    "remainingGeometryExpected": 88,
+    "pass": true
+  },
+  "teardown": {
+    "engineGone": true,
+    "canvasGone": true,
+    "events": {
+      "sharedMaterialDisposes": {
+        "cube-ground": 1,
+        "cube-build": 1
+      },
+      "removedGeometryDisposes": 2,
+      "remainingGeometryDisposes": 88,
+      "remainingGeometryExpected": 88
+    },
+    "pass": true
+  },
+  "pass": true
+}

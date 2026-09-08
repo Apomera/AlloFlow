@@ -1,0 +1,25 @@
+{
+  "preview": {
+    "width": 640,
+    "height": 720,
+    "hiddenPixel": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "sent": {
+    "width": 640,
+    "height": 720,
+    "hiddenPixel": [
+      1,
+      1,
+      1,
+      255
+    ],
+    "status": "👉 Open the captions control. Look at the left side of the shared screen — highlighted below, and an estimate."
+  },
+  "noHorizontalOverflowAt390": true,
+  "errors": []
+}

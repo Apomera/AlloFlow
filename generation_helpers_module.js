@@ -1519,6 +1519,15 @@ const prepareGeneratedMathContent = (raw, fallback, resourceId, requestedCount) 
   const received = content.problems.length;
   const requested = Math.max(1, Math.min(100, Math.floor(Number(requestedCount) || received || 1)));
   content.problems = verifyGeneratedMathProblems(content.problems.slice(0, requested));
+  const activityGrader = window.AlloModules?.MathManipulativeGrader;
+  if (typeof activityGrader?.evaluateManipulativeResponse === 'function') {
+    for (const problem of content.problems) {
+      if (!problem.manipulativeResponse) continue;
+      const response = problem.manipulativeResponse;
+      const result = activityGrader.evaluateManipulativeResponse(response.tool, undefined, response.state);
+      if (result.reason !== 'invalid-actual') problem._verification = { ...problem._verification, reviewRequired: true, reason: 'invalid_manipulative_activity' };
+    }
+  }
   const reviewRequired = content.problems.filter(p => p._verification?.reviewRequired).length;
   content.preparation = { version: 1, requested, received, accepted: content.problems.length,
     ready: content.problems.length - reviewRequired, reviewRequired,
@@ -1540,7 +1549,7 @@ const generateMathAssessment = async (blocks, options = {}) => {
   for (let index = 0; index < blocks.length; index++) {
     const block = blocks[index];
     const requested = resolveMathRequestedCount('', block.quantity);
-    const signature = JSON.stringify([block, options.grade, options.subject, language, translation]);
+    const signature = JSON.stringify([2, block, options.grade, options.subject, language, translation]);
     const previous = (options.previousSections || []).find(section => section.signature === signature && section.status === 'ready');
     if (previous) { sections.push(previous); continue; }
     const section = { id: String(block.id || 'section-' + (index + 1)), signature, requested, status: 'failed', problems: [] };
@@ -1552,6 +1561,7 @@ const generateMathAssessment = async (blocks, options = {}) => {
         + 'Focus: ' + (block.directive || 'general') + '.\n'
         + 'Write all questions and explanations in ' + language + '. '
         + (translation.enabled ? 'Include ' + translation.target + ' translations in parentheses.\n' : 'Do not add translations.\n')
+        + (block.type === 'manipulative' ? 'Every problem MUST include manipulativeResponse: {tool, state}. Choose a compatible tool: base10 state {thousands:0,hundreds:0,tens:2,ones:3}; fractions state {numerator:1,denominator:2} (denominator 2..20, numerator 0..denominator); numberline state {markers:[{value:5}],range:{min:0,max:20}}; coordinate state {points:[{x:2,y:3}]} (integer coordinates -10..10); volume state {dims:{l:3,w:2,h:2}} (dimensions 0.5..10 in steps of 0.5); protractor state {angle:90} (0..360). Base10 also supports state {mode:"tenFrame",count:7} (0..20), {mode:"counters",value:-3} (integer -20..20; yellow positive, red negative), and {mode:"fracBars",numerator:2,denominator:3} (denominator 1,2,3,4,6,8,12; numerator 0..denominator). A selected base10:mode means tool base10 with that state.mode. The state is the answer, not the starting workspace. Explain what to build in the question. Use the requested tool when specified: ' + (block.manipulativeTool || 'choose the best fit') + '. Never return a text-only problem for this section.\n' : '')
         + 'Return JSON only: {"title":"Section title","problems":[{"question":"...","taskType":"compute","expression":"...","answer":"...","steps":[{"explanation":"...","latex":"..."}]}]}. The question, expression, answer and steps must agree. Use the appropriate taskType: compute, word_problem, solve, simplify, evaluate, factor, graph, prove or convert.';
       const response = await Promise.race([
         Promise.resolve().then(() => options.callGemini(prompt, true)),
@@ -1562,6 +1572,20 @@ const generateMathAssessment = async (blocks, options = {}) => {
       if (start >= 0 && end >= start) raw = raw.slice(start, end + 1);
       const parsed = JSON.parse(typeof window.jsonrepair === 'function' ? window.jsonrepair(raw) : raw);
       const content = prepareGeneratedMathContent(parsed, '', resourceId + '-' + section.id, requested);
+      if (block.type === 'manipulative') {
+        const grader = window.AlloModules?.MathManipulativeGrader;
+        const allowed = ['base10', 'fractions', 'numberline', 'coordinate', 'volume', 'protractor'];
+        for (const problem of content.problems) {
+          const response = problem.manipulativeResponse;
+          const result = response && grader?.evaluateManipulativeResponse(response.tool, undefined, response.state);
+          if (!response || !allowed.includes(response.tool) || (block.manipulativeTool && (response.tool + (response.state?.mode && response.state.mode !== 'blocks' ? ':' + response.state.mode : '')) !== block.manipulativeTool) || result?.reason !== 'invalid-actual') {
+            problem._verification = { ...problem._verification, reviewRequired: true, reason: 'invalid_manipulative_activity' };
+          }
+        }
+        const review = content.problems.filter(p => p._verification?.reviewRequired).length;
+        content.preparation = { ...content.preparation, reviewRequired: review, ready: content.problems.length - review,
+          status: review || content.problems.length < requested ? 'partial' : 'ready' };
+      }
       section.problems = content.problems.map(p => ({ ...p, _sectionId: section.id, _blockType: block.type }));
       section.preparation = content.preparation;
       section.status = content.problems.length ? content.preparation.status : 'failed';

@@ -13,6 +13,7 @@
     "Sparkles",
     "Wrench",
     "X",
+    "_PdfPreservationReview",
     "g",
     "useEffect",
     "useRef",
@@ -65,6 +66,7 @@
     "warnLog"
   ],
   "view_sidebar_panels_source.jsx": [
+    "AdventureSetupFields",
     "AlertCircle",
     "ArrowRight",
     "Ban",

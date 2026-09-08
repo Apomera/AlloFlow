@@ -569,7 +569,7 @@ function createWordSoundsCore() {
     return validSoundBoard(board,word,pool)?board:null;
   };
   const difficultyDecision = (history, activity, support={}) => {
-    const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
+    const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
     let band=0, block=[], reason='starting', changes=0;
     const bands=['easy','medium','hard'];
     for(const h of rows){
@@ -590,6 +590,22 @@ function createWordSoundsCore() {
     const wordMatching=!imageAvailable || answerRevealed;
     return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
   };
+  // Progress keys follow the displayed sound label for both legacy strings
+  // and prepared pronunciation objects. One response counts once per label.
+  const phonemeLabels = phonemes => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
+    const label = typeof value === 'string' ? value : value && typeof value === 'object'
+      ? [value.grapheme, value.phoneme, value.ipa].find(v => typeof v === 'string' && v.trim()) : '';
+    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+  }).filter(Boolean))];
+  // Capture the supports present when answering, before success feedback can
+  // reveal the word. Preserve the more specific connected-text evidence.
+  const responseEvidence = ({showWordText=false,showLetterHints=false,alwaysShowText=false,taskEvidence={}}={}) => {
+    const textSupported=!!(showWordText || showLetterHints || alwaysShowText || taskEvidence.textSupported || taskEvidence.answerExposed);
+    const cluesShown=[...new Set([...(taskEvidence.cluesShown || []),
+      ...(showWordText || alwaysShowText ? ['printed_word'] : []),
+      ...(showLetterHints ? ['printed_sound_labels'] : [])])];
+    return {...taskEvidence,textSupported,cluesShown,mode:textSupported || taskEvidence.taskKind ? 'visual' : 'sound_only'};
+  };
   const profileCheck = (text, profile) => {
     if(!profile || !Array.isArray(profile.taughtPatterns) || !profile.taughtPatterns.length)return {status:'not_configured',untaughtWords:[]};
     const known=new Set(unique(profile.knownWords)); const patterns=unique(profile.taughtPatterns).filter(p=>/^[\p{L}\p{M}]+$/u.test(p)).sort((a,b)=>b.length-a.length);
@@ -597,7 +613,7 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
-  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -4171,10 +4187,10 @@ const WS_CORE = createWordSoundsCore();
         }
         return imageVisibilityMode;
       };
-      const getEffectiveTextMode = () => {
+      const getEffectiveTextMode = (activityId = wordSoundsActivity) => {
         if (imageVisibilityMode === "alwaysOn") return "alwaysOn";
         if (imageVisibilityMode === "alwaysOff") return "alwaysOn";
-        return SMART_TEXT_VISIBILITY[wordSoundsActivity] || "afterAnswer";
+        return SMART_TEXT_VISIBILITY[activityId] || "afterAnswer";
       };
       const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
       const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
@@ -4799,8 +4815,9 @@ const WS_CORE = createWordSoundsCore();
             aacAssistedAttempts: (prior.aacAssistedAttempts || 0) + (aacAssisted ? 1 : 0),
             practiceOnlyAttempts: (prior.practiceOnlyAttempts || 0) + (practiceOnly ? 1 : 0),
             aacAssistedCorrect: (prior.aacAssistedCorrect || 0) + (isCorrect && aacAssisted ? 1 : 0),
-            independentCorrect: (prior.independentCorrect || 0) + (firstTryCorrect && !aacAssisted && evidence.independentReading !== false ? 1 : 0),
+            independentCorrect: (prior.independentCorrect || 0) + (firstTryCorrect && !aacAssisted && !evidence.textSupported && evidence.independentReading !== false ? 1 : 0),
             distinctWords: [...new Set([...(prior.distinctWords || []), evidence.word].filter(Boolean))],
+            textSupportedAttempts: (prior.textSupportedAttempts || 0) + (evidence.textSupported ? 1 : 0),
             supportedMatchingAttempts: (prior.supportedMatchingAttempts || 0) + (evidence.answerExposed ? 1 : 0),
             // A retry demonstrates learning, but not an independent mastery
             // streak. AAC remains valid access evidence and is reported
@@ -4808,7 +4825,7 @@ const WS_CORE = createWordSoundsCore();
             consecutiveStreak: firstTryCorrect
               ? (prior.consecutiveStreak || 0) + 1
               : 0,
-            independentConsecutiveStreak: firstTryCorrect && !aacAssisted && evidence.independentReading !== false
+            independentConsecutiveStreak: firstTryCorrect && !aacAssisted && !evidence.textSupported && evidence.independentReading !== false
               ? (prior.independentConsecutiveStreak || 0) + 1
               : 0,
             completed: !!prior.completed,
@@ -7875,11 +7892,18 @@ const WS_CORE = createWordSoundsCore();
       }, []);
       const adaptiveDifficulty = React.useMemo(() => WS_CORE.difficultyDecision(
         learnerScopedHistory.filter(wsIsGradedRow), wordSoundsActivity,
-        { aacAssisted: aacMode, mode: ["read_sentence", "read_passage"].includes(wordSoundsActivity) || showLetterHints ? "visual" : "sound_only" },
-      ), [learnerScopedHistory, wordSoundsActivity, aacMode, showLetterHints]);
-      const getEffectiveDifficulty = React.useCallback(() => {
-        return wordSoundsDifficulty !== "auto" ? wordSoundsDifficulty : adaptiveDifficulty.difficulty;
-      }, [wordSoundsDifficulty, adaptiveDifficulty]);
+        { aacAssisted: aacMode, mode: ["read_sentence", "read_passage"].includes(wordSoundsActivity) || showLetterHints || getEffectiveTextMode() === "alwaysOn" ? "visual" : "sound_only" },
+      ), [learnerScopedHistory, wordSoundsActivity, aacMode, showLetterHints, imageVisibilityMode]);
+      const getEffectiveDifficulty = React.useCallback((activityId = wordSoundsActivity) => {
+        if (wordSoundsDifficulty !== "auto") return wordSoundsDifficulty;
+        if (activityId === wordSoundsActivity) return adaptiveDifficulty.difficulty;
+        // State changes take effect on the next render; seed the destination
+        // queue with its own evidence while switching activities.
+        return WS_CORE.difficultyDecision(learnerScopedHistory.filter(wsIsGradedRow), activityId, {
+          aacAssisted: aacMode,
+          mode: ["read_sentence", "read_passage"].includes(activityId) || showLetterHints || getEffectiveTextMode(activityId) === "alwaysOn" ? "visual" : "sound_only",
+        }).difficulty;
+      }, [wordSoundsDifficulty, adaptiveDifficulty, wordSoundsActivity, learnerScopedHistory, aacMode, showLetterHints, imageVisibilityMode]);
       const categorizedPool = React.useMemo(() => {
         return wordPool.map((entry) => ({
           ...entry,
@@ -7909,8 +7933,7 @@ const WS_CORE = createWordSoundsCore();
         return filtered.length > 0 ? filtered : categorizedPool;
       }, [categorizedPool, getEffectiveDifficulty]);
       const getAdaptiveRandomWord = React.useCallback(
-        (excludeWord = null) => {
-          const activityId = wordSoundsActivity || "segmentation";
+        (excludeWord = null, activityId = wordSoundsActivity || "segmentation") => {
           if (
             !sessionQueueRef.current[activityId] ||
             sessionQueueRef.current[activityId].length === 0
@@ -7918,12 +7941,17 @@ const WS_CORE = createWordSoundsCore();
             return null;
           }
           const queue = sessionQueueRef.current[activityId];
-          const nextWord = queue[0];
-          const remaining = queue.slice(1);
+          const wordKey = entry => String(typeof entry === "string" ? entry : entry?.singleWord || entry?.word || entry?.fullTerm || "").trim().toLowerCase();
+          const alternate = !isFixedForm && excludeWord
+            ? queue.findIndex(entry => wordKey(entry) !== wordKey(excludeWord)) : 0;
+          const selectedIndex = Math.max(0, alternate);
+          const nextWord = queue[selectedIndex];
+          const remaining = queue.slice();
+          remaining.splice(selectedIndex, 1);
           sessionQueueRef.current[activityId] = remaining;
           return nextWord;
         },
-        [wordSoundsActivity],
+        [wordSoundsActivity, isFixedForm],
       );
       const [soundChips, setSoundChips] = React.useState([]);
       const [segmentationErrors, setSegmentationErrors] = React.useState([]);
@@ -8281,13 +8309,12 @@ const WS_CORE = createWordSoundsCore();
           if (!phonemes || !Array.isArray(phonemes) || !setPhonemeMastery)
             return;
           const presentations = Math.max(1, Number(evidence.presentations) || 1);
-          const firstTryCorrect = !!isCorrect && presentations === 1;
+          const firstTryCorrect = !!isCorrect && presentations === 1 && !evidence.answerExposed;
           const aacAssisted = evidence.aacAssisted === true;
+          const textSupported = !!(evidence.textSupported || evidence.answerExposed);
           setPhonemeMastery((prev) => {
             const updated = { ...prev };
-            phonemes.forEach((phoneme) => {
-              const p = String(phoneme || "").toLowerCase().trim();
-              if (!p) return;
+            WS_CORE.phonemeLabels(phonemes).forEach((p) => {
               const prior = updated[p] || { correct: 0, total: 0 };
               const total = (prior.total || 0) + 1;
               const correct = (prior.correct || 0) + (isCorrect ? 1 : 0);
@@ -8295,10 +8322,10 @@ const WS_CORE = createWordSoundsCore();
                 (prior.weightedCorrect ?? prior.correct ?? 0) +
                 (firstTryCorrect ? 1 : isCorrect ? 0.5 : 0);
               const independentAttempts =
-                (prior.independentAttempts || 0) + (aacAssisted ? 0 : 1);
+                (prior.independentAttempts || 0) + (aacAssisted || textSupported ? 0 : 1);
               const independentCorrect =
                 (prior.independentCorrect || 0) +
-                (firstTryCorrect && !aacAssisted ? 1 : 0);
+                (firstTryCorrect && !aacAssisted && !textSupported ? 1 : 0);
               const aacAssistedAttempts =
                 (prior.aacAssistedAttempts || 0) + (aacAssisted ? 1 : 0);
               const aacAssistedCorrect =
@@ -8313,9 +8340,11 @@ const WS_CORE = createWordSoundsCore();
                   (prior.firstTryCorrect || 0) + (firstTryCorrect ? 1 : 0),
                 retryCorrect:
                   (prior.retryCorrect || 0) +
-                  (isCorrect && !firstTryCorrect ? 1 : 0),
+                  (isCorrect && presentations > 1 ? 1 : 0),
                 independentAttempts,
                 independentCorrect,
+                textSupportedAttempts: (prior.textSupportedAttempts || 0) + (textSupported ? 1 : 0),
+                textSupportedCorrect: (prior.textSupportedCorrect || 0) + (textSupported && isCorrect ? 1 : 0),
                 aacAssistedAttempts,
                 aacAssistedCorrect,
                 // Keep the long-standing accuracy field for consumers, but
@@ -12206,7 +12235,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             lastWordForOrthography.current = null;
           }
           if (!forceWord) {
-            const effectiveDiff = getEffectiveDifficulty();
+            const effectiveDiff = getEffectiveDifficulty(activityId);
             generateSessionQueue(activityId, effectiveDiff);
           }
           let word = forceWord;
@@ -12254,7 +12283,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "WordSounds: Queue empty but pool has words. Regenerating with broader difficulty...",
               );
               generateSessionQueue(activityId, "medium");
-              const retryWord = getAdaptiveRandomWord();
+              const retryWord = getAdaptiveRandomWord(null, activityId);
               if (retryWord) {
                 const retryTargetWord =
                   retryWord.singleWord || retryWord.fullTerm || retryWord.word;
@@ -13553,11 +13582,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // Missed words are tracked via updateMasteryStats → revisitQueue (deferred review).
             // Legacy immediate re-queue was removed to prevent infinite-loop word cycling.
             // The student gets max 2 attempts per presentation, then progresses.
+            const _responseEvidence = WS_CORE.responseEvidence({
+              showWordText, showLetterHints,
+              alwaysShowText: getEffectiveTextMode() === "alwaysOn",
+              taskEvidence: opts?.taskEvidence,
+            });
             const _masteryEvidence = {
               presentations: attempts + 1,
               aacAssisted: aacMode,
               practiceOnly: WS_NON_GRADED_ACTIVITIES.has(wordSoundsActivity),
-              ...(opts?.taskEvidence || {}),
+              ..._responseEvidence,
               word: currentWordSoundsWord,
             };
             const _postActivityMastery = buildNextMasteryStat(
@@ -13578,12 +13612,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ...(historyResourceId != null ? { resourceId: String(historyResourceId) } : {}),
               ...(wordSoundsLanguage ? { language: String(wordSoundsLanguage) } : {}),
               ...(sessionConfigVersion != null ? { sessionConfigVersion } : {}),
-              ...(opts?.taskEvidence || {}),
+              ..._responseEvidence,
               firstTry: attempts === 0,
               activity: wordSoundsActivity,
               word: currentWordSoundsWord,
               correct: isCorrect,
-              mode: opts?.taskEvidence ? "visual" : showLetterHints ? "visual" : "sound_only",
               difficulty: getEffectiveDifficulty(),
               wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
               phonemes: wordSoundsPhonemes?.phonemes || [],
@@ -14669,6 +14702,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           attempts,
           isProbeMode,
           showLetterHints,
+          showWordText,
+          imageVisibilityMode,
           aacMode,
           learnerScopedHistory,
         ],

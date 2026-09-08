@@ -234,3 +234,34 @@ describe('analysis grammar updates persist through the host artifact boundary', 
     expect(props.setInputText).not.toHaveBeenCalled();
   });
 });
+
+describe('source review context and built-in AI cleanup', () => {
+  it('names correction choices with the actual note instead of a generic toggle', () => {
+    const p=makeProps(['Use a capital letter.','Check the verb tense.']);
+    p.generatedContent.data.accuracy.discrepancies=['The date is incorrect.'];
+    const el=renderView(p);
+    const names=[...el.querySelectorAll('input[type=checkbox]')].map(input=>input.getAttribute('aria-label'));
+    expect(names).toEqual([
+      'Include factual note in correction 1: The date is incorrect.',
+      'Include grammar note in correction 1: Use a capital letter.',
+      'Include grammar note in correction 2: Check the verb tense.'
+    ]);
+  });
+  it('destroys a failed built-in AI session before falling back to the provider', async () => {
+    const previous=window.ai;
+    const destroy=vi.fn(),prompt=vi.fn(async()=>{throw new Error('built-in unavailable');});
+    window.ai={languageModel:{create:vi.fn(async()=>({prompt,destroy}))}};
+    const p=makeProps(['Check the verb tense.'],{
+      selectedGrammarErrors:new Set([0]),
+      callGemini:vi.fn(async()=> 'The quick brown fox jumped over the lazy dog.'),
+      onCorrectAnalysisText:vi.fn(async()=>true)
+    });
+    try {
+      const el=renderView(p);
+      await act(async()=>{el.querySelector('button[aria-label="common.fix_grammar_errors"]').click();for(let i=0;i<12;i++)await Promise.resolve();});
+      expect(destroy).toHaveBeenCalledOnce();expect(p.callGemini).toHaveBeenCalledOnce();
+      expect(p.onCorrectAnalysisText).toHaveBeenCalledOnce();
+    } finally {window.ai=previous;}
+  });
+});
+

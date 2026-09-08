@@ -2054,6 +2054,7 @@ try {
         vennDiagram: null,
         bingo: null,
         wordScramble: null,
+        definitionDetective: null,
         labelChallengeAvg: 0,
         labelChallengeAttempts: 0,
         labelChallengeBest: 0,
@@ -2117,12 +2118,16 @@ try {
           conceptSortGame: 'conceptSortGame',
           vennDiagram: 'vennDiagram',
           bingo: 'bingo',
-          wordScramble: 'wordScramble'
+          wordScramble: 'wordScramble',
+          definitionDetective: 'definitionDetective'
         };
         for (const [rawType, statKey] of Object.entries(typeMap)) {
           const entries = data.gameCompletions[rawType] || [];
           if (entries.length > 0) {
-            const scores = entries.map(e => e.score ?? e.accuracy ?? 0);
+            const scores = entries.map(e => rawType === 'definitionDetective'
+              ? (Number.isFinite(e.totalItems) && e.totalItems > 0 && Number.isFinite(e.correctCount)
+                ? Math.max(0, Math.min(100, e.correctCount / e.totalItems * 100)) : 0)
+              : e.score ?? e.accuracy ?? 0);
             stats[statKey] = {
               initial: scores[0],
               attempts: entries.length,
@@ -9853,6 +9858,10 @@ try {
       key: 'wordScramble',
       label: 'Word Scramble',
       icon: '🔤'
+    }, {
+      key: 'definitionDetective',
+      label: 'Definition Detective',
+      icon: '🔎'
     }].filter(g => selectedStudent.stats[g.key]).map(game => {
       const s = selectedStudent.stats[game.key];
       return /*#__PURE__*/React.createElement("div", {

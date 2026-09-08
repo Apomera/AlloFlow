@@ -1,0 +1,464 @@
+{
+  "results": [
+    {
+      "name": "DefinitionDetectiveGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "MemoryGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [],
+        "focus": null
+      }
+    },
+    {
+      "name": "MatchingGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close Matching Game"
+      }
+    },
+    {
+      "name": "CrosswordGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close Crossword Puzzle"
+      }
+    },
+    {
+      "name": "SyntaxScramble",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 256,
+            "right": 1024,
+            "top": 205,
+            "bottom": 695
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "BingoGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close Generator"
+      }
+    },
+    {
+      "name": "StudentBingoGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close Bingo Game"
+      }
+    },
+    {
+      "name": "WordScrambleGame",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 1280,
+            "top": 0,
+            "bottom": 900
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "DefinitionDetectiveGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "MemoryGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [],
+        "focus": null
+      }
+    },
+    {
+      "name": "MatchingGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close Matching Game"
+      }
+    },
+    {
+      "name": "CrosswordGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close Crossword Puzzle"
+      }
+    },
+    {
+      "name": "SyntaxScramble",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 16,
+            "right": 374,
+            "top": 155,
+            "bottom": 689
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "BingoGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close Generator"
+      }
+    },
+    {
+      "name": "StudentBingoGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close Bingo Game"
+      }
+    },
+    {
+      "name": "WordScrambleGame",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 390,
+            "top": 0,
+            "bottom": 844
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "DefinitionDetectiveGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "MemoryGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [],
+        "focus": null
+      }
+    },
+    {
+      "name": "MatchingGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close Matching Game"
+      }
+    },
+    {
+      "name": "CrosswordGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close Crossword Puzzle"
+      }
+    },
+    {
+      "name": "SyntaxScramble",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 16,
+            "right": 304,
+            "top": 60,
+            "bottom": 680
+          }
+        ],
+        "focus": "Close"
+      }
+    },
+    {
+      "name": "BingoGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close Generator"
+      }
+    },
+    {
+      "name": "StudentBingoGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close Bingo Game"
+      }
+    },
+    {
+      "name": "WordScrambleGame",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "left": 0,
+            "right": 320,
+            "top": 0,
+            "bottom": 740
+          }
+        ],
+        "focus": "Close"
+      }
+    }
+  ],
+  "errors": []
+}

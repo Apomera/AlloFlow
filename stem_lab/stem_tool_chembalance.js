@@ -3334,6 +3334,26 @@
     }, '\u23F1 ' + minutes + ':' + String(seconds).padStart(2, '0'));
   };
 
+  // Canonical equation identity for generated tasks and their answer checker.
+  var activityEquationKey = function(value) {
+    return String(value || '').replace(/[₀-₉]/g, function(c) { return String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c)); }).replace(/→|⟶|=>/g, '->').replace(/\s/g, '');
+  };
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.ChemistryActivity = {
+    resolveEquation: function(value) {
+      var found = ALL_PRESETS.find(function(p) { return p.name === value || activityEquationKey(p.eq) === activityEquationKey(value); });
+      return found ? found.eq : value;
+    },
+    readState: function(data) {
+      var d = data || {};
+      var filtered = !d.tierFilter || d.tierFilter === 'all' ? ALL_PRESETS : ALL_PRESETS.filter(function(p) { return p.tier === d.tierFilter; });
+      var preset = filtered.find(function(p) { return p.name === d.equation || activityEquationKey(p.eq) === activityEquationKey(d.equation); }) || filtered[0];
+      if (!preset) return undefined;
+      var coefficients = Array.isArray(d.coefficients) ? d.coefficients.slice(0, preset.target.length) : [];
+      while (coefficients.length < preset.target.length) coefficients.push(1);
+      return { equation: preset.eq, coefficients: coefficients };
+    }
+  };
   // REGISTER TOOL
   // ═══════════════════════════════════════════════════════════
   window.StemLab.registerTool('chemBalance', {
@@ -3497,7 +3517,7 @@
         var filtered = tierFilter === 'all' ? ALL_PRESETS : ALL_PRESETS.filter(function(p) { return p.tier === tierFilter; });
         var preset = null;
         for (var fi = 0; fi < filtered.length; fi++) {
-          if (filtered[fi].name === d.equation) { preset = filtered[fi]; break; }
+          if (filtered[fi].name === d.equation || activityEquationKey(filtered[fi].eq) === activityEquationKey(d.equation)) { preset = filtered[fi]; break; }
         }
         if (!preset) preset = filtered[0];
         var numSlots = preset.target.length;

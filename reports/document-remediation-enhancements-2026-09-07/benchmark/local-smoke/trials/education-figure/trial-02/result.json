@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "accessibilityReport": "meaningful-image-accessibility-report.json",
+    "accessibleHtml": "meaningful-image-accessible.html",
+    "privacyReceipt": "meaningful-image-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "humanReviewRequired": true,
+  "ok": true,
+  "outputDirectory": "artifacts",
+  "outputPathRedacted": true,
+  "pdfUaCompliant": null,
+  "pdfUaValidation": "not_run",
+  "taggedPdfGeneration": "not_run",
+  "verdict": "html_only_review_required"
+}

@@ -1,0 +1,67 @@
+{
+  "pass": true,
+  "distinctTests": 256,
+  "testReports": [
+    "workspace-core-tests.json",
+    "rotated-placement-tests.json",
+    "workspace-geometry-tests.json",
+    "builder-dock-tests.json",
+    "workspace-resize-tests.json",
+    "workspace-visual-tests.json"
+  ],
+  "mirrors": {
+    "stem_tool_geometryworld.js": true,
+    "stem_tool_geometryworld_builder.js": true,
+    "stem_tool_printlab.js": true
+  },
+  "workspaceBrowserPassed": true,
+  "printRoundTripPassed": true,
+  "viewports": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "resizeContinuity": {
+        "sameEngine": true,
+        "studentBlocks": 150,
+        "mobileGateVisible": false
+      },
+      "touchPalette": {
+        "touchActive": "false",
+        "overlaps": []
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "resizeContinuity": {
+        "sameEngine": true,
+        "studentBlocks": 150,
+        "mobileGateVisible": false
+      },
+      "touchPalette": {
+        "touchActive": "true",
+        "overlaps": []
+      }
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "resizeContinuity": {
+        "sameEngine": true,
+        "studentBlocks": 150,
+        "mobileGateVisible": false
+      },
+      "touchPalette": {
+        "touchActive": "true",
+        "overlaps": []
+      }
+    }
+  ],
+  "scope": "Local actual React/Three.js host using software WebGL; no physical printer or deployment."
+}

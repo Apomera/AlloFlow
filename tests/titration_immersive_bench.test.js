@@ -259,3 +259,89 @@ describe('Reference curve',()=>{
     expect(referencePH(9)).toBeCloseTo(12.52,2);
   });
 });
+
+const previewTime=new Function(pureSource+';return titrationBenchPreviewTime;')();
+describe('Static addition inspector',()=>{
+  it('accepts a finite timeline position while rejecting missing or malformed values',()=>{
+    expect(previewTime(0)).toBe(0);expect(previewTime(-100)).toBe(0);expect(previewTime(9999)).toBe(1800);
+    for(const value of [null,undefined,NaN,Infinity,'650'])expect(previewTime(value)).toBe(null);
+  });
+  it('holds the impact pose without enabling continuous animation',()=>{
+    const s=scene({animating:false,previewMs:700,flashHold:1,fill:0.5});s.tick(0);
+    const flash=object(s,'titrant-flash'),drop=object(s,'titrant-drop');
+    expect(flash.visible).toBe(true);const before={opacity:flash.material.opacity,scale:flash.scale.x,y:drop.position.y};
+    s.tick(10000);expect({opacity:flash.material.opacity,scale:flash.scale.x,y:drop.position.y}).toEqual(before);
+    expect(s.experiment.animating).toBe(false);expect(s.experiment.previewMs).toBe(700);
+  });
+  it('steps backward and forward without changing the experiment readings',()=>{
+    for(const time of [1800,0,1100,650]){
+      const s=scene({reading:24.9,delivered:24.9,animating:false,previewMs:time,flashHold:1});s.tick(5000);
+      expect(s.experiment.reading).toBe(24.9);expect(s.experiment.delivered).toBe(24.9);
+      expect(object(s,'titrant-drop').visible).toBe(time<650);
+      expect(object(s,'titrant-flash').visible).toBe(time>=620&&time<1720);
+      expect(object(s,'stopcock-handle').rotation.z).toBe(time<650?0:Math.PI/2);
+    }
+  });
+  it('keeps the bloom excluded from the burette close-up during static inspection',()=>{
+    const s=scene({focus:'burette',animating:false,previewMs:700});s.tick(0);expect(object(s,'titrant-flash').visible).toBe(false);
+  });
+});
+
+const readingWindow=new Function(pureSource+';return titrationReadingWindow;')();
+describe('Linked burette measurement visuals',()=>{
+  it('keeps the magnified scale in range at both ends and through ordinary readings',()=>{
+    for(const reading of [0,0.1,24.9,49.9,50]){const w=readingWindow(reading);expect(w.low).toBeGreaterThanOrEqual(0);expect(w.high).toBeLessThanOrEqual(50);expect(w.high-w.low).toBe(3);expect(w.reading).toBeGreaterThanOrEqual(w.low);expect(w.reading).toBeLessThanOrEqual(w.high);}
+    expect(readingWindow(-5).reading).toBe(0);expect(readingWindow(99).reading).toBe(50);
+  });
+  it('places the numbered 3D labels on their matching graduations',()=>{
+    const s=scene({focus:'burette',reading:24.9});
+    for(const value of [0,10,20,30,40,50]){const label=object(s,'burette-number-'+value),tick=object(s,'graduation-'+value);expect(label.isLineSegments).toBe(true);expect(label.position.y).toBe(tick.position.y);expect(label.geometry.attributes.position.count).toBeGreaterThan(0);}
+  });
+  it('keeps the reading guide at the current fill, including refilled and empty burettes',()=>{
+    for(const reading of [0,24.9,50]){const s=scene({focus:'burette',reading,delivered:reading+50}),line=object(s,'burette-reading-guide');expect(line.visible).toBe(true);expect(line.geometry.attributes.position.getY(0)).toBeCloseTo(s.experiment.meniscus,5);}
+    expect(object(scene({focus:'flask'}),'burette-reading-guide').visible).toBe(false);
+    expect(object(scene(),'burette-reading-guide').visible).toBe(false);
+  });
+});
+
+
+describe('Titration surface ripples',()=>{
+  const rings=s=>s.model.children.filter(o=>/^liquid-ripple-/.test(o.name));
+  it('appears only at impact, expands within the liquid, and settles after the addition',()=>{
+    const s=scene({animating:true,fill:0.5});s.tick(0);s.tick(600);expect(rings(s).some(o=>o.visible)).toBe(false);
+    s.tick(700);const first=rings(s)[0],before={scale:first.scale.x,opacity:first.material.opacity};expect(first.visible).toBe(true);
+    s.tick(1000);expect(first.scale.x).toBeGreaterThan(before.scale);expect(first.material.opacity).toBeLessThan(before.opacity);
+    for(const o of rings(s)){expect(o.position.y).toBeCloseTo(s.experiment.liquidSurface+0.019);expect(o.scale.x*1.014).toBeLessThan(profile(0.5).radius);}
+    s.tick(1600);expect(rings(s).some(o=>o.visible)).toBe(false);
+  });
+  it('never animates an idle, empty, or burette-only view',()=>{
+    for(const data of [{},{animating:true,fill:0},{animating:true,focus:'burette'}]){const s=scene(data);s.tick(0);s.tick(1000);expect(rings(s).some(o=>o.visible)).toBe(false);}
+  });
+  it('holds a fixed ripple pose in the reduced-motion-compatible inspector',()=>{
+    const s=scene({previewMs:1000,animating:false});s.tick(0);const pose=()=>rings(s).map(o=>({visible:o.visible,scale:o.scale.x,opacity:o.material.opacity})),before=pose();expect(before.some(o=>o.visible)).toBe(true);s.tick(20000);expect(pose()).toEqual(before);expect(s.experiment.animating).toBe(false);
+  });
+});
+
+
+const comparisonFrame=new Function(pureSource+';return titrationComparisonFrame;')();
+describe('Visual notebook comparison',()=>{
+  const a={id:1,preset:'sa_sb',setup:'HCl + NaOH',axis:'pH',volume:25,value:7};
+  const b={...a,id:2,volume:25.1,value:10.3};
+  it('maps selected observations inside a finite zoomed frame',()=>{
+    for(const pair of [[a,b],[b,a],[{...a,volume:0,value:0},{...b,volume:0.1,value:14}]]){
+      const f=comparisonFrame(...pair);for(const p of [f.a,f.b]){expect(p.x).toBeGreaterThanOrEqual(58);expect(p.x).toBeLessThanOrEqual(355);expect(p.y).toBeGreaterThanOrEqual(32);expect(p.y).toBeLessThanOrEqual(187);}
+      expect(f.volume.high).toBeGreaterThan(f.volume.low);expect(f.response.high).toBeGreaterThan(f.response.low);
+    }
+  });
+  it('calculates an average using the rounded notebook differences',()=>{expect(comparisonFrame(a,b).rate).toBe(33);expect(comparisonFrame(b,a).rate).toBe(33);});
+  it('retains voltage precision when calculating a redox interval',()=>{expect(comparisonFrame({...a,axis:'E',value:0.751},{...b,axis:'E',volume:25.2,value:0.763}).rate).toBe(0.06);});
+  it('keeps coincident readings visible and has no rate for a zero volume interval',()=>{
+    const f=comparisonFrame(a,{...a,id:2});expect(f.rate).toBe(null);expect(f.a).toEqual(f.b);expect(Number.isFinite(f.a.x)).toBe(true);expect(Number.isFinite(f.a.y)).toBe(true);
+  });
+  it('distinguishes zero response change from an undefined average',()=>{expect(comparisonFrame(a,{...b,value:a.value}).rate).toBe(0);});
+  it('rejects different reagent setups even if the preset ID matches',()=>{
+    const changed={...b,setup:'HCl + NaOH at a different concentration'};expect(compare(a,changed)).toBe(null);expect(comparisonFrame(a,changed)).toBe(null);
+    expect(comparisonFrame(a,{...b,preset:'wa_sb'})).toBe(null);expect(comparisonFrame(a,a)).toBe(null);
+  });
+  it('never draws non-finite coordinate ranges from malformed saved values',()=>{expect(comparisonFrame({...a,value:-1e308},{...b,value:1e308})).toBe(null);});
+});

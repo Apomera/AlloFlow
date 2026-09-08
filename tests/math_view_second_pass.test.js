@@ -809,7 +809,7 @@ describe('MathView second-pass state hardening', () => {
     });
   });
 
-  it('bounds support hydration and opens a grader-approved fraction response at its declared limit', () => {
+  it('rejects unsupported scaffold values and opens a valid fraction response at its declared limit', () => {
     const { MathView } = loadMathView({
       manipulativeGrader: {
         limits: { maxFractionDenominator: 12 },
@@ -843,7 +843,8 @@ describe('MathView second-pass state hardening', () => {
       setFractionPieces,
     });
     findNode(tree, node => node.type === 'button' && nodeText(node).includes('Open Visual Support')).props.onClick();
-    expect(setFractionPieces).toHaveBeenLastCalledWith({ numerator: 12, denominator: 12 });
+    expect(setFractionPieces).not.toHaveBeenCalled();
+    expect(commonProps.setShowStemLab).not.toHaveBeenCalled();
 
     tree = MathView({
       ...commonProps,
@@ -1102,8 +1103,8 @@ describe('MathView second-pass source contracts', () => {
     expect(source).toContain("targetCheck.reason === 'invalid-actual'");
     expect(source).toContain('data-math-manipulative-error={getMathManipulativeResponseAvailability(problem).reason}');
     expect(source).toContain("reason: 'lab-unavailable'");
-    expect(source).toContain('canPrepareMathManipulativeTool(problem.manipulativeResponse.tool)');
-    expect(source).toContain('if (!canPrepareMathManipulativeTool(tool))');
+    expect(source).toContain('canPrepareMathManipulativeTool(problem.manipulativeResponse.tool, problem.manipulativeResponse.state)');
+    expect(source).toContain('if (!canPrepareMathManipulativeTool(tool, target))');
     expect(source).toContain("typeof window !== 'undefined' && window.AlloModules");
     expect(source).toContain('{graphHtml && (');
     expect(source).not.toContain("{typeof generatedContent.data.graphData === 'string' && generatedContent.data.graphData && (");

@@ -760,7 +760,7 @@ function GuidedModeBanner({
     try {
       const material = JSON.stringify({ source: String(inputText || '').trim(), ids, resources,
         steps: [...(guidedSelectedIds || (allGuidedSteps || GUIDED_STEPS).map(item => item.id))].sort(),
-        goal: guidedPlanBrief?.goal || '' });
+        goal: guidedPlanBrief?.goal || '', deliverySetting, deliveryPriority });
       // A local change detector, not an authentication token. Persist only the
       // fingerprint and check IDs, not a second copy of lesson/student content.
       let first = 2166136261, second = 2246822519;
@@ -771,7 +771,7 @@ function GuidedModeBanner({
       }
       return 'v2:' + material.length + ':' + (first >>> 0).toString(16) + ':' + (second >>> 0).toString(16);
     } catch (_) { return null; }
-  }, [inputText, history, guidedCreatedHistoryIds, guidedSelectedIds, allGuidedSteps, GUIDED_STEPS, guidedPlanBrief?.goal]);
+  }, [inputText, history, guidedCreatedHistoryIds, guidedSelectedIds, allGuidedSteps, GUIDED_STEPS, guidedPlanBrief?.goal, deliverySetting, deliveryPriority]);
   const [readinessState, setReadinessState] = React.useState(() => {
     try {
       const value = JSON.parse(localStorage.getItem('allo_guided_readiness_checks') || '{}');
@@ -1786,7 +1786,7 @@ function GuidedModeBanner({
             <strong id="guided-readiness-title" style={{ display: 'block', color: 'white', fontSize: '13px' }}>{t('guided.readiness_title') || 'Student-ready preflight'}</strong>
             <span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', lineHeight: 1.45, margin: '3px 0 8px' }}>{t('guided.readiness_hint') || 'Verified actions are checked automatically. Confirm the remaining classroom checks before launch.'}</span>
             <p style={{ color: '#c7d2fe', fontSize: '12px', lineHeight: 1.45 }}>{t('guided.readiness_scope_hint') || 'Manual checks apply to this source and these resources. Review them again after changing the lesson.'}</p>
-            {(!readinessContextKey || readinessChanged || readinessSaveFailed) && <div role="status" aria-live="polite" style={{ color: '#fde68a', fontSize: '12px', lineHeight: 1.45, marginBottom: '8px' }}>{!readinessContextKey ? (t('guided.readiness_loading') || 'Waiting for the lesson resources before restoring manual checks.') : readinessSaveFailed ? (t('guided.readiness_session_only') || 'These checks could not be saved on this device. They remain available in this session; confirm them again after reopening.') : (t('guided.readiness_changed') || 'The lesson changed. Please confirm the manual checks again.')}</div>}
+            {(!readinessContextKey || readinessChanged || readinessSaveFailed) && <div role="status" aria-live="polite" style={{ color: '#fde68a', fontSize: '12px', lineHeight: 1.45, marginBottom: '8px' }}>{!readinessContextKey ? (t('guided.readiness_loading') || 'Waiting for the lesson resources before restoring manual checks.') : readinessSaveFailed ? (t('guided.readiness_session_only') || 'These checks could not be saved on this device. They remain available in this session; confirm them again after reopening.') : (t('guided.readiness_context_changed') || 'The lesson or delivery route changed. Please confirm the manual checks again.')}</div>}
             <div role="progressbar" aria-label={t('guided.readiness_progress') || 'Learner readiness progress'} aria-valuemin={0} aria-valuemax={readinessTotal} aria-valuenow={readinessCount} style={{ height: '7px', overflow: 'hidden', borderRadius: '999px', background: 'rgba(15,23,42,.55)', marginBottom: '8px' }}><span style={{ display: 'block', width: (readinessCount / Math.max(1, readinessTotal) * 100) + '%', height: '100%', background: readinessCount === readinessTotal ? '#34d399' : '#60a5fa', transition: 'width .2s' }} /></div>
             {readinessFixes.length > 0 && <div className="allo-guided-readiness-fixes"><strong>{t('guided.readiness_fix_title') || 'Finish verified setup'}</strong>{readinessFixes.map(item => <button type="button" key={item.id} onClick={() => runReadinessAction(item.action)}>{item.id === 'directions' ? (t('guided.readiness_fix_directions') || 'Create directions') : item.id === 'delivery' ? (t('guided.readiness_fix_delivery') || 'Choose export or delivery') : (t('guided.readiness_fix_preview') || 'Test learner view')}</button>)}</div>}
             <div style={{ display: 'grid', gap: '5px' }}>{readinessItems.map(item => { const checked = !!(item.verified || readinessChecks[item.id]); return <label key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', padding: '6px 7px', borderRadius: '7px', background: checked ? 'rgba(16,185,129,.12)' : 'rgba(15,23,42,.32)', color: checked ? '#d1fae5' : '#e0e7ff', fontSize: '12px', lineHeight: 1.4 }}><input type="checkbox" checked={checked} disabled={item.verified || guidedBusy || !readinessContextKey} onChange={event => setReadinessChecks(previous => ({ ...(previous || {}), [item.id]: event.target.checked }))} style={{ marginTop: '2px' }} /><span style={{ flex: 1 }}>{item.label}</span><span style={{ color: item.verified ? '#6ee7b7' : '#c7d2fe', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>{item.verified ? (t('guided.readiness_verified') || 'Verified') : (t('guided.readiness_confirm') || 'Confirm')}</span></label>; })}</div>

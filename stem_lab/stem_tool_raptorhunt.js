@@ -273,6 +273,18 @@
   st.textContent += "\n.rh-practice-toggle{position:absolute;right:12px;bottom:12px;z-index:24;min-height:42px;padding:9px 14px;border:1px solid #8eacb5;border-radius:8px;background:rgba(15,23,42,.86);color:#e5f5f3;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer}.rh-practice-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8}.rh-practice-toggle:focus-visible{outline:3px solid #f5d897;outline-offset:3px}.rh-practice-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;max-width:calc(100% - 40px);padding:10px 20px;border:1px solid rgba(234,213,165,.4);border-radius:12px;background:rgba(11,24,33,.82);color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15)}.rh-practice-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-practice-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-practice-track{display:flex;justify-content:center;align-items:center;gap:7px;margin:8px 0}.rh-practice-track .rh-practice-pip{display:grid;place-items:center;width:22px;height:22px;margin:0;border:1px solid #788c96;border-radius:50%;font:600 10px/1 ui-monospace,monospace;color:#c4d2d7;background:#172a36}.rh-practice-pip[data-state=current]{border-color:#ffd18b!important;color:#ffe6b6!important;box-shadow:0 0 0 3px rgba(255,209,139,.13)}.rh-practice-pip[data-state=centered],.rh-practice-pip[data-state=passed]{border-color:#8ee4c0!important;background:#173d35!important;color:#bbffe3!important}.rh-practice-pip[data-state=missed]{border-color:#d5a896!important;color:#ffd1ba!important}.rh-practice-track .rh-practice-score{margin:0 0 0 5px;padding-left:10px;border-left:1px solid #647782;color:#ffe5af;font:600 11px/1.4 ui-sans-serif,system-ui;white-space:nowrap}.rh-practice-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-practice-hud{top:18px}[data-raptor-flight-trail=\"true\"] .rh-flight-reticle,[data-raptor-flight-trail=\"true\"] .rh-flight-target-cue,[data-raptor-flight-trail=\"true\"] .rh-flight-lock-meters,[data-raptor-flight-trail=\"true\"] .rh-flight-mission-hud{display:none!important}@media(max-width:760px){.rh-practice-toggle{bottom:64px;right:8px;padding:8px 10px;font-size:11px}[data-raptor-scenic-view=\"true\"] .rh-practice-toggle{bottom:12px}.rh-practice-hud{top:118px;width:245px;padding:8px 12px}}@media(forced-colors:active){.rh-practice-toggle,.rh-practice-hud{background:Canvas;color:CanvasText;border-color:CanvasText}}\n";
   st.textContent += "\n.rh-scenic-toggle{position:absolute;z-index:24;left:12px;bottom:12px;min-height:40px;padding:9px 13px;border:1px solid #94a3b8;border-radius:8px;background:rgba(15,23,42,.82);color:#f1f5f9;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer;}\n.rh-scenic-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8;}\n[data-raptor-scenic-view=\"true\"] .rh-flight-telemetry-strip,[data-raptor-scenic-view=\"true\"] .rh-flight-key-guide,[data-raptor-scenic-view=\"true\"] .rh-flight-state,[data-raptor-scenic-view=\"true\"] .rh-flight-wind,[data-raptor-scenic-view=\"true\"] .rh-flight-heading,[data-raptor-scenic-view=\"true\"] .rh-flight-attitude,[data-raptor-scenic-view=\"true\"] .rh-flight-altitude-gauge,[data-raptor-scenic-view=\"true\"] .rh-flight-reticle,[data-raptor-scenic-view=\"true\"] .rh-flight-target-cue,[data-raptor-scenic-view=\"true\"] .rh-flight-lock-meters,[data-raptor-scenic-view=\"true\"] .rh-flight-marker,[data-raptor-scenic-view=\"true\"] .rh-flight-mission-hud{display:none!important;}\n@media(max-width:760px){.rh-scenic-toggle{bottom:64px;left:8px;min-height:40px;padding:8px;font-size:11px;}[data-raptor-scenic-view=\"true\"] .rh-scenic-toggle{bottom:12px;}}\n@media(forced-colors:active){.rh-scenic-toggle,.rh-scenic-toggle[aria-pressed=\"true\"]{background:ButtonFace;color:ButtonText;border-color:ButtonText;}}\n";
   st.textContent += `
+
+/* A quiet, open target frame keeps the animal visible; edge bearings share the same marker. */
+.rh-target-tracker{position:absolute;width:48px;height:48px;margin:-24px 0 0 -24px;pointer-events:none;color:#a5e7ef;display:none;z-index:5;will-change:left,top;filter:drop-shadow(0 1px 2px #020617);}
+.rh-target-corner{position:absolute;width:11px;height:11px;border:2px solid currentColor;border-radius:2px;}
+.rh-target-tracker[data-offscreen="true"] .rh-target-corner{opacity:.35;}
+.rh-target-tracker[data-offscreen="true"]::after{content:"";position:absolute;left:19px;top:19px;width:10px;height:10px;border-top:3px solid currentColor;border-right:3px solid currentColor;transform:rotate(var(--target-bearing,45deg));}
+.rh-target-label{position:absolute;box-sizing:border-box;padding:6px 9px;border:1px solid #b7ced033;border-left:2px solid currentColor;border-radius:5px;background:rgba(5,17,27,.88);box-shadow:0 3px 12px #02061733;font:600 11px/15px ui-sans-serif,system-ui;text-shadow:0 1px 2px #020617;}
+.rh-target-status{display:block;font-size:9px;line-height:13px;font-weight:800;letter-spacing:.1em;}
+.rh-target-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f1f5f9;}
+[data-raptor-scenic-view="true"] .rh-target-tracker,[data-raptor-flight-trail="true"] .rh-target-tracker{display:none!important;}
+@media(forced-colors:active){.rh-target-tracker{color:CanvasText!important;filter:none;}.rh-target-label{background:Canvas;border-color:CanvasText;}.rh-target-name{color:CanvasText;}}
+
 /* Field-station hub and activity finder. Scoped to this tool, including embedded widths. */
 [data-raptorhunt-root="true"]{container-type:inline-size;min-width:0;width:100%;}
 .rh-hub-layout{display:grid;gap:20px;}.rh-hub-layout> *{margin-top:0!important;min-width:0;}
@@ -11413,28 +11425,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n vec4 rhSurfacePosition=vec4(transformed,1.0);\n #ifdef USE_INSTANCING\n rhSurfacePosition=instanceMatrix*rhSurfacePosition;\n #endif\n vRhWorld=(modelMatrix*rhSurfacePosition).xyz;');
         }
         function detailLandscapeMaterial(material, rock) {
-          if(rock) material.extensions=Object.assign({},material.extensions,{derivatives:true});
+          material.extensions=Object.assign({},material.extensions,{derivatives:true});
           material.onBeforeCompile = function(shader) {
             surfaceVertexShader(shader);
+            if(!rock){
+              shader.vertexShader='varying vec3 vRhLandNormal;\n'+shader.vertexShader;
+              shader.vertexShader=shader.vertexShader.replace('#include <defaultnormal_vertex>','#include <defaultnormal_vertex>\n vRhLandNormal=inverseTransformDirection(transformedNormal,viewMatrix);');
+              shader.fragmentShader='varying vec3 vRhLandNormal;\n'+shader.fragmentShader;
+            }
             shader.fragmentShader = surfaceNoiseGLSL + '\n' + shader.fragmentShader;
             shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', [
               'vec2 groundUV=vRhWorld.xz+vRhWorld.y*vec2(0.34,0.21);',
               'float macro=rhFbm(groundUV*0.055);',
-              'float grit=rhNoise(groundUV*1.7);',
+              'float surfaceFootprint=max(length(dFdx(groundUV)),length(dFdy(groundUV)));',
+              'float surfaceDetail=1.0-smoothstep(0.4,3.0,surfaceFootprint);',
+              'float grit=mix(0.5,rhNoise(groundUV*1.7),surfaceDetail);',
               rock
-                ? 'float strata=sin(vRhWorld.y*1.2+rhFbm(groundUV*0.13)*5.0)*0.045; diffuseColor.rgb*=0.67+macro*0.57+grit*0.12+strata;'
-                : 'float fine=rhFbm(groundUV*0.45); diffuseColor.rgb*=0.42+macro*0.32+fine*0.18+grit*0.06;'
+                ? 'float mineral=rhNoise(groundUV*0.18+vRhWorld.y*0.08); float seam=1.0-smoothstep(0.04,0.18,abs(sin(vRhWorld.y*0.32+macro*5.0))); diffuseColor.rgb*=0.67+macro*0.50+grit*0.10-seam*0.065; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.10,0.98,0.86),mineral*0.28);'
+                : 'float fine=rhFbm(groundUV*0.45); float slope=1.0-abs(normalize(vRhLandNormal).y); float exposed=smoothstep(0.10,0.42,slope+(macro-0.5)*0.13); diffuseColor.rgb*=0.42+macro*0.32+fine*0.18+grit*0.06; vec3 bedrock=vec3(0.19,0.175,0.15)*(0.72+macro*0.4+grit*0.1); diffuseColor.rgb=mix(diffuseColor.rgb,bedrock,exposed*0.82);'
             ].join('\n'));
             if(rock) shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
               '#include <normal_fragment_maps>',
-              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.23;',
+              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.18;',
               'vec3 rockDx=dFdx(-vViewPosition),rockDy=dFdy(-vViewPosition);',
               'vec3 rockR1=cross(rockDy,normal),rockR2=cross(normal,rockDx);',
               'float rockDet=dot(rockDx,rockR1);',
               'normal=normalize(abs(rockDet)*normal-sign(rockDet)*(dFdx(rockRelief)*rockR1+dFdy(rockRelief)*rockR2));'
             ].join('\n'));
           };
-          material.customProgramCacheKey = function() { return rock ? 'raptor-rock-v2' : 'raptor-ground-v1'; };
+          material.customProgramCacheKey = function() { return rock ? 'raptor-rock-v3' : 'raptor-ground-v2'; };
         }
 
         // ─── Terrain: large displaced plane ───
@@ -11590,12 +11609,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var x=p.getX(i)/radius,z=p.getZ(i)/radius;
             var angle=seed*0.7,c=Math.cos(angle),sn=Math.sin(angle),rx=x*c-z*sn,rz=x*sn+z*c;
             var edge=Math.max(0,Math.min(1,(1-Math.hypot(x,z))*3.2));
-            var peakA=Math.exp(-((rx-0.12)*(rx-0.12)*7+(rz+0.08)*(rz+0.08)*4));
-            var peakB=Math.exp(-((rx+0.39)*(rx+0.39)*10+(rz-0.17)*(rz-0.17)*7))*0.82;
-            var peakC=Math.exp(-((rx-0.42)*(rx-0.42)*12+(rz-0.30)*(rz-0.30)*9))*0.63;
+            // A seeded spine links offset summits into a ridge with saddles and eroded shoulders.
+            var shift=Math.sin(seed*2.3)*0.13;
+            var peakA=Math.exp(-((rx-0.12-shift)*(rx-0.12-shift)*7+(rz+0.08)*(rz+0.08)*4));
+            var peakB=Math.exp(-((rx+0.39)*(rx+0.39)*10+(rz-0.17-shift)*(rz-0.17-shift)*7))*(0.70+Math.cos(seed)*0.12);
+            var peakC=Math.exp(-((rx-0.42)*(rx-0.42)*12+(rz-0.30+shift)*(rz-0.30+shift)*9))*(0.62+Math.sin(seed*1.9)*0.13);
+            var spineZ=Math.sin(rx*4.3+seed)*0.12+Math.sin(rx*8.1+seed*0.4)*0.035;
+            var crest=0.78+Math.sin(rx*8.0+seed*1.7)*0.13+Math.sin(rx*17.0-seed)*0.065;
+            var spine=Math.exp(-Math.abs(rz-spineZ)*4.3)*Math.exp(-Math.pow(rx*1.18,4))*crest;
             var erosion=0,weight=0.5,frequency=3;
             for(var octave=0;octave<5;octave++) { erosion+=weight*(1-Math.abs(noise(rx*frequency,rz*frequency)*2-1));weight*=0.5;frequency*=2.1; }
-            var elevation=Math.max(peakA,peakB,peakC)*(0.75+erosion*0.31)*edge;
+            var shoulders=Math.max(peakA,peakB,peakC);
+            var gully=Math.pow(1-Math.abs(noise(rx*9.0+seed,rz*9.0)*2-1),3);
+            var elevation=Math.max(shoulders*0.64,spine)*(0.87+erosion*0.23-gully*0.055)*edge;
             p.setY(i,elevation*height-height*0.5-(skewHeight ? height*(1-fraction)*0.5 : 0));
             snow[i]=(elevation-(1-fraction))*3.0;
           }
@@ -11607,14 +11633,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function detailSnowMaterial(material) {
           material.opacity=1;material.transparent=false;
+          material.extensions=Object.assign({},material.extensions,{derivatives:true});
           material.onBeforeCompile=function(shader) {
             surfaceVertexShader(shader);
-            shader.vertexShader='attribute float rhSnow; varying float vRhSnow;\n'+shader.vertexShader;
+            shader.vertexShader='attribute float rhSnow; varying float vRhSnow; varying vec3 vRhSnowNormal;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <defaultnormal_vertex>','#include <defaultnormal_vertex>\n vRhSnowNormal=inverseTransformDirection(transformedNormal,viewMatrix);');
             shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vRhSnow=rhSnow;');
-            shader.fragmentShader=surfaceNoiseGLSL+'\n varying float vRhSnow;\n'+shader.fragmentShader;
-            shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>','#include <alphatest_fragment>\n if(vRhSnow<rhNoise(vRhWorld.xz*0.6)*0.10) discard;');
+            shader.fragmentShader=surfaceNoiseGLSL+'\n varying float vRhSnow; varying vec3 vRhSnowNormal;\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>',[
+              '#include <alphatest_fragment>',
+              'float snowSlope=abs(normalize(vRhSnowNormal).y);',
+              'float snowGrain=rhNoise(vRhWorld.xz*0.6);',
+              'if(vRhSnow<snowGrain*0.10 || snowSlope<0.54+snowGrain*0.12) discard;'
+            ].join('\n'));
+            shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
+              '#include <color_fragment>',
+              'float snowDrift=rhNoise(vRhWorld.xz*0.12);',
+              'diffuseColor.rgb*=mix(vec3(0.80,0.87,0.96),vec3(1.0),snowDrift);'
+            ].join('\n'));
           };
-          material.customProgramCacheKey=function(){return 'raptor-snowline-v1';};
+          material.customProgramCacheKey=function(){return 'raptor-snowline-v2';};
         }
         var horizonGroup = new THREE.Group();
         var horizonCount = qualityProfile.clouds >= 1 ? 8 : qualityProfile.clouds >= 0.7 ? 6 : 4;
@@ -11938,10 +11976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── NEW v0.26: Animated water for lake biome (vertex-displaced ripples) ───
         var lake = null;
         var lakeSheen = null;
-        var lakeOriginalY = null;
+        var waterShaderPrograms = 0;
         var waterAppearance = { time:{value:0}, daylight:{value:1}, clouds:{value:0}, sun:{value:sunDir} };
-        var lastWaterUpdate = 0;
-        var waterUpdateInterval = 1000 / qualityProfile.waterHz;
         var waterUpdateCount = 0;
         function createLakeSurfaceGeometry(radius, segments, rings) {
           var positions=[0,0,0],uvs=[0.5,0.5],indices=[];
@@ -11964,10 +12000,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var lakeGeo = createLakeSurfaceGeometry(118, qualityProfile.waterSegments, graphicsQuality==='low'?10:graphicsQuality==='high'?28:20);
           // Save original Y of each vertex (all 0 initially since it's a circle, but we add noise)
           var lakePos = lakeGeo.attributes.position.array;
-          lakeOriginalY = new Float32Array(lakePos.length / 3);
-          for (var li = 0; li < lakePos.length / 3; li++) {
-            lakeOriginalY[li] = 0;  // base height
-          }
           var lakeDepth = new Float32Array(lakePos.length/3);
           for(var depthIndex=0;depthIndex<lakeDepth.length;depthIndex++) lakeDepth[depthIndex]=-1.5-terrainHeightAt(lakePos[depthIndex*3],-lakePos[depthIndex*3+1]);
           lakeGeo.setAttribute('rhWaterDepth',new THREE.BufferAttribute(lakeDepth,1));
@@ -12001,46 +12033,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           lakeMat.metalness = 0.08; lakeMat.roughness = 0.28;
           // Slight transparency lets the sandy bed show through, so the shoreline reads as shallows.
           lakeMat.transparent = true; lakeMat.opacity = 0.84; lakeMat.depthWrite = true;
+          // Shared waves keep the silhouette and reflected normals in phase at every frame.
+          var lakeWaveGLSL = [
+            'uniform float rhWaterTime; uniform vec3 rhWaterWind;',
+            'vec3 rhLakeWave(vec2 p,float depth){',
+            'vec2 drift=vec2(0.42,0.15)+rhWaterWind.xz*2.0; vec2 direction=drift/max(length(drift),0.0001);',
+            'vec2 crosswind=vec2(-direction.y,direction.x);',
+            'float wind=clamp(length(rhWaterWind.xz),0.0,1.0);',
+            'float shelter=smoothstep(0.0,3.5,max(depth,0.0))*smoothstep(0.0,5.0,118.0-length(p));',
+            'float a=dot(p,direction)*0.19-rhWaterTime*(0.65+wind*0.45);',
+            'float b=dot(p,crosswind)*0.31+rhWaterTime*0.73;',
+            'float c=dot(p,direction*0.7+crosswind*0.7)*0.43-rhWaterTime*0.91;',
+            'float amplitude=(0.055+wind*0.17)*shelter;',
+            'float height=(sin(a)+sin(b)*0.48+sin(c)*0.23)*amplitude;',
+            'vec2 slope=(cos(a)*0.19*direction+cos(b)*0.1488*crosswind+cos(c)*0.0989*(direction*0.7+crosswind*0.7))*amplitude;',
+            'return vec3(height,slope);}'
+          ].join('\n');
+          lakeMat.extensions=Object.assign({},lakeMat.extensions,{derivatives:true});
           lakeMat.onBeforeCompile = function(shader) {
+            waterShaderPrograms++;
+            shader.uniforms.rhWaterTime=waterAppearance.time;
+            shader.uniforms.rhWaterWind=vegetationWind;
+            shader.uniforms.rhWaterDay=waterAppearance.daylight;
+            shader.uniforms.rhWaterCloud=waterAppearance.clouds;
+            shader.uniforms.rhWaterSun=waterAppearance.sun;
             surfaceVertexShader(shader);
-            shader.vertexShader='attribute float rhWaterDepth; varying float vRhWaterDepth;\n'+shader.vertexShader;
-            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vRhWaterDepth=rhWaterDepth;');
-            shader.uniforms.rhWaterTime=waterAppearance.time;shader.uniforms.rhWaterDay=waterAppearance.daylight;
-            shader.uniforms.rhWaterCloud=waterAppearance.clouds;shader.uniforms.rhWaterSun=waterAppearance.sun;
-            shader.fragmentShader=surfaceNoiseGLSL+'\n'+[
-              'varying float vRhWaterDepth; uniform float rhWaterTime,rhWaterDay,rhWaterCloud; uniform vec3 rhWaterSun;',
-              'vec3 rhLakeNormal(vec2 p,float t){',
-              'float warp=rhNoise(p*0.085+vec2(t*0.025,-t*0.018))*4.0;',
-              'vec2 slope=vec2(0.0);',
-              'slope+=vec2(0.94,0.34)*cos(dot(p,vec2(0.94,0.34))*0.72-t*1.15+warp)*0.035;',
-              'slope+=vec2(-0.42,0.91)*cos(dot(p,vec2(-0.42,0.91))*1.13+t*0.87+warp*0.7)*0.024;',
-              'slope+=vec2(0.65,-0.76)*cos(dot(p,vec2(0.65,-0.76))*2.43-t*1.68)*0.012;',
-              'slope+=(vec2(rhNoise(p*2.4+t*0.1),rhNoise(p*2.1-t*0.12))-0.5)*0.025;',
+            shader.vertexShader=lakeWaveGLSL+'\nattribute float rhWaterDepth; varying float vRhWaterDepth;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',[
+              '#include <begin_vertex>',
+              'vRhWaterDepth=rhWaterDepth;',
+              'transformed.z+=rhLakeWave(vec2(position.x,-position.y),rhWaterDepth).x;'
+            ].join('\n'));
+            shader.fragmentShader=surfaceNoiseGLSL+'\n'+lakeWaveGLSL+'\n'+[
+              'varying float vRhWaterDepth; uniform float rhWaterDay,rhWaterCloud; uniform vec3 rhWaterSun;',
+              'vec3 rhLakeNormal(vec2 p){',
+              'float wind=clamp(length(rhWaterWind.xz),0.0,1.0);',
+              'vec2 drift=vec2(0.42,0.15)+rhWaterWind.xz*2.0; vec2 direction=drift/max(length(drift),0.0001);',
+              'vec2 across=vec2(-direction.y,direction.x);',
+              'float t=rhWaterTime;',
+              'float warp=rhNoise(p*0.19+vec2(t*0.035,-t*0.028))*6.28;',
+              'float ripplePatch=0.4+rhNoise(p*0.065+direction*t*0.018)*0.6;',
+              // Fade subpixel ripple detail to prevent distant sparkling and moire.
+              'float footprint=max(length(dFdx(p)),length(dFdy(p)));',
+              'float detail=1.0-smoothstep(0.18,1.8,footprint);',
+              'vec2 slope=rhLakeWave(p,vRhWaterDepth).yz;',
+              'vec2 ripples=direction*cos(dot(p,direction)*1.73-t*(1.2+wind)+warp)*0.022;',
+              'ripples+=across*cos(dot(p,across)*2.31+t*0.87+warp*1.3)*0.014;',
+              'ripples+=(vec2(rhNoise(p*3.4+t*0.12),rhNoise(p*3.1-t*0.15))-0.5)*0.032;',
+              'slope+=ripples*ripplePatch*detail*(0.65+wind*1.5)*smoothstep(0.0,1.0,max(vRhWaterDepth,0.0));',
               'return normalize(vec3(-slope.x,1.0,-slope.y));}'
             ].join('\n')+'\n'+shader.fragmentShader;
             shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',
-              'normal=normalize(mat3(viewMatrix)*rhLakeNormal(vRhWorld.xz,rhWaterTime));');
+              'vec3 rhWaterSurfaceNormal=rhLakeNormal(vRhWorld.xz); normal=normalize(mat3(viewMatrix)*rhWaterSurfaceNormal);');
             shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
               '#include <color_fragment>',
               'float waterDepth=max(0.0,vRhWaterDepth);',
-              'diffuseColor.rgb=mix(vec3(0.055,0.15,0.115),diffuseColor.rgb,smoothstep(0.4,11.0,waterDepth));',
-              'diffuseColor.a*=smoothstep(0.0,0.85,waterDepth)*smoothstep(0.0,2.8,118.0-length(vRhWorld.xz));'
+              'float bedPattern=rhNoise(vRhWorld.xz*0.24)*0.65+rhNoise(vRhWorld.xz*1.15)*0.35;',
+              'vec3 shallows=mix(vec3(0.12,0.23,0.15),vec3(0.065,0.29,0.265),smoothstep(0.15,3.8,waterDepth));',
+              'shallows*=0.82+bedPattern*0.35;',
+              'diffuseColor.rgb=mix(shallows,diffuseColor.rgb,smoothstep(2.0,15.0,waterDepth));',
+              'float shore=smoothstep(0.04,0.3,waterDepth)*(1.0-smoothstep(0.4,1.8,waterDepth));',
+              'float wash=pow(0.5+0.5*sin(waterDepth*9.0-rhWaterTime*1.25+bedPattern*3.0),6.0);',
+              'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.34,0.43,0.35),shore*wash*0.22);',
+              'diffuseColor.a*=smoothstep(0.0,0.6,waterDepth)*smoothstep(0.0,2.8,118.0-length(vRhWorld.xz));'
             ].join('\n'));
             shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',[
-              'vec3 waterNormal=rhLakeNormal(vRhWorld.xz,rhWaterTime);',
+              'vec3 waterNormal=rhWaterSurfaceNormal;',
               'vec3 waterView=normalize(cameraPosition-vRhWorld);',
               'float fresnel=0.025+0.975*pow(1.0-max(dot(waterView,waterNormal),0.0),5.0);',
               'vec3 reflectionRay=reflect(-waterView,waterNormal);',
               'float reflectedHaze=exp(-max(reflectionRay.y,0.0)*5.0);',
               'float sunset=(1.0-smoothstep(0.05,0.55,rhWaterSun.y))*rhWaterDay;',
               'vec3 reflectedSky=mix(vec3(0.018,0.12,0.25),mix(vec3(0.40,0.56,0.65),vec3(0.64,0.35,0.18),sunset*0.6),reflectedHaze);',
+              'float cloudReflection=smoothstep(0.42,0.75,rhFbm(reflectionRay.xz/(max(reflectionRay.y,0.12))*0.55+rhWaterTime*0.003));',
+              'reflectedSky=mix(reflectedSky,vec3(0.43,0.48,0.51),cloudReflection*rhWaterCloud*0.55);',
               'reflectedSky=mix(vec3(0.003,0.008,0.018),reflectedSky,rhWaterDay);',
-              'float glitter=pow(max(dot(reflectionRay,rhWaterSun),0.0),240.0)*(1.0-rhWaterCloud)*rhWaterDay;',
-              'gl_FragColor.rgb=mix(gl_FragColor.rgb,reflectedSky,fresnel*0.85)+vec3(1.0,0.83,0.53)*glitter*1.2;',
+              'float glitter=pow(max(dot(reflectionRay,rhWaterSun),0.0),360.0)*(1.0-rhWaterCloud)*rhWaterDay;',
+              'gl_FragColor.rgb=mix(gl_FragColor.rgb,reflectedSky,fresnel*0.85)+vec3(1.0,0.83,0.53)*glitter*0.72;',
               '#include <tonemapping_fragment>'
             ].join('\n'));
           };
-          lakeMat.customProgramCacheKey=function(){return 'raptor-water-reflection-v2';};
+          lakeMat.customProgramCacheKey=function(){return 'raptor-water-reflection-v3';};
           lake = new THREE.Mesh(lakeGeo, lakeMat);
           lake.rotation.x = -Math.PI / 2;
           lake.position.y = -1.5;
@@ -12143,6 +12216,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                                species.biome === 'forest' ? 0x365c38 : 0x38563b;
         // Alpha-tested branch cards retain needle/leaf silhouettes and cast matching shadows.
         // Curved bough panels retain depth while sharing each forest type's instanced draw.
+        var vegetationWindState={x:0,z:0},vegetationWind={value:new THREE.Vector3()};
+        var vegetationShaderCounts={surface:0,shadow:0};
+        function updateVegetationWind(state,speed,direction,reduced,dt) {
+          if(reduced){state.x=state.z=0;return state;}
+          var strength=Number.isFinite(speed)?Math.max(0,Math.min(18,speed))/18:0;
+          var bearing=Number.isFinite(direction)?direction:0;
+          var alpha=1-Math.exp(-3.2*Math.max(0,dt));
+          state.x+=(Math.sin(bearing)*strength-state.x)*alpha;
+          state.z+=(-Math.cos(bearing)*strength-state.z)*alpha;
+          return state;
+        }
+        function applyVegetationWind(material,kind) {
+          material.onBeforeCompile=function(shader) {
+            vegetationShaderCounts[material.isMeshDepthMaterial?'shadow':'surface']++;
+            shader.uniforms.rhVegetationTime=waterAppearance.time;
+            shader.uniforms.rhVegetationWind=vegetationWind;
+            shader.vertexShader='uniform float rhVegetationTime;\n uniform vec3 rhVegetationWind;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',[
+              '#include <begin_vertex>',
+              'vec3 plantOrigin=(modelMatrix*instanceMatrix*vec4(0.0,0.0,0.0,1.0)).xyz;',
+              // Inverse TRS direction keeps wind aligned across rotated/scaled clumps.
+              'vec3 cx=instanceMatrix[0].xyz,cy=instanceMatrix[1].xyz,cz=instanceMatrix[2].xyz;',
+              'vec3 plantWind=vec3(dot(rhVegetationWind,cx)/max(dot(cx,cx),0.0001),dot(rhVegetationWind,cy)/max(dot(cy,cy),0.0001),dot(rhVegetationWind,cz)/max(dot(cz,cz),0.0001));',
+              'float gust=0.78+0.20*sin(rhVegetationTime*1.4+plantOrigin.x*0.12+plantOrigin.z*0.08);',
+              'float flutter=0.06*sin(rhVegetationTime*2.3+position.x*3.0+plantOrigin.z*0.04);',
+              kind==='grass'?'float flex=position.y*position.y*0.24;':kind==='shrub'?'float flex=pow(clamp(position.y+0.5,0.0,1.0),1.4)*0.18;':'float flex=pow(clamp(position.y+0.5,0.0,1.0),1.4)*0.40;',
+              'transformed+=plantWind*flex*(gust+flutter);',
+              kind==='grass'?'transformed*=1.0-smoothstep(105.0,180.0,distance(cameraPosition,plantOrigin));':''
+            ].join('\n'));
+          };
+          material.customProgramCacheKey=function(){return 'raptor-vegetation-wind-v1-'+kind;};
+        }
         function canopyTexture(broadleaf) {
           var canvas=document.createElement('canvas');canvas.width=canvas.height=512;
           var context=canvas.getContext('2d');
@@ -12211,6 +12316,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var crownLayers = graphicsQuality === 'low' ? 3 : graphicsQuality === 'high' ? 5 : 4;
           var foliageInstances = new THREE.InstancedMesh(foliageGeometries[typeIndex], foliageMaterial, batch.length * crownLayers);
           foliageInstances.name = 'instanced-forest-foliage-' + typeIndex;
+          applyVegetationWind(foliageMaterial,'bough');
+          if(renderer.shadowMap.enabled) {
+            foliageInstances.customDepthMaterial=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:foliageMaterial.map,alphaTest:foliageMaterial.alphaTest,side:THREE.DoubleSide});
+            applyVegetationWind(foliageInstances.customDepthMaterial,'bough');
+          }
           batch.forEach(function(tree, instanceIndex) {
             var foliageHeight = tree.height * (typeIndex === 0 ? 0.75 : typeIndex === 1 ? 0.55 : 0.85);
             var foliageRadius = tree.height * (typeIndex === 0 ? 0.28 : typeIndex === 1 ? 0.35 : 0.18);
@@ -12279,6 +12389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         groundRocks.name = 'raptor-ground-rocks';
         var scrubMaterial = new THREE.MeshStandardMaterial({ color: species.biome === 'tundra' ? 0xb5bca1 : 0x65744b, map: leafCanopy, alphaTest: 0.36, side: THREE.DoubleSide, roughness: 1 });
         scrubMaterial.color.convertSRGBToLinear();
+        applyVegetationWind(scrubMaterial,'shrub');
         var groundScrub = new THREE.InstancedMesh(canopyCards(true), scrubMaterial, groundCoverCount);
         groundScrub.name = 'raptor-ground-scrub';
         var coverDummy = new THREE.Object3D(), coverPlaced = 0;
@@ -12325,20 +12436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         if(grassInstanceCount) {
           var grassGeometry=createMeadowClumpGeometry(graphicsQuality==='low'?7:graphicsQuality==='high'?13:10);
           var grassMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide});
-          grassMaterial.onBeforeCompile=function(shader) {
-            shader.uniforms.rhGrassTime=waterAppearance.time;
-            shader.vertexShader='uniform float rhGrassTime;\n'+shader.vertexShader;
-            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>', [
-              '#include <begin_vertex>',
-              'vec3 clumpWorld=(modelMatrix*instanceMatrix*vec4(0.0,0.0,0.0,1.0)).xyz;',
-              'float grassFade=1.0-smoothstep(105.0,180.0,distance(cameraPosition,clumpWorld));',
-              'float gust=sin(rhGrassTime*1.4+clumpWorld.x*0.12+clumpWorld.z*0.08);',
-              'transformed.x+=(gust*0.13+sin(rhGrassTime*2.3+position.x*3.0)*0.035)*position.y*position.y;',
-              'transformed.z+=gust*position.y*position.y*0.06;',
-              'transformed*=grassFade;'
-            ].join('\n'));
-          };
-          grassMaterial.customProgramCacheKey=function(){return 'raptor-meadow-v2';};
+          applyVegetationWind(grassMaterial,'grass');
           var grassMesh=new THREE.InstancedMesh(grassGeometry,grassMaterial,grassInstanceCount);
           grassMesh.name='raptor-meadow-grass';grassMesh.receiveShadow=true;
           var meadowUp=new THREE.Vector3(0,1,0),meadowNormal=new THREE.Vector3(),meadowTilt=new THREE.Quaternion();
@@ -12754,18 +12852,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return profiles[kind] || profiles.eagle;
         }
         var flightAnimationProfile = flightAnimationProfileFor(silhouetteProfile.kind);
-        var wingPose = { angle: flightAnimationProfile.glideDihedral, sweep: 0 };
+        var wingPose = { angle: flightAnimationProfile.glideDihedral, sweep: 0, fold: 0 };
+        var perchVisualOffset = 0;
         function updateRaptorWingPose(pose, profile, elapsedMs, active, diving, resting, reduced, deltaSeconds) {
           var phase = (elapsedMs / 1000 % profile.burstCycle) / profile.burstCycle;
           // Ease cruise bursts in and out instead of cutting a sine wave.
           var envelope = phase < 0.16 ? Math.pow(Math.sin(Math.PI * phase / 0.16), 2) : 0;
           var amplitude = resting || reduced ? 0 : active ? 1 : envelope * 0.78;
-          var target = diving ? profile.tuck : profile.glideDihedral +
+          var target = resting ? 0.08 : diving ? profile.tuck : profile.glideDihedral +
             Math.sin(elapsedMs * profile.flapRate) * profile.flapDepth * amplitude;
           if (!diving && !active && !resting && !reduced) target += Math.sin(elapsedMs * 0.001) * 0.025;
           var alpha = 1 - Math.exp(-14 * Math.max(0, deltaSeconds));
           pose.angle += (target - pose.angle) * alpha;
-          pose.sweep += ((diving ? 1 : 0) - pose.sweep) * alpha;
+          pose.sweep += ((diving && !resting ? 1 : 0) - pose.sweep) * alpha;
+          pose.fold = (pose.fold || 0) + ((resting ? 1 : 0) - (pose.fold || 0)) * (1-Math.exp(-8*Math.max(0,deltaSeconds)));
           return pose;
         }
         headGroup.scale.setScalar(silhouetteProfile.headScale);
@@ -12787,27 +12887,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         wingMat.bumpScale = 0.010;
         var isFalconWing = species.family === 'Falconidae';
         var isOspreyWing = species.family === 'Pandionidae';
+        // One surface sampler keeps the wing, feather layers, and field marks fitted together.
+        function sampleRaptorWingSurface(u,v,side) {
+          u=Math.max(0,Math.min(1,u));v=Math.max(0,Math.min(1,v));
+          var halfSpan=wingSpan*(silhouetteProfile.primaryFingers>0?0.84:1);
+          var elbow=isOspreyWing?-wingDepth*0.75:silhouetteProfile.sweep*wingDepth*0.35;
+          var tip=silhouetteProfile.sweep*wingDepth;
+          var front=u<0.52?wingDepth*0.42+(wingDepth*0.08+elbow)*u/0.52:
+            (wingDepth*0.5+elbow)*(1-(u-0.52)/0.48)+(tip+wingDepth*silhouetteProfile.tipWidth)*(u-0.52)/0.48;
+          var rear=u<0.5?-wingDepth*0.36+(elbow-wingDepth*0.26)*u*2:
+            (elbow-wingDepth*0.62)*(2-u*2)+(tip-wingDepth*silhouetteProfile.tipWidth)*(u*2-1);
+          var arch=Math.sin(u*Math.PI)*0.055;
+          var camber=Math.sin(v*Math.PI)*wingDepth*0.10*(1-u*0.55);
+          return {x:side*halfSpan*u,y:0.04-u*0.01+arch+camber,z:rear+(front-rear)*v};
+        }
         function createTaperedWing(side) {
-          var halfSpan = wingSpan * (silhouetteProfile.primaryFingers > 0 ? 0.84 : 1);
-          var elbowZ = isOspreyWing ? -wingDepth * 0.75 : silhouetteProfile.sweep * wingDepth * 0.35;
-          var tipZ = silhouetteProfile.sweep * wingDepth;
-          var tipWidth = silhouetteProfile.tipWidth;
-          var positions = [
-            0, 0.05, wingDepth * 0.42,
-            side * halfSpan * 0.52, 0.10, wingDepth * 0.5 + elbowZ,
-            side * halfSpan, 0.03, tipZ + wingDepth * tipWidth,
-            side * halfSpan, 0.03, tipZ - wingDepth * tipWidth,
-            side * halfSpan * 0.5, 0.08, -wingDepth * 0.62 + elbowZ,
-            0, 0.04, -wingDepth * 0.36
-          ];
-          var geometry = new THREE.BufferGeometry();
-          geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-          geometry.setAttribute('uv', new THREE.Float32BufferAttribute([
-            0, 1, 0.52, 1, 1, 1, 1, 0, 0.5, 0, 0, 0
-          ], 2));
-          geometry.setIndex([0, 1, 5, 1, 4, 5, 1, 2, 4, 2, 3, 4]);
-          geometry.computeVertexNormals();
-          return geometry;
+          var spans=graphicsQuality==='high'?18:graphicsQuality==='low'?10:14,chords=6;
+          var positions=[],uvs=[],indices=[];
+          for(var row=0;row<=spans;row++)for(var column=0;column<=chords;column++){
+            var u=row/spans,v=column/chords,p=sampleRaptorWingSurface(u,v,side);
+            positions.push(p.x,p.y,p.z);uvs.push(u,v);
+            if(row<spans&&column<chords){var i=row*(chords+1)+column;
+              if(side<0)indices.push(i,i+chords+1,i+1,i+1,i+chords+1,i+chords+2);
+              else indices.push(i,i+1,i+chords+1,i+1,i+chords+2,i+chords+1);
+            }
+          }
+          var geometry=new THREE.BufferGeometry();
+          geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
+          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
         }
         var leftWingSurface = new THREE.Mesh(createTaperedWing(-1), wingMat);
         var rightWingSurface = new THREE.Mesh(createTaperedWing(1), wingMat);
@@ -12849,6 +12957,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             vaneIndices.push(base, base + 1, base + 5, base + 1, base + 2, base + 5,
               base + 2, base + 3, base + 5, base + 3, base + 4, base + 5, base + 4, base, base + 5);
+          }
+          for(var fittedVertex=0;fittedVertex<vanePositions.length;fittedVertex+=3){
+            var fittedU=Math.abs(vanePositions[fittedVertex])/(wingSpan*(silhouetteProfile.primaryFingers>0?0.84:1));
+            var fittedRear=sampleRaptorWingSurface(fittedU,0,side),fittedFront=sampleRaptorWingSurface(fittedU,1,side);
+            var fittedV=(vanePositions[fittedVertex+2]-fittedRear.z)/Math.max(0.001,fittedFront.z-fittedRear.z);
+            vanePositions[fittedVertex+1]=sampleRaptorWingSurface(fittedU,fittedV,side).y+0.008+(fittedVertex/3%6===5?0.015:0);
           }
           var vaneGeometry = new THREE.BufferGeometry();
           vaneGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vanePositions, 3));
@@ -12910,20 +13024,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             rightPrimaryFeathers.push(rightPrimary);
           }
         }
+        var primaryFlex={angle:flightAnimationProfile.glideDihedral,bend:0};
+        function updateRaptorPrimaryFlex(state,angle,sweep,disabled,dt) {
+          if(disabled){state.angle=angle;state.bend=0;return state;}
+          var alpha=1-Math.exp(-10*Math.max(0,dt));
+          state.angle+=(angle-state.angle)*alpha;
+          var target=Math.max(-0.16,Math.min(0.16,(state.angle-angle)*0.55))*(1-sweep*0.8);
+          state.bend+=(target-state.bend)*(1-Math.exp(-18*Math.max(0,dt)));
+          return state;
+        }
+        // Each primary pivots at its own quill root, keeping its attachment planted.
+        [leftPrimaryFeathers,rightPrimaryFeathers].forEach(function(feathers){
+          feathers.forEach(function(feather){
+            var p=feather.geometry.attributes.position;
+            var rootX=(p.getX(0)+p.getX(1))*0.5,rootY=(p.getY(0)+p.getY(1))*0.5,rootZ=(p.getZ(0)+p.getZ(1))*0.5;
+            feather.geometry.translate(-rootX,-rootY,-rootZ);feather.position.set(rootX,rootY,rootZ);
+          });
+        });
         var dorsalMarkColor = plumageProfile.mark;
         var dorsalMarkMat = new THREE.MeshStandardMaterial({ color: dorsalMarkColor, roughness: 0.8, emissive: dorsalMarkColor, emissiveIntensity: 0.10 });
-        [-1, 1].forEach(function(side) {
-          var shoulderMark = new THREE.Mesh(
-            new THREE.BoxGeometry(wingSpan * 0.34, 0.025, 0.075),
-            dorsalMarkMat
-          );
-          shoulderMark.position.set(side * wingSpan * 0.34, 0.09, wingDepth * 0.10);
-          shoulderMark.rotation.y = side * silhouetteProfile.sweep * 0.18;
-          (side < 0 ? leftWingGroup : rightWingGroup).add(shoulderMark);
-          var wingEdgeMark = new THREE.Mesh(new THREE.BoxGeometry(wingSpan * 0.22, 0.018, 0.045), dorsalMarkMat);
-          wingEdgeMark.position.set(side * wingSpan * 0.78, 0.075, silhouetteProfile.sweep * wingDepth * 0.72);
-          wingEdgeMark.rotation.y = side * (0.18 + silhouetteProfile.sweep * 0.12);
-          (side < 0 ? leftWingGroup : rightWingGroup).add(wingEdgeMark);
+        function createWingMarkGeometry(side,start,end,chord,width) {
+          var positions=[],indices=[];
+          for(var markStation=0;markStation<=8;markStation++){
+            var u=start+(end-start)*markStation/8;
+            for(var edge=0;edge<2;edge++){
+              var p=sampleRaptorWingSurface(u,chord+(edge?1:-1)*width,side);
+              positions.push(p.x,p.y+0.014,p.z);
+            }
+            if(markStation<8){var i=markStation*2;
+              if(side<0)indices.push(i,i+2,i+1,i+1,i+2,i+3);
+              else indices.push(i,i+1,i+2,i+1,i+3,i+2);
+            }
+          }
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        [-1,1].forEach(function(side){
+          var shoulderMark=new THREE.Mesh(createWingMarkGeometry(side,0.18,0.58,0.65,0.045),dorsalMarkMat);
+          var wingEdgeMark=new THREE.Mesh(createWingMarkGeometry(side,0.76,0.96,0.55,0.035),dorsalMarkMat);
+          (side<0?leftWingGroup:rightWingGroup).add(shoulderMark,wingEdgeMark);
         });
         raptorGroup.add(leftWingGroup);
         raptorGroup.add(rightWingGroup);
@@ -13027,7 +13166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var raptorShadowScale = 0;
         function updateRaptorShadow() {
           var groundY = terrainHeightAt(raptor.x, raptor.z);
-          var altitude = Math.max(0, raptor.y - groundY);
+          var altitude = Math.max(0, raptorGroup.position.y - groundY);
           // The sun throws the shadow away from itself. Near the horizon that offset
           // runs away to infinity, so it is clamped to a few wingspans of the bird.
           var sunLift = Math.max(0.25, sunDir.y);
@@ -13039,11 +13178,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var shadowY = terrainHeightAt(shadowX, shadowZ);
           var fade = Math.max(0, 1 - altitude / shadowFadeHeight);
           // A shadow spreads and weakens with height, the way a real penumbra does.
-          raptorShadowScale = raptorVisualRadius * (1.05 + (altitude / shadowFadeHeight) * 1.9);
+          raptorShadowScale = raptorVisualRadius * (1.05 + (altitude / shadowFadeHeight) * 1.9) * (1-wingPose.fold*0.62);
           raptorShadowOpacity = fade * fade * 0.62 * shadowLightTerm;
           raptorShadow.visible = raptorShadowOpacity > 0.008;
           if (!raptorShadow.visible) return;
-          raptorShadow.position.set(shadowX, shadowY + 0.22, shadowZ);
+          raptorShadow.position.set(shadowX, shadowY + 0.22 - wingPose.fold*0.20, shadowZ);
           raptorShadow.scale.set(raptorShadowScale, raptorShadowScale, 1);
           raptorShadow.material.opacity = raptorShadowOpacity;
           raptorShadow.rotation.z = -modelYawForFlightHeading(raptor.yaw);
@@ -13361,7 +13500,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var touchdownDustAttribute = new THREE.BufferAttribute(touchdownDustPositions, 3);
         if (touchdownDustAttribute.setUsage && THREE.DynamicDrawUsage) touchdownDustAttribute.setUsage(THREE.DynamicDrawUsage);
         touchdownDustGeometry.setAttribute('position', touchdownDustAttribute);
-        var touchdownDustMaterial = new THREE.PointsMaterial({ color: 0xfef3c7, size: 0.32, transparent: true, opacity: 0, depthWrite: false, sizeAttenuation: true });
+        var touchdownPuffCanvas=document.createElement('canvas');touchdownPuffCanvas.width=touchdownPuffCanvas.height=64;
+        var touchdownPuffContext=touchdownPuffCanvas.getContext('2d');
+        var touchdownPuffGradient=touchdownPuffContext.createRadialGradient(32,32,0,32,32,31);
+        touchdownPuffGradient.addColorStop(0,'rgba(255,255,255,0.85)');touchdownPuffGradient.addColorStop(0.3,'rgba(255,255,255,0.55)');
+        touchdownPuffGradient.addColorStop(0.7,'rgba(255,255,255,0.12)');touchdownPuffGradient.addColorStop(1,'rgba(255,255,255,0)');
+        touchdownPuffContext.fillStyle=touchdownPuffGradient;touchdownPuffContext.fillRect(0,0,64,64);
+        var touchdownPuffTexture=new THREE.CanvasTexture(touchdownPuffCanvas);
+        var touchdownDustMaterial = new THREE.PointsMaterial({ color: 0xc9b994, map:touchdownPuffTexture, size: 0.72, transparent: true, opacity: 0, depthWrite: false, sizeAttenuation: true });
         var touchdownDust = new THREE.Points(touchdownDustGeometry, touchdownDustMaterial);
         touchdownDust.visible = false;
         touchdownDust.frustumCulled = false;
@@ -13372,13 +13518,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var touchdownFxDuration = 0.9;
         var touchdownFxKind = 'land';
         var touchdownFxOrigin = new THREE.Vector3();
+        function clearTouchdownFx() {
+          touchdownFxActive=false;touchdownRing.visible=false;touchdownDust.visible=false;
+          touchdownRing.material.opacity=0;touchdownDustMaterial.opacity=0;
+        }
         function spawnTouchdownFx(kind) {
           touchdownFxKind = kind || 'land';
           touchdownFxAge = 0;
           touchdownFxActive = !_rmFX;
           if (!touchdownFxActive || typeof raptor === 'undefined') {
-            touchdownRing.visible = false;
-            touchdownDust.visible = false;
+            clearTouchdownFx();
             return;
           }
           var touchdownY = sampleTerrainContactFrame(raptor.x, raptor.z, raptor.yaw) + 0.035;
@@ -13389,49 +13538,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           touchdownRing.material.color.setHex(kind === 'crash' ? 0xfb923c : kind === 'takeoff' ? 0x67e8f9 : 0xfde68a);
           touchdownRing.material.opacity = kind === 'crash' ? 0.72 : 0.58;
           touchdownRing.visible = true;
-          touchdownDustMaterial.color.setHex(kind === 'crash' ? 0xfca5a5 : kind === 'takeoff' ? 0xa5f3fc : 0xfef3c7);
+          touchdownDustMaterial.color.setHex(biomeTempC<=0 ? 0xdde5e7 : 0xc9b994).convertSRGBToLinear();
+          touchdownDustMaterial.size=0.72;
           touchdownDustMaterial.opacity = kind === 'crash' ? 0.66 : 0.48;
           for (var touchdownDustIndex = 0; touchdownDustIndex < touchdownDustCount; touchdownDustIndex++) {
             var touchdownDustBase = touchdownDustIndex * 3;
-            var touchdownDustAngle = Math.random() * Math.PI * 2;
-            var touchdownDustRadius = 0.3 + Math.random() * 1.25;
+            var touchdownDustAngle = sceneryRandom() * Math.PI * 2;
+            var touchdownDustRadius = 0.3 + sceneryRandom() * 1.25;
             touchdownDustPositions[touchdownDustBase] = raptor.x + Math.cos(touchdownDustAngle) * touchdownDustRadius;
             touchdownDustPositions[touchdownDustBase + 1] = touchdownY + 0.08;
             touchdownDustPositions[touchdownDustBase + 2] = raptor.z + Math.sin(touchdownDustAngle) * touchdownDustRadius;
-            touchdownDustVelocities[touchdownDustBase] = Math.cos(touchdownDustAngle) * (1.2 + Math.random() * 3.2);
-            touchdownDustVelocities[touchdownDustBase + 1] = 0.4 + Math.random() * 2.4;
-            touchdownDustVelocities[touchdownDustBase + 2] = Math.sin(touchdownDustAngle) * (1.2 + Math.random() * 3.2);
+            touchdownDustVelocities[touchdownDustBase] = Math.cos(touchdownDustAngle) * (1.2 + sceneryRandom() * 3.2);
+            touchdownDustVelocities[touchdownDustBase + 1] = 0.4 + sceneryRandom() * 2.4;
+            touchdownDustVelocities[touchdownDustBase + 2] = Math.sin(touchdownDustAngle) * (1.2 + sceneryRandom() * 3.2);
           }
           touchdownDustAttribute.needsUpdate = true;
           touchdownDust.visible = true;
         }
+        // Integrate linear drag exactly between terrain contacts, independent of frame rate.
+        function advanceTouchdownDust(positions,velocities,dt,windX,windZ,sampleGround) {
+          var delta=Math.max(0,dt),decay=Math.exp(-2.4*delta),integral=(1-decay)/2.4;
+          for(var i=0;i<positions.length;i+=3){
+            for(var axis=0;axis<3;axis++){
+              var terminal=axis===1?-2:axis===0?windX*0.32:windZ*0.32;
+              positions[i+axis]+=terminal*delta+(velocities[i+axis]-terminal)*integral;
+              velocities[i+axis]=terminal+(velocities[i+axis]-terminal)*decay;
+            }
+            var floor=sampleGround(positions[i],positions[i+2])+0.035;
+            if(positions[i+1]<floor){positions[i+1]=floor;velocities[i+1]=Math.max(0,velocities[i+1]);}
+          }
+        }
         function updateTouchdownFx(deltaSeconds) {
+          if(_rmFX){clearTouchdownFx();return;}
           if (!touchdownFxActive) return;
           touchdownFxAge += deltaSeconds;
           var touchdownProgress = Math.max(0, Math.min(1, touchdownFxAge / touchdownFxDuration));
           if (touchdownProgress >= 1) {
-            touchdownFxActive = false;
-            touchdownRing.visible = false;
-            touchdownDust.visible = false;
-            touchdownRing.material.opacity = 0;
-            touchdownDustMaterial.opacity = 0;
+            clearTouchdownFx();
             return;
           }
           var touchdownFade = 1 - touchdownProgress;
           touchdownRing.scale.setScalar((touchdownFxKind === 'crash' ? 0.9 : 0.62) + touchdownProgress * 2.4);
           touchdownRing.material.opacity = touchdownFade * (touchdownFxKind === 'crash' ? 0.72 : 0.56);
-          for (var touchdownDustUpdateIndex = 0; touchdownDustUpdateIndex < touchdownDustCount; touchdownDustUpdateIndex++) {
-            var touchdownDustUpdateBase = touchdownDustUpdateIndex * 3;
-            touchdownDustVelocities[touchdownDustUpdateBase + 1] -= 4.8 * deltaSeconds;
-            touchdownDustPositions[touchdownDustUpdateBase] += touchdownDustVelocities[touchdownDustUpdateBase] * deltaSeconds;
-            touchdownDustPositions[touchdownDustUpdateBase + 1] += touchdownDustVelocities[touchdownDustUpdateBase + 1] * deltaSeconds;
-            touchdownDustPositions[touchdownDustUpdateBase + 2] += touchdownDustVelocities[touchdownDustUpdateBase + 2] * deltaSeconds;
-            if (touchdownDustPositions[touchdownDustUpdateBase + 1] < touchdownFxOrigin.y) {
-              touchdownDustPositions[touchdownDustUpdateBase + 1] = touchdownFxOrigin.y;
-              touchdownDustVelocities[touchdownDustUpdateBase + 1] *= -0.12;
-            }
-          }
-          touchdownDustMaterial.opacity = touchdownFade * (touchdownFxKind === 'crash' ? 0.66 : 0.46);
+          var dustWindSpeed=weather?Math.min(18,Math.max(0,weather.windSpeed)):0;
+          advanceTouchdownDust(touchdownDustPositions,touchdownDustVelocities,deltaSeconds,
+            weather?Math.sin(weather.windDir)*dustWindSpeed:0,weather?-Math.cos(weather.windDir)*dustWindSpeed:0,terrainHeightAt);
+          touchdownDustMaterial.size=0.72+touchdownProgress*0.9;
+          touchdownDustMaterial.opacity = touchdownFade*touchdownFade*(touchdownFxKind==='crash'?0.54:0.40);
           touchdownDustAttribute.needsUpdate = true;
         }
 
@@ -13517,6 +13670,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (kind === 'snake') return { mode: 'slither', detectionScale: 0.75, zigzag: 0.55, climb: 0, seekCover: true };
           return { mode: 'sprint-cover', detectionScale: 1.0, zigzag: 0.32, climb: 0, seekCover: true };
         }
+        function createPreyWingGeometry(size, side) {
+          var positions=[],colors=[],indices=[];
+          for(var i=0;i<=8;i++)for(var j=0;j<=4;j++) {
+            var u=i/8,v=j/4,chord=0.26*Math.pow(1-u,0.65)+0.018;
+            var featherEdge=j===4 && i>3 ? (i%2)*0.045 : 0;
+            positions.push(side*size*(0.06+u),size*Math.sin(v*Math.PI)*0.045*(1-u),size*(-u*u*0.27+(1-2*v)*chord-featherEdge));
+            var tone=(j===4?0.16:0.27)+(i>2 && i<5?0.07:0);
+            colors.push(tone*0.82,tone*0.89,tone);
+            if(i<8 && j<4){var a=i*5+j,b=a+5;if(side>0)indices.push(a,b,a+1,b,b+1,a+1);else indices.push(a,a+1,b,b,a+1,b+1);}
+          }
+          var geometry=new THREE.BufferGeometry();
+          geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        function createPreyTailGeometry(size) {
+          var positions=[0,size*0.025,0],indices=[];
+          for(var i=0;i<=8;i++){
+            var across=i/4-1;
+            positions.push(across*size*0.26,size*0.012*(1-Math.abs(across)),-size*(0.52+(i%2)*0.04-Math.abs(across)*0.04));
+            if(i>0)indices.push(0,i+1,i);
+          }
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        function advancePreyVisualPose(pose,vx,vz,height,now,phase,alerted,dt,reduced) {
+          var moving=vx*vx+vz*vz>0.01;
+          var desired=moving?Math.atan2(vx,vz):(pose.heading===null?0:pose.heading);
+          if(pose.heading===null)pose.heading=desired;
+          var delta=Math.atan2(Math.sin(desired-pose.heading),Math.cos(desired-pose.heading));
+          var turn=delta*(1-Math.exp(-9*dt));
+          pose.heading=Math.atan2(Math.sin(pose.heading+turn),Math.cos(pose.heading+turn));
+          var lift=Math.max(0,Math.min(1,(height-0.06)/0.8));
+          var spreadGoal=lift*lift*(3-2*lift);
+          pose.spread+=(spreadGoal-pose.spread)*(1-Math.exp(-10*dt));
+          var bankGoal=reduced?0:Math.max(-0.24,Math.min(0.24,-turn/Math.max(0.001,dt)*0.045))*pose.spread;
+          pose.bank=reduced?0:pose.bank+(bankGoal-pose.bank)*(1-Math.exp(-8*dt));
+          var cycle=now*(alerted?0.018:0.008)+phase;
+          pose.wingAngle=reduced?0.08:0.08*(1-pose.spread)+Math.sin(cycle*1.7)*(alerted?0.65:0.3)*pose.spread;
+        }
         function buildPreyVisual(preyData, size) {
           var kind = preyKindFor(preyData);
           var root = new THREE.Group();
@@ -13532,22 +13725,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var tail = null;
           var body;
           if (kind === 'bird') {
+            if(preyData.id==='duck' || preyData.id==='waterfowl'){
+              material.color.setHex(0x746e60);material.emissive.setHex(0x514d45);
+            }
             body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.42, 10, 8), material);
             body.scale.set(0.78, 0.72, 1.35);
             root.add(body);
-            var birdHead = new THREE.Mesh(new THREE.SphereGeometry(size * 0.24, 8, 6), material);
+            var birdHeadGeometry = new THREE.SphereGeometry(size * 0.24, 14, 10);
+            var headPositions=birdHeadGeometry.attributes.position,headColors=[];
+            var headColor=new THREE.Color(preyData.color),beakColor=new THREE.Color(0xc8a36b);
+            for(var headVertex=0;headVertex<headPositions.count;headVertex++){
+              headColors.push(headColor.r,headColor.g,headColor.b);
+            }
+            birdHeadGeometry.setAttribute('color',new THREE.Float32BufferAttribute(headColors,3));birdHeadGeometry.computeVertexNormals();
+            // Eyes share the head's geometry and material, adding detail without draw calls.
+            var expandedHead=birdHeadGeometry.toNonIndexed();birdHeadGeometry.dispose();
+            var facePositions=Array.from(expandedHead.attributes.position.array),faceColors=Array.from(expandedHead.attributes.color.array),faceNormals=Array.from(expandedHead.attributes.normal.array);
+            var broadBill=preyData.id==='duck' || preyData.id==='waterfowl';
+            var billSource=new THREE.ConeGeometry(size*(broadBill?0.09:0.055),size*(broadBill?0.28:0.20),6);
+            billSource.rotateX(Math.PI/2);billSource.scale(broadBill?1.3:1,0.5,1);billSource.translate(0,-size*0.04,size*(broadBill?0.28:0.26));
+            var bill=billSource.toNonIndexed();billSource.dispose();
+            for(var billVertex=0;billVertex<bill.attributes.position.count;billVertex++){
+              facePositions.push(bill.attributes.position.getX(billVertex),bill.attributes.position.getY(billVertex),bill.attributes.position.getZ(billVertex));
+              faceNormals.push(bill.attributes.normal.getX(billVertex),bill.attributes.normal.getY(billVertex),bill.attributes.normal.getZ(billVertex));
+              faceColors.push(beakColor.r,beakColor.g,beakColor.b);
+            }
+            bill.dispose();
+            [-1,1].forEach(function(side){
+              var eyeSource=new THREE.SphereGeometry(size*0.034,8,6),eye=eyeSource.toNonIndexed();eyeSource.dispose();
+              eye.translate(side*size*0.208,size*0.062,size*0.104);
+              for(var eyeVertex=0;eyeVertex<eye.attributes.position.count;eyeVertex++){
+                facePositions.push(eye.attributes.position.getX(eyeVertex),eye.attributes.position.getY(eyeVertex),eye.attributes.position.getZ(eyeVertex));
+                faceColors.push(0.012,0.018,0.022);
+                faceNormals.push(eye.attributes.normal.getX(eyeVertex),eye.attributes.normal.getY(eyeVertex),eye.attributes.normal.getZ(eyeVertex));
+              }
+              eye.dispose();
+            });
+            expandedHead.dispose();birdHeadGeometry=new THREE.BufferGeometry();
+            birdHeadGeometry.setAttribute('position',new THREE.Float32BufferAttribute(facePositions,3));
+            birdHeadGeometry.setAttribute('color',new THREE.Float32BufferAttribute(faceColors,3));
+            birdHeadGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(faceNormals,3));
+            var birdHead = new THREE.Mesh(birdHeadGeometry,new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.78}));
             birdHead.position.set(0, size * 0.10, size * 0.52);
             root.add(birdHead);
+            var preyWingMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.86,side:THREE.DoubleSide});
             [-1, 1].forEach(function(side) {
-              var wing = new THREE.Mesh(new THREE.BoxGeometry(size * 0.82, 0.035, size * 0.30), darkMaterial);
-              wing.position.set(side * size * 0.50, size * 0.04, 0);
-              wing.rotation.z = side * -0.12;
+              var wing = new THREE.Mesh(createPreyWingGeometry(size,side),preyWingMaterial);
+              wing.name='prey-tapered-wing';
+              wing.position.set(side * size * 0.18, size * 0.04, 0);
+              wing.rotation.y=side*1.15;wing.rotation.z=side*0.08;wing.scale.x=0.3;
               root.add(wing);
               wings.push(wing);
             });
-            tail = new THREE.Mesh(new THREE.ConeGeometry(size * 0.24, size * 0.62, 4), darkMaterial);
-            tail.position.z = -size * 0.68;
-            tail.rotation.x = Math.PI / 2;
+            var preyTailGeometry=createPreyTailGeometry(size);
+            var preyTailMaterial=darkMaterial;preyTailMaterial.side=THREE.DoubleSide;
+            tail = new THREE.Mesh(preyTailGeometry,preyTailMaterial);
+            tail.position.z = -size * 0.40;
             root.add(tail);
           } else if (kind === 'fish') {
             body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.38, 10, 7), material);
@@ -13605,7 +13838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               legs.push(leg);
             });
           }
-          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail };
+          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail, pose: { heading:null, bank:0, spread:0, wingAngle:0.08 } };
         }
         function nearestPreyCoverTarget(x, z) {
           var best = null;
@@ -15257,6 +15490,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         document.addEventListener('visibilitychange', onVisibilityChange);
 
         var targetScreenInset = 34;
+        var targetHudBoundsDirty = true;
+        var targetHudInsets = { top: 34, bottom: 80, right: 34, labelRight: 8 };
+        var targetHudSelector = '.rh-flight-telemetry-strip,.rh-flight-key-guide,.rh-flight-state,.rh-flight-wind,.rh-flight-heading,.rh-flight-attitude,.rh-flight-target-cue,.rh-flight-lock-meters,.rh-flight-mission-hud,.rh-scenic-toggle,.rh-practice-toggle';
+        function measureTargetHudInsets() {
+          if (!targetHudBoundsDirty) return;
+          targetHudBoundsDirty = false;
+          var host = hudParent.getBoundingClientRect();
+          var top = 34, bottom = 80, right = 34, labelRight = 8;
+          hudParent.querySelectorAll(targetHudSelector).forEach(function(node) {
+            var rect = node.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            var localTop = rect.top - host.top, localBottom = rect.bottom - host.top;
+            if (localTop + rect.height / 2 < host.height / 2) top = Math.max(top, localBottom + 32);
+            else bottom = Math.max(bottom, host.height - localTop + 80);
+          });
+          var gauge = hudParent.querySelector('.rh-flight-altitude-gauge');
+          if (gauge) {
+            var gaugeRect = gauge.getBoundingClientRect();
+            if (gaugeRect.width) {
+              labelRight = Math.max(8, host.right - gaugeRect.left + 8);
+              right = Math.max(34, labelRight + 24);
+            }
+          }
+          // The center remains usable even in a very short embedded stage.
+          var middle = host.height / 2;
+          targetHudInsets = { top: Math.min(top, middle), bottom: Math.min(bottom, middle), right: right, labelRight: labelRight };
+        }
         function clampProjectedTarget(ndcX, ndcY) {
           var clampedX = Math.max(-0.88, Math.min(0.88, ndcX));
           var clampedY = Math.max(-0.82, Math.min(0.82, ndcY));
@@ -15271,6 +15531,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             edge: edge,
             offscreen: !!edge
           };
+        }
+        // Fixed label dimensions avoid layout reads in the render loop. Anchor it inside
+        // the viewport independently of the target frame, including both lower corners.
+        function layoutTargetLabel(screenX, screenY, screenW, screenH) {
+          var width = Math.min(176, Math.max(0, screenW - 16));
+          var left = Math.max(8, Math.min(screenW - width - 8, screenX - width / 2));
+          var top = screenY + 32;
+          if (top + 44 > screenH - 8) top = screenY - 76;
+          top = Math.max(8, Math.min(Math.max(8, screenH - 52), top));
+          return { left: left - screenX + 24, top: top - screenY + 24, width: width };
         }
         canvasEl._rhCommand = function(action, value) {
           if (disposed) return;
@@ -15371,6 +15641,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             thermalQuality: weather.thermalQuality,
             cloudOpacity: cloudList.length ? cloudList[0].sprite.material.opacity : 0,
             waterUpdates: waterUpdateCount,
+            waterShaderPrograms: waterShaderPrograms,
+            waterPositionVersion: lake ? lake.geometry.attributes.position.version : 0,
             renderFrames: renderFrameCount,
             snapshotTimeMs: performance.now(),
             motionTimeMs: motionNow,
@@ -15378,6 +15650,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             landed: !!raptor.landed,
             crashed: !!raptor.crashed,
             wingAngle: wingPose.angle,
+            wingFold: wingPose.fold,
+            visualGroundClearance: raptorGroup.position.y-terrainHeightAt(raptor.x,raptor.z),
+            airflowOverlayVisible: airflowLines.visible,
+            speedOverlayVisible: speedLines.visible,
+            wingRestSpan: leftWingGroup.scale.x,
+            touchdownActive: touchdownFxActive,
+            touchdownAge: touchdownFxAge,
+            touchdownKind: touchdownFxKind,
+            touchdownDustVisible: touchdownDust.visible,
+            touchdownDustSoft: !!touchdownDustMaterial.map,
+            touchdownDustOpacity: touchdownDustMaterial.opacity,
+            primaryFlex: primaryFlex.bend,
+            curvedWingVertices: leftWingSurface.geometry.attributes.position.count,
             wingSweep: wingPose.sweep,
             wingBankFlex: (leftWingGroup.rotation.z+rightWingGroup.rotation.z)*0.5,
             tailLift: tail.rotation.x,
@@ -15386,6 +15671,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             cameraAssistOffset: cameraAssistOffset.toArray(),
             terrainDetail: terrain.geometry.attributes.color.count,
             cinematicSurfaces: true,
+            terrainSlopeSurfaces: true,
+            erodedRidgeSurfaces: true,
             refinedFlightSurfaces: true,
             shadowRefreshCount: shadowRefreshCount,
             headingRadians: raptor.yaw,
@@ -15406,6 +15693,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             forestTreeCount: trunkCount,
             boughPanelVertices: foliageGeometries[0].attributes.position.count,
             meadowClumpCount: grassPlaced,
+            vegetationWindX: vegetationWindState.x,
+            vegetationWindZ: vegetationWindState.z,
+            vegetationSurfacePrograms: vegetationShaderCounts.surface,
+            vegetationShadowPrograms: vegetationShaderCounts.shadow,
             terrainClearance: raptor.y-terrainHeightAt(raptor.x,raptor.z),
             meadowBladeCount: grassInstanceCount ? grassGeometry.attributes.position.count/8 : 0,
             fixedLandmarks: true,
@@ -15419,7 +15710,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             skyDomeMargin: skyDomeRadius - camera.position.distanceTo(skyDome.position),
             lakeSheenOpacity: lakeSheen ? lakeSheen.material.opacity : 0,
             assistEnabled: targetLockOn,
+            targetGuideVisible: targetGuide.visible,
+            targetHaloVisible: targetFocusHalo.visible,
             preyCount: preyMeshes.length,
+            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,height:prey.flightHeight};}),
             activeTargetIndex: snapshotTarget ? snapshotTarget.index : -1,
             visibleBeaconCount: countVisiblePreyBeacons(),
             precipitationMode: precipitationMode,
@@ -15827,6 +16121,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function onReducedMotionChange(event) {
           _rmFX = !!event.matches;
           if (_rmFX) {
+            clearTouchdownFx();
+            vegetationWindState.x=vegetationWindState.z=0;vegetationWind.value.set(0,0,0);
             speedLineMat.opacity = 0;
             raptor.cameraRoll = 0;
             cameraTargetBlend = 0;
@@ -15862,26 +16158,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         strikeFeedbackEl.dataset.raptorStrikeFeedback = 'idle';
         strikeFeedbackEl.style.cssText = 'position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;z-index:6;min-width:min(78%,360px);padding:9px 16px;border:2px solid #34d399;border-radius:999px;background:rgba(2,6,23,0.88);color:#ecfdf5;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:clamp(13px,2.2vw,18px);font-weight:900;letter-spacing:.08em;text-shadow:0 1px 3px #020617;box-shadow:0 10px 28px rgba(2,6,23,.38);will-change:transform,opacity';
         hudParent.appendChild(strikeFeedbackEl);
-        // ── NEW: Target-lock reticle (red square that snaps to nearest forward prey) ──
+        // Target frame and a viewport-safe caption follow the same projected animal.
         var reticle = document.createElement('div');
+        reticle.className = 'rh-target-tracker';
         reticle.setAttribute('aria-hidden', 'true');
         reticle.dataset.raptorReticle = 'true';
         reticle.dataset.offscreen = 'false';
         reticle.dataset.targetEdge = '';
-        reticle.style.cssText = 'position:absolute;width:54px;height:54px;margin:-27px 0 0 -27px;border:2px solid #ef4444;border-radius:6px;pointer-events:none;box-shadow:0 0 12px rgba(239,68,68,0.55);display:none;will-change:left,top';
         var reticleLabel = document.createElement('div');
-        reticleLabel.setAttribute('aria-hidden', 'true');
-        reticleLabel.style.cssText = 'position:absolute;top:58px;left:50%;transform:translateX(-50%);color:#fee2e2;font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;text-shadow:0 0 4px black,0 0 4px black;white-space:nowrap;background:rgba(15,23,42,0.7);padding:2px 6px;border-radius:4px';
+        reticleLabel.className = 'rh-target-label';
+        var reticleStatus = document.createElement('span');
+        reticleStatus.className = 'rh-target-status';
+        var reticleName = document.createElement('span');
+        reticleName.className = 'rh-target-name';
+        reticleLabel.appendChild(reticleStatus);
+        reticleLabel.appendChild(reticleName);
         reticle.appendChild(reticleLabel);
-        // Corner brackets for that "targeting computer" feel
-        var brackets = ['top:-2px;left:-2px;border-right:none;border-bottom:none',
-                        'top:-2px;right:-2px;border-left:none;border-bottom:none',
-                        'bottom:-2px;left:-2px;border-right:none;border-top:none',
-                        'bottom:-2px;right:-2px;border-left:none;border-top:none'];
+        var brackets = ['top:0;left:0;border-right:none;border-bottom:none',
+                        'top:0;right:0;border-left:none;border-bottom:none',
+                        'bottom:0;left:0;border-right:none;border-top:none',
+                        'bottom:0;right:0;border-left:none;border-top:none'];
         brackets.forEach(function(corner) {
           var c = document.createElement('div');
-          c.setAttribute('aria-hidden', 'true');
-          c.style.cssText = 'position:absolute;width:12px;height:12px;border:2px solid #ef4444;' + corner;
+          c.className = 'rh-target-corner';
+          c.style.cssText = corner;
           reticle.appendChild(c);
         });
         hudParent.appendChild(reticle);
@@ -16389,6 +16689,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // speed. The encyclopedia says a red-tail holds station against a 30 mph
           // headwind and the migration problem set subtracts the whole headwind from
           // airspeed; a partial coupling here would be a second answer to that question.
+          updateVegetationWind(vegetationWindState,effWindSpeed,weather.windDir,_rmFX,dt);
+          vegetationWind.value.set(vegetationWindState.x,0,vegetationWindState.z);
           windDriftX = Math.sin(weather.windDir) * effWindSpeed;
           windDriftZ = -Math.cos(weather.windDir) * effWindSpeed;
           raptor.x += windDriftX * dt;
@@ -16528,7 +16830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 if (raptor.crashTimer <= 0) {
                   raptor.crashed = false;
                   raptor.landed = true;  // graduates from crash → standing perched
-                  energyEventLog.push({ msg: '✓ Stood back up — ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: '#a3e635' });
+                  energyEventLog.push({ kind: 'ground-contact', msg: '✓ Stood back up — ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: '#a3e635' });
                 }
               }
               // SPACE = take off (only after crash recovery period)
@@ -16537,13 +16839,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 raptor.speed = raptor.maxLevel * 0.5;
                 raptor.y = minY + 0.08;
                 raptor.pitch = 0.3;  // pitched up for climb
+                energyEventLog=energyEventLog.filter(function(event){return event.kind!=='ground-contact';});
                 rhAnnounce(__alloT('stem.raptorhunt.sr_taking_off', 'Taking off.'));
                 energyEventLog.push({ msg: '↑ Takeoff', t: now, color: '#a3e635' });
               }
             } else if (verticalSpeed > 18 || raptor.speed > 50) {
               // HARD CRASH — fast vertical impact OR very high overall speed
               rhAnnounce('Crash! Stunned. Wait, then ' + controlKeyLabel('pullUp') + ' to take off.');
-              energyEventLog.push({ msg: '💥 CRASH — stunned ~3s', t: now, color: '#fca5a5' });
+              energyEventLog.push({ kind: 'ground-contact', msg: '💥 CRASH — stunned ~3s', t: now, color: '#fca5a5' });
               raptor.crashed = true;
               raptor.crashTimer = 3.0;
               raptor.y = minY;
@@ -16556,7 +16859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var soft = verticalSpeed < 6 && raptor.speed < 18;
               var msg = soft ? 'Landed.' : 'Rough landing.';
               rhAnnounce(msg);
-              energyEventLog.push({ msg: '🪶 ' + msg + ' ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
+              energyEventLog.push({ kind: 'ground-contact', msg: '🪶 ' + msg + ' ' + controlKeyLabel('pullUp') + ' to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
               raptor.landed = true;
               raptor.y = minY;
               raptor.speed = 0;
@@ -16604,7 +16907,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var contrastShortfall = Math.max(0, 1 - (raptorContrast / 0.25));
           raptorReadability = Math.max(0.04, Math.min(0.30,
             readabilityLightTerm + contrastShortfall * 0.12));
-          updateRaptorShadow();
           var visualYawDelta = raptor.yaw - raptor.visualYawLast;
           while (visualYawDelta > Math.PI) visualYawDelta -= Math.PI * 2;
           while (visualYawDelta < -Math.PI) visualYawDelta += Math.PI * 2;
@@ -16623,15 +16925,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (tail.material.emissiveIntensity !== undefined) tail.material.emissiveIntensity = raptorReadability * 0.84;
           dorsalMarkMat.emissiveIntensity = Math.min(0.28, raptorReadability + 0.07);          // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
           updateRaptorWingPose(wingPose, flightAnimationProfile, motionNow,
-            pullUpKey || raptor.speed < raptor.maxLevel * 0.55, diveKey,
+            pullUpKey || (keys.e && mission.id !== 'thermalKettle') || raptor.speed < raptor.maxLevel * 0.55, diveKey,
             raptor.landed || raptor.crashed, _rmFX, dt);
           // Small asymmetric dihedral makes the silhouette respond to a turn.
           // It follows the damped bank, so input events never snap individual wings.
           var wingBankFlex=(_rmFX||raptor.landed||raptor.crashed)?0:raptor.visualBank*0.22*(1-wingPose.sweep*0.6);
           leftWingGroup.rotation.z = wingPose.angle+wingBankFlex;
           rightWingGroup.rotation.z = -wingPose.angle+wingBankFlex;
-          leftWingGroup.rotation.y = (-0.3 - silhouetteProfile.sweep * 0.08) * wingPose.sweep;
+          leftWingGroup.rotation.y = (-0.3 - silhouetteProfile.sweep * 0.08) * wingPose.sweep - wingPose.fold*1.08;
+          leftWingGroup.scale.x = rightWingGroup.scale.x = 1-wingPose.fold*0.68;
           rightWingGroup.rotation.y = -leftWingGroup.rotation.y;
+          // The collision envelope remains unchanged; the folded model settles its feet onto the terrain.
+          if(raptor.landed||raptor.crashed)perchVisualOffset=Math.max(0,raptor.y-terrainHeightAt(raptor.x,raptor.z)-0.25);
+          raptorGroup.position.y-=perchVisualOffset*wingPose.fold;
+          updateRaptorShadow();
+          updateRaptorPrimaryFlex(primaryFlex,wingPose.angle,wingPose.sweep,_rmFX||raptor.landed||raptor.crashed,dt);
+          for(var primaryIndex=0;primaryIndex<leftPrimaryFeathers.length;primaryIndex++){
+            var primaryBend=primaryFlex.bend*(1-primaryIndex/Math.max(1,leftPrimaryFeathers.length)*0.35);
+            leftPrimaryFeathers[primaryIndex].rotation.z=primaryBend;
+            rightPrimaryFeathers[primaryIndex].rotation.z=-primaryBend;
+          }
+
 
           // ── Zoom FOV smoothing: magnification comes from this species' own acuity ──
           // Dive-FX: widen the FOV with stoop intensity (speed-sense punch), folded
@@ -16664,7 +16978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           var tailSteerTarget = Math.max(-0.34, Math.min(0.34, -visualTurnRate * flightAnimationProfile.tailGain));
           tail.rotation.y += (tailSteerTarget - tail.rotation.y) * dampingAlpha(10, dt);
-          var tailSpreadTarget = pullUpKey ? 1.35 : diveKey ? 0.70 : 1+Math.min(0.12,Math.abs(raptor.visualBank)*0.4);
+          var tailSpreadTarget = (raptor.landed || raptor.crashed) ? 0.78 : pullUpKey ? 1.35 : diveKey ? 0.70 : 1+Math.min(0.12,Math.abs(raptor.visualBank)*0.4);
           var tailLiftTarget=(_rmFX||raptor.landed||raptor.crashed)?0:pullUpKey?-0.12:diveKey?0.06:-Math.abs(raptor.visualBank)*0.12;
           tail.rotation.x += (tailLiftTarget-tail.rotation.x)*dampingAlpha(9,dt);
           tail.scale.x += (tailSpreadTarget - tail.scale.x) * dampingAlpha(9, dt);
@@ -16911,6 +17225,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var rawScreenY = (-projectedTarget.y * 0.5 + 0.5) * screenH;
             var screenX = Math.max(targetScreenInset, Math.min(screenW - targetScreenInset, rawScreenX));
             var screenY = Math.max(targetScreenInset, Math.min(screenH - targetScreenInset, rawScreenY));
+            if (projectedTarget.offscreen) {
+              measureTargetHudInsets();
+              screenX = Math.min(screenW - targetHudInsets.right, screenX);
+              screenY = Math.max(targetHudInsets.top, Math.min(screenH - targetHudInsets.bottom, screenY));
+            }
             var inStrikeRange = !!(targetInfo && targetInfo.canStrike && strikeReady && !targetProbe);
             offscreenIndicatorVisible = projectedTarget.offscreen;
             offscreenIndicatorEdge = projectedTarget.edge;
@@ -16918,28 +17237,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             reticle.dataset.lockState = nextTargetState;
             reticle.dataset.offscreen = projectedTarget.offscreen ? 'true' : 'false';
             reticle.dataset.targetEdge = projectedTarget.edge;
-            reticle.style.borderStyle = nextTargetState === 'close' || projectedTarget.offscreen ? 'dashed' : 'solid';
             reticle.style.display = 'block';
             reticle.style.left = screenX + 'px';
             reticle.style.top = screenY + 'px';
-            var reticleReadyColor = inStrikeRange ? '#22c55e' : nextTargetState === 'close' ? '#fbbf24' : '#f87171';
-            reticle.style.borderColor = reticleReadyColor;
-            reticle.style.boxShadow = '0 0 12px ' + (inStrikeRange ? 'rgba(34,197,94,0.75)' : nextTargetState === 'close' ? 'rgba(251,191,36,0.65)' : 'rgba(248,113,113,0.6)');
-            for (var bracketIndex = 0; bracketIndex < reticle.children.length; bracketIndex++) {
-              if (reticle.children[bracketIndex] !== reticleLabel) {
-                reticle.children[bracketIndex].style.borderColor = reticleReadyColor;
-              }
-            }
+            var reticleReadyColor = inStrikeRange ? '#86efac' : nextTargetState === 'close' ? '#fde68a' : '#a5e7ef';
+            reticle.style.color = reticleReadyColor;
+            reticle.style.setProperty('--target-bearing', (Math.atan2(-projectedY * screenH, projectedX * screenW) * 180 / Math.PI + 45) + 'deg');
+            var labelLayout = layoutTargetLabel(screenX, screenY, screenW - (projectedTarget.offscreen ? targetHudInsets.labelRight : 0), screenH);
+            reticleLabel.style.left = labelLayout.left + 'px';
+            reticleLabel.style.top = labelLayout.top + 'px';
+            reticleLabel.style.width = labelLayout.width + 'px';
             var targetName = lockTarget && lockTarget.data ? lockTarget.data.label : 'target';
             var directionHint = projectedTarget.edge.indexOf('left') !== -1 ? 'TURN LEFT' :
               projectedTarget.edge.indexOf('right') !== -1 ? 'TURN RIGHT' :
               projectedTarget.edge.indexOf('top') !== -1 ? 'PULL UP' :
               projectedTarget.edge.indexOf('bottom') !== -1 ? 'DIVE LOWER' : '';
-            var reticlePrefix = projectedTarget.offscreen ? directionHint + ' - ' :
-              inStrikeRange ? 'READY - ' :
-              nextTargetState === 'close' ? 'CLOSE - ' : 'ALIGN - ';
-            reticleLabel.textContent = reticlePrefix + targetName + (targetProbe ? '' : ' - ' + targetDistanceDisplay + 'm');
-            reticleLabel.style.color = inStrikeRange ? '#bbf7d0' : nextTargetState === 'close' ? '#fef08a' : '#fee2e2';
+            var reticlePrefix = projectedTarget.offscreen ? directionHint :
+              inStrikeRange ? 'READY TO STRIKE' : nextTargetState === 'close' ? 'CLOSE' : 'ALIGN';
+            var reticleCaption = targetName + (targetProbe ? '' : ' · ' + targetDistanceDisplay + 'm');
+            if (reticleStatus.textContent !== reticlePrefix) reticleStatus.textContent = reticlePrefix;
+            if (reticleName.textContent !== reticleCaption) reticleName.textContent = reticleCaption;
           } else {
             targetProjectionState = targetLockOn && hasTargetProjection ? 'behind' : 'none';
             offscreenIndicatorVisible = false;
@@ -17033,24 +17350,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               // Slowly return to forward
               headMesh.rotation.y += (0 - headMesh.rotation.y) * dampingAlpha(2, dt);
             }
-          }
-
-          // ── NEW v0.26: Animated lake water (vertex sin-wave ripples) ──
-          if (!_rmFX && lake && lakeOriginalY && now - lastWaterUpdate >= waterUpdateInterval) {
-            lastWaterUpdate = now;
-            waterUpdateCount++;
-            var lakePos2 = lake.geometry.attributes.position.array;
-            var tnow = motionNow / 1000;
-            for (var lpi2 = 0; lpi2 < lakeOriginalY.length; lpi2++) {
-              var vx2 = lakePos2[lpi2 * 3], vz2 = lakePos2[lpi2 * 3 + 1];
-              // Two crossing sine waves at different frequencies for natural ripple
-              var ripple = Math.sin(vx2 * 0.08 + tnow * 1.3) * 0.25 +
-                           Math.cos(vz2 * 0.10 + tnow * 1.7) * 0.20 +
-                           Math.sin((vx2 + vz2) * 0.05 + tnow * 0.8) * 0.15;
-              lakePos2[lpi2 * 3 + 2] = lakeOriginalY[lpi2] + ripple;
-            }
-            lake.geometry.attributes.position.needsUpdate = true;
-            // The water shader supplies analytic normals; rebuilding them here is redundant.
           }
 
           // ── NEW v0.26: Tree sway (gentle wind motion) ──
@@ -17257,18 +17556,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     : Math.max(0, rawPreyBob) * 0.08;
               }
               pm2.visual.position.y = preyBob;
-              if (pm2.vx * pm2.vx + pm2.vz * pm2.vz > 0.01) {
-                pm2.visual.rotation.y = Math.atan2(pm2.vx, pm2.vz);
-              }
+              var preyPose=pm2.animation.pose;
+              advancePreyVisualPose(preyPose,pm2.vx,pm2.vz,pm2.flightHeight,motionNow,pm2.bobPhase,pm2.alerted,dt,_rmFX);
+              pm2.visual.rotation.y=preyPose.heading;
+              pm2.visual.rotation.z=pm2.animation.kind==='bird'?preyPose.bank:0;
               pm2.animation.wings.forEach(function(wing, wingIndex) {
                 var wingSide = wingIndex === 0 ? 1 : -1;
-                wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (pm2.alerted ? 0.70 : 0.24));
+                if(pm2.animation.kind==='bird'){
+                  var side=wingIndex===0?-1:1;
+                  wing.rotation.z=side*preyPose.wingAngle;
+                  wing.rotation.y=side*1.15*(1-preyPose.spread);
+                  wing.scale.x=0.3+0.7*preyPose.spread;
+                } else wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (pm2.alerted ? 0.70 : 0.24));
               });
               pm2.animation.legs.forEach(function(leg, legIndex) {
                 leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
               });
               if (pm2.animation.tail) {
-                pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * 0.22;
+                pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * (pm2.animation.kind==='bird'?0.06*preyPose.spread:0.22);
               }
             }
             if (pm2.beaconCap && pm2.beaconCap.visible) {
@@ -17433,13 +17738,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           paintPracticeTrail();
           var scenicView=canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView==='true';
-          targetGuide.visible=!scenicView && !practiceTrail.active;
-          if(practiceTrail.active)targetFocusHalo.visible=false;
-          speedLines.visible=!scenicView;
-          airflowLines.visible=!scenicView;
+          targetGuide.visible=targetGuide.visible && !scenicView && !practiceTrail.active;
+          targetFocusHalo.visible=targetFocusHalo.visible && !scenicView && !practiceTrail.active;
+          speedLines.visible=!scenicView && !_rmFX && !raptor.landed && !raptor.crashed;
+          airflowLines.visible=airflowLines.visible && !scenicView;
           if(scenicView) flightTrail.visible=false;
           if(scenicView || practiceTrail.active) preyMeshes.forEach(function(prey){if(prey.beacon)prey.beacon.visible=false;if(prey.beaconCap)prey.beaconCap.visible=false;});
           waterAppearance.time.value=_rmFX ? 0 : motionNow*0.001;
+          if(lake && !_rmFX) waterUpdateCount++; // Continuous GPU waves; no geometry uploads.
           waterAppearance.daylight.value=skyAtmosphere.day.value;
           waterAppearance.clouds.value=visualCloudCover;
           if (sun.castShadow && motionNow-lastShadowRefresh>=shadowRefreshInterval) {
@@ -17456,6 +17762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Cleanup hook ───
         var onResize = function() {
           if (disposed) return;
+          targetHudBoundsDirty = true;
           var width = canvasEl.clientWidth;
           var height = canvasEl.clientHeight;
           if (!width || !height || (width === W && height === H)) return;
@@ -17472,6 +17779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         if (typeof ResizeObserver !== 'undefined') {
           resizeObserver = new ResizeObserver(onResize);
           resizeObserver.observe(canvasEl.parentElement || canvasEl);
+          hudParent.querySelectorAll(targetHudSelector + ',.rh-flight-altitude-gauge').forEach(function(node) { resizeObserver.observe(node); });
         }
 
         var cleanupComplete = false;
@@ -17575,6 +17883,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (object.geometry && object.geometry.dispose) object.geometry.dispose();
             if (Array.isArray(object.material)) object.material.forEach(disposeMaterial);
             else disposeMaterial(object.material);
+            // Depth maps share the surface texture; release only their own material.
+            if(object.customDepthMaterial)object.customDepthMaterial.dispose();
           });
           if (composer) {
             try {

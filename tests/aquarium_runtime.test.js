@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 
-const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquarium.js'), 'utf8');
+const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquarium.js'), 'utf8').replace(/\r\n/g, '\n');
 const coreStart = source.indexOf('var AquariumEcosystemCore = (function() {');
 const coreEnd = source.indexOf('// === End aquarium ecosystem core ===', coreStart);
 if (coreStart < 0 || coreEnd < 0) throw new Error('Aquarium ecosystem core test boundary missing');
@@ -584,7 +584,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(warmFresh).toBeGreaterThan(warmMarine);
     expect(coldFresh).toBeLessThanOrEqual(14.6);
     expect(warmMarine).toBeGreaterThanOrEqual(4);
-    expect(source).toContain('var volumeScale = Math.max(0.2, Math.min(2, 20 / volumeGallons))');
+    // Actual volume scaling, including both endpoints, is exercised in aquarium_sizing_runtime.test.js.
     expect(source).toContain('oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL');
     expect(source).toContain("rateBasis: '20-gallon reference concentration model'");
   });
@@ -1127,7 +1127,7 @@ expect(source).toContain('requestedHabitatInteractionId');
     expect(source).toContain("upd('stockCatalogFilter', filterType)");
     expect(source).toContain('var projectedLoad = Math.round((currentLoad + sp.load) * 100) / 100');
     expect(source).toContain('var capacityExceeded = projectedLoad > maxLoad');
-    expect(source).toContain('disabled: capacityExceeded');
+    // Actual capacity and minimum-volume card/handler guards are exercised in aquarium_sizing_runtime.test.js.
     expect(source).toContain("'\\u26D4 Over capacity'");
     expect(source).toContain("'\\u26A0 Compatibility review'");
     expect(source).toContain('var chemistryWarnings = []');

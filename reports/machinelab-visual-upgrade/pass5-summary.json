@@ -1,0 +1,50 @@
+{
+  "tests": {
+    "passed": 719,
+    "failed": 0,
+    "success": true,
+    "report": "pass5-tests.json"
+  },
+  "browser": [
+    {
+      "directory": "pass5-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "05-build-trebuchet",
+        "trebuchet-ready",
+        "trebuchet-release",
+        "trebuchet-long",
+        "trebuchet-field"
+      ]
+    },
+    {
+      "directory": "pass5-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "05-build-trebuchet",
+        "trebuchet-ready",
+        "trebuchet-release",
+        "trebuchet-long",
+        "trebuchet-field"
+      ]
+    }
+  ],
+  "desktopMirrorIdentical": true,
+  "sourceSha256": "e4346359c8734fb4b87b70df6f8b78768561fdd17ee288b90bcdd7f0e0852ea3"
+}

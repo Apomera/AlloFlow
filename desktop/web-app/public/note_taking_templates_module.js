@@ -302,6 +302,19 @@ function _calculateNotesXPScore(rubric, isFirstTime) {
   const firstTime = isFirstTime ? 5 : 0;
   return completion + quality + alignment + firstTime;
 }
+function _normalizeNotesFeedback(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const text = (input) => typeof input === "string" ? input.trim().slice(0, 1200) : "";
+  const strength = text(value.strength), growthNudge = text(value.growthNudge);
+  if (!strength || !growthNudge) return null;
+  const number = (input, max) => typeof input === "number" && Number.isFinite(input) ? Math.max(0, Math.min(max, Math.round(input))) : 0;
+  return {
+    strength,
+    growthNudge,
+    sourceAlignment: { found: typeof value.sourceAlignment?.found === "boolean" ? value.sourceAlignment.found : null, message: text(value.sourceAlignment?.message) },
+    rubric: { completion: number(value.rubric?.completion, 3), quality: number(value.rubric?.quality, 15), alignment: number(value.rubric?.alignment, 5) }
+  };
+}
 const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
   if (!feedback) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 pb-6" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in motion-reduce:animate-none slide-in-from-bottom-2 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F4AC}"), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-base text-emerald-800" }, t("notes_feedback.title") || "Feedback on your notes")), /* @__PURE__ */ React.createElement(
@@ -335,14 +348,20 @@ function _useNotesFeedback(props, templateType) {
   });
   const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
   const inputText = props.inputText || "";
-  const mounted = React.useRef(true), current = React.useRef(null);
+  const mounted = React.useRef(true), current = React.useRef(null), feedbackRequest = React.useRef(0);
   current.current = { id: generatedContent?.id, draft: _notesDraftFingerprint(templateType, generatedContent?.data || {}), allowed: !!callGemini };
   React.useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      feedbackRequest.current++;
     };
   }, []);
+  React.useEffect(() => {
+    feedbackRequest.current++;
+    setIsLoading(false);
+    setXpEarned(0);
+  }, [generatedContent?.id, props.activeProfileId, props.previewMode, !!callGemini]);
   const t = props.t || ((k, d) => d || k);
   const requestFeedback = React.useCallback(async () => {
     if (typeof callGemini !== "function") {
@@ -365,14 +384,16 @@ function _useNotesFeedback(props, templateType) {
       return;
     }
     if (isLoading) return;
-    const request = { ...current.current };
+    const request = { ...current.current, serial: ++feedbackRequest.current };
+    const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.allowed;
     setIsLoading(true);
     addToast(t("notes_feedback.thinking") || "Reading your notes...", "info");
     try {
       const prompt = _buildNotesFeedbackPrompt(templateType, data, inputText);
       const raw = await callGemini(prompt, true);
-      const parsed = JSON.parse(window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw);
-      if (!mounted.current || current.current.id !== request.id || current.current.draft !== request.draft || !current.current.allowed) return;
+      const parsed = _normalizeNotesFeedback(JSON.parse(window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      if (!parsed) throw new Error("Notes feedback did not include usable strengths and next steps");
+      if (!requestIsCurrent()) return;
       props.handleNoteUpdate?.("feedback", { ...parsed, draftFingerprint: request.draft, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
       const isFirstTime = !(generatedContent && generatedContent.data && generatedContent.data.feedbackCount || 0);
       const score = _calculateNotesXPScore(parsed.rubric, isFirstTime);
@@ -398,16 +419,17 @@ function _useNotesFeedback(props, templateType) {
         setXpEarned(0);
       }
     } catch (e) {
+      if (!requestIsCurrent()) return;
       console.warn("[NotesFeedback] failed", e);
       addToast(t("notes_feedback.error") || "Could not generate feedback right now. Try again in a moment.", "error");
     } finally {
-      if (mounted.current) setIsLoading(false);
+      if (mounted.current && feedbackRequest.current === request.serial) setIsLoading(false);
     }
   }, [isLoading, callGemini, generatedContent, inputText, templateType, addToast, handleScoreUpdate, t, props]);
   const dismiss = React.useCallback(() => {
     props.handleNoteUpdate?.("feedback", null);
     setXpEarned(0);
-  }, []);
+  }, [props.handleNoteUpdate]);
   return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function" };
 }
 const _ConnectionsSection = ({ value, onChange, hint, t }) => {

@@ -1,0 +1,513 @@
+{
+  "interactions": [
+    "Search, escaping, empty state, sorting, affordability, stock, clear-filter focus",
+    "Saving progress, sold-out explanation, keyboard focus retained after goal change",
+    "Mobile goal keyboard focus stays above fixed navigation; search does not repeat wallet announcements",
+    "Spanish control and saving-goal labels; short viewport navigation stays in flow",
+    "Live balance refresh updates the wallet, saving goal, and affordability filter",
+    "Cashier keyboard quantities retain focus; final removal restores catalog focus; filters preserve the cart",
+    "Store controls have at least 44px height and 24px width",
+    "Staff browsing hides register-only guidance; shared overview cards remain accessible"
+  ],
+  "views": {
+    "student-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 1440,
+      "viewport": 1440,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "student-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "student-dark": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 7.771260411026233
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.54757850001862
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 8.921045546441464
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 13.904659632528382
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 13.904659632528382
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 13.904659632528382
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 10.74200118140368
+        }
+      ]
+    },
+    "student-high-contrast": {
+      "violations": [],
+      "incomplete": [],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": []
+    },
+    "student-forced-colors": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              "aside > label"
+            ],
+            [
+              "#tab-store"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": []
+    },
+    "student-narrow": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 320,
+      "viewport": 320,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "student-short-viewport": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 640,
+      "viewport": 640,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "student-overview": {
+      "violations": [],
+      "incomplete": [],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": []
+    },
+    "cashier-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 1440,
+      "viewport": 1440,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "cashier-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ],
+            [
+              ".wallet-label"
+            ],
+            [
+              ".wallet-value"
+            ],
+            [
+              "small"
+            ],
+            [
+              ".wallet-note"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "viewport": 390,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        },
+        {
+          "selector": ".wallet-label",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-value small",
+          "minimumRatio": 12.765810746894948
+        },
+        {
+          "selector": ".wallet-note",
+          "minimumRatio": 7.7178025028979045
+        }
+      ]
+    },
+    "staff-store": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            [
+              ".store-intro > div:nth-child(1) > .eyebrow"
+            ],
+            [
+              "#store-welcome-title"
+            ],
+            [
+              "#store-welcome-copy"
+            ]
+          ]
+        }
+      ],
+      "width": 1440,
+      "viewport": 1440,
+      "gradientContrast": [
+        {
+          "selector": ".store-intro > div > .eyebrow",
+          "minimumRatio": 5.96356710550263
+        },
+        {
+          "selector": "#store-welcome-title",
+          "minimumRatio": 11.289622744786765
+        },
+        {
+          "selector": "#store-welcome-copy",
+          "minimumRatio": 6.825346263078628
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "ok": true
+}

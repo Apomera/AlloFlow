@@ -184,8 +184,8 @@ describe('StoryForge guided information architecture', () => {
       _storyForgeVersion: 2,
       purpose: 'handoff',
       ...base,
-      gradingResult: { totalScore: '20/20' },
-      review: { gradingResult: { totalScore: '20/20' } },
+      gradingResult: { scores: [{ criteria: 'Story', score: '5/5' }], feedback: { glow: 'Clear story', grow: 'Add detail' }, totalScore: '5/5' },
+      review: { gradingResult: { scores: [{ criteria: 'Story', score: '5/5' }], feedback: { glow: 'Clear story', grow: 'Add detail' }, totalScore: '5/5' } },
     });
     expect(handoff).toMatchObject({ valid: true, hasReviewData: false });
 
@@ -201,7 +201,7 @@ describe('StoryForge guided information architecture', () => {
       _storyForgePackage: 'project',
       _storyForgeVersion: 2,
       snapshot: base,
-      review: { gradingResult: { totalScore: '20/20' } },
+      review: { gradingResult: { scores: [{ criteria: 'Story', score: '5/5' }], feedback: { glow: 'Clear story', grow: 'Add detail' }, totalScore: '5/5' } },
     });
     expect(reviewedProject).toMatchObject({ valid: true, hasReviewData: true });
 
@@ -214,7 +214,7 @@ describe('StoryForge guided information architecture', () => {
         reviewedDraftSignature: reviewedSignature,
         paragraphs: [{ ...base.paragraphs[0], text: 'Edited after review.' }],
       },
-      review: { gradingResult: { totalScore: '20/20' } },
+      review: { gradingResult: { scores: [{ criteria: 'Story', score: '5/5' }], feedback: { glow: 'Clear story', grow: 'Add detail' }, totalScore: '5/5' } },
     });
     expect(staleProject).toMatchObject({ valid: true, hasReviewData: false });
     expect(source).toContain("setReviewedDraftSignature(validated.hasReviewData ? getStoryForgeReviewSignature(validated.snapshot) : '');");

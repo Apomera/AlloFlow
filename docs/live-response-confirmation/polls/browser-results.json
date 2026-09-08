@@ -1,0 +1,11 @@
+{
+  "realWebRtc": true,
+  "students": 3,
+  "ratingResults": true,
+  "wordCloudPauseDraft": true,
+  "staleResultsIgnored": true,
+  "mcqSelection": true,
+  "mobileOverflow": false,
+  "received": 7,
+  "errors": []
+}

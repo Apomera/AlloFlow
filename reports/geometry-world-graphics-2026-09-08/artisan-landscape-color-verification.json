@@ -1,0 +1,17 @@
+{
+  "pass": true,
+  "reports": [
+    {
+      "horizon": "496d46",
+      "boundaryVertices": 700,
+      "maxBoundaryDelta": 5.002031788770012e-9,
+      "maxCrestDelta": 0.08064156689046127
+    },
+    {
+      "horizon": "446c58",
+      "boundaryVertices": 700,
+      "maxBoundaryDelta": 2.074234228821581e-9,
+      "maxCrestDelta": 0.08945550393066348
+    }
+  ]
+}

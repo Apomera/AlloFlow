@@ -1,0 +1,207 @@
+{
+  "slug": "habitats_diversity_grade2",
+  "prefix": "hd",
+  "grade": "2nd Grade",
+  "title": "Who Lives Here? — Comparing Habitats",
+  "standard": "NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats)",
+  "source": "https://www.nextgenscience.org/pe/2-ls4-1-biological-evolution-unity-and-diversity",
+  "reading": "## Who Lives Here?\n\nLook at a pond. Then look at a dry patch of land. Would you expect to find all the same living things?\n\nA **habitat** is a place where a living thing gets what it needs. A pond can be a habitat. So can a tree, a field, or a garden.\n\nA **plant** needs water, light, air, and room to grow. An **animal** needs food, water, air, and a place to live. Their needs help explain where we find them.\n\nA **pond** may have water plants, snails, and fish. A **forest** may have tall trees, birds, and beetles. These are examples, not a list for every pond or forest. Some animals use more than one habitat.\n\nWe **observe** by looking and listening with care. We can draw what we find. We do not need to catch or move living things.\n\nTo **compare**, look for what is alike and what is different. Count kinds, not just how many things you see. Ten ants of one kind are many animals, but only one kind in your record.\n\n**Diversity** means the variety of living things. A place with more kinds in our record showed more variety during our visit.\n\nOne short visit can miss a lot. Some animals hide. Some come out at night. Use the same search time and area for both places. Visit again if you can. Say what you found, and what you still do not know.",
+  "terms": [
+    [
+      "Habitat",
+      "A place where a living thing gets what it needs."
+    ],
+    [
+      "Plant",
+      "A living thing such as a tree, grass, or moss."
+    ],
+    [
+      "Animal",
+      "A living thing that gets food by eating other living things or their products."
+    ],
+    [
+      "Pond",
+      "A small body of standing water."
+    ],
+    [
+      "Forest",
+      "A large area with many trees."
+    ],
+    [
+      "Observe",
+      "Look, listen, or use tools to gather facts."
+    ],
+    [
+      "Compare",
+      "Look for ways things are alike and different."
+    ],
+    [
+      "Diversity",
+      "The variety of living things in a place."
+    ]
+  ],
+  "anchors": [
+    [
+      "LOOK FOR LIFE",
+      [
+        "Record plants and animals",
+        "Do not disturb their homes"
+      ],
+      "Child observing a pond from its edge"
+    ],
+    [
+      "COUNT KINDS",
+      [
+        "Count kinds as well as individuals",
+        "Many of one kind is not many kinds"
+      ],
+      "A group of similar ants beside a varied group of small animals"
+    ],
+    [
+      "COMPARE FAIRLY",
+      [
+        "Use the same time and area",
+        "A visit may miss hidden life"
+      ],
+      "Two children observing equal garden plots"
+    ]
+  ],
+  "cats": [
+    "Observation we recorded",
+    "Idea that needs more checking"
+  ],
+  "sort": [
+    [
+      "We saw three snails beside the pond",
+      0
+    ],
+    [
+      "We drew two kinds of leaves in the garden",
+      0
+    ],
+    [
+      "We heard a bird during our visit",
+      0
+    ],
+    [
+      "No animals ever use this garden",
+      1
+    ],
+    [
+      "Every pond has exactly the same plants",
+      1
+    ],
+    [
+      "The hidden animal must be a frog",
+      1
+    ]
+  ],
+  "quiz": [
+    [
+      "What is a habitat?",
+      [
+        "A name for every animal",
+        "A place that meets living needs",
+        "A count of leaves on one tree",
+        "A drawing of only wild plants"
+      ],
+      1,
+      "habitats and needs"
+    ],
+    [
+      "What does diversity describe?",
+      [
+        "The size of one animal",
+        "The age of one tall tree",
+        "The variety of living things",
+        "The time of one short visit"
+      ],
+      2,
+      "compare evidence"
+    ],
+    [
+      "We saw ten ants of one kind. What did we record?",
+      [
+        "Ten different kinds of plants",
+        "Ten different kinds of animals",
+        "No living things in the place",
+        "Ten animals of one kind"
+      ],
+      3,
+      "compare evidence"
+    ],
+    [
+      "What makes our two searches fairer?",
+      [
+        "Use the same time and area",
+        "Search one place much longer",
+        "Count only our favorite animals",
+        "Move plants to the other place"
+      ],
+      0,
+      "compare evidence"
+    ],
+    [
+      "What can one short visit tell us?",
+      [
+        "Everything that lives there",
+        "What we noticed on that visit",
+        "What lives there every season",
+        "Why no hidden animals exist"
+      ],
+      1,
+      "habitats and needs"
+    ]
+  ],
+  "short": [
+    [
+      "Why might two habitats have different living things?",
+      "Water, light, food, shelter, and other conditions can differ. Different living things need different conditions.",
+      "habitats and needs"
+    ],
+    [
+      "Why should we avoid claiming that no animals live in a place?",
+      "Animals may hide, move through later, or be active at another time. A short search can miss them.",
+      "compare evidence"
+    ]
+  ],
+  "faq": [
+    [
+      "Can one animal use two habitats?",
+      "Yes. A bird may feed by a pond and nest in a tree."
+    ],
+    [
+      "Is a garden a habitat?",
+      "Yes. Living things can meet their needs there. People can shape habitats too."
+    ],
+    [
+      "Should we pick up the animals?",
+      "Observe without moving them. Ask your teacher about safe ways to look."
+    ],
+    [
+      "Does more animals mean more kinds?",
+      "No. A large group may all be one kind. Record both counts when you can."
+    ]
+  ],
+  "challenge": [
+    "Our class will look at two small outdoor places. We can use two sets of photos if we cannot go outside.",
+    "What kinds of plants and animals do we find in each place?",
+    "Use the same search time and area. Draw each kind. If you do not know its name, sketch it. Look again to check.",
+    "Make two picture lists. Tell what is alike and what is different. Say what your search may have missed."
+  ],
+  "facts": [
+    "Habitats meet needs of living things.",
+    "Diversity describes variety, not only the number of individuals.",
+    "A short observation can miss living things."
+  ],
+  "memoryText": [
+    [
+      "Look for life. Draw the plants and animals you see in each place.",
+      "The cue helps us record what we see. It does not mean we found all the life there."
+    ],
+    [
+      "Count kinds. Ten ants may all be one kind. A bird and an ant are two kinds.",
+      "The cue helps us count kinds, not just how many things we saw."
+    ]
+  ]
+}

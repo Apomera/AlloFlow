@@ -17,6 +17,7 @@ function DirectionsComposerView({
   directionsDeriving,
   generateUUID,
   mbDirectionsDraft,
+  directionsPreviewHtml = '',
   directionsGoalEditorState,
   mbDirectionsGoalRes: legacyGoalRes,
   mbDirectionsGoalText: legacyGoalText,
@@ -32,6 +33,7 @@ function DirectionsComposerView({
   // updates. Legacy props keep already-open older shells compatible with this module.
   const fallbackGoalState = React.useRef({ resource: legacyGoalRes || '', text: legacyGoalText || '' });
   const goalState = directionsGoalEditorState || fallbackGoalState;
+  const previewLabel = t('common.preview');
   const [mbDirectionsGoalRes, updateGoalRes] = React.useState(() => goalState.current.resource);
   const [mbDirectionsGoalText, updateGoalText] = React.useState(() => goalState.current.text);
   const setMbDirectionsGoalRes = value => {
@@ -46,17 +48,23 @@ function DirectionsComposerView({
   };
   return (
 <div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
-          <div data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4">
+          <div data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
               <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
               <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
             </div>
             <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
-            <div className="space-y-2">
+            <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1" data-directions-scroll>
               <input data-help-key="directions_title" autoFocus value={mbDirectionsDraft?.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder={t('directions.title_placeholder') || "Title (e.g. Tonight's homework)"} aria-label={t('directions.title_aria') || 'Directions title'} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
               <textarea data-help-key="directions_body" value={mbDirectionsDraft?.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder={t('directions.body_placeholder') || 'Directions for students: the steps, and what finished work looks like.'} aria-label={t('directions.body_aria') || 'Directions for students'} rows={6} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
               <input data-help-key="directions_due" value={mbDirectionsDraft?.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder={t('directions.due_placeholder') || 'Due (optional, e.g. Friday)'} aria-label={t('directions.due_aria') || 'Due date'} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <details className="rounded-lg border border-slate-200 bg-slate-50 p-2" data-directions-preview>
+                <summary className="cursor-pointer text-xs font-bold text-indigo-800">{previewLabel && previewLabel !== 'common.preview' ? previewLabel : 'Preview'}</summary>
+                {directionsPreviewHtml
+                  ? <div className="mt-3 text-sm text-slate-800 break-words" dangerouslySetInnerHTML={{ __html: typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(directionsPreviewHtml) : '' }} />
+                  : <p className="mt-2 text-xs text-slate-600">{t('directions.body_placeholder') || 'Write directions to preview them here.'}</p>}
+              </details>
               <div className="border-t border-indigo-100 pt-2">
                 <label className="flex items-start gap-2 cursor-pointer select-none">
                   <input
@@ -303,6 +311,8 @@ function DirectionsComposerView({
               <button data-help-key="directions_draft" onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
                 <Sparkles size={13} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
               </button>
+            </div>
+            <div className="pt-3 shrink-0 bg-white">
               <div className="flex gap-2">
                 <button data-help-key="directions_add_pack" onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
                 <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>

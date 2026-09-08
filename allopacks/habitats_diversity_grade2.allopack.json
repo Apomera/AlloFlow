@@ -1,0 +1,491 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Who Lives Here? — Comparing Habitats",
+    "author": "AlloFlow; AI-assisted draft, educator review pending",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "2nd Grade",
+    "standards": "NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats)",
+    "createdAt": "2026-09-08T00:00:00.000Z",
+    "imageShotList": "allopacks/habitats_diversity_grade2.IMAGES.md",
+    "contentSources": [
+      {
+        "title": "Official learning standard",
+        "url": "https://www.nextgenscience.org/pe/2-ls4-1-biological-evolution-unity-and-diversity"
+      }
+    ],
+    "reviewStatus": "AI content and structural checks; educator review pending",
+    "imageStatus": "planned-not-generated"
+  },
+  "sourceTopic": "Who Lives Here? — Comparing Habitats",
+  "history": [
+    {
+      "id": "hd-directions",
+      "type": "directions",
+      "title": "Start Here",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "body": "Read **Who Lives Here? — Comparing Habitats** with a partner or use read-aloud. Explore **Key Words**, then play Matching and Memory. Use **Keep the Ideas Clear** as a reference. Try **Sort and Explain**, **Explain Your Thinking**, and **Check Your Understanding**. Use **Remember the Ideas** to build a memory cue. Read **Questions to Explore**, then complete **Try It with Evidence**.\n\nExplain an answer using a detail from the lesson. Images are planned for a later edition; every activity works with text now.",
+        "objectives": [
+          {
+            "id": "hd-goal-match",
+            "label": "Complete Matching",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "hd-glossary"
+          },
+          {
+            "id": "hd-goal-memory",
+            "label": "Complete Memory",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "hd-glossary"
+          },
+          {
+            "id": "hd-goal-evidence",
+            "label": "I explained an answer using lesson evidence",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "2nd Grade • Start Here"
+    },
+    {
+      "id": "hd-reading",
+      "type": "simplified",
+      "title": "Who Lives Here? — Comparing Habitats",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": "## Who Lives Here?\n\nLook at a pond. Then look at a dry patch of land. Would you expect to find all the same living things?\n\nA **habitat** is a place where a living thing gets what it needs. A pond can be a habitat. So can a tree, a field, or a garden.\n\nA **plant** needs water, light, air, and room to grow. An **animal** needs food, water, air, and a place to live. Their needs help explain where we find them.\n\nA **pond** may have water plants, snails, and fish. A **forest** may have tall trees, birds, and beetles. These are examples, not a list for every pond or forest. Some animals use more than one habitat.\n\nWe **observe** by looking and listening with care. We can draw what we find. We do not need to catch or move living things.\n\nTo **compare**, look for what is alike and what is different. Count kinds, not just how many things you see. Ten ants of one kind are many animals, but only one kind in your record.\n\n**Diversity** means the variety of living things. A place with more kinds in our record showed more variety during our visit.\n\nOne short visit can miss a lot. Some animals hide. Some come out at night. Use the same search time and area for both places. Visit again if you can. Say what you found, and what you still do not know.",
+      "meta": "2nd Grade • Who Lives Here? — Comparing Habitats"
+    },
+    {
+      "id": "hd-glossary",
+      "type": "glossary",
+      "title": "Key Words",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "term": "Habitat",
+          "def": "A place where a living thing gets what it needs.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Plant",
+          "def": "A living thing such as a tree, grass, or moss.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Animal",
+          "def": "A living thing that gets food by eating other living things or their products.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pond",
+          "def": "A small body of standing water.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Forest",
+          "def": "A large area with many trees.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Observe",
+          "def": "Look, listen, or use tools to gather facts.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Compare",
+          "def": "Look for ways things are alike and different.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Diversity",
+          "def": "The variety of living things in a place.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "2nd Grade • Key Words"
+    },
+    {
+      "id": "hd-anchor",
+      "type": "anchor-chart",
+      "title": "Keep the Ideas Clear",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "Who Lives Here? — Comparing Habitats",
+        "sections": [
+          {
+            "id": "hd-section-1",
+            "label": "LOOK FOR LIFE",
+            "bullets": [
+              "Record plants and animals",
+              "Do not disturb their homes"
+            ],
+            "iconPrompt": "Child observing a pond from its edge"
+          },
+          {
+            "id": "hd-section-2",
+            "label": "COUNT KINDS",
+            "bullets": [
+              "Count kinds as well as individuals",
+              "Many of one kind is not many kinds"
+            ],
+            "iconPrompt": "A group of similar ants beside a varied group of small animals"
+          },
+          {
+            "id": "hd-section-3",
+            "label": "COMPARE FAIRLY",
+            "bullets": [
+              "Use the same time and area",
+              "A visit may miss hidden life"
+            ],
+            "iconPrompt": "Two children observing equal garden plots"
+          }
+        ]
+      },
+      "meta": "2nd Grade • Keep the Ideas Clear"
+    },
+    {
+      "id": "hd-sort",
+      "type": "concept-sort",
+      "title": "Sort and Explain",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "hd-category-0",
+            "label": "Observation we recorded",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "hd-category-1",
+            "label": "Idea that needs more checking",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "hd-card-1",
+            "content": "We saw three snails beside the pond",
+            "categoryId": "hd-category-0"
+          },
+          {
+            "id": "hd-card-2",
+            "content": "We drew two kinds of leaves in the garden",
+            "categoryId": "hd-category-0"
+          },
+          {
+            "id": "hd-card-3",
+            "content": "We heard a bird during our visit",
+            "categoryId": "hd-category-0"
+          },
+          {
+            "id": "hd-card-4",
+            "content": "No animals ever use this garden",
+            "categoryId": "hd-category-1"
+          },
+          {
+            "id": "hd-card-5",
+            "content": "Every pond has exactly the same plants",
+            "categoryId": "hd-category-1"
+          },
+          {
+            "id": "hd-card-6",
+            "content": "The hidden animal must be a frog",
+            "categoryId": "hd-category-1"
+          }
+        ]
+      },
+      "meta": "2nd Grade • Sort and Explain"
+    },
+    {
+      "id": "hd-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Thinking",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I notice ____. This matters because ____."
+          },
+          {
+            "text": "I compared ____ with ____. They differ because ____."
+          },
+          {
+            "text": "My evidence is ____. It supports ____."
+          },
+          {
+            "text": "At first I thought ____. Now I think ____ because ____."
+          }
+        ],
+        "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
+      },
+      "meta": "2nd Grade • Explain Your Thinking"
+    },
+    {
+      "id": "hd-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is a habitat?",
+            "options": [
+              "A name for every animal",
+              "A place that meets living needs",
+              "A count of leaves on one tree",
+              "A drawing of only wild plants"
+            ],
+            "correctAnswer": "A place that meets living needs",
+            "conceptLabel": "habitats and needs"
+          },
+          {
+            "type": "mcq",
+            "question": "What does diversity describe?",
+            "options": [
+              "The size of one animal",
+              "The age of one tall tree",
+              "The variety of living things",
+              "The time of one short visit"
+            ],
+            "correctAnswer": "The variety of living things",
+            "conceptLabel": "compare evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "We saw ten ants of one kind. What did we record?",
+            "options": [
+              "Ten different kinds of plants",
+              "Ten different kinds of animals",
+              "No living things in the place",
+              "Ten animals of one kind"
+            ],
+            "correctAnswer": "Ten animals of one kind",
+            "conceptLabel": "compare evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "What makes our two searches fairer?",
+            "options": [
+              "Use the same time and area",
+              "Search one place much longer",
+              "Count only our favorite animals",
+              "Move plants to the other place"
+            ],
+            "correctAnswer": "Use the same time and area",
+            "conceptLabel": "compare evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "What can one short visit tell us?",
+            "options": [
+              "Everything that lives there",
+              "What we noticed on that visit",
+              "What lives there every season",
+              "Why no hidden animals exist"
+            ],
+            "correctAnswer": "What we noticed on that visit",
+            "conceptLabel": "habitats and needs"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Why might two habitats have different living things?",
+            "expectedAnswer": "Water, light, food, shelter, and other conditions can differ. Different living things need different conditions.",
+            "conceptLabel": "habitats and needs"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Why should we avoid claiming that no animals live in a place?",
+            "expectedAnswer": "Animals may hide, move through later, or be active at another time. A short search can miss them.",
+            "conceptLabel": "compare evidence"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which evidence or example helped you change your mind?"
+          },
+          {
+            "text": "What would you check next, and why?"
+          }
+        ]
+      },
+      "meta": "2nd Grade • Check Your Understanding"
+    },
+    {
+      "id": "hd-memory",
+      "type": "memory-aid",
+      "title": "Remember the Ideas",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Ideas",
+        "instructions": "Study each cue. Make your own cue, then explain how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Habitats meet needs of living things. Diversity describes variety, not only the number of individuals. A short observation can miss living things.",
+        "lessonRef": {
+          "resourceId": "hd-reading",
+          "title": "Who Lives Here? — Comparing Habitats"
+        },
+        "cards": [
+          {
+            "id": "hd-memory-0",
+            "target": "Remember: LOOK FOR LIFE",
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Record plants and animals",
+              "Do not disturb their homes",
+              "Habitats meet needs of living things."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Look for life. Draw the plants and animals you see in each place.",
+            "mapping": "The cue helps us record what we see. It does not mean we found all the life there.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          },
+          {
+            "id": "hd-memory-1",
+            "target": "Remember: COUNT KINDS",
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Count kinds as well as individuals",
+              "Many of one kind is not many kinds",
+              "Diversity describes variety, not only the number of individuals."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Count kinds. Ten ants may all be one kind. A bird and an ant are two kinds.",
+            "mapping": "The cue helps us count kinds, not just how many things we saw.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          }
+        ]
+      },
+      "meta": "2nd Grade • Remember the Ideas"
+    },
+    {
+      "id": "hd-faq",
+      "type": "faq",
+      "title": "Questions to Explore",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "question": "Can one animal use two habitats?",
+          "answer": "Yes. A bird may feed by a pond and nest in a tree."
+        },
+        {
+          "question": "Is a garden a habitat?",
+          "answer": "Yes. Living things can meet their needs there. People can shape habitats too."
+        },
+        {
+          "question": "Should we pick up the animals?",
+          "answer": "Observe without moving them. Ask your teacher about safe ways to look."
+        },
+        {
+          "question": "Does more animals mean more kinds?",
+          "answer": "No. A large group may all be one kind. Record both counts when you can."
+        }
+      ],
+      "meta": "2nd Grade • Questions to Explore"
+    },
+    {
+      "id": "hd-challenge",
+      "type": "applied-challenge",
+      "title": "Try It with Evidence",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Try It with Evidence",
+        "instructions": "Make a prediction or first answer. Use evidence to check it. Explain what you found.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Our class will look at two small outdoor places. We can use two sets of photos if we cannot go outside.",
+          "role": "Class investigators",
+          "audience": "A classmate checking our reasoning",
+          "drivingQuestion": "What kinds of plants and animals do we find in each place?",
+          "seedDirection": "Use the same search time and area. Draw each kind. If you do not know its name, sketch it. Look again to check.",
+          "lockedLessonFacts": [
+            "Habitats meet needs of living things.",
+            "Diversity describes variety, not only the number of individuals.",
+            "A short observation can miss living things."
+          ],
+          "openQuestions": [
+            "What will count as useful evidence?",
+            "What might our method miss?"
+          ],
+          "criteria": [
+            "Describe the method or model clearly",
+            "Use evidence to support your answer",
+            "Name a limit or a question to check next"
+          ],
+          "constraints": [
+            "Use teacher-approved materials or supplied examples",
+            "Keep a record of what you actually observe or calculate"
+          ],
+          "deliverable": "Make two picture lists. Tell what is alike and what is different. Say what your search may have missed.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A classmate checks a related claim from this lesson.",
+            "move": "They use the lesson rule: Habitats meet needs of living things. They record an example, then check whether it supports the claim.",
+            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+          },
+          "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
+          "frameChoices": [
+            "Explain with a drawing and spoken words",
+            "Explain with a written record and evidence"
+          ],
+          "coachPrompts": [
+            "Which detail in your record supports your answer?"
+          ]
+        },
+        "coachHint": "Keep the claim and the evidence connected.",
+        "sourceExcerpt": "Habitats meet needs of living things. Diversity describes variety, not only the number of individuals. A short observation can miss living things.",
+        "lessonRef": {
+          "resourceId": "hd-reading",
+          "title": "Who Lives Here? — Comparing Habitats"
+        }
+      },
+      "meta": "2nd Grade • Try It with Evidence"
+    }
+  ]
+}

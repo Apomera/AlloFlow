@@ -1,0 +1,29 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "01-machines-lever",
+    "02-machines-pulley",
+    "02b-machines-wheel-axle",
+    "03-machines-screw",
+    "03b-machines-wedge",
+    "04-machines-k2",
+    "05-build-trebuchet",
+    "06-build-ballista",
+    "07-build-onager",
+    "08-range-fresh",
+    "08b-range-odd-stone",
+    "08c-range-running",
+    "08d-range-strobe",
+    "motion-ramp",
+    "motion-wedge",
+    "field-engine"
+  ]
+}

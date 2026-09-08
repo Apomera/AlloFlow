@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Static poses remain still with system reduced motion; release/impact/mixing/settled and keyboard timeline work; all experiment data remains unchanged.",
+    "Return-to-live, real additions, apparatus changes, view switches, and preset changes exit inspection; redox inspection retains potential units.",
+    "Context loss hides inspection and reveals the diagram; rebuilding the viewer returns to live data."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

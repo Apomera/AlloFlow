@@ -2768,7 +2768,7 @@ window.StemLab = window.StemLab || {
             stroke: palette.geoboard, strokeWidth: 3
           });
         });
-        // Compute perimeter
+        // Total drawn length is defined for open paths too; it is not necessarily a perimeter.
         var perimeter = geoboardSegments.reduce(function(acc, s) {
           return acc + Math.sqrt((s.x2 - s.x1) * (s.x2 - s.x1) + (s.y2 - s.y1) * (s.y2 - s.y1));
         }, 0);
@@ -2776,7 +2776,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
           h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-3 flex justify-center' },
-            h('svg', { role: 'img', 'aria-label': __alloT('stem.manipulatives.fraction_circle_img', 'Fraction circle model'), viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
+            h('svg', { role: 'group', 'aria-label': __alloT('stem.manipulatives.geoboard_grid', 'Interactive geoboard'), viewBox: '0 0 ' + svgW + ' ' + svgW, width: '100%', style: { maxWidth: svgW + 'px' } },
               segElements,
               pegs
             )
@@ -2787,7 +2787,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xl font-black text-sky-900' }, geoboardSegments.length)
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[0.625rem] font-bold text-sky-700' }, __alloT('stem.manipulatives.perimeter_units', 'Perimeter (units)')),
+              h('p', { className: 'text-[0.625rem] font-bold text-sky-700' }, __alloT('stem.manipulatives.segment_length_units', 'Total segment length (units)')),
               h('p', { className: 'text-xl font-black text-sky-900' }, perimeter.toFixed(2))
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },

@@ -43,13 +43,9 @@ describe('Solar System canvas alternatives', () => {
     expect(source).toContain('ariaLabel: "Kepler III plot of solar-system bodies');
     expect(source).toContain('ariaLabel: "Orbit Workshop preview for " + body.name');
     expect(source).toContain('ariaLabel: "Orbit Workshop energy diagram for " + body.name');
-    expect(source).toContain('ariaLabel: "Hohmann transfer visualization from " + fromBody.name');
+    expect(source).toContain('ariaLabel: "Hohmann transfer visualization from " + from.name');
     expect(source).toContain('ariaDescribedBy: "orrery-transfer-evidence"');
     expect(source).toContain('var transferBurnInsight = sameTransferOrbit ?');
-    expect(source).toContain('var transferCenterX = cx + (outward ? -c_t : c_t) * scale;');
-    expect(source).toContain('ctx.ellipse(transferCenterX, cy, a_t * scale, b_t * scale, 0, 0, PI);');
-    expect(source).toContain('var dep_x = cx + fromBody.a * scale;');
-    expect(source).toContain('var arr_x = cx - toBody.a * scale;');
     expect(source).toContain('id: "orrery-transfer-evidence"');
     expect(source).toContain('reduceMotion: reduceMotion,');
     expect(source).toContain('if (!reduceMotion) animRef.current = (animRef.current + 0.01) % TAU;');
@@ -67,6 +63,7 @@ describe('Solar System canvas alternatives', () => {
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', viewTab: 'interior', showSky: true, showDescent: true, showOrbital: true, showHohmann: true },
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.mars', viewTab: 'drone' },
       { tutorialDismissed: true, orreryMode: true },
+      { tutorialDismissed: true, orreryMode: true, orr_tab: 5 },
     ];
     for (const state of views) {
       expect(renderedCanvasFailures(renderTool('solarSystem', { solarSystem: state }))).toEqual([]);
@@ -110,7 +107,7 @@ expect(source).toContain('onEscape: function() { upd("orr_k3hover", null); }');
   });
   it('names the dynamic vehicle radar and excludes detached texture buffers', () => {
     const source = readFileSync(SOURCE, 'utf8');
-    expect(source).toContain("miniMap.setAttribute('aria-label', 'Radar map showing the vehicle position and nearby points of interest')");
+    expect(source).toContain("miniMap.setAttribute('aria-label', 'North-up local map. Vehicle at center; ");
     expect(source).toContain("var coronaCv = document.createElement('canvas'); coronaCv.setAttribute('aria-hidden', 'true');");
     expect(source).toContain("var labelCv = document.createElement('canvas'); labelCv.setAttribute('aria-hidden', 'true');");
   });

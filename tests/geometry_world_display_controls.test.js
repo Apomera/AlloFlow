@@ -292,7 +292,8 @@ describe('Geometry World display stability controls', function() {
     const originalUserAgent = navigator.userAgent;
     Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' });
     try {
-      const view = mountTool({ _introShownOnce: true, worldActive: true });
+      // The device chooser is initial onboarding; an active world survives resizing.
+      const view = mountTool({ _introShownOnce: true, worldActive: false });
       const touchCta = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.textContent.indexOf('Enter touch mode') >= 0; });
       const desktopCta = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.textContent.indexOf('Use desktop-style view') >= 0; });
       expect(view.container.querySelector('#gw-mobile-title').textContent).toBe('Touch-ready Geometry World');
@@ -418,4 +419,152 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain('.gw-touch-joystick-thumb{transition:transform 80ms ease-out');
     expect(SOURCE).toContain('.gw-touch-joystick-thumb{transition:none!important}');
   });
+});
+
+
+describe('Geometry World touch flight and placement feedback', function() {
+  let originalUserAgent;
+  beforeEach(function() {
+    originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' });
+  });
+  afterEach(function() {
+    Object.defineProperty(navigator, 'userAgent', { configurable: true, value: originalUserAgent });
+  });
+  function mobileWorld(bucket) {
+    return mountTool(Object.assign({ _introShownOnce: true, worldActive: true, tutorialDismissed: true, touchMode: true }, bucket));
+  }
+  function dispatchTouch(button, type) {
+    React.act(function() { button.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); });
+  }
+  function release(button, kind) {
+    if (kind === 'blur') React.act(function() { button.blur(); });
+    else dispatchTouch(button, kind);
+  }
+
+  it.each(['touchend', 'touchcancel', 'blur'])('Up starts flight before canvas interaction and stops on %s', function(kind) {
+    const engine = window[ENGINE_KEY];
+    engine.flyMode = true; engine.isLocked = false; engine._touchActive = false;
+    engine.moveState.flyDown = true;
+    const view = mobileWorld();
+    const button = view.container.querySelector('[data-gw-touch-action="up"]');
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('aria-label')).toBe('Jump or fly up');
+    expect(button.textContent).toBe('Up');
+    expect(engine._touchActive).toBe(false);
+    React.act(function() { button.focus(); });
+    expect(document.activeElement).toBe(button);
+    dispatchTouch(button, 'touchstart');
+    expect(engine._touchActive).toBe(true);
+    expect(engine.isLocked).toBe(false);
+    expect(engine.moveState.flyUp).toBe(true);
+    expect(engine.moveState.flyDown).toBe(false);
+    release(button, kind);
+    expect(engine.moveState.flyUp).toBe(false);
+    expect(engine._jumpLock).toBe(false);
+  });
+
+  it.each(['touchend', 'touchcancel', 'blur'])('Down starts descent without a joystick touch and stops on %s', function(kind) {
+    const engine = window[ENGINE_KEY];
+    engine.flyMode = true; engine.isLocked = false; engine._touchActive = false;
+    engine.moveState.flyUp = true;
+    const view = mobileWorld();
+    const button = view.container.querySelector('[data-gw-touch-action="down"]');
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('aria-label')).toBe('Fly down');
+    expect(button.textContent).toBe('Down');
+    expect(engine._touchActive).toBe(false);
+    React.act(function() { button.focus(); });
+    dispatchTouch(button, 'touchstart');
+    expect(engine._touchActive).toBe(true);
+    expect(engine.isLocked).toBe(false);
+    expect(engine.moveState.flyDown).toBe(true);
+    expect(engine.moveState.flyUp).toBe(false);
+    release(button, kind);
+    expect(engine.moveState.flyDown).toBe(false);
+  });
+
+  it('offers Down only during flight and clears vertical input when returning to walking', function() {
+    const engine = window[ENGINE_KEY];
+    const view = mobileWorld();
+    expect(view.container.querySelector('[data-gw-touch-action="down"]')).toBeNull();
+    expect(view.container.querySelector('[data-gw-touch-action="up"]').textContent).toBe('Jump');
+    const toggle = view.container.querySelector('.gw-action-bar [aria-label="Toggle fly mode"]');
+    React.act(function() { toggle.dispatchEvent(new Event('click', { bubbles: true })); });
+    const down = view.container.querySelector('[data-gw-touch-action="down"]');
+    expect(down).toBeTruthy();
+    expect(view.toolData.geometryWorld.flyMode).toBe(true);
+    expect(view.container.querySelector('[data-gw-touch-action="up"]').textContent).toBe('Up');
+    dispatchTouch(down, 'touchstart');
+    expect(engine.moveState.flyDown).toBe(true);
+    React.act(function() { toggle.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.container.querySelector('[data-gw-touch-action="down"]')).toBeNull();
+    expect(engine.moveState.flyUp).toBe(false);
+    expect(engine.moveState.flyDown).toBe(false);
+    expect(view.toolData.geometryWorld.flyMode).toBe(false);
+  });
+
+  it('pairs touch icons with visible labels and omits Talk in a world with no characters', function() {
+    const view = mobileWorld();
+    const actions = view.container.querySelector('[role="group"][aria-label="Touch actions"]');
+    expect(actions).toBeTruthy();
+    const buttons = Array.from(actions.querySelectorAll('button'));
+    expect(buttons.map(function(button) { return button.textContent; })).toEqual(['Jump', 'Place', 'Break', 'Measure', 'Undo']);
+    expect(buttons.map(function(button) { return button.getAttribute('aria-label'); })).toEqual([
+      'Jump or fly up', 'Place block', 'Break block', 'Measure structure', 'Undo last block action'
+    ]);
+    expect(actions.querySelector('[aria-label="Talk to nearby character"]')).toBeNull();
+    expect(actions.querySelector('[aria-label="Undo last block action"]').disabled).toBe(true);
+  });
+
+  it('announces a placement reason as a polite status and hides it behind a modal', function() {
+    const hint = { allowed: false, code: 'occupied', reason: 'This cell already has a block' };
+    const view = mobileWorld({ placementHint: hint });
+    const status = view.container.querySelector('.gw-placement-hint');
+    expect(status).toBeTruthy();
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(status.getAttribute('data-allowed')).toBe('false');
+    expect(status.getAttribute('data-placement-code')).toBe('occupied');
+    expect(status.textContent).toContain(hint.reason);
+    expect(status.querySelector('.gw-placement-hint-mark').getAttribute('aria-hidden')).toBe('true');
+    openSettings(view);
+    expect(view.container.querySelector('.gw-placement-hint')).toBeNull();
+  });
+
+  it('keeps placement hints out of Showcase even when a previous target remains in state', function() {
+    const view = mobileWorld({ showcaseActive: true, placementHint: { allowed: true, code: 'ready', reason: 'Ready to build' } });
+    expect(view.container.querySelector('.gw-placement-hint')).toBeNull();
+  });
+
+  it('does not restart a long-held Up after release but still accepts keyboard activation', async function() {
+    const engine = window[ENGINE_KEY]; engine.flyMode = true; engine._touchActive = false;
+    const view = mobileWorld();
+    const up = view.container.querySelector('[data-gw-touch-action="up"]');
+    dispatchTouch(up, 'touchstart'); expect(engine.moveState.flyUp).toBe(true);
+    engine._lastTouchAction.at = Date.now() - 1200;
+    dispatchTouch(up, 'touchend'); expect(engine.moveState.flyUp).toBe(false);
+    React.act(function() { up.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 })); });
+    expect(engine.moveState.flyUp).toBe(false);
+    React.act(function() { up.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+    expect(engine.moveState.flyUp).toBe(true);
+    await React.act(async function() { await new Promise(function(resolve) { setTimeout(resolve, 170); }); });
+    expect(engine.moveState.flyUp).toBe(false);
+  });
+
+  it.each(['touchend', 'touchcancel'])('does not duplicate Place after a long hold ending in %s', function(kind) {
+    const engine = window[ENGINE_KEY], actions = [];
+    engine.interactAtCrosshair = function(action) { actions.push(action); };
+    const view = mobileWorld();
+    const place = view.container.querySelector('[data-gw-touch-action="place"]');
+    dispatchTouch(place, 'touchstart'); expect(actions).toEqual(['place']);
+    engine._lastTouchAction.at = Date.now() - 1200;
+    dispatchTouch(place, kind);
+    React.act(function() { place.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 })); });
+    expect(actions).toEqual(['place']);
+    React.act(function() { place.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+    expect(actions).toEqual(['place', 'place']);
+  });
+
 });

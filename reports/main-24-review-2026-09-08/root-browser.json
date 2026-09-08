@@ -1,0 +1,113 @@
+{
+  "results": [
+    {
+      "name": "paragraph",
+      "width": 1280,
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "name": "list",
+      "width": 1280,
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "name": "directions",
+      "width": 1280,
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "name": "steam",
+      "width": 1280,
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "name": "paragraph",
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "list",
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "directions",
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "steam",
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "paragraph",
+      "width": 320,
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    },
+    {
+      "name": "list",
+      "width": 320,
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    },
+    {
+      "name": "directions",
+      "width": 320,
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    },
+    {
+      "name": "steam",
+      "width": 320,
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    }
+  ],
+  "errors": []
+}

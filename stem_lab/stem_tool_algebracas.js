@@ -338,7 +338,38 @@
         impossible: rEqual(left.a, right.a) && !rEqual(left.b, right.b) };
     }
 
-    return { linearSide:linearSide, balanceOperation:balanceOperation, normalize: normalize, evalAt: evalAt, parseEquation: parseEquation, extractRoots: extractRoots, verifySolution: verifySolution, gradeAnswer: gradeAnswer };
+    // A substitution check uses the same exact coefficients as balance operations.
+    // Only the diagram converts to floating point; equality never uses a tolerance.
+    function balanceTrial(equation, rawValue) {
+      var valueText = normalize(rawValue);
+      if (valueText.length > 128 || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:\/[+-]?(?:\d+(?:\.\d*)?|\.\d+))?$/.test(valueText)) return { ok: false, reason: 'value' };
+      var value;
+      try {
+        var fraction = valueText.split('/');
+        value = rationalNumber(fraction[0]);
+        if (fraction.length === 2) value = rDiv(value, rationalNumber(fraction[1]));
+      } catch (_err) { return { ok: false, reason: 'value' }; }
+      var parts = normalize(equation).split('=');
+      if (parts.length !== 2) return { ok: false, reason: 'equation' };
+      var left = linearSide(parts[0]), right = linearSide(parts[1]);
+      if (!left || !right) return { ok: false, reason: 'equation' };
+      var leftValue = rAdd(rMul(left.a, value), left.b);
+      var rightValue = rAdd(rMul(right.a, value), right.b);
+      var difference = rAdd(leftValue, rNeg(rightValue));
+      var sameCoefficient = rEqual(left.a, right.a);
+      return {
+        ok: true, x: rText(value), left: rText(leftValue), right: rText(rightValue), difference: rText(difference),
+        relation: difference.n < 0n ? '<' : difference.n > 0n ? '>' : '=',
+        kind: sameCoefficient ? (rEqual(left.b, right.b) ? 'identity' : 'contradiction') : 'conditional',
+        leftSubstitution: parts[0].replace(/x/gi, '(' + rText(value) + ')'),
+        rightSubstitution: parts[1].replace(/x/gi, '(' + rText(value) + ')'),
+        leftNumber: Number(leftValue.n) / Number(leftValue.d), rightNumber: Number(rightValue.n) / Number(rightValue.d),
+        previousX: rText(rAdd(value, rational(-1n, 1n))), nextX: rText(rAdd(value, rational(1n, 1n)))
+      };
+    }
+
+
+    return { balanceTrial:balanceTrial, linearSide:linearSide, balanceOperation:balanceOperation, normalize: normalize, evalAt: evalAt, parseEquation: parseEquation, extractRoots: extractRoots, verifySolution: verifySolution, gradeAnswer: gradeAnswer };
   })();
   try { window.__alloCASPure = __alloCASPure; } catch (_e) {}
 
@@ -674,7 +705,7 @@ onSpeak: function(formats) {
           SOUNDS.scaleOp();
           var description=op+' '+val+' '+t('stem.algebraCAS.on_both_sides','on both sides')+' → '+result.equation;
           var solved=result.solved, count=(d._scaleSolves||0)+(solved?1:0);
-          updMulti({scaleEq:result.equation,scaleSteps:scaleSteps.concat([description]),scaleSolved:solved,_scaleSolves:count,
+          updMulti({scalePreviousEq:scaleEq,scaleEq:result.equation,scaleSteps:scaleSteps.concat([description]),scaleSolved:solved,_scaleSolves:count,
             scaleNotice:result.identity?t('stem.algebraCAS.balance_identity','Both sides are identical: every real x is a solution.'):result.impossible?t('stem.algebraCAS.balance_impossible','The variable terms match but the constants differ: there is no solution.'):t('stem.algebraCAS.balance_preserved','The same reversible operation was applied to both sides; the solution set stays the same.')});
           if(solved){if(awardStemXP)awardStemXP('algebraCAS',15,'Balance scale solved');if(stemCelebrate)stemCelebrate();checkBadges(Object.assign({},d,{_scaleSolves:count}));}
         };
@@ -1008,24 +1039,99 @@ onSpeak: function(formats) {
             if (typeof ResizeObserver !== 'undefined') { scaleObserver = new ResizeObserver(scheduleScaleDraw); scaleObserver.observe(canvas.parentNode); }
           };
           var opBtnStyle = { minHeight:44, padding: '6px 10px', borderRadius: '8px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '11px', cursor: 'pointer' };
+          var renderTrial = function() {
+            var open = !!d.scaleTrialOpen;
+            var draft = d.scaleTrialValue == null ? '0' : String(d.scaleTrialValue);
+            var checked = d.scaleTrialChecked != null && String(d.scaleTrialChecked) === draft;
+            var trial = checked ? __alloCASPure.balanceTrial(scaleEq, draft) : null;
+            var previous = trial && trial.ok && d.scalePreviousEq ? __alloCASPure.balanceTrial(d.scalePreviousEq, draft) : null;
+            var trialValid = !!(trial && trial.ok);
+            var inkLeft = ACCENT, inkRight = isContrast ? '#fff' : isDark ? '#67e8f9' : '#0e7490';
+            var submit = function(value) { updMulti({scaleTrialValue:value, scaleTrialChecked:value}); };
+            var buttonStyle = Object.assign({}, opBtnStyle, {fontSize:13});
+            var status = trialValid ? 'x = ' + trial.x + ': ' + trial.left + ' ' + trial.relation + ' ' + trial.right + '. ' +
+              (trial.relation === '=' ? t('stem.algebraCAS.trial_is_solution', 'This value is a solution of the current equation.') : t('stem.algebraCAS.trial_not_solution', 'This value is not a solution of the current equation.')) : '';
+            var diagram = null;
+            if (trialValid && Number.isFinite(trial.leftNumber) && Number.isFinite(trial.rightNumber)) {
+              var extent = Math.max(1, Math.abs(trial.leftNumber), Math.abs(trial.rightNumber));
+              var point = function(value) { return 28 + (value / extent + 1) * 242; };
+              var tickText = function(value) { return Number(value.toPrecision(4)).toString(); };
+              diagram = h('figure', {style:{margin:'12px 0 0'}, 'data-balance-trial-plot':true},
+                h('figcaption', {style:{fontSize:13, color:TEXT}}, t('stem.algebraCAS.trial_plot_legend', 'Square: left side. Circle: right side. Both rows use the same number scale.')),
+                h('svg', {viewBox:'0 0 540 100', 'aria-hidden':'true', focusable:'false', style:{display:'block',width:'100%',height:'auto',marginTop:4}},
+                  h('line', {x1:270,y1:8,x2:270,y2:92,stroke:MUTED,strokeWidth:1,strokeDasharray:'4 4'}),
+                  [30,74].map(function(y) { return h('g', {key:y},
+                    h('line', {x1:28,y1:y,x2:512,y2:y,stroke:MUTED,strokeWidth:2}),
+                    [28,270,512].map(function(x) { return h('line', {key:x,x1:x,y1:y-5,x2:x,y2:y+5,stroke:MUTED,strokeWidth:2}); })
+                  ); }),
+                  h('line', {x1:point(trial.leftNumber),y1:30,x2:point(trial.rightNumber),y2:74,stroke:MUTED,strokeWidth:1,strokeDasharray:'3 4'}),
+                  h('rect', {'data-trial-left-point':true,x:point(trial.leftNumber)-7,y:23,width:14,height:14,fill:inkLeft,stroke:TEXT,strokeWidth:1}),
+                  h('circle', {'data-trial-right-point':true,cx:point(trial.rightNumber),cy:74,r:7,fill:inkRight,stroke:TEXT,strokeWidth:1})
+                ),
+                h('div', {'aria-hidden':'true',style:{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,color:TEXT,margin:'0 5%'}},h('span',null,tickText(-extent)),h('span',null,'0'),h('span',null,tickText(extent))),
+                h('p', {style:{fontSize:12,color:MUTED,marginTop:6}}, t('stem.algebraCAS.trial_plot_scale', 'The scale fits these values and may change after an operation. Positions are approximate; the calculations above are exact.'))
+              );
+            }
+            return h('section', {'data-balance-trial':true,style:Object.assign({},cardStyle,{margin:'12px 0',color:TEXT,overflowWrap:'anywhere'})},
+              h('h3', {style:{margin:0,fontSize:15}}, h('button', {type:'button','aria-expanded':open,'aria-controls':'balance-trial-content',onClick:function(){upd('scaleTrialOpen',!open);},style:{display:'flex',alignItems:'center',gap:8,textAlign:'left',width:'100%',minHeight:44,padding:'4px 0',border:'none',background:'transparent',color:TEXT,fontWeight:700,cursor:'pointer'}},
+                h('span', {'aria-hidden':'true'},open?'▾':'▸'),t('stem.algebraCAS.trial_title','Test a value for x'))),
+              h('div', {id:'balance-trial-content',hidden:!open,style:{display:open?'block':'none'}},
+                h('p', {id:'balance-trial-help',style:{fontSize:13,margin:'4px 0 10px',color:TEXT}},t('stem.algebraCAS.trial_prompt','Predict whether the sides will match, then substitute the same value for every x. You can enter an integer, decimal, or fraction such as -1/2.')),
+                h('div', {style:{display:'flex',flexWrap:'wrap',alignItems:'end',gap:8}},
+                  h('div', {style:{flex:'1 1 130px',minWidth:0}},
+                    h('label', {htmlFor:'balance-trial-x',style:{display:'block',fontSize:13,fontWeight:700,marginBottom:4}},t('stem.algebraCAS.trial_value_label','Value of x')),
+                    h('input', {id:'balance-trial-x',type:'text',value:draft,maxLength:128,'aria-describedby':'balance-trial-help','aria-invalid':trial && !trial.ok && trial.reason==='value'?true:undefined,onChange:function(e){updMulti({scaleTrialValue:e.target.value,scaleTrialChecked:null});},onKeyDown:function(e){if(e.key==='Enter'){e.preventDefault();submit(draft);}},style:{width:'100%',minHeight:44,boxSizing:'border-box',padding:8,borderRadius:8,border:'1px solid '+MUTED,background:BG,color:TEXT,fontSize:16}})
+                  ),
+                  h('button', {type:'button',onClick:function(){submit(draft);},style:Object.assign({},buttonStyle,{background:BTN_FLAT,color:BTN_TEXT})},t('stem.algebraCAS.trial_check','Check value'))
+                ),
+                h('div', {role:'status','aria-live':'polite','aria-atomic':true,'data-balance-trial-status':true,style:{fontSize:14,fontWeight:700,marginTop:10}},trial && !trial.ok ?
+                  (trial.reason==='value'?t('stem.algebraCAS.trial_invalid_value','Enter a number or fraction with a nonzero denominator, such as 3, -0.5, or 1/3.'):t('stem.algebraCAS.trial_invalid_equation','This check supports linear equations in x. Enter one equation with an equals sign; use Solve for other equation types.')) : status),
+                trialValid && h('div', {'data-balance-trial-result':trial.relation},
+                  h('div', {style:{display:'flex',flexWrap:'wrap',gap:10,marginTop:10}},
+                    [['left',t('stem.algebraCAS.trial_left','Left side'),trial.leftSubstitution,trial.left,inkLeft,'■'],['right',t('stem.algebraCAS.trial_right','Right side'),trial.rightSubstitution,trial.right,inkRight,'●']].map(function(side){return h('div',{key:side[0],style:{flex:'1 1 190px',minWidth:0,padding:10,border:'1px solid '+BORDER,borderRadius:8}},
+                      h('div',{style:{fontWeight:700,color:side[4],fontSize:13}},h('span',{'aria-hidden':'true'},side[5]+' '),side[1]),
+                      h('div',{'data-trial-substitution':side[0],style:{fontFamily:'monospace',fontSize:15,marginTop:6}},side[2]+' = '+side[3])
+                    );})
+                  ),
+                  h('p', {style:{fontSize:13,marginTop:10}},t('stem.algebraCAS.trial_difference','Left side − right side: '),h('strong',{'data-trial-difference':true},trial.difference),'. ',t('stem.algebraCAS.trial_zero_difference','A difference of zero means the two sides match.')),
+                  diagram || h('p',{style:{fontSize:13}},t('stem.algebraCAS.trial_plot_unavailable','These exact values are outside the diagram’s numerical range. Compare the calculations above.')),
+                  trial.kind==='identity' ? h('p',{'data-trial-generalization':true,style:{fontSize:13,fontWeight:700}},t('stem.algebraCAS.trial_identity','The expressions simplify to the same x-term and constant. Every real x is a solution; this one check is an example.')) : trial.kind==='contradiction' ? h('p',{'data-trial-generalization':true,style:{fontSize:13,fontWeight:700}},t('stem.algebraCAS.trial_contradiction','Both expressions have the same x-term but different constants. No value of x can make them equal.')) : null,
+                  previous && previous.ok && h('div', {'data-trial-operation-comparison':true,style:{borderTop:'1px solid '+BORDER,paddingTop:10,marginTop:10,fontSize:13}},
+                    h('strong',null,t('stem.algebraCAS.trial_keep_x','Same x, before and after the last operation')),
+                    h('p',{style:{margin:'6px 0',fontFamily:'monospace'}},d.scalePreviousEq),
+                    h('p',{style:{margin:'6px 0'}},t('stem.algebraCAS.trial_before','Before: '),previous.left+' '+previous.relation+' '+previous.right),
+                    h('p',{style:{margin:'6px 0'}},t('stem.algebraCAS.trial_after','After: '),trial.left+' '+trial.relation+' '+trial.right),
+                    h('p',{style:{margin:'6px 0'}},trial.relation==='=' && previous.relation==='=' ? t('stem.algebraCAS.trial_stays_solution','This x makes both equations true. The reversible operation preserved equality.') : trial.relation!=='=' && previous.relation!=='=' ? t('stem.algebraCAS.trial_stays_outside','This x makes neither equation true. A reversible operation does not turn a non-solution into a solution.') : t('stem.algebraCAS.trial_compare_check','Compare whether this x makes each equation true.')),
+                    previous.relation!==trial.relation && previous.relation!=='=' && trial.relation!=='=' && h('p',{style:{margin:'6px 0'}},t('stem.algebraCAS.trial_reversed','The side with the larger value switched. Multiplying or dividing by a negative constant reverses this order, while preserving whether the sides are equal.'))
+                  ),
+                  h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}},
+                    h('button',{type:'button',onClick:function(){submit(trial.previousX);},style:buttonStyle},t('stem.algebraCAS.trial_decrease','Test x − 1')),
+                    h('button',{type:'button',onClick:function(){submit(trial.nextX);},style:buttonStyle},t('stem.algebraCAS.trial_increase','Test x + 1'))
+                  )
+                )
+              )
+            );
+          };
+
           return h('div', null,
             h('div', { style: { marginBottom: '8px' } },
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.enter_equation', 'Enter Equation')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
-                h('input', { type: 'text', value: scaleEq, onChange: function(e) { updMulti({scaleEq:e.target.value,scaleSteps:[],scaleSolved:false,scaleNotice:''}); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '' }); },
+                h('input', { type: 'text', value: scaleEq, onChange: function(e) { updMulti({scaleEq:e.target.value,scaleSteps:[],scaleSolved:false,scaleNotice:'',scaleTrialChecked:null,scalePreviousEq:''}); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '' }); },
                   placeholder: t('stem.algebraCAS.e_g_3x_5_14', 'e.g. 3x + 5 = 14'),
                   'aria-label': t('stem.algebraCAS.balance_scale_equation_input', 'Balance scale equation input'),
                   style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-                mathInputButton(scaleEq, function(value) { updMulti({scaleEq:value,scaleSteps:[],scaleSolved:false,scaleNotice:''}); }, 'Enter a balance-scale equation'),
-                h('button', { 'aria-label': t('stem.algebraCAS.load', 'Load'), onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '' }); },
+                mathInputButton(scaleEq, function(value) { updMulti({scaleEq:value,scaleSteps:[],scaleSolved:false,scaleNotice:'',scaleTrialChecked:null,scalePreviousEq:''}); }, 'Enter a balance-scale equation'),
+                h('button', { 'aria-label': t('stem.algebraCAS.load', 'Load'), onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '' }); },
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, t('stem.algebraCAS.load_2', 'Load'))
               )
             ),
             h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: ctx.isContrast ? '#000' : '#0f172a' } },
               h('canvas', { ref: scaleCanvasRef, role: 'img', 'aria-label': t('stem.algebraCAS.interactive_algebra_balance_scale_visu', 'Interactive algebra balance scale visualization') + ': ' + scaleEq, tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
+            h('p',{style:{fontSize:13,color:TEXT,marginBottom:6}},t('stem.algebraCAS.trial_beam_meaning','The level beam shows the goal: equal sides. Open Test a value for x to check whether a particular value makes them equal.')),
             h('p',{style:{fontSize:12,color:TEXT,marginBottom:10}},t('stem.algebraCAS.balance_model_meaning','A solution makes both sides equal. Add or subtract a term such as 2x, or multiply or divide by a nonzero constant. Fractions stay exact.')),
             d.scaleNotice&&h('p',{role:'status','aria-live':'polite',style:{fontSize:13,color:TEXT,marginBottom:10}},d.scaleNotice),
             scaleEq ? h('div', null,
@@ -1044,12 +1150,13 @@ onSpeak: function(formats) {
                   }, style: opBtnStyle }, pair[1] + ' ' + pair[0]);
                 })
               ),
+              renderTrial(),
               scaleSteps.length > 0 ? h('div', { style: Object.assign({}, cardStyle, { fontSize: '11px' }) },
                 h('div', { style: { fontWeight: '700', color: ACCENT, marginBottom: '4px' } }, t('stem.algebraCAS.steps_applied', 'Steps Applied:')),
                 scaleSteps.map(function(s, i) { return h('div', { key: i, style: { color: MUTED } }, (i + 1) + '. ' + s); })
               ) : null
             ) : null,
-            scaleSolved ? h('button', { 'aria-label': t('stem.algebraCAS.new_equation', 'New Equation'), onClick: function() { updMulti({ scaleEq: '', scaleSteps: [], scaleSolved: false, scaleNotice: '' }); },
+            scaleSolved ? h('button', { 'aria-label': t('stem.algebraCAS.new_equation', 'New Equation'), onClick: function() { updMulti({ scaleEq: '', scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '' }); },
               style: { width: '100%', padding: '8px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer' } }, t('stem.algebraCAS.new_equation_2', '\uD83D\uDD04 New Equation')) : null
           );
         };

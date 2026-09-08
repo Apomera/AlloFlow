@@ -1503,6 +1503,16 @@ const validateStoryForgeImport = (value) => {
   const exportedAt = typeof value.exportedAt === "string" && Number.isFinite(Date.parse(value.exportedAt)) ? new Date(value.exportedAt).toISOString() : "";
   const importedReview = isStoryForgeRecord(value.review) ? value.review : value;
   const importedComicFlowReport = isStoryForgeRecord(value.comicFlowReport) ? value.comicFlowReport : isStoryForgeRecord(snapshot.comicFlowReport) ? snapshot.comicFlowReport : isStoryForgeRecord(importedReview.comicFlowReport) ? importedReview.comicFlowReport : null;
+  let invalidReviewData = false;
+  let cleanGrading = null;
+  if (importedReview.gradingResult != null) {
+    try {
+      cleanGrading = normalizeStoryForgeFeedback(importedReview.gradingResult);
+    } catch (_) {
+      invalidReviewData = true;
+    }
+  }
+  const cleanReview = { ...importedReview, gradingResult: cleanGrading };
   const savedReviewSignature = typeof snapshot.reviewedDraftSignature === "string" ? snapshot.reviewedDraftSignature : "";
   const reviewSignatureMatches = Boolean(
     savedReviewSignature && savedReviewSignature === getStoryForgeReviewSignature(snapshot)
@@ -1514,10 +1524,11 @@ const validateStoryForgeImport = (value) => {
     valid: true,
     version,
     snapshot,
-    review: importedReview,
+    review: cleanReview,
+    invalidReviewData,
     comicFlowReport: importedComicFlowReport,
     isProject: value._storyForgePackage === "project" || isStoryForgeRecord(value.snapshot),
-    hasReviewData: version >= 2 && value.purpose !== "handoff" && Boolean(
+    hasReviewData: !invalidReviewData && version >= 2 && value.purpose !== "handoff" && Boolean(
       reviewSignatureMatches || hasLegacyReviewData
     ),
     summary: {
@@ -1622,6 +1633,76 @@ const STORY_STARTERS = {
     "The town council was about to make a decision that would affect every student, and one voice rose to speak.",
     "After what happened at recess, I knew I had to convince my classmates that things needed to change."
   ]
+};
+const normalizeStoryForgeCoach = (kind, value) => {
+  const str = (v) => {
+    if (v == null) return "";
+    if (typeof v !== "string") throw Error("Invalid coach text");
+    return v.slice(0, 6e3);
+  };
+  const obj = (v) => {
+    if (!v || typeof v !== "object" || Array.isArray(v)) throw Error("Invalid coach object");
+    return v;
+  };
+  const fields = (v, names) => {
+    obj(v);
+    return Object.fromEntries(names.map((k) => [k, str(v[k])]));
+  };
+  const list = (v, fn, max = 32) => {
+    if (!Array.isArray(v) || v.length > max) throw Error("Invalid coach list");
+    return v.map(fn);
+  };
+  const counts = (v) => {
+    obj(v);
+    if (Object.keys(v).length > 64) throw Error("Too many counts");
+    return Object.fromEntries(Object.entries(v).map(([k, n]) => {
+      if (typeof n !== "number" || !Number.isFinite(n) || n < 0) throw Error("Invalid count");
+      return [k.slice(0, 100), n];
+    }));
+  };
+  obj(value);
+  if (kind === "help") return { suggestions: list(value.suggestions, str, 8) };
+  if (kind === "senses") return { ...fields(value, ["strongest", "missing", "suggestion"]), counts: counts(value.counts) };
+  if (kind === "show") return { summary: str(value.summary), tellings: list(value.tellings, (v) => fields(v, ["telling", "showing", "why"]), 8) };
+  if (kind === "arcs") return { summary: str(value.summary), characters: list(value.characters, (v) => ({ ...fields(v, ["name", "role", "suggestion"]), beats: Object.fromEntries(["introduction", "want", "change", "resolution"].map((k) => [k, fields(obj(v.beats)[k], ["status", "evidence"])])) }), 3) };
+  if (kind === "dialogue") return { summary: str(value.summary), tagCounts: counts(value.tagCounts), overusedTag: str(value.overusedTag), issues: list(value.issues, (v) => fields(v, ["type", "line", "suggestion", "why"]), 8) };
+  if (kind === "revision") return { encouragement: str(value.encouragement), tasks: list(value.tasks, (v) => fields(v, ["title", "source", "detail", "why"]), 8) };
+  if (kind === "mentor") {
+    const mentor = { ...fields(value.mentor, ["title", "author", "text", "sourceUrl"]), year: value.mentor.year == null ? "" : str(String(value.mentor.year)), uncertain: value.mentor.uncertain === true };
+    if (value.mentor.year != null && !["string", "number"].includes(typeof value.mentor.year)) throw Error("Invalid mentor year");
+    if (mentor.sourceUrl && !/^https?:\/\//i.test(mentor.sourceUrl)) throw Error("Invalid mentor URL");
+    if (mentor.uncertain) mentor.text = "";
+    return { ...fields(value, ["sharedTheme", "craftToBorrow", "studentEcho"]), mentor };
+  }
+  throw Error("Unknown coach");
+};
+const normalizeStoryForgeFeedback = (value) => {
+  const text = (v, limit, required = true) => {
+    if (typeof v !== "string" || required && !v.trim()) throw new Error("Invalid feedback text");
+    return v.trim().slice(0, limit);
+  };
+  if (!value || !Array.isArray(value.scores) || !value.scores.length || value.scores.length > 32) throw new Error("Invalid feedback scores");
+  const seen = /* @__PURE__ */ new Set();
+  let total = 0;
+  const scores = value.scores.map((item) => {
+    if (!item || typeof item !== "object") throw new Error("Invalid criterion");
+    const criteria = text(item.criteria, 200);
+    const key = criteria.normalize("NFKC").toLowerCase();
+    if (seen.has(key)) throw new Error("Duplicate criterion");
+    seen.add(key);
+    const match = typeof item.score === "string" && item.score.trim().match(/^(\d+(?:\.\d+)?)\s*\/\s*5$/);
+    const score = typeof item.score === "number" ? item.score : match ? Number(match[1]) : NaN;
+    if (!Number.isFinite(score) || score < 0 || score > 5) throw new Error("Invalid criterion score");
+    total += score;
+    return { criteria, score: score + "/5", comment: item.comment == null ? "" : text(item.comment, 2e3, false) };
+  });
+  const feedback = { glow: text(value.feedback?.glow, 4e3), grow: text(value.feedback?.grow, 4e3) };
+  if (value.vocabScores != null && (!Array.isArray(value.vocabScores) || value.vocabScores.length > 64)) throw new Error("Invalid vocabulary feedback");
+  const vocabScores = (value.vocabScores || []).map((item) => {
+    if (!item || !["correct", "partial", "missing"].includes(item.status)) throw new Error("Invalid vocabulary status");
+    return { term: text(item.term, 160), status: item.status, comment: item.comment == null ? "" : text(item.comment, 2e3, false) };
+  });
+  return { scores, totalScore: Number(total.toFixed(2)) + "/" + scores.length * 5, feedback, vocabScores };
 };
 const prepareStoryForgeLessonImport = (resource) => {
   if (!resource || typeof resource !== "object") throw new Error("Unsupported resource");
@@ -3572,6 +3653,30 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     }
   };
   const [gradingResult, setGradingResult] = useState(null);
+  const [coachNotice, setCoachNotice] = useState("");
+  const coachRequestsRef = useRef({});
+  const [comicEditProposal, setComicEditProposal] = useState(null);
+  const comicEditPreviewRef = useRef(null);
+  useEffect(() => {
+    if (comicEditProposal) comicEditPreviewRef.current?.focus();
+  }, [comicEditProposal]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackNotice, setFeedbackNotice] = useState("");
+  const feedbackRequestRef = useRef(0);
+  const feedbackBusyRef = useRef(false);
+  const feedbackStateRef = useRef(null);
+  useEffect(() => () => {
+    feedbackRequestRef.current += 1;
+  }, []);
+  const cancelFeedback = () => {
+    feedbackRequestRef.current += 1;
+    feedbackBusyRef.current = false;
+    setFeedbackLoading(false);
+    setIsProcessing(false);
+    const message = ux("feedback_cancelled", "Feedback cancelled. You can retry or complete your self-check.");
+    setFeedbackNotice(message);
+    sfAnnounce(message);
+  };
   const [sensesResult, setSensesResult] = useState(null);
   const [sensesLoading, setSensesLoading] = useState(false);
   const [selfAssessment, setSelfAssessment] = useState({});
@@ -3589,6 +3694,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [comicFlowReport, setComicFlowReport] = useState(null);
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
+  feedbackStateRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, currentReviewDraftSignature, gradeLevel, sourceTopic, draftCount]);
   projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload, comicFlowReport]);
   useEffect(() => {
     if (lessonImportProposal) lessonImportPreviewRef.current?.focus();
@@ -3611,6 +3717,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   );
   const isReviewStale = !isCurrentDraftReviewed && Boolean(reviewedDraftSignature || hasPriorReviewOutput);
   const clearReviewState = () => {
+    setFeedbackNotice("");
+    setCoachNotice("");
     setGradingResult(null);
     setGrammarResults({});
     setSelfAssessment({});
@@ -4001,6 +4109,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const applySanitizedDraft = (value) => {
     setLessonImportProposal(null);
     setPlanProposal(null);
+    setComicEditProposal(null);
+    setCoachNotice("");
     setProjectActionUndo(null);
     const draft = sanitizeStoryForgeDraft(value);
     const restoredPhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
@@ -4681,6 +4791,10 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
     if (planProposal) planPreviewRef.current?.focus();
   }, [planProposal]);
   const helpMeWrite = async (idx) => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.help || 0) + 1;
+    coachRequestsRef.current.help = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
@@ -4705,14 +4819,46 @@ Give 3 brief, encouraging suggestions to help them write or improve this paragra
 ${langInstruction}
 Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"] }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("help", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.help) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       setHelpMeResult(data.suggestions || []);
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.help) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Help Me Write failed:", err);
-      setHelpMeResult(["Try starting with a strong action verb.", "Describe what the character sees, hears, or feels.", `Try using the word "${unusedTerms[0] || vocabTerms[0]?.term || "your vocabulary term"}" in this paragraph.`]);
+      if (coachVersion !== feedbackStateRef.current) {
+        setHelpMeParagraphIdx(-1);
+        setHelpMeResult(null);
+      }
+      if (coachVersion === feedbackStateRef.current) setHelpMeResult(["Try starting with a strong action verb.", "Describe what the character sees, hears, or feels.", `Try using the word "${unusedTerms[0] || vocabTerms[0]?.term || "your vocabulary term"}" in this paragraph.`]);
     }
   };
+  const applyComicEditProposal = async () => {
+    const proposal = comicEditProposal;
+    if (!proposal) return;
+    const applied = await runRecoverableProjectEdit(ux("before_comic_edit", "Before applying comic bubble suggestions"), () => {
+      setPanelDialogue((prev) => {
+        const next = { ...prev };
+        Object.entries(proposal.updates).forEach(([id, value]) => {
+          next[id] = value;
+        });
+        return next;
+      });
+      setPanelDirections((prev) => {
+        const next = { ...prev };
+        Object.entries(proposal.directions).forEach(([id, value]) => {
+          next[id] = { ...next[id] || {}, ...value };
+        });
+        return next;
+      });
+      setIsDirty(true);
+      setComicEditProposal(null);
+    }, { version: proposal.version });
+    if (!applied && proposal.version !== projectRevisionRef.current) setComicEditProposal(null);
+  };
   const draftComicBubbles = async (targetIdx = null) => {
+    const proposalVersion = projectRevisionRef.current;
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
@@ -4786,34 +4932,9 @@ Return ONLY JSON:
         } })[p.id];
         if (cleanDirection) directionUpdates[p.id] = cleanDirection;
       });
-      const dialogueApplied = Object.keys(updates).length;
-      const directionApplied = Object.keys(directionUpdates).length;
-      if (dialogueApplied > 0) {
-        setPanelDialogue((prev) => {
-          const next = { ...prev };
-          Object.keys(updates).forEach((id) => {
-            next[id] = { ...next[id] || {}, ...updates[id] };
-          });
-          return next;
-        });
-      }
-      if (directionApplied > 0) {
-        setPanelDirections((prev) => {
-          const next = { ...prev };
-          Object.keys(directionUpdates).forEach((id) => {
-            next[id] = { ...next[id] || {}, ...directionUpdates[id] };
-          });
-          return next;
-        });
-      }
-      if (dialogueApplied > 0 || directionApplied > 0) {
-        setIsDirty(true);
-        awardXP(5, "Drafted comic bubbles");
-        if (addToast) addToast(targetIdx === null ? "Comic bubbles and direction drafted." : `Panel ${targetIdx + 1} comic notes drafted.`, "success");
-        sfAnnounce(ta("a11y.storyforge_comic_notes_drafted"));
-      } else if (addToast) {
-        addToast(ta("a11y.storyforge_toast_no_comic_bubbles_were_generated_try_adding"), "info");
-      }
+      if (proposalVersion !== projectRevisionRef.current) throw Error("Draft changed during generation");
+      if (!Object.keys(updates).length) throw Error("No valid comic edits");
+      setComicEditProposal({ version: proposalVersion, updates, directions: directionUpdates, before: panelDialogue, beforeDirections: panelDirections });
     } catch (err) {
       console.warn("Comic bubble drafting failed:", err);
       if (addToast) addToast(ta("a11y.storyforge_toast_comic_bubble_drafting_failed_try_again"), "error");
@@ -4822,6 +4943,7 @@ Return ONLY JSON:
     }
   };
   const tightenComicBubbles = async (targetIdx = null) => {
+    const proposalVersion = projectRevisionRef.current;
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
@@ -4891,23 +5013,9 @@ Return ONLY JSON:
         };
         updates[p.id] = sanitizePanelDialogue({ [p.id]: normalized })[p.id] || {};
       });
-      const applied = Object.keys(updates).length;
-      if (applied > 0) {
-        setPanelDialogue((prev) => {
-          const next = { ...prev };
-          Object.keys(updates).forEach((id) => {
-            if (Object.keys(updates[id]).length) next[id] = updates[id];
-            else delete next[id];
-          });
-          return next;
-        });
-        setIsDirty(true);
-        awardXP(4, "Tightened comic bubbles");
-        if (addToast) addToast(targetIdx === null ? `Tightened ${applied} crowded comic panel${applied === 1 ? "" : "s"}.` : `Panel ${targetIdx + 1} bubbles tightened.`, "success");
-        sfAnnounce(ta("a11y.storyforge_comic_bubbles_tightened"));
-      } else if (addToast) {
-        addToast(ta("a11y.storyforge_toast_no_bubble_tightening_edits_were_returned_try"), "info");
-      }
+      if (proposalVersion !== projectRevisionRef.current) throw Error("Draft changed during generation");
+      if (!Object.keys(updates).length) throw Error("No valid comic edits");
+      setComicEditProposal({ version: proposalVersion, updates, directions: {}, before: panelDialogue, beforeDirections: panelDirections });
     } catch (err) {
       console.warn("Comic bubble tightening failed:", err);
       if (addToast) addToast(ta("a11y.storyforge_toast_comic_bubble_tightening_failed_try_again"), "error");
@@ -5797,6 +5905,12 @@ Return ONLY JSON: { "characters": [{"name": "CharName", "description": "brief 5-
       notifyAiUnavailable();
       return;
     }
+    if (feedbackBusyRef.current || projectMutationBusyRef.current) return;
+    const requestId = ++feedbackRequestRef.current;
+    const requestState = feedbackStateRef.current;
+    feedbackBusyRef.current = true;
+    setFeedbackLoading(true);
+    setFeedbackNotice("");
     setIsProcessing(true);
     try {
       const fullText = authoredSections.map((text, i) => `[${artifactType === "comic" ? "Panel" : "Scene"} ${i + 1}] ${text}`).join("\n\n");
@@ -5844,16 +5958,32 @@ Return ONLY JSON:
   "feedback": {"glow": "Two specific compliments...", "grow": "One specific suggestion..."}
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      if (requestId !== feedbackRequestRef.current) return;
+      if (requestState !== feedbackStateRef.current) {
+        const message = ux("feedback_changed", "Your draft changed while feedback was being prepared. Get feedback again for the latest version, or complete your self-check.");
+        setFeedbackNotice(message);
+        sfAnnounce(message);
+        return;
+      }
+      const data = normalizeStoryForgeFeedback(JSON.parse(cleanJson(result)));
       setGradingResult(data);
       setReviewedDraftSignature(currentReviewDraftSignature);
       if (addToast) addToast(t("toasts.feedback_ready"), "success");
       awardXP(15, "Got AI feedback");
     } catch (err) {
+      if (requestId !== feedbackRequestRef.current) return;
+      const message = ux("feedback_failed", "Feedback could not be prepared. Your writing is safe. Retry or complete your self-check to continue.");
+      setFeedbackNotice(message);
+      sfAnnounce(message);
       console.warn("Grading failed:", err);
       if (addToast) addToast(t("toasts.grading_failed_try_again"), "error");
+    } finally {
+      if (requestId === feedbackRequestRef.current) {
+        feedbackBusyRef.current = false;
+        setFeedbackLoading(false);
+        setIsProcessing(false);
+      }
     }
-    setIsProcessing(false);
   };
   const reviseStory = () => {
     setRevisionSnapshot({ words: totalWords, vocabUsed: vocabUsedCount, paragraphCount: paragraphs.length, grade: readingLevel?.grade || null });
@@ -5862,11 +5992,15 @@ Return ONLY JSON:
     changePhase("write");
   };
   const findMentorStory = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.mentor || 0) + 1;
+    coachRequestsRef.current.mentor = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
-    const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
+    const fullText = authoredText;
     if (fullText.length < 80) {
       if (addToast) addToast(t("toasts.write_bit_more_before_finding"), "info");
       return;
@@ -5940,13 +6074,17 @@ Return JSON:
 
 Match register and reading level to a ${targetGrade} student. Be specific, be honest, never invent.`;
       const result = await onCallGemini(prompt, true);
-      const parsed = JSON.parse(cleanJson(result));
+      const parsed = normalizeStoryForgeCoach("mentor", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.mentor) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords };
       setMentorMatch(parsed);
       if (addToast) addToast(t("toasts.mentor_story_found"), "success");
       sfAnnounce(ta("a11y.storyforge_mentor_story_found_by").replace("{0}", parsed.mentor && parsed.mentor.title).replace("{1}", parsed.mentor && parsed.mentor.author).replace("{2}", searchResults.length > 0 ? " \u2014 verified via web search." : "."));
       awardXP(8, "Studied a mentor text");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.mentor) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Mentor match failed:", err && err.message);
       setMentorMatch({ error: "Couldn't find a mentor story right now. Try again in a moment." });
       if (addToast) addToast(t("toasts.mentor_search_failed_try_again"), "error");
@@ -5990,11 +6128,15 @@ Return ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} in
     setValenceLoading(false);
   };
   const checkSenses = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.senses || 0) + 1;
+    coachRequestsRef.current.senses = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
-    const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
+    const fullText = authoredText;
     if (fullText.length < 30) {
       if (addToast) addToast(t("toasts.write_bit_more_before_checking"), "info");
       return;
@@ -6028,23 +6170,31 @@ Return ONLY JSON in this shape:
   "suggestion": "Specific, concrete revision tip naming a paragraph and a sense."
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("senses", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.senses) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       setSensesResult(data);
       if (addToast) addToast(t("toasts.senses_check_ready"), "success");
       sfAnnounce(ta("a11y.storyforge_senses_check_complete_strongest_sense_missing").replace("{0}", data.strongest || "unknown").replace("{1}", data.missing || "unknown"));
       awardXP(5, "Used senses checker");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.senses) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Senses check failed:", err);
       if (addToast) addToast(t("toasts.senses_check_failed_try_again"), "error");
     }
     setSensesLoading(false);
   };
   const analyzeShowTell = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.show || 0) + 1;
+    coachRequestsRef.current.show = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
-    const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
+    const fullText = authoredText;
     if (fullText.length < 60) {
       if (addToast) addToast(t("toasts.write_bit_more_before_checking_2"), "info");
       return;
@@ -6072,24 +6222,32 @@ Return ONLY JSON:
   "summary": "<one short sentence \u2014 encouraging if list is empty, gentle if not>"
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("show", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.show) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       setShowTellResult(data);
       if (addToast) addToast(t("toasts.show_vs_tell_ready"), "success");
       const count = (data.tellings || []).length;
       sfAnnounce(count === 0 ? ta("a11y.storyforge_show_vs_tell_none") : ta(count === 1 ? "a11y.storyforge_show_vs_tell_one" : "a11y.storyforge_show_vs_tell_many").replace("{0}", count));
       awardXP(5, "Used show-don't-tell coach");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.show) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Show-don't-tell failed:", err);
       if (addToast) addToast(t("toasts.show_vs_tell_failed_try"), "error");
     }
     setShowTellLoading(false);
   };
   const analyzeCharacterArcs = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.arcs || 0) + 1;
+    coachRequestsRef.current.arcs = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
-    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
+    const fullText = authoredText;
     const wordCount = fullText.split(/\s+/).filter(Boolean).length;
     if (wordCount < 80) {
       if (addToast) addToast(t("toasts.write_bit_more_before_tracking"), "info");
@@ -6131,7 +6289,9 @@ Return ONLY JSON:
   "summary": "<one short overall sentence>"
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("arcs", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.arcs) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       data.characters = (data.characters || []).slice(0, 3);
       setArcReport(data);
       const count = data.characters.length;
@@ -6139,18 +6299,24 @@ Return ONLY JSON:
       sfAnnounce(count === 0 ? ta("a11y.storyforge_character_arcs_none") : ta(count === 1 ? "a11y.storyforge_character_arcs_one" : "a11y.storyforge_character_arcs_many").replace("{0}", count));
       awardXP(8, "Tracked character arcs");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.arcs) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Character arc analysis failed:", err);
       if (addToast) addToast(t("toasts.arc_tracker_failed_try_again"), "error");
     }
     setArcLoading(false);
   };
   const analyzeDialogue = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.dialogue || 0) + 1;
+    coachRequestsRef.current.dialogue = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
-    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
-    if (!fullText.includes('"') && !fullText.includes("\u201C") && !fullText.includes("\u201D\x9D")) {
+    const fullText = authoredText;
+    if (!(layoutMode === "comic" && paragraphs.some((p) => panelDialogue[p.id]?.speech)) && !fullText.includes('"') && !fullText.includes("\u201C") && !fullText.includes("\u201D\x9D")) {
       if (addToast) addToast(t("toasts.dialogue_detected_try_adding_quoted"), "info");
       setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: "No dialogue found yet." });
       return;
@@ -6182,13 +6348,17 @@ Return ONLY JSON:
   "summary": "<one short sentence \u2014 encouraging if dialogue is strong, gentle if not>"
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("dialogue", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.dialogue) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       setDialogueReport(data);
       if (addToast) addToast(t("toasts.dialogue_tune_up_ready"), "success");
       const issueCount = (data.issues || []).length;
       sfAnnounce(issueCount === 0 ? ta("a11y.storyforge_dialogue_check_none") : ta(issueCount === 1 ? "a11y.storyforge_dialogue_check_one" : "a11y.storyforge_dialogue_check_many").replace("{0}", issueCount));
       awardXP(5, "Tuned up dialogue");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.dialogue) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Dialogue analysis failed:", err);
       if (addToast) addToast(t("toasts.dialogue_tune_up_failed_try"), "error");
     }
@@ -6553,13 +6723,17 @@ Return ONLY JSON:
     return false;
   };
   const synthesizeRevisionPlan = async () => {
+    const coachVersion = feedbackStateRef.current;
+    const coachRequest = (coachRequestsRef.current.revision || 0) + 1;
+    coachRequestsRef.current.revision = coachRequest;
+    setCoachNotice("");
     if (!onCallGemini) {
       notifyAiUnavailable();
       return;
     }
     setRevisionPlanLoading(true);
     try {
-      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
+      const fullText = authoredText;
       const helperContext = [];
       if (sensesResult && !sensesResult.error) {
         helperContext.push(`SENSES CHECK:
@@ -6632,13 +6806,17 @@ Return ONLY JSON:
   "encouragement": "<one short, specific compliment on something the draft is already doing well>"
 }`;
       const result = await onCallGemini(prompt, true);
-      const data = JSON.parse(cleanJson(result));
+      const data = normalizeStoryForgeCoach("revision", JSON.parse(cleanJson(result)));
+      if (coachRequest !== coachRequestsRef.current.revision) return;
+      if (coachVersion !== feedbackStateRef.current) throw Error("Draft changed during coaching");
       setRevisionPlan(data);
       setReviewedDraftSignature(currentReviewDraftSignature);
       if (addToast) addToast(t("toasts.revision_plan_ready"), "success");
       sfAnnounce(ta("a11y.storyforge_revision_plan_ready_with_prioritized_tasks").replace("{0}", (data.tasks || []).length));
       awardXP(10, "Built a revision plan");
     } catch (err) {
+      if (coachRequest !== coachRequestsRef.current.revision) return;
+      setCoachNotice(ux("coach_failed", "This coach could not finish for the current draft. Your writing is safe. Try the tool again, or use your self-check."));
       console.warn("Revision plan synthesis failed:", err);
       if (addToast) addToast(t("toasts.revision_plan_failed_try_again"), "error");
     }
@@ -7567,6 +7745,11 @@ show();
     setCharacters(Array.isArray(review.characters) ? review.characters.slice(0, 32) : []);
     setComicFlowReport(validated.hasReviewData ? validated.comicFlowReport : null);
     setReviewedDraftSignature(validated.hasReviewData ? getStoryForgeReviewSignature(validated.snapshot) : "");
+    if (validated.invalidReviewData) {
+      const message = ux("import_review_invalid", "Your writing was recovered, but the saved feedback was invalid. Complete a new review to continue.");
+      setCoachNotice(message);
+      if (addToast) addToast(message, "info");
+    }
     const summary = validated.summary;
     const packageDetail = summary.layoutMode === "comic" ? ` ${summary.pageCount} page${summary.pageCount === 1 ? "" : "s"} \xB7 ${summary.panelCount} panel${summary.panelCount === 1 ? "" : "s"}.` : "";
     if (addToast) {
@@ -8222,7 +8405,7 @@ show();
       className: "px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
     },
     showWritingTools ? "Hide tools" : "More tools"
-  ))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), planProposal && /* @__PURE__ */ React.createElement("section", { ref: planPreviewRef, tabIndex: -1, "aria-labelledby": "sf-plan-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-plan-preview-title", className: "font-bold text-indigo-900" }, ux("plan_preview", "Preview plan suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("plan_preserves", "Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, planProposal.suggestions.map((item, i) => /* @__PURE__ */ React.createElement("li", { key: i }, item.scaffoldFrame))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void applyPlanProposal(), disabled: isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_plan", "Apply plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPlanProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("keep_draft", "Keep current plan")))), showWritingTools && /* @__PURE__ */ React.createElement(
+  ))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), comicEditProposal && /* @__PURE__ */ React.createElement("section", { ref: comicEditPreviewRef, tabIndex: -1, "data-sf-comic-edit-preview": true, "aria-labelledby": "sf-comic-edit-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-comic-edit-title", className: "font-bold text-indigo-950" }, ux("comic_edit_preview", "Review comic bubble suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("comic_edit_explanation", "Compare your current text with the suggestions. Applying replaces these bubble fields and any proposed directions, and saves a checkpoint for Undo.")), Object.entries(comicEditProposal.updates).map(([id, value]) => /* @__PURE__ */ React.createElement("div", { key: id, className: "mt-3 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, ux("panel", "Panel"), " ", paragraphs.findIndex((p) => p.id === id) + 1), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3 sm:grid-cols-2" }, [["Current", comicEditProposal.before[id] || {}, comicEditProposal.beforeDirections[id] || {}], ["Suggested", value, comicEditProposal.directions[id] || comicEditProposal.beforeDirections[id] || {}]].map(([label, dialogue, direction]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold" }, ux(label.toLowerCase(), label)), /* @__PURE__ */ React.createElement("dl", null, Object.entries({ ...dialogue, ...direction }).map(([key, text]) => /* @__PURE__ */ React.createElement("div", { key }, /* @__PURE__ */ React.createElement("dt", { className: "font-medium" }, key), /* @__PURE__ */ React.createElement("dd", { className: "whitespace-pre-wrap break-words" }, text || "\u2014"))))))))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-apply-comic-edit": true, onClick: () => void applyComicEditProposal(), disabled: isProcessing || projectMutationBusy, className: "mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_comic_edit", "Apply suggestions")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setComicEditProposal(null), className: "mt-3 ml-2 min-h-11 rounded-lg border border-indigo-400 px-4 py-2 font-bold text-indigo-900" }, ux("discard_comic_edit", "Keep my version"))), planProposal && /* @__PURE__ */ React.createElement("section", { ref: planPreviewRef, tabIndex: -1, "aria-labelledby": "sf-plan-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-plan-preview-title", className: "font-bold text-indigo-900" }, ux("plan_preview", "Preview plan suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("plan_preserves", "Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, planProposal.suggestions.map((item, i) => /* @__PURE__ */ React.createElement("li", { key: i }, item.scaffoldFrame))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void applyPlanProposal(), disabled: isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_plan", "Apply plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPlanProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("keep_draft", "Keep current plan")))), showWritingTools && /* @__PURE__ */ React.createElement(
     "div",
     {
       id: "sf-writing-tools-panel",
@@ -9353,7 +9536,10 @@ show();
       className: "px-4 py-2.5 bg-white text-slate-700 rounded-full text-sm font-bold hover:bg-slate-50 border border-slate-300"
     },
     showReviewTools ? "Hide review tools" : "More review tools"
-  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: !onCallGemini || sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: !onCallGemini || mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: !onCallGemini || showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: !onCallGemini || arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: !onCallGemini || dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: !onCallGemini || revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700" }, "Start fresh review")), !gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("review_choices", "Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSelfAssessmentSubmitted(false), className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white" }, ux("return_selfcheck", "Return to self-check"))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, ux("rating_instructions", "Reread your draft and choose how you feel about each criterion. Ratings start at 3; adjust them to match your work."))), /* @__PURE__ */ React.createElement(
+  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: !onCallGemini || sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: !onCallGemini || mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: !onCallGemini || showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: !onCallGemini || arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: !onCallGemini || dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: !onCallGemini || revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", feedbackLoading ? "Preparing feedback..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700" }, "Start fresh review")), !gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && !feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("review_choices", "Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSelfAssessmentSubmitted(false), className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white" }, ux("return_selfcheck", "Return to self-check"))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("feedback_working", "Preparing feedback for this draft. You can cancel and keep writing.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-cancel-feedback": true, onClick: cancelFeedback, className: "mt-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900" }, ux("cancel_feedback", "Cancel feedback"))), feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { "data-sf-feedback-notice": true, role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, feedbackNotice), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing, className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" }, ux("retry_feedback", "Retry feedback")), !isCurrentDraftReviewed && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    setSelfAssessmentSubmitted(false);
+    setFeedbackNotice("");
+  }, className: "mt-2 ml-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900" }, ux("return_selfcheck", "Return to self-check"))), coachNotice && /* @__PURE__ */ React.createElement("p", { "data-sf-coach-notice": true, role: "status", className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" }, coachNotice), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, ux("rating_instructions", "Reread your draft and choose how you feel about each criterion. Ratings start at 3; adjust them to match your work."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9706,7 +9892,7 @@ show();
   window.AlloModules.StoryForge = StoryForge;
   // Test seam (read-only): expose pure reading-level and comic layout helpers for characterization
   // tests (tests/story_forge_golden.test.js). Zero behavior change.
-  try { window.AlloModules.StoryForge._meta = { prepareStoryForgeLessonImport, mergeStoryForgeVocabulary, storyForgeSectionHasWork, getComicExportProof, normalizeStoryForgePlan, mergeStoryForgePlan, getStoryForgeSectionText, computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, getStoryForgeReviewSignature: getStoryForgeReviewSignature, getStoryForgeRestoredPhase: getStoryForgeRestoredPhase, validateStoryForgeImport: validateStoryForgeImport, normalizeStoryForgeModeSelection: normalizeStoryForgeModeSelection, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
+  try { window.AlloModules.StoryForge._meta = { normalizeStoryForgeCoach, normalizeStoryForgeFeedback, prepareStoryForgeLessonImport, mergeStoryForgeVocabulary, storyForgeSectionHasWork, getComicExportProof, normalizeStoryForgePlan, mergeStoryForgePlan, getStoryForgeSectionText, computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, getStoryForgeReviewSignature: getStoryForgeReviewSignature, getStoryForgeRestoredPhase: getStoryForgeRestoredPhase, validateStoryForgeImport: validateStoryForgeImport, normalizeStoryForgeModeSelection: normalizeStoryForgeModeSelection, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();

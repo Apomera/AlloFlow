@@ -1,0 +1,106 @@
+{
+  "checks": [
+    "Real saved readings drive the diagram and average. Keyboard swapping reverses differences and point roles without changing experiment data. Repeated readings remain visible and have no undefined numeric rate.",
+    "Redox comparisons retain volts and saved values across live setup/view changes. Different presets and different reagent setups cannot be paired.",
+    "Notes and CSV exports remain intact. Clearing the notebook clears the diagram and selected comparison."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "name": "acid-base",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "acid-base",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "same-volume",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "same-volume",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "same-volume",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "same-volume",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "redox",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "incompatible",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "incompatible",
+      "width": 760,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "incompatible",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "incompatible",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

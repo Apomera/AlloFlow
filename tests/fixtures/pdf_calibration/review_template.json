@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "method": "human",
+  "independent": false,
+  "reviewer": "",
+  "reviewedAt": "",
+  "evidenceRef": "",
+  "artifactSha256": "",
+  "readiness": null,
+  "layers": {},
+  "findings": []
+}

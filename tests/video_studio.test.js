@@ -2332,9 +2332,10 @@ it('popup take deletion asks for confirmation (batch 2)', () => {
     expect(html).toContain('active.isContentEditable');
     // Export settings persist and restore with option validation.
     expect(html).toContain("var VS_EXPORT_PREFS_KEY = 'vs_export_prefs_v1';");
-    expect(html).toContain("$('panelExport').addEventListener('change', saveExportPrefs);");
+    expect(html).toContain("$('panelExport').addEventListener('change', function (event) {");
+    expect(html).toContain('TAKE_EXPORT_CONTROL_IDS.indexOf(event.target.id) >= 0) saveExportPrefs();');
     expect(html).toContain('restoreExportPrefs();');
-    expect(html).toContain("return o.value === prefs[el.id];");
+    expect(html).toContain("return o.value === value;");
     // Resent takes dedupe by content hash instead of piling up.
     const m = moduleText();
     expect(m).toContain('var dupe = hex ? vsTakeStore.takes.filter(function (t) { return t.sha256 === hex; })[0] : null;');
@@ -2625,7 +2626,8 @@ expect(html).toContain("var recordingMicWarning = '';");
     // The acks read "I checked that no student faces or records are visible" —
     // an affirmation about THIS footage. Nothing unticked them, so consent given
     // for a clean take carried into the next recording.
-    const selectTakeBody = html.slice(html.indexOf('  function selectTake(id) {'), html.indexOf('  function selectTake(id) {') + 1600);
+    const selectTakeStart = html.indexOf('  function selectTake(id) {');
+    const selectTakeBody = html.slice(selectTakeStart, html.indexOf('\n  function ', selectTakeStart + 1));
     ['insertsPrivacyAck', 'narratePrivacyAck', 'describePrivacyAck', 'localizePrivacyAck', 'suggestPrivacyAck']
       .forEach((ack) => expect(selectTakeBody).toContain(ack));
     // The transcript is the same class of data Localize already gated.
@@ -2666,7 +2668,7 @@ expect(html).toContain("var recordingMicWarning = '';");
     // redact unrelated audio on the wrong video.
     const start = html.indexOf('  function selectTake(id) {');
     expect(start).toBeGreaterThan(-1);
-    const body = html.slice(start, start + 1400);
+    const body = html.slice(start, html.indexOf('\n  function ', start + 1));
     expect(body).toContain('transcriptSelection = {}');
     expect(body).toContain('wordRippleSelection = {}');
   });

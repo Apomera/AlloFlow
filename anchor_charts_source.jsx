@@ -441,13 +441,17 @@ const AnchorChartView = React.memo((props) => {
   const interactive = data.interactive || { armed: false, rubric: '' };
 
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
+  const rubricRequestRef = React.useRef(0);
 
   const handleSuggestRubric = async () => {
     if (!allowRuntimeAi || !isTeacherMode || (props.callGemini === null) || (!props.callGemini && !window.callGemini)) {
       addToastProp('AI generation needs an active connection. Please try again.');
       return;
     }
+    if (isGeneratingRubric) return;
     const callGeminiFn = props.callGemini || window.callGemini;
+    const request = { serial: ++rubricRequestRef.current, context: currentChart.current.rubricContext };
+    const requestIsCurrent = () => mounted.current && request.serial === rubricRequestRef.current && currentChart.current.isTeacherMode && currentChart.current.rubricAllowed && currentChart.current.rubricContext === request.context;
     setIsGeneratingRubric(true);
     try {
       const sectionInfo = sections.map((s, i) => {
@@ -466,15 +470,17 @@ const AnchorChartView = React.memo((props) => {
         'Provide ONLY the rubric text, no introduction, markdown formatting, or preamble.'
       ].join('\n');
       const raw = await callGeminiFn(prompt);
+      if (!requestIsCurrent()) return;
       if (raw) {
         setRubricDraft(String(raw).trim());
         addToastProp('✨ AI rubric suggestion generated!');
       }
     } catch (err) {
+      if (!requestIsCurrent()) return;
       console.warn('[AnchorChart] rubric suggestion failed', err && err.message);
       addToastProp('Could not generate rubric suggestion. Try again.');
     } finally {
-      setIsGeneratingRubric(false);
+      if (mounted.current && request.serial === rubricRequestRef.current) setIsGeneratingRubric(false);
     }
   };
 
@@ -529,9 +535,12 @@ const AnchorChartView = React.memo((props) => {
   const addXpProp = !props.previewMode && typeof props.addXp === 'function' ? props.addXp : null;
   const addToastProp = typeof props.addToast === 'function' ? props.addToast : () => {};
   const currentChart = React.useRef(null), mounted = React.useRef(true);
-  currentChart.current = { id: generatedContent?.id, studentAnswers, isTeacherMode, allowRuntimeAi };
+  currentChart.current = { id: generatedContent?.id, studentAnswers, isTeacherMode, allowRuntimeAi,
+    rubricAllowed: allowRuntimeAi && isTeacherMode && typeof callGeminiProp === 'function',
+    rubricContext: JSON.stringify([generatedContent?.id, showInteractiveDialog, rubricDraft, title, sections.map(s => [s.id, s.label, s.bullets])]) };
+  React.useEffect(() => { rubricRequestRef.current++; setIsGeneratingRubric(false); }, [generatedContent?.id, showInteractiveDialog, isTeacherMode, allowRuntimeAi, !!callGeminiProp]);
   React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-  React.useEffect(() => { setGradingState('idle'); setIsEditing(false); }, [generatedContent?.id, isTeacherMode]);
+  React.useEffect(() => { setGradingState('idle'); setIsEditing(false); setShowInteractiveDialog(false); }, [generatedContent?.id, isTeacherMode]);
   const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt) => {
     const update = resource => {
       if (!resource || resource.id !== resourceId || resource.type !== 'anchor-chart') return resource;

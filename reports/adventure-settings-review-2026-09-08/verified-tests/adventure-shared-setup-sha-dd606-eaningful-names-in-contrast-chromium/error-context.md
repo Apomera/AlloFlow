@@ -1,0 +1,163 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: adventure-shared-setup.spec.ts >> shared controls reflow with meaningful names in contrast
+- Location: tests\e2e\adventure-shared-setup.spec.ts:64:52
+
+# Error details
+
+```
+Tearing down "context" exceeded the test timeout of 120000ms.
+```
+
+# Page snapshot
+
+```yaml
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - region "Essential setup" [ref=e4]:
+      - heading "Essential setup" [level=3] [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - text: Interaction mode
+          - combobox "Interaction mode" [ref=e8]:
+            - option "Standard Adventure Mode"
+            - option "Debate"
+            - option "Systems simulation" [selected]
+        - generic [ref=e9]:
+          - text: Adventure language
+          - combobox "Adventure language" [ref=e10]:
+            - option "English only" [selected]
+            - option "Spanish"
+            - option "Spanish · with translation"
+          - generic [ref=e11]: Story language follows this control; the translation language follows Universal Settings.
+        - generic [ref=e12]:
+          - text: Student responses
+          - combobox "Student responses" [ref=e13]:
+            - option "Choose from suggestions" [selected]
+            - option "Write or dictate"
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - text: Episode length
+            - combobox "Episode length" [ref=e18]:
+              - option "Short · 6 decisions"
+              - option "Standard · 12 decisions" [selected]
+              - option "Long · 20 decisions"
+              - option "Open-ended"
+          - generic [ref=e19]:
+            - text: Choices per decision
+            - combobox "Choices per decision" [ref=e20]:
+              - option "2"
+              - option "3"
+              - option "4" [selected]
+              - option "5"
+              - option "6"
+        - paragraph [ref=e21]: Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.
+        - generic [ref=e22] [cursor=pointer]:
+          - checkbox "Include a final challenge" [checked] [ref=e23]
+          - text: Include a final challenge
+      - generic [ref=e24]:
+        - generic [ref=e25] [cursor=pointer]:
+          - checkbox "Track resources Track how your decisions affect the system." [checked] [ref=e26]
+          - generic [ref=e27]:
+            - text: Track resources
+            - generic [ref=e28]: Track how your decisions affect the system.
+        - generic [ref=e29]:
+          - text: Resource setup
+          - combobox "Resource setup" [ref=e30]:
+            - option "AI-generated resources"
+            - option "Teacher-defined resources" [selected]
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]:
+                - text: Resource name 1
+                - textbox "Resource name 1" [ref=e35]: Budget
+              - generic [ref=e36]:
+                - text: Starting value 1
+                - spinbutton "Starting value 1" [ref=e37]: "900"
+              - generic [ref=e38]:
+                - text: Unit 1
+                - textbox "Unit 1" [ref=e39]: credits
+            - button "Remove resource 1" [ref=e40] [cursor=pointer]
+          - button "Add resource" [ref=e41] [cursor=pointer]
+    - group [ref=e42]:
+      - 'generic "Learning supports Reading practice: Off" [ref=e43] [cursor=pointer]'
+      - generic [ref=e45] [cursor=pointer]:
+        - checkbox "Scene reading practice Offer an optional microphone button for practising the current passage." [ref=e46]
+        - generic [ref=e47]:
+          - text: Scene reading practice
+          - generic [ref=e48]: Offer an optional microphone button for practising the current passage.
+    - group [ref=e49]:
+      - 'generic "Story & game rules Chance: Off" [ref=e50] [cursor=pointer]'
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - text: Energy & rewards
+          - combobox "Energy & rewards" [ref=e53]:
+            - option "Story"
+            - option "Normal" [selected]
+            - option "Hard"
+            - option "Hardcore"
+          - generic [ref=e54]: Standard energy loss and XP. Reasoning expectations follow the lesson.
+        - generic [ref=e55] [cursor=pointer]:
+          - checkbox "Peaceful mode Focus on exploration and puzzles." [checked] [ref=e56]
+          - generic [ref=e57]:
+            - text: Peaceful mode
+            - generic [ref=e58]: Focus on exploration and puzzles.
+        - generic [ref=e59] [cursor=pointer]:
+          - checkbox "Chance mode Chance rolls influence the story outcome." [ref=e60]
+          - generic [ref=e61]:
+            - text: Chance mode
+            - generic [ref=e62]: Chance rolls influence the story outcome.
+        - generic [ref=e63] [cursor=pointer]:
+          - checkbox "Social scenario mode Show a target social skill in Essential setup." [ref=e64]
+          - generic [ref=e65]:
+            - text: Social scenario mode
+            - generic [ref=e66]: Show a target social skill in Essential setup.
+    - group [ref=e67]:
+      - 'generic "Visuals Art style: auto" [ref=e68] [cursor=pointer]'
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - text: Art style
+          - combobox "Art style" [ref=e71]:
+            - option "Use Universal style"
+            - option "Auto" [selected]
+            - option "Storybook"
+            - option "Pixel art"
+            - option "Cinematic"
+            - option "Anime"
+            - option "Hand-drawn"
+            - option "Custom"
+        - generic [ref=e72] [cursor=pointer]:
+          - checkbox "Consistent characters Keep character appearances consistent across scenes." [ref=e73]
+          - generic [ref=e74]:
+            - text: Consistent characters
+            - generic [ref=e75]: Keep character appearances consistent across scenes.
+        - generic [ref=e76] [cursor=pointer]:
+          - checkbox "Faster, simpler visuals Faster generation, less data." [ref=e77]
+          - generic [ref=e78]:
+            - text: Faster, simpler visuals
+            - generic [ref=e79]: Faster generation, less data.
+    - group [ref=e80]:
+      - generic "Story guidance No custom instructions" [ref=e81] [cursor=pointer]
+      - generic [ref=e83]:
+        - text: Custom instructions
+        - textbox "Custom instructions" [ref=e84]:
+          - /placeholder: Add guidance for this adventure.
+    - group [ref=e85]:
+      - 'generic "Saving & permissions Cloud images: Off" [ref=e86] [cursor=pointer]'
+      - generic [ref=e88] [cursor=pointer]:
+        - checkbox "Cloud image storage Store generated images online." [ref=e89]
+        - generic [ref=e90]:
+          - text: Cloud image storage
+          - generic [ref=e91]: Store generated images online.
+    - region "Setup summary" [ref=e92]:
+      - strong [ref=e93]: "Setup summary:"
+      - text: Systems simulation · 12 decisions · 4 suggested choices · English only
+```

@@ -1,0 +1,58 @@
+{
+  "date": "2026-09-08",
+  "status": "passed",
+  "automated": {
+    "educatorTests": 945,
+    "educatorFiles": 63,
+    "manualTests": 45,
+    "manualFiles": 3,
+    "totalTests": 990,
+    "failed": 0
+  },
+  "browser": {
+    "views": 11,
+    "axeViolations": 0,
+    "pageOverflow": false,
+    "updatedFigures": 6,
+    "manualMaxTextScale": 1.6,
+    "phoneWidth": 390,
+    "incompleteRules": {
+      "evaluator-worklist-desktop": [
+        "color-contrast"
+      ],
+      "educator-own-next-step": [
+        "color-contrast"
+      ],
+      "evaluator-worklist-mobile": [
+        "color-contrast"
+      ],
+      "evaluator-worklist-dark": [
+        "color-contrast"
+      ],
+      "evaluator-worklist-contrast": [
+        "color-contrast"
+      ],
+      "educator-evaluation-manual.html-large-dark-mobile": [
+        "color-contrast"
+      ],
+      "school-rewards-manual.html-desktop": [
+        "color-contrast"
+      ],
+      "school-rewards-manual.html-mobile": [
+        "color-contrast"
+      ],
+      "school-rewards-manual.html-large-dark-mobile": [
+        "color-contrast"
+      ]
+    }
+  },
+  "packagedCopiesMatch": {
+    "educator_evaluation_module.js": true,
+    "educator_evaluation_standalone.js": true,
+    "educator-evaluation.html": true,
+    "educator-evaluation-manual.html": true,
+    "school-rewards-manual.html": true
+  },
+  "portalBuildCheck": "current",
+  "scope": "Local app, generated district portal, fictional browser/service fixtures, and illustrated manuals. No district deployment or real account/Drive changes."
+}

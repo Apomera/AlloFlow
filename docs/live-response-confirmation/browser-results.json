@@ -1,0 +1,13 @@
+{
+  "realWebRtc": true,
+  "students": 3,
+  "receiptRetryDeduplicated": true,
+  "privateFeedbackRestored": true,
+  "offlineDraftRetained": true,
+  "revisionConfirmed": true,
+  "manualTeacherFeedback": true,
+  "checkInAcknowledged": true,
+  "endPollCleared": true,
+  "mobileOverflow": false,
+  "errors": []
+}

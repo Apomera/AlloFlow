@@ -1,0 +1,444 @@
+{
+  "date": "2026-09-08",
+  "distinctAssertions": 1008,
+  "passed": 1008,
+  "failed": [],
+  "distinctFiles": 57,
+  "files": [
+    {
+      "file": "tests/activities_resource.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 60,
+      "status": "passed"
+    },
+    {
+      "file": "tests/adventure_runtime_regressions.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 17,
+      "status": "passed"
+    },
+    {
+      "file": "tests/anchor_charts_dialog_targets_a11y.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 2,
+      "status": "passed"
+    },
+    {
+      "file": "tests/anchor_charts_hooks_guard.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 2,
+      "status": "passed"
+    },
+    {
+      "file": "tests/anchor_charts_reorder_focus_a11y.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/anchor_charts.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 28,
+      "status": "passed"
+    },
+    {
+      "file": "tests/anchor_icon_gen_persist.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 2,
+      "status": "passed"
+    },
+    {
+      "file": "tests/applied_challenge_export.test.js",
+      "latestReport": "scratch/main24-studios-rerun-results.json",
+      "assertions": 12,
+      "status": "passed"
+    },
+    {
+      "file": "tests/applied_challenge_interaction.test.js",
+      "latestReport": "scratch/main24-studios-rerun-results.json",
+      "assertions": 9,
+      "status": "passed"
+    },
+    {
+      "file": "tests/applied_challenge.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 26,
+      "status": "passed"
+    },
+    {
+      "file": "tests/concept_sort_dialog_a11y.test.js",
+      "latestReport": "reports/main24-interactive-final-focus-2026-09-08.json",
+      "assertions": 8,
+      "status": "passed"
+    },
+    {
+      "file": "tests/curriculum_audit_logic.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 37,
+      "status": "passed"
+    },
+    {
+      "file": "tests/curriculum_audit_render.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 14,
+      "status": "passed"
+    },
+    {
+      "file": "tests/directions_choice_translation.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 2,
+      "status": "passed"
+    },
+    {
+      "file": "tests/directions_goal_capabilities.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-rerun.json",
+      "assertions": 38,
+      "status": "passed"
+    },
+    {
+      "file": "tests/directions_quest_map_travel.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-visual-validation.json",
+      "assertions": 22,
+      "status": "passed"
+    },
+    {
+      "file": "tests/directions_result_extraction_contract.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-contract-final.json",
+      "assertions": 8,
+      "status": "passed"
+    },
+    {
+      "file": "tests/faq_audio_parity.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 2,
+      "status": "passed"
+    },
+    {
+      "file": "tests/faq_controls_a11y.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/glossary_empty_state_and_print.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 15,
+      "status": "passed"
+    },
+    {
+      "file": "tests/glossary_helpers.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 26,
+      "status": "passed"
+    },
+    {
+      "file": "tests/glossary_ui_ux_contract.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 10,
+      "status": "passed"
+    },
+    {
+      "file": "tests/grammar_dismiss_without_ai.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 13,
+      "status": "passed"
+    },
+    {
+      "file": "tests/guided_delivery_evidence.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 24,
+      "status": "passed"
+    },
+    {
+      "file": "tests/guided_mode_banner_completion.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 83,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main_resource_host_mutations.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 36,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_assess_authoring_ownership.test.js",
+      "latestReport": "reports/main24-interactive-final-focus-2026-09-08.json",
+      "assertions": 21,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_foundations_refinements_20260908.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 19,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_interactive_revision_ownership.test.js",
+      "latestReport": "reports/main24-interactive-final-focus-2026-09-08.json",
+      "assertions": 32,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_learning_quality.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 6,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_learning_refinements.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 15,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_root_refinements_20260908.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-visual-validation.json",
+      "assertions": 19,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_studio_integration.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 19,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_studios_followup.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 38,
+      "status": "passed"
+    },
+    {
+      "file": "tests/main24_studios_quality.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 9,
+      "status": "passed"
+    },
+    {
+      "file": "tests/math_state_lifecycle.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 13,
+      "status": "passed"
+    },
+    {
+      "file": "tests/math_view_null_content.test.js",
+      "latestReport": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "assertions": 7,
+      "status": "passed"
+    },
+    {
+      "file": "tests/memory_aid_audit_fixes.test.js",
+      "latestReport": "scratch/main24-studios-rerun-results.json",
+      "assertions": 25,
+      "status": "passed"
+    },
+    {
+      "file": "tests/memory_aid_teacher_review_flow.test.js",
+      "latestReport": "scratch/main24-studios-rerun-results.json",
+      "assertions": 28,
+      "status": "passed"
+    },
+    {
+      "file": "tests/memory_aid.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 75,
+      "status": "passed"
+    },
+    {
+      "file": "tests/note_taking_focus_motion_a11y.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/note_taking_templates.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 24,
+      "status": "passed"
+    },
+    {
+      "file": "tests/persona_runtime_deep_dive.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 15,
+      "status": "passed"
+    },
+    {
+      "file": "tests/resource_foundations_functional.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 19,
+      "status": "passed"
+    },
+    {
+      "file": "tests/simplified_line_focus_keyboard.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 6,
+      "status": "passed"
+    },
+    {
+      "file": "tests/studio_read_aloud.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 17,
+      "status": "passed"
+    },
+    {
+      "file": "tests/studio_response_boundary.test.js",
+      "latestReport": "scratch/main24-studios-validation-results.json",
+      "assertions": 13,
+      "status": "passed"
+    },
+    {
+      "file": "tests/view_glossary_dialog_a11y.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/view_glossary_wcag_a11y.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/view_simplified_wcag_a11y.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 7,
+      "status": "passed"
+    },
+    {
+      "file": "tests/view_timeline_accessibility.test.js",
+      "latestReport": "reports/main24-interactive-validation-2026-09-08.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/visual_organizer_hardening.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 7,
+      "status": "passed"
+    },
+    {
+      "file": "tests/visual_organizer_live_contract.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 15,
+      "status": "passed"
+    },
+    {
+      "file": "tests/visual_supports_resource_polish.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/word_sounds_i18n_sources.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 6,
+      "status": "passed"
+    },
+    {
+      "file": "tests/word_sounds_review_launcher_ux_a11y.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "file": "tests/word_sounds_student_pack_contract.test.js",
+      "latestReport": "scratch/main24-foundations-20260908-final.json",
+      "assertions": 22,
+      "status": "passed"
+    }
+  ],
+  "sourceReports": [
+    {
+      "file": ".codex-artifacts/main24-2026-09-08/root-tests.json",
+      "collectedFiles": 11,
+      "assertions": 271,
+      "passed": 266,
+      "failed": 5,
+      "success": false
+    },
+    {
+      "file": "scratch/main24-studios-validation-results.json",
+      "collectedFiles": 20,
+      "assertions": 390,
+      "passed": 386,
+      "failed": 4,
+      "success": false
+    },
+    {
+      "file": "scratch/main24-studios-rerun-results.json",
+      "collectedFiles": 4,
+      "assertions": 74,
+      "passed": 74,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": ".codex-artifacts/main24-2026-09-08/root-rerun.json",
+      "collectedFiles": 3,
+      "assertions": 76,
+      "passed": 76,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": "reports/main24-interactive-validation-2026-09-08.json",
+      "collectedFiles": 8,
+      "assertions": 170,
+      "passed": 170,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": ".codex-artifacts/main24-2026-09-08/root-visual-validation.json",
+      "collectedFiles": 3,
+      "assertions": 60,
+      "passed": 60,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": "reports/main24-interactive-final-focus-2026-09-08.json",
+      "collectedFiles": 3,
+      "assertions": 61,
+      "passed": 61,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": "scratch/main24-foundations-20260908-final.json",
+      "collectedFiles": 18,
+      "assertions": 192,
+      "passed": 192,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "file": ".codex-artifacts/main24-2026-09-08/root-contract-final.json",
+      "collectedFiles": 1,
+      "assertions": 8,
+      "passed": 8,
+      "failed": 0,
+      "success": true
+    }
+  ],
+  "browser": [
+    {
+      "file": "reports/main-24-review-2026-09-08/root-browser.json",
+      "cases": 12,
+      "axeCases": 12,
+      "problems": []
+    },
+    {
+      "file": "reports/main24-foundations-20260908/browser-results.json",
+      "cases": 9,
+      "axeCases": 0,
+      "problems": []
+    }
+  ],
+  "notes": [
+    "Latest result per file and exact test name wins. Failed earlier assertions are superseded only by a later pass of the same test.",
+    "Initial interactive run omitted Concept Sort; successful focused rerun supplied it. Final root contract suite was run separately to resolve an omitted collection.",
+    "This aggregate covers targeted regressions and does not imply the full repository test suite."
+  ]
+}

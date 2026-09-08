@@ -1,0 +1,236 @@
+{
+  "scope": "Free Build Studio launcher, dock and real Print Lab handoff in local React/WebGL host",
+  "errors": [],
+  "consoleErrors": [],
+  "checks": {
+    "launcherCancelReturnsFocus": true,
+    "phoneLauncher": {
+      "width": 366,
+      "height": 793.75,
+      "scroll": false,
+      "overflow": false,
+      "buttons": [
+        {
+          "text": "Save current world JSON",
+          "height": 46
+        },
+        {
+          "text": "Cancel",
+          "height": 46
+        },
+        {
+          "text": "Open blank sandbox",
+          "height": 46
+        }
+      ]
+    },
+    "selection": {
+      "selected": 36,
+      "workflow": "2Inspect",
+      "closed": true
+    },
+    "desktop": {
+      "viewport": [
+        1440,
+        900
+      ],
+      "overflow": false,
+      "dock": {
+        "x": 1082,
+        "y": 118,
+        "width": 346,
+        "height": 770
+      },
+      "scrollable": true,
+      "primary": [
+        {
+          "label": "Select and measure aimed build",
+          "box": {
+            "x": 1098,
+            "y": 232,
+            "width": 153,
+            "height": 48
+          },
+          "hit": true
+        },
+        {
+          "label": "Send selected build to Print Lab",
+          "box": {
+            "x": 1259,
+            "y": 232,
+            "width": 153,
+            "height": 48
+          },
+          "hit": true
+        }
+      ],
+      "fonts": [
+        {
+          "text": "Free Build Studio",
+          "size": "16px"
+        },
+        {
+          "text": "Your outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.",
+          "size": "12px"
+        },
+        {
+          "text": "0",
+          "size": "20px"
+        },
+        {
+          "text": "36",
+          "size": "20px"
+        },
+        {
+          "text": "4×3×5",
+          "size": "17px"
+        }
+      ],
+      "centerInDock": false
+    },
+    "printerDisclosure": true,
+    "saved": {
+      "name": "free-build-sandbox-editable.json",
+      "bytes": 4507,
+      "schema": "alloflow-geometry-world/2",
+      "blocks": 36
+    },
+    "workspaceDisclosureAndFocus": true,
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "dock": {
+        "x": 7,
+        "y": 473.53125,
+        "width": 376,
+        "height": 354.46875
+      },
+      "scrollable": true,
+      "primary": [
+        {
+          "label": "Select and measure aimed build",
+          "box": {
+            "x": 21,
+            "y": 577.53125,
+            "width": 170,
+            "height": 48
+          },
+          "hit": true
+        },
+        {
+          "label": "Send selected build to Print Lab",
+          "box": {
+            "x": 199,
+            "y": 577.53125,
+            "width": 170,
+            "height": 48
+          },
+          "hit": true
+        }
+      ],
+      "fonts": [
+        {
+          "text": "Free Build Studio",
+          "size": "16px"
+        },
+        {
+          "text": "Your outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.",
+          "size": "12px"
+        },
+        {
+          "text": "0",
+          "size": "20px"
+        },
+        {
+          "text": "36",
+          "size": "20px"
+        },
+        {
+          "text": "4×3×5",
+          "size": "17px"
+        }
+      ],
+      "centerInDock": false
+    },
+    "phoneScrolled": {
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "dock": {
+        "x": 7,
+        "y": 473.53125,
+        "width": 376,
+        "height": 354.46875
+      },
+      "scrollable": true,
+      "primary": [
+        {
+          "label": "Select and measure aimed build",
+          "box": {
+            "x": 21,
+            "y": 577.53125,
+            "width": 170,
+            "height": 48
+          },
+          "hit": true
+        },
+        {
+          "label": "Send selected build to Print Lab",
+          "box": {
+            "x": 199,
+            "y": 577.53125,
+            "width": 170,
+            "height": 48
+          },
+          "hit": true
+        }
+      ],
+      "fonts": [
+        {
+          "text": "Free Build Studio",
+          "size": "16px"
+        },
+        {
+          "text": "Your outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.",
+          "size": "12px"
+        },
+        {
+          "text": "0",
+          "size": "20px"
+        },
+        {
+          "text": "36",
+          "size": "20px"
+        },
+        {
+          "text": "4×3×5",
+          "size": "17px"
+        }
+      ],
+      "centerInDock": false
+    },
+    "reselectReturnsSummary": true,
+    "printHandoff": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n36\nSHAPED PIECES\n12\nSTL TRIANGLES\n232\nBLOCK ENVELOPE\n4 × 3 × 5 blocks\n\nCURRENT PHYSICAL SIZE\n\n20 × 15 × 22.5 mm\n\nExact STL mesh envelope at 5 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nCheck this model\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nStart a different model\n3D preview\n\nDrag to orbit. Use the controls below for a keyboard path.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 20 × 15 × 22.5 mm (width × depth × height).\n\nWithin the current printer envelope with 5 mm planning clearance. Compared with 220 × 220 × 250 mm. This is a planning buffer only; preflight and staff review are still required.\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+    "exactHandoff": {
+      "exactBytes": true,
+      "bytes": 11684,
+      "selected": 36
+    },
+    "returned": {
+      "blocks": true,
+      "blockCount": 37,
+      "selection": true,
+      "undo": true,
+      "redo": true,
+      "camera": true,
+      "quaternion": true,
+      "flyMode": true
+    }
+  },
+  "pass": true
+}

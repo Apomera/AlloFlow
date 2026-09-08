@@ -87,7 +87,7 @@ describe('School Rewards manual', () => {
     expect(MANUAL).toContain('figure.diagram,.glance,.tablewrap{break-inside:avoid;page-break-inside:avoid;}');
     // Tall screenshots stay breakable on purpose so a caption can follow to the next sheet.
     expect(MANUAL).toContain('figure{break-inside:auto;page-break-inside:auto;}');
-    expect(MANUAL).toContain('prints to about 29 pages');
+    expect(MANUAL).toContain('can be printed with your preferred paper size and margins');
   });
 
   it('keeps every cross-document link and metadata claim true', () => {

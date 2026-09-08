@@ -1,0 +1,84 @@
+# Document Builder UI, UX, and functionality review
+
+8 September 2026. Analysis only: no application code changed or deployed.
+
+The next iteration should concentrate on preserving the correct document and making the editing surface dependable. The Builder already has extensive formatting, navigation, tracked changes, local versions, recovery, accessibility inspection, and export controls. Adding more controls before resolving the failures below would increase complexity around behavior that users cannot yet consistently trust.
+
+## Highest-priority findings
+
+These are reproduced defects, not feature suggestions. Priority 1 means address before expanding the workflow; priority 2 means the next refinement batch. Behavioral probes intentionally assert the current adverse behavior, so their successful completion does not mean these defects are fixed.
+
+| Priority | Finding and user impact | Recommended correction | Evidence |
+| --- | --- | --- | --- |
+| 1 | **A saved-version restore can replace the wrong paragraph.** Compare versions, insert a paragraph above the target, then choose **Use saved block**. The new, unrelated paragraph is replaced while the intended paragraph remains edited. | Bind comparison actions to the document revision and the exact compared block. If the document has changed, require a fresh comparison before applying a restore. | Actual-source VM/JSDOM reproduction; [editing findings](core/findings.md). Source: `view_export_preview_source.jsx:3303`, `:7430`, `:10921`. |
+| 1 | **Local recovery can offer another document's draft.** Different PDFs with the same Builder title and workspace History share a local recovery key. Different Guided resource selections can also collide. The restore record has no secondary source validation. | Store stable source identity, selected resource IDs, and content revision with each draft/version. Show the document name and origin in the recovery prompt. Reject mismatches. | Exact current key and recovery logic exercised; [probe results](core/probe-results.json). Source: `view_export_preview_source.jsx:3849`, `:7244`, `:7355`. |
+| 1 | **Closing immediately after typing can invalidate project recovery.** The delayed capture overwrites the source/signature metadata added by the close handler. Project packing subsequently rejects the record. | Flush or cancel the same pending capture on close. Every delayed write must retain attribution and check that it still belongs to the current editing session. | Actual host synchronization, deferred callback, and project packing functions exercised; [editing findings](core/findings.md). Source: `view_export_preview_source.jsx:10907`; `AlloFlowANTI.txt:38814`, `:39040`. The HTML may remain recoverable through a separate local draft; this is not a claim of irrecoverable loss. |
+| 1 | **PowerPoint can silently export older History content.** The probe changed an answer from 10 to 42 in the editable preview. The real slide handler sent 10 to the controlled PPTX writer, reported success, and requested Builder closure. | Export the current document snapshot. Until that path is supported, clearly distinguish an export rebuilt from source resources and prevent it from silently discarding preview edits. | Real compiled export modules with a controlled writer; [export results](export/probe-results.json). Source: `export_handlers_module.js:1557`; `export_source.jsx:1575`. |
+| 1 | **Narrow layouts can collapse the actual editor.** The settings stack consumes the normal view; shrinking the window leaves the iframe almost zero pixels high even after scrolling to it. Focus mode improves it but is itself below the settings. | Give the editor an explicit usable height budget. Move settings into an accessible drawer or task panel at narrow widths, keep the document reachable from the top, and collapse secondary controls before shrinking the editor. | Visual inspection through Chrome MCP; exact-viewport Playwright evidence in [layout measurements](layout/geometry.json). Source: `view_export_preview_source.jsx:7736`, `:7794`, `:8855`, `:10762`. |
+| 1 | **Braille export includes tracked-deleted text; its last-resort converter also breaks words into lines.** The exported text retained a deleted word. With both shared converters unavailable, `Cab` became separate lines `,C`, `A`, `B`, and `12` became separate number-prefixed lines while the UI reported success. | Apply the same final-review cleanup before every text exporter. Repair or remove the malformed fallback and make unsupported conversion explicit. Validate representative resulting BRF in a destination reader before making quality claims. | Actual current BRF callback; [captured output](export/braille-output.brf), [export results](export/probe-results.json). Source: `view_export_preview_source.jsx:9417`, `:9465`. The character-splitting defect is specific to the fallback; deleted text reaches either shared converter as well. |
+
+## Additional confirmed gaps
+
+| Priority | Finding | Recommended correction | Evidence |
+| --- | --- | --- | --- |
+| 2 | **Keyboard entry skips editable accessibility badges.** Using Skip to editable preview, then Tab, returns to the outer theme button instead of the available editable inspector badge. The badge works when directly focused. | Enter the first actual iframe control from the editing body; wrap to the outer dialog only after the last inner control. Preserve a useful return point. | Actual compiled component and real inspector in Chromium; [keyboard findings](a11y/findings.md), [inspector results](a11y/inspector-keyboard-results.json). Source: `view_export_preview_source.jsx:11411`. |
+| 2 | **Escape in Quick Access customization requests closure of the whole Builder.** The customization menu remains open when the parent close callback is called. | Use the same menu-specific Escape containment and focus restoration already implemented for More export formats. | Real-component browser callback observation; [keyboard results](a11y/keyboard-results.json). Source: `view_export_preview_source.jsx:4006`, `:8872`. |
+| 2 | **Markdown drops figure targets and damages math.** An image becomes `![Actual explanatory diagram](image)` instead of retaining its source. A `mathml` fence contains only `x=42`, after the exporter strips all MathML elements. | Use a structured serializer that preserves image destinations and intentionally encodes equations. Declare unavoidable format loss before download. | Actual current Markdown callback; [captured Markdown](export/markdown-output.md). Source: `view_export_preview_source.jsx:9053`, `:9087`. |
+| 2 | **Version comparison overstates equivalence.** Replacing a figure while keeping the text unchanged reports zero changes and says the document matches the saved version. Alt text, link targets, and formatting are also outside the text comparison. | Call it a **text comparison** now. Add asset and structural comparisons before asserting that documents match. Disclose any comparison coverage limit. | Actual-source comparison probe; [editing findings](core/findings.md). Source: `view_export_preview_source.jsx:3160`, `:3280`, `:9702`. |
+| 2 | **Select/Deselect All misses Memory Aid and Applied Challenge.** Both visible resource types are omitted from the bulk action's key list. The action can leave them checked or fail to re-enable them. | Derive bulk selection and individual checkboxes from one resource definition and effective-default policy. Make the action reflect the available resources. | Current key-list/default evaluation; [source evidence](core/source-evidence.json). Source: `view_export_preview_source.jsx:8240`, `:8263`, `:8293`. |
+| 2 | **An ePub image response can leave export waiting indefinitely.** The ten-second deadline is cleared at response headers, before reading the body. The probe observed a pending body read and active export lock with no deadline remaining. | Keep cancellation and the deadline active through body consumption; enforce the byte limit during streaming and release the lock on failure or cancellation. | Actual callback with a controlled response/timer; [export analysis](export/analysis.md). Source: `view_export_preview_source.jsx:9345`. |
+
+## Measured editing space
+
+Measurements are iframe height in CSS pixels, including its border. Each viewport starts in a fresh isolated context.
+
+| Viewport and mode | Editor height | Observation |
+| --- | ---: | --- |
+| 1440 × 900, standard | 526.5 px | Usable desktop preview. |
+| 1024 × 768, standard | 286.1 px | Toolbar wrapping substantially reduces editing space. |
+| 768 × 1024, standard | 187.4 px | Preview begins at y=2335.8, below the initial viewport. |
+| 390 × 844, standard | 2 px | No usable document body, even after scrolling to the bottom. |
+| 390 × 844, Focus mode | 216.5 px | Document becomes usable, but commands still occupy much of the screen. |
+| 390 × 844, Focus mode and collapsed ribbon | 370.5 px | Existing controls demonstrate how much space can be recovered. |
+
+See the [layout report and screenshots](layout/README.md), including [phone standard mode after scrolling](layout/390x844-standard-bottom.png) and [phone Focus mode with a collapsed ribbon](layout/390x844-focus-collapsed.png). The document should be visible by default at narrow widths without depending on this workaround.
+
+
+## UX changes worth making after the correctness fixes
+
+These are design recommendations, informed by the current source and browser fixture. They need evaluation with real teacher tasks; they are not claims of measured user preference.
+
+1. **Keep document identity and save state together.** Use a persistent heading containing the document name, origin (current lesson, History selection, or remediated file), and save destination/time. The existing local-save indicators are useful, but a generic Document Builder/Live Preview heading does not help users distinguish similarly named files or explain whether a version snapshot, current browser recovery, and the project are all up to date. Preserve this context in Focus mode.
+
+2. **Organize the existing controls around the current task.** Retain familiar editing commands, but move assembly settings, layout settings, review tools, and export setup into focused panels. Avoid adding another navigation row on top of the existing ribbon. The initial sidebar currently puts AI suggestions, presets, school branding, typography, word goals, and Word Art ahead of resource selection. For mixed education work, start with the document and its included materials; put optional decoration and AI styling behind deliberate actions.
+
+3. **Use an export panel that explains the actual output.** Let teachers choose the intended deliverable—student handout, teacher copy, interactive page, or editable slides—then show format, included resources, answer-key treatment, media dependencies, and known losses together. Reuse the existing export lock and truthful Print / Save as PDF action. Explicitly label any format derived from structured resources rather than the edited document. Use a common immutable snapshot and cleanup stage for all live-document formats.
+
+4. **Show meaningful source controls in remediation mode.** The current component still renders History-resource switches, student-response options, worksheet presets, and assignment settings while it says it is editing a remediated document. The host's remediation preview branch serves the remediated HTML rather than rebuilding selected History resources. Show settings according to the active source and supported transformation, with a separate deliberate action for bringing additional resources into that document. The fixture confirms visibility; it does not simulate every host setter or establish that every displayed control is ineffective.
+
+5. **Make review a coherent task with actionable results.** Preflight, A11y Inspect, WCAG Audit, Diff, Advanced Review, and Expert Workbench serve distinct purposes but compete for attention. A review panel can explain what each check covers and take the user to the affected block. Tie check results to the document revision, label text-only comparisons accurately, and distinguish automated findings from completed artifact verification. Retain the existing caveat that an automated score does not establish conformance.
+
+6. **Make resource selection concrete.** Show selected lesson/resource names and their order, with a clear included/available count and teacher/student role where relevant. Keep the existing Guided scoping safeguards. A type-level switch such as Quiz is insufficient context when multiple lessons or versions coexist in History. This is an extension to the successful scoped handoff, not a recommendation to remove its checks.
+
+7. **Define a consistent Undo contract before expanding structural editing.** Typing and formatting use browser editing history; several structural actions mutate the DOM directly and rely on separate snapshots or review mechanisms. A browser sequence of type → structural change → Undo/Redo should determine which operations need transactions or clearly named rollback points. This pass identified the architectural split but did not prove a general Undo failure.
+
+## Suggested implementation sequence and acceptance checks
+
+| Batch | Deliverable | Acceptance evidence |
+| --- | --- | --- |
+| 1 — Protect edits | Source-bound recovery, cancellation/flush on close, stale comparison protection, bulk-selection correction. | Edit two similarly named PDFs and two Guided selections; close immediately after typing; reopen and save/load the project; insert/reorder/duplicate blocks before restoring a saved block. Confirm the intended text and source survive. |
+| 2 — Make exports faithful | Shared current-document snapshot and review cleanup, honest slide-source behavior, repaired Markdown and BRF conversion. | Use one education fixture containing a changed answer, an image, equation, link, table, and tracked insertion/deletion. Inspect the actual output of each affected format. Then check representative files in destination applications. |
+| 3 — Make editing reachable | Bounded narrow-screen layout, accessible settings drawer, iframe keyboard entry, menu Escape containment. | At desktop, tablet, and phone widths, the preview has usable visible space and reachable edges. Complete edit → inspect → export using only the keyboard. Escape closes the innermost open surface and restores focus. |
+| 4 — Reduce cognitive load | Persistent identity/save context, source-aware settings, clearer review and export panels. | Observe a teacher building a lesson pack and a teacher correcting a remediated handout. Check that they can name the source, selected materials, save destination, and expected exported artifact without guessing. |
+
+## Method, evidence, and limits
+
+- Reviewed current source, host integration, and prior Builder/Guided fixes; retained earlier successful safeguards instead of presenting them as new findings.
+- Inspected the actual compiled Builder through Chrome DevTools MCP, using a locally served synthetic grade-7 science handout with vocabulary and questions. Controlled host callbacks replace providers, project persistence, and downloads in that visual fixture. Some optional icon/style dependencies are simplified; no finding is based on a missing fixture icon.
+- Independently exercised exact production editing/persistence functions in VM/JSDOM, real compiled export handlers with a controlled PPTX writer, and actual Markdown/BRF callbacks. See [core findings](core/findings.md), [export results](export/probe-results.json), and their reproducible scripts.
+- Ran isolated Chromium keyboard checks using the actual component and accessibility inspector. See [accessibility findings](a11y/findings.md). These are keyboard checks, not a human screen-reader evaluation.
+- Chrome MCP's requested 390-pixel resize produced a 501 × 845 CSS-pixel viewport. At that actual size the standard iframe measured about 1.3 pixels high at y=2567; Focus mode increased it to about 275 pixels. Exact requested-size headless measurements are saved separately in [layout geometry](layout/geometry.json); the two measurements should not be conflated.
+- The [export analysis](export/analysis.md) includes a controlled ePub response-body probe. Twenty existing focused checks passed across export handoff, preflight, and canonical Grade-1 conversion; those tests do not cover or fix the newly reproduced orchestration failures.
+- No live AI calls, production documents, deployments, hosted publishing, or destination-application/physical Braille-device checks were performed. The local server is reproducible with `node reports/document-builder-analysis-2026-09-08/ui-server.cjs` and binds only to `127.0.0.1:8792`.
+
+All identified defects remain unfixed in application code as part of this analysis-only pass.

@@ -1,0 +1,17 @@
+{
+  "mirrors": {
+    "doc_pipeline_module.js": {
+      "equal": true,
+      "sha256": "1f72227c46c5b8d6e1660c3d198989b6385a75261d547a096323cd5393ad324d"
+    },
+    "view_pdf_audit_module.js": {
+      "equal": true,
+      "sha256": "54109f18265bb8fb9733c8c13d386d9399a04874b68baa57c4816a0993f56119"
+    }
+  },
+  "syntax": {
+    "AlloFlowANTI.txt": "passed",
+    "desktop/web-app/src/App.jsx": "passed",
+    "desktop/web-app/src/AlloFlowANTI.txt": "passed"
+  }
+}

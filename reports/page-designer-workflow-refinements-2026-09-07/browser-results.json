@@ -1,0 +1,45 @@
+{
+  "errors": [],
+  "viewports": {
+    "desktop": {
+      "width": 717,
+      "height": 691,
+      "pageWidth": 521.578125,
+      "pageHeight": 675
+    },
+    "short-laptop": {
+      "width": 717,
+      "height": 522,
+      "pageWidth": 391,
+      "pageHeight": 506
+    },
+    "tablet": {
+      "width": 974,
+      "height": 577,
+      "pageWidth": 433.5,
+      "pageHeight": 561
+    },
+    "mobile": {
+      "width": 372,
+      "height": 578,
+      "pageWidth": 356,
+      "pageHeight": 460.703125
+    }
+  },
+  "snap": {
+    "foreground": "rgb(15, 23, 42)",
+    "background": "rgb(224, 231, 255)"
+  },
+  "keyboardPropertiesFocus": true,
+  "zoomEdges": {
+    "left": 0,
+    "right": 0
+  },
+  "zoomCenterPreserved": true,
+  "findPanelVisible": true,
+  "layerCommandVisible": true,
+  "pageNavigationUndo": true,
+  "keyboardDownloadCurrent": true,
+  "mobileReviewBounded": true,
+  "recoveredLatestEdits": true
+}

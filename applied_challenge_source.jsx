@@ -1267,6 +1267,16 @@ function AppliedChallengeView(props) {
   latestGradeLevelRef.current = gradeLevel || data.lessonRef.gradeLevel;
   const addToast = typeof addToastProp === 'function' ? addToastProp : function () {};
   const callGemini = allowRuntimeAi && !learnerReadOnly ? (callGeminiProp === undefined ? (typeof window !== 'undefined' && window.callGemini) : callGeminiProp) : null;
+  const requestMountedRef = React.useRef(false);
+  const requestAllowedRef = React.useRef(false);
+  requestAllowedRef.current = resourceActive && typeof callGemini === 'function';
+  React.useEffect(() => {
+    requestMountedRef.current = true;
+    requestTokenRef.current++;
+    setBusy('');
+    return () => { requestMountedRef.current = false; requestTokenRef.current++; };
+  }, [resourceId, props.activeProfileId, props.previewMode, isTeacherMode, learnerReadOnly, !!callGemini]);
+  const requestIsCurrent = token => requestMountedRef.current && requestAllowedRef.current && token === requestTokenRef.current;
 
   const commitField = React.useCallback((key, value) => {
     if (!resourceActive || typeof handleNoteUpdate !== 'function') return;
@@ -1440,6 +1450,7 @@ function AppliedChallengeView(props) {
     setBusy('hint');
     try {
       const response = await callGemini(buildAppliedChallengeHintPrompt(data, requestedPhase), false);
+      if (!requestIsCurrent(requestToken)) return;
       const latestFingerprint = appliedChallengeRequestFingerprint(latestDataRef.current, 'hint', {
         resourceId: latestResourceIdRef.current,
         phaseId: requestedPhase,
@@ -1455,9 +1466,10 @@ function AppliedChallengeView(props) {
       }
       commitField('coachHint', hint);
     } catch (_) {
+      if (!requestIsCurrent(requestToken)) return;
       addToast(tx('applied_challenge.toast.hint_failed', 'The coach could not create a hint. Your work is still saved.'), 'error');
     } finally {
-      if (requestToken === requestTokenRef.current) setBusy('');
+      if (requestIsCurrent(requestToken)) setBusy('');
     }
   };
 
@@ -1476,6 +1488,7 @@ function AppliedChallengeView(props) {
     setBusy('stress-test');
     try {
       const raw = await callGemini(buildAppliedChallengeStressTestPrompt(data), false);
+      if (!requestIsCurrent(requestToken)) return;
       const latestFingerprint = appliedChallengeRequestFingerprint(latestDataRef.current, 'stress-test', {
         resourceId: latestResourceIdRef.current,
       });
@@ -1495,9 +1508,10 @@ function AppliedChallengeView(props) {
       }));
       addToast(tx('applied_challenge.toast.stress_added', 'One pressure test was added without changing your draft.'), 'success');
     } catch (_) {
+      if (!requestIsCurrent(requestToken)) return;
       addToast(tx('applied_challenge.toast.stress_failed', 'The stress test could not be generated. Your work is still saved.'), 'error');
     } finally {
-      if (requestToken === requestTokenRef.current) setBusy('');
+      if (requestIsCurrent(requestToken)) setBusy('');
     }
   };
 
@@ -1525,6 +1539,7 @@ function AppliedChallengeView(props) {
         sourceExcerpt: feedbackSourceExcerpt,
         gradeLevel: feedbackGradeLevel,
       }), true);
+      if (!requestIsCurrent(requestToken)) return;
       const latestFingerprint = appliedChallengeRequestFingerprint(latestDataRef.current, 'feedback', {
         resourceId: latestResourceIdRef.current,
         sourceExcerpt: latestDataRef.current.sourceExcerpt,
@@ -1542,9 +1557,10 @@ function AppliedChallengeView(props) {
       commitField('feedback', feedback);
       addToast(tx('applied_challenge.toast.feedback_added', 'Feedback added without changing your work.'), 'success');
     } catch (_) {
+      if (!requestIsCurrent(requestToken)) return;
       addToast(tx('applied_challenge.toast.feedback_failed', 'Feedback could not be generated. Your work is still saved.'), 'error');
     } finally {
-      if (requestToken === requestTokenRef.current) setBusy('');
+      if (requestIsCurrent(requestToken)) setBusy('');
     }
   };
 

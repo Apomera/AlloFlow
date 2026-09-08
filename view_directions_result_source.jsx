@@ -20,7 +20,7 @@ function directionsResultTranslation(t, key, fallback, params, maxLength) {
   if (typeof t === 'function') {
     try {
       const translated = t(key, params);
-      if (translated) return directionsResultText(translated, fallback, maxLength);
+      if (translated && translated !== key) return directionsResultText(translated, fallback, maxLength);
     } catch (_) {}
   }
   return fallback;
@@ -156,13 +156,12 @@ function DirectionsResultView({
     maxLength,
   );
 
-  // Defensive limits mirror the host contract. They protect rendering without
-  // turning this view into a second source of filtering or policy decisions.
+  // Keep the complete host-provided assignment; validate display records without
+  // silently removing stations or goals.
   const stations = (Array.isArray(stationViews) ? stationViews : [])
     .filter(station => station && typeof station === 'object' && station.id)
-    .slice(0, 12)
     .map(station => ({
-      id: String(station.id).slice(0, 120),
+      id: String(station.id).slice(0, 200),
       title: directionsResultText(station.title, '', 140),
       typeLabel: directionsResultText(station.typeLabel, 'Resource', 80),
       icon: directionsResultText(station.icon, '📄', 8),
@@ -175,23 +174,22 @@ function DirectionsResultView({
     }));
   const goals = (Array.isArray(goalViews) ? goalViews : [])
     .filter(goal => goal && typeof goal === 'object' && goal.id)
-    .slice(0, 24)
     .map(goal => ({
-      id: String(goal.id).slice(0, 120),
-      label: directionsResultText(goal.label, 'Goal', 240),
+      id: String(goal.id).slice(0, 200),
+      label: directionsResultText(goal.label, 'Goal', Infinity),
       kind: directionsResultText(goal.kind, '', 24),
       done: goal.done === true,
       progressText: directionsResultText(goal.progressText, '', 80),
-      resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 120) : '',
+      resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 200) : '',
     }));
   const recommendation = recommendationView && typeof recommendationView === 'object'
     ? recommendationView
     : {};
-  const nextId = typeof recommendation.nextId === 'string' ? recommendation.nextId.slice(0, 120) : '';
+  const nextId = typeof recommendation.nextId === 'string' ? recommendation.nextId.slice(0, 200) : '';
   const nextStation = stations.find(station => station.id === nextId) || null;
   const alternateIds = (Array.isArray(recommendation.alternateIds) ? recommendation.alternateIds : [])
     .filter(id => typeof id === 'string')
-    .map(id => id.slice(0, 120))
+    .map(id => id.slice(0, 200))
     .slice(0, 2);
   const alternateStations = alternateIds
     .map(id => stations.find(station => station.id === id))
@@ -206,7 +204,7 @@ function DirectionsResultView({
       .filter(item => item && typeof item === 'object' && item.resourceId)
       .slice(0, 6)
       .map(item => ({
-        resourceId: String(item.resourceId).slice(0, 120),
+        resourceId: String(item.resourceId).slice(0, 200),
         label: directionsResultText(item.label, 'Activity', 120),
         description: directionsResultText(item.description, '', 240),
         icon: directionsResultText(item.icon, '', 8),
@@ -215,13 +213,13 @@ function DirectionsResultView({
       }))
     : [];
   const selectedRef = choiceValue && typeof choiceValue.selectedRef === 'string'
-    ? choiceValue.selectedRef.slice(0, 120)
+    ? choiceValue.selectedRef.slice(0, 200)
     : '';
   const selectedChoice = choiceItems.find(item => item.resourceId === selectedRef) || null;
   const missingChoiceCount = choiceValue
     ? Math.max(0, Math.min(6, Number(choiceValue.missingCount) || 0))
     : 0;
-  const choiceBoard = choiceValue && choiceItems.length >= 2
+  const choiceBoard = choiceValue && choiceItems.length >= 1
     ? {
       title: directionsResultText(choiceValue.title, 'Choose an activity', 120),
       prompt: directionsResultText(choiceValue.prompt, 'Pick one activity to work on first.', 240),
@@ -232,7 +230,7 @@ function DirectionsResultView({
   const visitedCount = stations.filter(station => station.visited).length;
   const doneCount = goals.filter(goal => goal.done).length;
   const showMap = showQuestMap === true;
-  const mapWidth = Math.max(340, 100 + stations.length * 88);
+  const mapWidth = Math.max(340, 100 + stations.length * 88, goals.length ? 120 + (goals.length - 1) * 92 : 0);
   const nodeX = index => 100 + index * 88;
   const nodeY = index => 50 + (index % 2) * 26;
   const goalX = index => 70 + index * 92;
@@ -259,7 +257,7 @@ function DirectionsResultView({
               type="button"
               onClick={onToggleMap}
               aria-pressed={showMap}
-              className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0"
+              className="min-h-11 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0"
             >
               🗺️ {showMap ? text('mapHide', 'Hide map') : text('mapShow', 'Quest map')}
             </button>
@@ -269,7 +267,7 @@ function DirectionsResultView({
         {showMap && stations.length > 0 && (
           <div className="mb-4 overflow-x-auto rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-amber-50/40 p-2">
             <svg
-              role="img"
+              role="group"
               aria-label={mapAriaLabel}
               viewBox={'0 0 ' + mapWidth + ' ' + (goals.length ? 178 : 118)}
               style={{ minWidth: mapWidth * 0.75 + 'px' }}
@@ -329,7 +327,8 @@ function DirectionsResultView({
                   strokeWidth: 2.5,
                 };
                 return (
-                  <g key={station.id} onClick={() => travelTo(station)} style={{ cursor: 'pointer' }}>
+                  <g key={station.id} role="button" tabIndex={0} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" aria-label={(station.title || station.typeLabel) + (station.visited ? ", " + text('mapVisitedSr', 'already visited') : "")} onClick={() => travelTo(station)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); travelTo(station); } }} style={{ cursor: 'pointer' }}>
+                    <title>{station.title || station.typeLabel}</title>
                     {isNext && <circle cx={x} cy={y} r="20" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" opacity="0.9" />}
                     {React.createElement(shape.tag, { ...shape.attrs, ...skin })}
                     <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{station.visited ? '✓' : station.icon}</text>
@@ -355,7 +354,7 @@ function DirectionsResultView({
                 <button
                   type="button"
                   onClick={() => travelTo(nextStation)}
-                  className="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow-sm transition-all"
+                  className="min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-sm shadow-sm transition-all"
                 >
                   <span aria-hidden="true">{nextStation.icon}</span>
                   <span>{text('mapNextLabel', 'Go here next') + ': ' + (nextStation.title || nextStation.typeLabel).slice(0, 40)}</span>
@@ -371,7 +370,7 @@ function DirectionsResultView({
                     type="button"
                     key={'alt' + station.id}
                     onClick={() => travelTo(station)}
-                    className="flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all"
+                    className="min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all"
                   >
                     <span aria-hidden="true">{station.icon}</span>
                     <span>{text('mapAlsoReady', 'or') + ' ' + (station.title || station.typeLabel).slice(0, 26)}</span>
@@ -379,7 +378,7 @@ function DirectionsResultView({
                 ))}
               </div>
             ) : (
-              <p className="text-xs font-bold text-emerald-700">{text('mapAllVisited', '🎉 You have been to every station on this map.')}</p>
+              <p className="text-xs font-bold text-emerald-700">{visitedCount === stations.length ? text('mapAllVisited', '🎉 You have been to every station on this map.') : text('directions.map_choose_station', 'Choose a station from the map or the list below to continue.')}</p>
             )}
             <details className="mt-2">
               <summary className="text-[11px] text-indigo-700 font-bold cursor-pointer">{text('mapJumpAny', 'Go to any station')}</summary>
@@ -389,7 +388,7 @@ function DirectionsResultView({
                     <button
                       type="button"
                       onClick={() => travelTo(station)}
-                      className={'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}
+                      className={'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}
                     >
                       <span aria-hidden="true">{station.icon}</span>
                       <span>{(station.title || station.typeLabel).slice(0, 30)}</span>
@@ -404,7 +403,7 @@ function DirectionsResultView({
 
         {trustedBodyHtml && (
           <div
-            className="prose prose-sm max-w-none text-slate-700 mb-4"
+            className="prose prose-sm max-w-none text-slate-700 mb-4 break-words"
             dangerouslySetInnerHTML={{ __html: (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') ? window.sanitizeHtml(trustedBodyHtml) : '' }}
           />
         )}
@@ -418,15 +417,15 @@ function DirectionsResultView({
         {choiceBoard && (
           <section className="border-t border-indigo-100 pt-4 mb-4" aria-labelledby="directions-choice-board-title">
             <div className="flex flex-wrap items-start gap-2 mb-3">
-              <div className="flex-1 min-w-[220px]">
+              <div className="flex-1 min-w-0">
                 <h2 id="directions-choice-board-title" className="text-base font-black text-indigo-900">{choiceBoard.title}</h2>
                 <p className="text-xs text-slate-600 mt-1">{choiceBoard.prompt}</p>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200">{choiceBoard.items.length} {text('choices', 'choices')}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200">{choiceBoard.items.length} {choiceBoard.items.length === 1 ? text('directions.choice', 'choice') : text('choices', 'choices')}</span>
             </div>
             {selectedChoice && (
               <p role="status" className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900">
-                {text('selectedPrefix', 'Selected') + ': ' + selectedChoice.label + '. ' + text('selectedSuffix', 'You can choose another activity below.')}
+                {text('selectedPrefix', 'Selected') + ': ' + selectedChoice.label + '. ' + (choiceBoard.items.length > 1 ? text('selectedSuffix', 'You can choose another activity below.') : text('directions.single_choice_selected', 'You can return to this activity at any time.'))}
               </p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -437,7 +436,7 @@ function DirectionsResultView({
                   onClick={() => onChoose(item.resourceId)}
                   aria-label={text('chooseActivity', 'Choose activity') + ': ' + item.label}
                   aria-pressed={selectedRef === item.resourceId}
-                  className={'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')}
+                  className={'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all motion-safe:hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')}
                 >
                   <span aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm">{item.icon || item.typeIcon}</span>
                   <span className="min-w-0 flex-1">
@@ -449,7 +448,7 @@ function DirectionsResultView({
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[10px] text-slate-500">{text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300)}</p>
+            <p className="mt-2 text-[10px] text-slate-500">{choiceBoard.items.length > 1 ? text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300) : text('directions.single_choice_hint', 'Open the remaining activity, or ask your teacher for an updated board.', 300)}</p>
           </section>
         )}
 
@@ -481,7 +480,7 @@ function DirectionsResultView({
                 </li>
               ))}
             </ul>
-            <p className="text-[10px] text-slate-400 mt-3">{text('signalsNote', 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.', 500)}</p>
+            <p className="text-xs text-slate-600 mt-3">{text('signalsNote', 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.', 500)}</p>
           </div>
         )}
       </div>

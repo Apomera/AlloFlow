@@ -305,6 +305,18 @@ function _calculateNotesXPScore(rubric, isFirstTime) {
   return completion + quality + alignment + firstTime;
 }
 
+function _normalizeNotesFeedback(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const text = input => typeof input === 'string' ? input.trim().slice(0, 1200) : '';
+  const strength = text(value.strength), growthNudge = text(value.growthNudge);
+  if (!strength || !growthNudge) return null;
+  const number = (input, max) => typeof input === 'number' && Number.isFinite(input) ? Math.max(0, Math.min(max, Math.round(input))) : 0;
+  return { strength, growthNudge,
+    sourceAlignment: { found: typeof value.sourceAlignment?.found === 'boolean' ? value.sourceAlignment.found : null, message: text(value.sourceAlignment?.message) },
+    rubric: { completion: number(value.rubric?.completion, 3), quality: number(value.rubric?.quality, 15), alignment: number(value.rubric?.alignment, 5) }
+  };
+}
+
 // Inline panel that displays the feedback after the AI returns. Strengths-
 // first design: green strength block (top), amber growth nudge (middle), soft
 // source-alignment note (bottom, only if non-empty), small XP toast.
@@ -373,9 +385,10 @@ function _useNotesFeedback(props, templateType) {
   const addToast = props.addToast || (() => {});
   const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
   const inputText = props.inputText || '';
-  const mounted = React.useRef(true), current = React.useRef(null);
+  const mounted = React.useRef(true), current = React.useRef(null), feedbackRequest = React.useRef(0);
   current.current = { id:generatedContent?.id, draft:_notesDraftFingerprint(templateType, generatedContent?.data || {}), allowed:!!callGemini };
-  React.useEffect(() => { mounted.current=true; return () => { mounted.current=false; }; }, []);
+  React.useEffect(() => { mounted.current=true; return () => { mounted.current=false; feedbackRequest.current++; }; }, []);
+  React.useEffect(() => { feedbackRequest.current++; setIsLoading(false); setXpEarned(0); }, [generatedContent?.id, props.activeProfileId, props.previewMode, !!callGemini]);
   const t = props.t || ((k, d) => d || k);
 
   const requestFeedback = React.useCallback(async () => {
@@ -399,14 +412,16 @@ function _useNotesFeedback(props, templateType) {
       return;
     }
     if (isLoading) return;
-    const request = { ...current.current };
+    const request = { ...current.current, serial: ++feedbackRequest.current };
+    const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.allowed;
     setIsLoading(true);
     addToast(t('notes_feedback.thinking') || 'Reading your notes...', 'info');
     try {
       const prompt = _buildNotesFeedbackPrompt(templateType, data, inputText);
       const raw = await callGemini(prompt, true);
-      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
-      if (!mounted.current || current.current.id !== request.id || current.current.draft !== request.draft || !current.current.allowed) return;
+      const parsed = _normalizeNotesFeedback(JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw)));
+      if (!parsed) throw new Error('Notes feedback did not include usable strengths and next steps');
+      if (!requestIsCurrent()) return;
       props.handleNoteUpdate?.('feedback', { ...parsed, draftFingerprint: request.draft, createdAt:new Date().toISOString() });
       // XP wiring — first-time bonus uses the resource's prior max via the
       // handleScoreUpdate delta calc, but we also check whether THIS template
@@ -440,17 +455,18 @@ function _useNotesFeedback(props, templateType) {
         setXpEarned(0);
       }
     } catch (e) {
+      if (!requestIsCurrent()) return;
       console.warn('[NotesFeedback] failed', e);
       addToast(t('notes_feedback.error') || 'Could not generate feedback right now. Try again in a moment.', 'error');
     } finally {
-      if (mounted.current) setIsLoading(false);
+      if (mounted.current && feedbackRequest.current === request.serial) setIsLoading(false);
     }
   }, [isLoading, callGemini, generatedContent, inputText, templateType, addToast, handleScoreUpdate, t, props]);
 
   const dismiss = React.useCallback(() => {
     props.handleNoteUpdate?.('feedback',null);
     setXpEarned(0);
-  }, []);
+  }, [props.handleNoteUpdate]);
 
   return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function' };
 }

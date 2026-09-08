@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "Scanned worksheet reconstruction",
+    "language": "en",
+    "source_page_count": 1,
+    "source_sha256": "5bde4ec3ba643a60cae77e69edc1a66f5d1bad983e1c1934923331916b8c0d13",
+    "document_type": "handout"
+  },
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "Scanned worksheet reconstruction The legible prompt asks students to compare evaporation and condensation."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Scanned worksheet reconstruction",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "The legible prompt asks students to compare evaporation and condensation.",
+      "source_page": 1
+    }
+  ],
+  "review_notes": [
+    "The source is a simulated image-only page; OCR wording and reading order require human comparison."
+  ]
+}

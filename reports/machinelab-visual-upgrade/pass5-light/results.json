@@ -1,0 +1,21 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [
+    "console: THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The \"position\" attribute is likely to have NaN values. qn",
+    "console: THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The \"position\" attribute is likely to have NaN values. qn"
+  ],
+  "overflow": false,
+  "shots": [
+    "05-build-trebuchet",
+    "trebuchet-ready",
+    "trebuchet-release",
+    "trebuchet-long",
+    "trebuchet-field"
+  ]
+}

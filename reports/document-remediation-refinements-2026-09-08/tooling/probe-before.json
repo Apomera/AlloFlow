@@ -1,0 +1,12 @@
+{
+  "calibration": {
+    "error": "ENOSPC",
+    "originalPreserved": false,
+    "manifestParseable": false
+  },
+  "benchmark": {
+    "error": "ENOENT",
+    "rawResultSaved": true,
+    "summarySaved": false
+  }
+}

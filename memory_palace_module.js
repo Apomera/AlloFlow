@@ -40,7 +40,7 @@
   // 'space' give open-world variety (no walls, different sky/ground/light).
   // mountGL reads these to set background, fog, lights, sky/ground, walls, floor.
   var THEMES = {
-    gallery: { bg: 0x0b1020, skyTop: '#17213f', skyHorizon: '#050814', exposure: 1.12, fog: 0.00042, fogColor: 0x0b1020, walls: true, ground: 0, stars: 0x93c5fd, starCount: 420, ambient: 0.48, hemi: [0xcfe0ff, 0x1a2740, 0.58], sun: [0xffffff, 0.48], floorMul: 0.42 },
+    gallery: { bg: 0x0b1020, skyTop: '#17213f', skyHorizon: '#050814', exposure: 1.06, fog: 0.00022, fogColor: 0x0b1020, walls: true, ground: 0, stars: 0x93c5fd, starCount: 420, ambient: 0.4, hemi: [0xfff0d8, 0x293442, 0.52], sun: [0xfff4e2, 0.44], floorMul: 0.42 },
     pasture: { bg: 0x8ec9ea, skyTop: '#4f9fda', skyHorizon: '#d6ecff', exposure: 1.05, fog: 0.00018, fogColor: 0xd6ecff, walls: false, ground: 0x4f7f43, stars: 0, starCount: 0, ambient: 0.9, hemi: [0xcdeaff, 0x3c5a2c, 0.95], sun: [0xfff3d6, 0.95], floorMul: 0.62 },
     space: { bg: 0x02030a, skyTop: '#111538', skyHorizon: '#010207', exposure: 1.15, fog: 0, fogColor: 0x02030a, walls: false, ground: 0, stars: 0xc3d4ff, starCount: 900, ambient: 0.34, hemi: [0x232f4d, 0x05060a, 0.5], sun: [0x9db4ff, 0.5], floorMul: 0.32 }
   };
@@ -1065,10 +1065,11 @@
     return lines.length ? lines : [''];
   }
 
-  function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe, anisotropy) {
+  function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe, anisotropy, appearance) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var type = _appTypography(fontPx);
+    var plaque = appearance === 'plaque';
     var font = type.font, padX = Math.round(font * 0.72), padY = Math.round(font * 0.45);
     var lineH = Math.round(font * 1.2), maxTextW = Math.round(420 * (font / 24));
     ctx.font = '800 ' + font + 'px ' + type.family;
@@ -1082,18 +1083,21 @@
     ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
     ctx.font = '800 ' + font + 'px ' + type.family;
     if ('letterSpacing' in ctx) ctx.letterSpacing = type.spacing;
-    var rad = Math.min(18, logicalH / 2);
-    ctx.fillStyle = type.contrast ? '#000000' : 'rgba(2,6,23,0.97)';
+    var rad = plaque ? 5 : Math.min(18, logicalH / 2);
+    ctx.fillStyle = type.contrast ? '#000000' : (plaque ? '#f4ecdc' : 'rgba(2,6,23,0.97)');
     _roundRect(ctx, 1, 1, logicalW - 2, logicalH - 2, rad);
-    ctx.strokeStyle = type.contrast ? '#ffffff' : (hex || '#cbd5e1');
-    ctx.lineWidth = type.contrast ? 5 : 3.5;
+    ctx.strokeStyle = type.contrast ? '#ffffff' : (plaque ? '#b9a782' : (hex || '#cbd5e1'));
+    ctx.lineWidth = type.contrast ? 5 : (plaque ? 1.5 : 3.5);
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(2.5, 2.5, logicalW - 5, logicalH - 5, Math.max(2, rad - 2));
     else ctx.rect(2.5, 2.5, logicalW - 5, logicalH - 5);
     ctx.stroke();
-    ctx.fillStyle = type.contrast ? '#fff200' : '#ffffff';
+    if (plaque && !type.contrast) {
+      ctx.fillStyle=hex || '#6366f1';ctx.fillRect(5,8,3,Math.max(4,logicalH-16));
+    }
+    ctx.fillStyle = type.contrast ? '#fff200' : (plaque ? '#182b3d' : '#ffffff');
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = 4;
+    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = plaque && !type.contrast ? 0 : 4;
     lines.forEach(function (line, i) { ctx.fillText(line, logicalW / 2, padY + lineH * (i + 0.5)); });
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
@@ -1111,6 +1115,7 @@
     }));
     var k = 0.5; sp.scale.set(logicalW * k, logicalH * k, 1);
     sp.userData.typographyKey = type.key;
+    sp.userData.captionAppearance = appearance || 'standard';
     sp.userData.baseScale = { x: logicalW * k, y: logicalH * k };
     sp.renderOrder = occlusionSafe ? 24 : 12;
     sp.userData.occlusionSafe = !!occlusionSafe;
@@ -1119,18 +1124,52 @@
 
   // Placeholder card texture for an unfurnished locus: tinted panel + big number.
   function makeCardTexture(THREE, number, hex, busy) {
-    var c = document.createElement('canvas'); c.width = 256; c.height = 192;
-    var g = c.getContext('2d');
-    g.fillStyle = '#101a33'; g.fillRect(0, 0, 256, 192);
-    g.strokeStyle = hex; g.lineWidth = 6; g.strokeRect(6, 6, 244, 180);
-    g.fillStyle = hex; g.globalAlpha = 0.18; g.fillRect(6, 6, 244, 180); g.globalAlpha = 1;
-    g.fillStyle = '#e2e8f0'; g.font = '800 ' + (busy ? 66 : 82) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(busy ? '…' : String(number), 128, busy ? 88 : 90);
-    // Universal empty-state affordance: a restrained + becomes a progress glyph
-    // while a single-locus generation is running (no language-dependent texture).
-    g.beginPath(); g.arc(218, 30, 17, 0, Math.PI * 2);
-    g.fillStyle = busy ? '#ffffff' : hex; g.fill();
-    g.fillStyle = '#101a33'; g.font = '900 24px sans-serif'; g.fillText(busy ? '↻' : '+', 218, 30);
+    var c = document.createElement('canvas'); c.width = 512; c.height = 384;
+    var g = c.getContext('2d'); g.scale(2, 2);
+    var backdrop = g.createLinearGradient(0, 0, 256, 192);
+    backdrop.addColorStop(0, '#233a48'); backdrop.addColorStop(1, '#080f1b');
+    g.fillStyle = backdrop; g.fillRect(0, 0, 256, 192);
+    // Four deterministic, abstract compositions distinguish unfilled stops while
+    // keeping the route number dominant. Nothing here encodes an answer.
+    g.save(); g.strokeStyle = hex; g.fillStyle = hex; g.lineWidth = 1;
+    var variant = (Math.max(1, Number(number) || 1) - 1) % 4;
+    if (variant === 0) {
+      for (var arch = 0; arch < 6; arch++) {
+        var inset = 17 + arch * 15; g.globalAlpha = 0.12 + arch * 0.035;
+        g.beginPath(); g.moveTo(inset, 192); g.lineTo(inset, 100);
+        g.bezierCurveTo(inset, -3 + arch * 12, 256-inset, -3 + arch * 12, 256-inset, 100);
+        g.lineTo(256-inset, 192); g.stroke();
+      }
+    } else if (variant === 1) {
+      for (var orbit = 0; orbit < 5; orbit++) {
+        g.globalAlpha = 0.15 + orbit * 0.04; g.beginPath();
+        g.ellipse(180, 120, 40+orbit*18, 25+orbit*12, -0.7, 0, Math.PI*2); g.stroke();
+      }
+    } else if (variant === 2) {
+      for (var peak = 0; peak < 6; peak++) {
+        g.globalAlpha = 0.12 + peak * 0.035; g.beginPath();
+        g.moveTo(-40, 190+peak*9); g.lineTo(150, 25+peak*22); g.lineTo(300, 190+peak*9); g.stroke();
+      }
+    } else {
+      for (var ripple = 0; ripple < 7; ripple++) {
+        g.globalAlpha = 0.12 + ripple * 0.025; g.beginPath();
+        g.moveTo(0, 30+ripple*22); g.bezierCurveTo(85, -20+ripple*22, 155, 125+ripple*13, 256, 55+ripple*20); g.stroke();
+      }
+    }
+    g.restore();
+    var halo = g.createRadialGradient(120, 72, 0, 120, 72, 140);
+    halo.addColorStop(0, 'rgba(255,237,193,0.08)'); halo.addColorStop(1, 'rgba(255,237,193,0)');
+    g.fillStyle = halo; g.fillRect(0,0,256,192);
+    g.strokeStyle = '#d5c29b'; g.globalAlpha = 0.55; g.lineWidth = 1; g.strokeRect(9,9,238,174);
+    g.strokeStyle = hex; g.globalAlpha = 0.35; g.strokeRect(13,13,230,166); g.globalAlpha = 1;
+    g.fillStyle = '#f9f1df'; g.font = '500 ' + (busy ? 64 : (number > 99 ? 62 : 78)) + 'px Georgia, serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(busy ? '…' : (number < 10 ? '0' : '') + String(number),128,94);
+    g.fillStyle = '#d5c29b'; g.globalAlpha = 0.7; g.fillRect(113,148,30,1); g.globalAlpha = 1;
+    // The language-independent add affordance stays separate from the number.
+    g.beginPath(); g.arc(223,32,12,0,Math.PI*2); g.fillStyle = '#f1e6d0'; g.fill();
+    g.fillStyle = '#152335'; g.font = '700 18px sans-serif'; g.fillText(busy ? '↻' : '+',223,32);
+
     var tex = new THREE.CanvasTexture(c);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     return tex;
@@ -1146,7 +1185,7 @@
     g.beginPath(); g.arc(48, 48, 44, 0, Math.PI * 2); g.fill();
     g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 6;
     g.beginPath(); g.arc(48, 48, 40, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#ffffff'; g.font = '800 46px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = contrastForeground(hex || '#6366f1'); g.font = '800 46px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(String(number), 48, 51);
     var tex = new THREE.CanvasTexture(c);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
@@ -1196,6 +1235,23 @@
     renderer.setClearColor(BG, 1);
     try { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1; if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding; } catch (e) {}
     holder.appendChild(renderer.domElement);
+    var visualStyles = document.createElement('style');
+    visualStyles.textContent = '[data-memory-palace-viewport] [hidden]{display:none!important}' +
+      '[data-memory-palace-viewport] button:focus-visible,[data-memory-palace-viewport] canvas:focus-visible{outline:3px solid #fef08a!important;outline-offset:3px!important}' +
+      '[data-memory-palace-viewport] button:hover:not(:disabled){filter:brightness(1.18)}' +
+      '[data-memory-palace-viewport] [data-visited="true"]::after{content:" ✓";color:#86efac}' +
+      '@media(prefers-reduced-motion:reduce){[data-memory-palace-viewport] *{transition:none!important;animation:none!important}}' +
+      '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay]{background:Canvas!important;color:CanvasText!important;border:2px solid CanvasText!important}[data-memory-palace-viewport] button{border:1px solid ButtonText!important}}';
+    visualStyles.textContent +=
+      '[data-memory-palace-viewport]{font-family:inherit}' +
+      '[data-memory-palace-viewport] [data-palace-overlay="dock"],[data-memory-palace-viewport] [data-palace-overlay="free-nav"]{background:linear-gradient(150deg,rgba(29,40,57,.97),rgba(8,16,31,.97))!important;border-color:#64748b;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 14px 36px rgba(2,6,23,.3)!important}' +
+      '[data-memory-palace-viewport] [data-palace-overlay="focus"]{background:radial-gradient(ellipse at top right,rgba(99,102,241,.15),transparent 70%),linear-gradient(150deg,#1b283c,#0b1425)!important;border-top-width:3px!important}' +
+      '[data-memory-palace-viewport] [data-palace-overlay="focus"] [data-palace-focus-heading]{font-weight:750!important;line-height:1.3!important}' +
+      '[data-memory-palace-viewport] [data-palace-action="begin-walk"]{background:linear-gradient(120deg,#6258ce,#4338a5)!important;box-shadow:0 4px 14px rgba(99,102,241,.25)}' +
+      '[data-memory-palace-viewport] [data-palace-action="previous"],[data-memory-palace-viewport] [data-palace-action="next"]{background:linear-gradient(145deg,#33435f,#1b293f)!important;border-color:#8191ad!important}' +
+      '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay],[data-memory-palace-viewport] [data-palace-action]{background:Canvas!important;color:CanvasText!important;box-shadow:none!important}}';
+    holder.appendChild(visualStyles);
+    state.cleanup.push(function () { if (visualStyles.parentNode) visualStyles.parentNode.removeChild(visualStyles); });
     state.renderer = renderer;
 
     var theme = THEMES[opts && opts.theme] || THEMES.gallery;
@@ -1249,6 +1305,12 @@
     // Starfield above the open-roofed palace (gallery + space; a dream-space, not
     // a building sim). Two half-count layers whose opacities pulse out of phase →
     // a gentle whole-sky twinkle for the cost of two uniform writes per frame.
+    // Share a soft circular point texture across stars, the orb halo and dust.
+    var softPointCanvas=document.createElement('canvas');softPointCanvas.width=softPointCanvas.height=64;
+    var softPointCtx=softPointCanvas.getContext('2d'),softPointGradient=softPointCtx.createRadialGradient(32,32,1,32,32,31);
+    softPointGradient.addColorStop(0,'rgba(255,255,255,1)');softPointGradient.addColorStop(0.24,'rgba(255,255,255,0.7)');softPointGradient.addColorStop(1,'rgba(255,255,255,0)');
+    softPointCtx.fillStyle=softPointGradient;softPointCtx.fillRect(0,0,64,64);
+    var softPointTexture=new THREE.CanvasTexture(softPointCanvas);
     var _starMats = [];
     try {
       if (theme.starCount > 0) {
@@ -1262,7 +1324,7 @@
             sp3[si * 3 + 2] = starCZ - span / 2 + Math.random() * span;
           }
           var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
-          var sm = new THREE.PointsMaterial({ color: theme.stars, size: 7, transparent: true, opacity: 0.5, depthWrite: false });
+          var sm = new THREE.PointsMaterial({ map: softPointTexture, color: theme.stars, size: 7, transparent: true, opacity: 0.5, alphaTest: 0.015, depthWrite: false });
           sm.userData = { phase: sl * Math.PI };   // opposite phases
           _starMats.push(sm);
           root.add(new THREE.Points(sg, sm));
@@ -1273,23 +1335,23 @@
     var group = new THREE.Group(); root.add(group);
     function makeSurfaceTexture(kind) {
       var c = document.createElement('canvas'); c.width = 128; c.height = 128; var g = c.getContext('2d');
-      g.fillStyle = kind === 'wall' ? '#d8e0ec' : '#cbd5e1'; g.fillRect(0, 0, 128, 128);
+      g.fillStyle = kind === 'wall' ? '#ece6da' : '#e0d9cc'; g.fillRect(0, 0, 128, 128);
       if (kind === 'wall') {
-        for (var py = 3; py < 128; py += 7) { g.fillStyle = py % 14 ? 'rgba(15,23,42,0.035)' : 'rgba(255,255,255,0.045)'; g.fillRect(0, py, 128, 1); }
+        for (var py = 3; py < 128; py += 19) { g.fillStyle = py % 14 ? 'rgba(15,23,42,0.035)' : 'rgba(255,255,255,0.045)'; g.fillRect(0, py, 128, 1); }
         for (var pn = 0; pn < 210; pn++) { var px = (pn * 37) % 128, pyy = (pn * 71) % 128; g.fillStyle = pn % 3 ? 'rgba(15,23,42,0.04)' : 'rgba(255,255,255,0.055)'; g.fillRect(px, pyy, 1, 1); }
       } else {
-        g.strokeStyle = 'rgba(15,23,42,0.09)'; g.lineWidth = 1;
-        for (var fy = 0; fy <= 128; fy += 32) { g.beginPath(); g.moveTo(0, fy); g.lineTo(128, fy); g.stroke(); }
-        for (var fx = 0; fx <= 128; fx += 32) { g.beginPath(); g.moveTo(fx, 0); g.lineTo(fx, 128); g.stroke(); }
+        g.strokeStyle = 'rgba(42,35,24,0.085)'; g.lineWidth = 1;
+        for (var fy = 0; fy <= 128; fy += 64) { g.beginPath(); g.moveTo(0, fy); g.lineTo(128, fy); g.stroke(); }
+        for (var fx = 0; fx <= 128; fx += 64) { g.beginPath(); g.moveTo(fx, 0); g.lineTo(fx, 128); g.stroke(); }
         g.strokeStyle = 'rgba(255,255,255,0.065)'; for (var fd = -128; fd < 128; fd += 32) { g.beginPath(); g.moveTo(fd, 0); g.lineTo(fd + 128, 128); g.stroke(); }
       }
-      var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(kind === 'wall' ? 3 : 4, kind === 'wall' ? 2 : 3); tex.anisotropy = _textureAnisotropy;
+      var tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(kind === 'wall' ? 3 : 2, kind === 'wall' ? 2 : 2); tex.anisotropy = _textureAnisotropy;
       if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
       return tex;
     }
-    var wallMat = new THREE.MeshStandardMaterial({ color: 0x26354b, map: theme.walls ? makeSurfaceTexture('wall') : null, roughness: 0.92, metalness: 0.02 });
+    var wallMat = new THREE.MeshStandardMaterial({ color: 0xa39988, map: theme.walls ? makeSurfaceTexture('wall') : null, roughness: 0.92, metalness: 0.02 });
     var floorTexture = theme.walls ? makeSurfaceTexture('floor') : null;
-    var trimMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.58, metalness: 0.12 });
+    var trimMat = new THREE.MeshStandardMaterial({ color: 0x665c4f, roughness: 0.58, metalness: 0.12 });
     var sideTrimGeo = theme.walls ? new THREE.BoxGeometry(ROOM_W, 16, 12) : null;
     var endTrimGeo = theme.walls ? new THREE.BoxGeometry(12, 16, ROOM_D) : null;
 
@@ -1299,7 +1361,39 @@
       group.add(mesh);
     }
 
-    var _focusLight = null, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {};
+    // Shared baked architectural details add depth without shadow maps or lights.
+    var nicheMat = null, skylightMat = null, floorContactMat = null;
+    if (theme.walls && palace.rooms.length > 1) {
+      var contactCanvas=document.createElement('canvas');contactCanvas.width=16;contactCanvas.height=128;
+      var contactCtx=contactCanvas.getContext('2d'),contactGradient=contactCtx.createLinearGradient(0,0,0,128);
+      contactGradient.addColorStop(0,'rgba(9,16,25,0.4)');contactGradient.addColorStop(0.3,'rgba(9,16,25,0.13)');contactGradient.addColorStop(1,'rgba(9,16,25,0)');
+      contactCtx.fillStyle=contactGradient;contactCtx.fillRect(0,0,16,128);
+      var contactTexture=new THREE.CanvasTexture(contactCanvas);
+      floorContactMat=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,depthWrite:false,toneMapped:false});
+      var nc = document.createElement('canvas'); nc.width = 256; nc.height = 320;
+      var ng = nc.getContext('2d');
+      ng.beginPath(); ng.moveTo(20,310); ng.lineTo(20,125);
+      ng.bezierCurveTo(20,-15,236,-15,236,125); ng.lineTo(236,310); ng.closePath();
+      var nicheGradient = ng.createLinearGradient(0,0,256,320);
+      nicheGradient.addColorStop(0,'#1a2834'); nicheGradient.addColorStop(0.6,'#30424b'); nicheGradient.addColorStop(1,'#111c28');
+      ng.fillStyle=nicheGradient; ng.fill(); ng.strokeStyle='#bda77d'; ng.lineWidth=3; ng.stroke();
+      ng.save(); ng.clip(); ng.strokeStyle='rgba(216,193,147,0.12)'; ng.lineWidth=1;
+      for(var flute=32;flute<236;flute+=16){ng.beginPath();ng.moveTo(flute,0);ng.lineTo(flute,320);ng.stroke();}
+      ng.restore();
+      var nicheTex = new THREE.CanvasTexture(nc); nicheTex.anisotropy = _textureAnisotropy;
+      if(THREE.sRGBEncoding) nicheTex.encoding=THREE.sRGBEncoding;
+      nicheMat = new THREE.MeshBasicMaterial({map:nicheTex,transparent:true,depthWrite:false,toneMapped:false});
+      var sc=document.createElement('canvas');sc.width=512;sc.height=128;
+      var sgc=sc.getContext('2d'), slg=sgc.createLinearGradient(0,0,0,128);
+      slg.addColorStop(0,'#5d6772');slg.addColorStop(0.18,'#c0c8c8');slg.addColorStop(0.5,'#f3eddb');slg.addColorStop(0.82,'#c0c8c8');slg.addColorStop(1,'#5d6772');
+      sgc.fillStyle=slg;sgc.fillRect(0,0,512,128);
+      sgc.fillStyle='#35414c'; for(var mullion=0;mullion<=512;mullion+=64)sgc.fillRect(mullion,0,5,128);
+      sgc.strokeStyle='#c4ac7d';sgc.lineWidth=5;sgc.strokeRect(2,2,508,124);
+      var skylightTex=new THREE.CanvasTexture(sc);skylightTex.anisotropy=_textureAnisotropy;
+      if(THREE.sRGBEncoding) skylightTex.encoding=THREE.sRGBEncoding;
+      skylightMat=new THREE.MeshBasicMaterial({map:skylightTex,toneMapped:false});
+    }
+    var _focusLight = null, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {}, _roomCanopies = {};
     palace.rooms.forEach(function (room, ri) {
       var cx = room.center.x, cz = room.center.z, ang = room.angle || 0;
       // Each room lives in its own group, positioned on its spoke and rotated to
@@ -1311,7 +1405,7 @@
       }
       // Floor: room-accent tint (brighter in open-world themes).
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(theme.floorMul), map: floorTexture, roughness: 0.94, metalness: 0.01 }));
+        new THREE.MeshStandardMaterial({ color: theme.walls ? new THREE.Color('#8e877a').lerp(new THREE.Color(room.color), 0.08) : new THREE.Color(room.color).multiplyScalar(theme.floorMul), map: floorTexture, roughness: 0.68, metalness: 0.08 }));
       floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; rg.add(floor);
       // Room-level mastery tint: a quiet, overview-only wash across the floor.
       // It is deliberately created for every room but kept transparent until
@@ -1351,14 +1445,21 @@
       // open-world themes). Room-local, so it rotates with the spoke for free.
       if (ri !== 0) {
         try {
-          var cc = document.createElement('canvas'); cc.width = 128; cc.height = 32;
-          var cg = cc.getContext('2d'); var carpetBase = new THREE.Color(room.color).multiplyScalar(theme.walls ? 0.42 : 0.72);
-          cg.fillStyle = carpetBase.getStyle(); cg.fillRect(0, 0, 128, 32);
-          cg.strokeStyle = 'rgba(255,255,255,0.22)'; cg.lineWidth = 1;
-          for (var weave = 1; weave < 32; weave += 4) { cg.beginPath(); cg.moveTo(0, weave); cg.lineTo(128, weave); cg.stroke(); }
-          cg.strokeStyle = 'rgba(255,255,255,0.38)'; cg.lineWidth = 2; cg.strokeRect(1, 2, 126, 28);
-          cg.strokeStyle = 'rgba(255,255,255,0.24)'; cg.lineWidth = 2;
-          for (var arrowX = 18; arrowX < 118; arrowX += 25) { cg.beginPath(); cg.moveTo(arrowX - 6, 9); cg.lineTo(arrowX + 3, 16); cg.lineTo(arrowX - 6, 23); cg.stroke(); }
+          var cc = document.createElement('canvas'); cc.width = 512; cc.height = 128;
+          var cg = cc.getContext('2d'); var carpetBase = new THREE.Color(room.color).multiplyScalar(theme.walls ? 0.32 : 0.62);
+          cg.fillStyle=carpetBase.getStyle();cg.fillRect(0,0,512,128);
+          // Fine fabric grain replaces the stretched bright stripes; arrows remain.
+          cg.fillStyle='rgba(255,255,255,0.035)';
+          for(var warp=0;warp<512;warp+=4)cg.fillRect(warp,0,1,128);
+          for(var weft=0;weft<128;weft+=4)cg.fillRect(0,weft,512,1);
+          var rugShade=cg.createLinearGradient(0,0,0,128);
+          rugShade.addColorStop(0,'rgba(0,0,0,0.2)');rugShade.addColorStop(0.5,'rgba(255,255,255,0.035)');rugShade.addColorStop(1,'rgba(0,0,0,0.2)');
+          cg.fillStyle=rugShade;cg.fillRect(0,0,512,128);
+          cg.strokeStyle='rgba(235,219,181,0.42)';cg.lineWidth=2;cg.strokeRect(7,8,498,112);
+          cg.strokeStyle='rgba(235,219,181,0.16)';cg.lineWidth=1;cg.strokeRect(12,14,488,100);
+          cg.strokeStyle='rgba(245,236,213,0.28)';cg.lineWidth=3;
+          for(var arrowX=80;arrowX<500;arrowX+=120){cg.beginPath();cg.moveTo(arrowX-12,46);cg.lineTo(arrowX+6,64);cg.lineTo(arrowX-12,82);cg.stroke();}
+
           var ctex = new THREE.CanvasTexture(cc); ctex.anisotropy = _textureAnisotropy;
           if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
           var carpet = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W - 150, 130),
@@ -1378,6 +1479,17 @@
         var segZ = (ROOM_D - DOOR_W) / 2;
         addLocalWall(-ROOM_W / 2, -(DOOR_W / 2 + segZ / 2), WALL_T, segZ);   // near wall, doorway to the hub
         addLocalWall(-ROOM_W / 2, (DOOR_W / 2 + segZ / 2), WALL_T, segZ);
+        // Baked contact shading grounds the walls without real-time shadow maps.
+        if(floorContactMat){
+          [-1,1].forEach(function(side){
+            var shade=new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W-32,46),floorContactMat);
+            shade.rotation.set(-Math.PI/2,0,side<0?0:Math.PI);shade.position.set(0,1.04,side*(ROOM_D/2-29));
+            shade.userData.visualRole='wall-floor-contact';rg.add(shade);
+          });
+          var endShade=new THREE.Mesh(new THREE.PlaneGeometry(ROOM_D-32,46),floorContactMat);
+          endShade.rotation.set(-Math.PI/2,0,-Math.PI/2);endShade.position.set(ROOM_W/2-29,1.04,0);
+          endShade.userData.visualRole='wall-floor-contact';rg.add(endShade);
+        }
         // Baseboards and cornices add human scale and stronger parallax without shadows.
         try {
           [-1, 1].forEach(function (trimSide) {
@@ -1413,18 +1525,143 @@
           _roomPortals[ri] = portalMat;
         } catch (eD) {}
       }
+
+      // Permanent spatial landmarks: geometry differs between rooms and never
+      // depends on answers, mastery or random seeds. No additional lights or animation.
+      var architecture = new THREE.Group();
+      architecture.userData.visualRole = 'room-identity';
+      architecture.userData.roomIndex = ri;
+      rg.add(architecture);
+      var stone = new THREE.MeshStandardMaterial({ color: theme.walls ? 0x716d65 : 0x718096, roughness: 0.76, metalness: 0.1 });
+      var bronze = new THREE.MeshStandardMaterial({ color: 0xd6b983, roughness: 0.4, metalness: 0.55 });
+      var glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(room.color).lerp(new THREE.Color('#ffffff'), 0.48) });
+      function detail(geometry, material, x, y, z, role) {
+        var mesh = new THREE.Mesh(geometry, material); mesh.position.set(x, y, z);
+        mesh.userData.visualRole = role; architecture.add(mesh); return mesh;
+      }
+      if (ri === 0) {
+        // A compass rose anchors the entrance in both first-person and map views.
+        // All inlays sit flush with the plaza; they add no walking obstacles.
+        var centerStone=detail(new THREE.CircleGeometry(96,48),new THREE.MeshStandardMaterial({color:0x253545,roughness:0.7,metalness:0.16}),0,2.25,0,'plaza-center-inlay');
+        centerStone.rotation.x=-Math.PI/2;
+        var compassPetal=new THREE.Shape();compassPetal.moveTo(0,-226);compassPetal.lineTo(21,-80);compassPetal.lineTo(0,-108);compassPetal.lineTo(-21,-80);compassPetal.closePath();
+        var compassRose=new THREE.InstancedMesh(new THREE.ShapeGeometry(compassPetal),bronze,8);
+        var compassTransform=new THREE.Object3D();
+        for(var petal=0;petal<8;petal++){
+          compassTransform.position.set(0,2.35,0);compassTransform.rotation.set(-Math.PI/2,0,petal*Math.PI/4);
+          compassTransform.scale.setScalar(petal%2?0.78:1);compassTransform.updateMatrix();compassRose.setMatrixAt(petal,compassTransform.matrix);
+        }
+        compassRose.userData.visualRole='plaza-compass-rose';architecture.add(compassRose);
+        var mosaic=new THREE.InstancedMesh(new THREE.BoxGeometry(19,1,5),stone,48);
+        for(var tessera=0;tessera<48;tessera++){
+          var mosaicAngle=tessera*Math.PI/24;compassTransform.position.set(Math.sin(mosaicAngle)*310,1.8,Math.cos(mosaicAngle)*310);
+          compassTransform.rotation.set(0,mosaicAngle,0);compassTransform.scale.setScalar(tessera%6?1:1.3);compassTransform.updateMatrix();mosaic.setMatrixAt(tessera,compassTransform.matrix);
+        }
+        mosaic.userData.visualRole='plaza-mosaic';architecture.add(mosaic);
+        [100, 145, 210, 275].forEach(function (radius, ringIndex) {
+          var ring = detail(new THREE.RingGeometry(radius, radius + (ringIndex === 2 ? 6 : 2), 64), bronze, 0, 2 + ringIndex * 0.08, 0, 'plaza-compass');
+          ring.rotation.x = -Math.PI / 2;
+        });
+        for (var spoke = 0; spoke < 8; spoke++) {
+          var a = spoke * Math.PI / 4;
+          var tick = detail(new THREE.BoxGeometry(4, 1, spoke % 2 ? 24 : 48), glow, Math.sin(a) * 242, 2.2, Math.cos(a) * 242, 'plaza-compass');
+          tick.rotation.y = a;
+        }
+      } else {
+        // A distinct medallion silhouette sits on the far wall, away from loci.
+        var emblem = new THREE.Group(); emblem.position.set(ROOM_W / 2 - 15, WALL_H * 0.6, 0);
+        emblem.rotation.y = -Math.PI / 2;
+        emblem.userData.visualRole = 'room-landmark'; emblem.userData.variant = (ri - 1) % 4;
+        architecture.add(emblem);
+        var medallion = new THREE.Mesh(new THREE.TorusGeometry(79, 5, 8, 48), bronze); emblem.add(medallion);
+        var shape;
+        switch ((ri - 1) % 4) {
+          case 0: shape = new THREE.TorusGeometry(43, 8, 8, 40); break;
+          case 1: shape = new THREE.OctahedronGeometry(49); break;
+          case 2: shape = new THREE.TorusKnotGeometry(30, 7, 48, 6); break;
+          default: shape = new THREE.IcosahedronGeometry(46); break;
+        }
+        var symbol = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({ color: room.color, emissive: room.color, emissiveIntensity: 0.24, metalness: 0.45, roughness: 0.35 }));
+        symbol.rotation.set(0.25, 0.35, 0.2); emblem.add(symbol);
+        // Batch the twelve ticks into one draw call per room.
+        var markers = new THREE.InstancedMesh(new THREE.BoxGeometry(3, 9, 3), glow, 12);
+        var markerTransform = new THREE.Object3D();
+        for (var ray = 0; ray < 12; ray++) {
+          var angle = ray * Math.PI / 6;
+          markerTransform.position.set(Math.sin(angle) * 95, Math.cos(angle) * 95, 0);
+          markerTransform.rotation.z = -angle; markerTransform.scale.y = ray % 3 ? 1 : 2;
+          markerTransform.updateMatrix(); markers.setMatrixAt(ray, markerTransform.matrix);
+        }
+        emblem.add(markers);
+        if (theme.walls) {
+          // A coffered canopy makes the room read as an interior from eye level.
+          // It lifts out of the way in overview; no geometry is rebuilt on toggles.
+          var canopy = new THREE.Group(); canopy.userData.visualRole = 'gallery-canopy';
+          _roomCanopies[ri] = canopy; architecture.add(canopy);
+          var skylight=new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W-150,116),skylightMat);
+          skylight.rotation.x=Math.PI/2;skylight.position.set(0,WALL_H-1,0);
+          skylight.userData.visualRole='gallery-skylight';canopy.add(skylight);
+          var niche=detail(new THREE.PlaneGeometry(260,300),nicheMat,ROOM_W/2-11,166,0,'landmark-niche');
+          niche.rotation.y=-Math.PI/2;
+          var ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x373f49, roughness: 0.88, side: THREE.DoubleSide });
+          for (var bay = 0; bay < 3; bay++) {
+            var panel = new THREE.Mesh(new THREE.BoxGeometry(ROOM_W - 26, 8, ROOM_D / 3 - 16), ceilingMaterial);
+            panel.position.set(0, WALL_H + 6, (bay - 1) * ROOM_D / 3); canopy.add(panel);
+            var beam = new THREE.Mesh(new THREE.BoxGeometry(ROOM_W - 18, 14, 9), bronze);
+            beam.position.set(0, WALL_H - 5, (bay - 1.5) * ROOM_D / 3 + 6); canopy.add(beam);
+          }
+          // Recessed lower panels and edge pilasters leave all authored frames clear.
+          [-1, 1].forEach(function (side) {
+            detail(new THREE.BoxGeometry(ROOM_W - 28, 60, 6), stone, 0, 36, side * (ROOM_D / 2 - 8), 'gallery-wainscot');
+            detail(new THREE.BoxGeometry(ROOM_W - 30, 3, 4), bronze, 0, 69, side * (ROOM_D / 2 - 12), 'gallery-inlay');
+            [-1, 1].forEach(function (end) {
+              detail(new THREE.BoxGeometry(19, WALL_H - 32, 14), stone, end * (ROOM_W / 2 - 24), WALL_H / 2, side * (ROOM_D / 2 - 13), 'gallery-pilaster');
+            });
+            detail(new THREE.BoxGeometry(ROOM_W - 62, 3, 6), glow, 0, WALL_H - 25, side * (ROOM_D / 2 - 14), 'gallery-light-strip');
+          });
+        } else {
+          // Open-air rooms retain a threshold and a low plinth under their landmark.
+          detail(new THREE.CylinderGeometry(70, 84, 18, 32), stone, ROOM_W / 2 - 36, 9, 0, 'landmark-plinth');
+          [-1, 1].forEach(function (side) {
+            detail(new THREE.BoxGeometry(9, 112, 9), bronze, -ROOM_W / 2, 56, side * (DOOR_W / 2 + 16), 'open-threshold');
+            detail(new THREE.SphereGeometry(8, 10, 8), glow, -ROOM_W / 2, 115, side * (DOOR_W / 2 + 16), 'open-threshold');
+          });
+        }
+        detail(new THREE.BoxGeometry(20, 2, DOOR_W - 10), glow, -ROOM_W / 2 + 10, 2.4, 0, 'threshold-inlay');
+        if(theme.walls){
+          [-1,1].forEach(function(edge){
+            detail(new THREE.BoxGeometry(3,218,3),glow,-ROOM_W/2-7,139,edge*(DOOR_W/2+3),'portal-edge-light');
+          });
+        }
+        // A visible promenade connects the hub to each threshold in all themes.
+        var doorX = cx - Math.cos(ang) * ROOM_W / 2;
+        var doorZ = cz + Math.sin(ang) * ROOM_W / 2;
+        var distance = Math.hypot(doorX, doorZ);
+        if (distance > 50) {
+          var promenade = new THREE.Mesh(new THREE.PlaneGeometry(110, distance), new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.38), roughness: 0.86, side: THREE.DoubleSide }));
+          promenade.geometry.rotateX(-Math.PI / 2); promenade.rotation.y = Math.atan2(doorX, doorZ);
+          promenade.position.set(doorX / 2, 0.7, doorZ / 2); promenade.userData.visualRole = 'hub-promenade'; group.add(promenade);
+        }
+      }
+
       // Room name sprite (world coords; sprites always face the camera).
       // A single movable focus light is created after the rooms, avoiding
       // one forward-rendered point light per branch in large palaces.
-      var name = makeLabelSprite(THREE, room.label, room.color, 30, false, _textureAnisotropy);
+      var name = makeLabelSprite(THREE, room.label, room.color, 30, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
       name.position.set(cx, WALL_H + 40, cz);
       name.userData = name.userData || {};
       name.userData.roomBaseScale = name.scale.clone();
+      name.userData.roomMapPosition = name.position.clone();
+      name.userData.roomWalkPosition = ri > 0
+        ? new THREE.Vector3(cx-Math.cos(ang)*(ROOM_W/2+16),WALL_H+42,cz+Math.sin(ang)*(ROOM_W/2+16))
+        : name.position.clone();
+      name.position.copy(name.userData.roomWalkPosition);
+      name.userData.visualRole='room-wayfinding-label';
       _roomLabels[ri] = name;
       group.add(name);
     });
     try {
-      _focusLight = new THREE.PointLight(0x818cf8, theme.walls ? 0.86 : 0.62, ROOM_W * 1.55, 2);
+      _focusLight = new THREE.PointLight(0x818cf8, theme.walls ? 0.5 : 0.62, ROOM_W * 1.55, 2);
       _focusLight.position.set(0, WALL_H - 46, 0);
       _focusLight.userData.visualRole = 'active-room-light'; group.add(_focusLight);
     } catch (eFocusLight) {}
@@ -1505,8 +1742,18 @@
       var orb = new THREE.Mesh(new THREE.SphereGeometry(30, 24, 24),
         new THREE.MeshStandardMaterial({ color: 0x818cf8, emissive: 0x6366f1, emissiveIntensity: 0.9, roughness: 0.3 }));
       orb.position.set(0, 140, 0); orb.userData.locusId = '__entry'; group.add(orb);
-      var title = makeLabelSprite(THREE, palace.title || '', '#818cf8', 32, false, _textureAnisotropy);
-      title.position.set(0, 215, 0); group.add(title);
+      // A stationary armillary gives the entrance a recognisable silhouette.
+      // It stays within the existing orb halo and needs no animated transforms.
+      var armillaryMetal=new THREE.MeshStandardMaterial({color:0xc7ad79,metalness:0.58,roughness:0.38});
+      var orbitGeo=new THREE.TorusGeometry(49,1.8,8,64);
+      [[Math.PI/2,0,0],[0,Math.PI/4,0],[0,-Math.PI/4,0]].forEach(function(tilt){
+        var orbit=new THREE.Mesh(orbitGeo,armillaryMetal);orbit.position.set(0,140,0);orbit.rotation.set(tilt[0],tilt[1],tilt[2]);orbit.userData.visualRole='entrance-armillary';group.add(orbit);
+      });
+      [5,106].forEach(function(level){
+        var collar=new THREE.Mesh(new THREE.CylinderGeometry(51,53,5,32),armillaryMetal);collar.position.set(0,level,0);collar.userData.visualRole='entrance-plinth-collar';group.add(collar);
+      });
+      var title = makeLabelSprite(THREE, palace.title || '', '#818cf8', 32, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
+      title.position.set(0, 223, 0); group.add(title);
       try {
         var ORB_N = 18, op3 = new Float32Array(ORB_N * 3);
         for (var oi = 0; oi < ORB_N; oi++) {
@@ -1516,7 +1763,7 @@
           op3[oi * 3 + 2] = Math.sin(oa) * 58;
         }
         var og = new THREE.BufferGeometry(); og.setAttribute('position', new THREE.BufferAttribute(op3, 3));
-        _orbRing = new THREE.Points(og, new THREE.PointsMaterial({ color: 0xa5b4fc, size: 6, transparent: true, opacity: 0.85, depthWrite: false }));
+        _orbRing = new THREE.Points(og, new THREE.PointsMaterial({ map: softPointTexture, color: 0xa5b4fc, size: 5, transparent: true, opacity: 0.7, alphaTest: 0.015, depthWrite: false }));
         _orbRing.position.set(0, 140, 0);
         group.add(_orbRing);
       } catch (e) {}
@@ -1536,11 +1783,7 @@
         mp3[mi * 3 + 2] = palace.bounds.minZ * 0.9 + Math.random() * palace.bounds.width * 0.9;
       }
       var mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.BufferAttribute(mp3, 3));
-      var moteCanvas = document.createElement('canvas'); moteCanvas.width = moteCanvas.height = 64; var moteCtx = moteCanvas.getContext('2d');
-      var moteGrad = moteCtx.createRadialGradient(32, 32, 1, 32, 32, 31);
-      moteGrad.addColorStop(0, 'rgba(255,255,255,0.95)'); moteGrad.addColorStop(0.28, 'rgba(255,255,255,0.55)'); moteGrad.addColorStop(1, 'rgba(255,255,255,0)');
-      moteCtx.fillStyle = moteGrad; moteCtx.fillRect(0, 0, 64, 64);
-      var moteTex = new THREE.CanvasTexture(moteCanvas);
+      var moteTex = softPointTexture;
       _motes = new THREE.Points(mg, new THREE.PointsMaterial({ map: moteTex, color: MOTE_COLOR, size: 7, sizeAttenuation: true, transparent: true, opacity: 0.38, alphaTest: 0.015, depthWrite: false }));
       _motes.userData.visualRole = 'ambient-motes';
       root.add(_motes);
@@ -1586,23 +1829,46 @@
     var _washMat = null;
     try {
       if (theme.walls) {
-        var wc = document.createElement('canvas'); wc.width = 64; wc.height = 128;
+        var wc = document.createElement('canvas'); wc.width = 128; wc.height = 128;
         var wg = wc.getContext('2d');
-        var wgrad = wg.createLinearGradient(0, 0, 0, 128);
-        wgrad.addColorStop(0, 'rgba(255,220,160,0.85)');
+        var wgrad = wg.createRadialGradient(64,48,2,64,64,64);
+        wgrad.addColorStop(0, 'rgba(255,225,180,0.65)');
         wgrad.addColorStop(0.55, 'rgba(255,220,160,0.22)');
         wgrad.addColorStop(1, 'rgba(255,220,160,0)');
-        wg.fillStyle = wgrad; wg.fillRect(0, 0, 64, 128);
+        wg.fillStyle = wgrad; wg.fillRect(0, 0, 128, 128);
         var wtex = new THREE.CanvasTexture(wc); wtex.anisotropy = _textureAnisotropy;
-        _washMat = new THREE.MeshBasicMaterial({ map: wtex, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+        _washMat = new THREE.MeshBasicMaterial({ map: wtex, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false });
       }
     } catch (e) {}
     // Shared gallery-frame geometry keeps the richer molding inexpensive.
     var frameRailHGeo = new THREE.BoxGeometry(FRAME_W + 28, 10, 9);
     var frameRailVGeo = new THREE.BoxGeometry(10, FRAME_H + 8, 9);
+    var frameCaseMat = theme.walls && palace.loci.length > 1 ? new THREE.MeshStandardMaterial({ color: 0x746145, roughness: 0.46, metalness: 0.48 }) : null;
+    // One shared planar ring gives each brass case a slim status-colour inlay.
+    // The existing border material still communicates focus, recall, and loading.
+    var frameAccentGeo = null;
+    if (frameCaseMat) {
+      var accentShape = new THREE.Shape();
+      var aw=(FRAME_W+18)/2, ah=(FRAME_H+18)/2;
+      accentShape.moveTo(-aw,-ah);accentShape.lineTo(aw,-ah);accentShape.lineTo(aw,ah);accentShape.lineTo(-aw,ah);accentShape.closePath();
+      var accentHole=new THREE.Path(), iw=(FRAME_W+6)/2, ih=(FRAME_H+6)/2;
+      accentHole.moveTo(-iw,-ih);accentHole.lineTo(-iw,ih);accentHole.lineTo(iw,ih);accentHole.lineTo(iw,-ih);accentHole.closePath();
+      accentShape.holes.push(accentHole);
+      frameAccentGeo=new THREE.ShapeGeometry(accentShape);
+    }
     var frameInsetGeo = new THREE.PlaneGeometry(FRAME_W + 10, FRAME_H + 10);
-    var frameInsetMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.96, metalness: 0.01 });
-    var lampMat = new THREE.MeshStandardMaterial({ color: 0x475569, emissive: 0xffd9a0, emissiveIntensity: 0.85, roughness: 0.5, metalness: 0.2 });
+    var frameInsetMat = new THREE.MeshStandardMaterial({ color: theme.walls ? 0xe8dcc5 : 0x111827, roughness: 0.96, metalness: 0.01 });
+    // Fine inner bevels catch the gallery light without covering the artwork.
+    var bevelHGeo = frameCaseMat ? new THREE.BoxGeometry(FRAME_W + 4, 1.6, 1.8) : null;
+    var bevelVGeo = frameCaseMat ? new THREE.BoxGeometry(1.6, FRAME_H + 4, 1.8) : null;
+    var bevelLightMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: 0xdecda9, roughness: 0.48, metalness: 0.35 }) : null;
+    var bevelShadeMat = frameCaseMat ? new THREE.MeshStandardMaterial({ color: 0x6e5d43, roughness: 0.55, metalness: 0.28 }) : null;
+    // Reuse fixture geometry across all stops; the diffuser is the only glowing part.
+    var lampHoodGeo = new THREE.CylinderGeometry(5.5, 5.5, FRAME_W * 0.66, 12);
+    var lampArmGeo = new THREE.BoxGeometry(2.6, 2.6, 14);
+    var lampDiffuserGeo = new THREE.BoxGeometry(FRAME_W * 0.59, 1.4, 5);
+    var lampHoodMat = new THREE.MeshStandardMaterial({ color: 0x9b825c, roughness: 0.38, metalness: 0.62 });
+    var lampMat = new THREE.MeshStandardMaterial({ color: 0xffedc9, emissive: 0xffd9a0, emissiveIntensity: 0.7, roughness: 0.5, metalness: 0 });
     var frameShadowMat = null;
     try {
       var shadowCanvas = document.createElement('canvas'); shadowCanvas.width = 128; shadowCanvas.height = 96;
@@ -1624,18 +1890,36 @@
       var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.38, metalness: 0.28, emissive: new THREE.Color(color), emissiveIntensity: 0 });
       var inset = new THREE.Mesh(frameInsetGeo, frameInsetMat); inset.position.z = 1.2; g2.add(inset);
       [[frameRailHGeo, 0, FRAME_H / 2 + 8], [frameRailHGeo, 0, -(FRAME_H / 2 + 8)], [frameRailVGeo, FRAME_W / 2 + 9, 0], [frameRailVGeo, -(FRAME_W / 2 + 9), 0]].forEach(function (railSpec) {
-        var rail = new THREE.Mesh(railSpec[0], borderMat); rail.position.set(railSpec[1], railSpec[2], 3);
+        var rail = new THREE.Mesh(railSpec[0], theme.walls ? frameCaseMat : borderMat); rail.position.set(railSpec[1], railSpec[2], 3);
         rail.userData.visualRole = 'frame-molding'; g2.add(rail);
       });
+      if (theme.walls) {
+        var accentInlay=new THREE.Mesh(frameAccentGeo,borderMat);accentInlay.position.z=8;
+        accentInlay.userData.visualRole='frame-accent-inlay';g2.add(accentInlay);
+        [[bevelHGeo, 0, FRAME_H / 2 + 1.2, bevelShadeMat], [bevelHGeo, 0, -FRAME_H / 2 - 1.2, bevelLightMat], [bevelVGeo, -FRAME_W / 2 - 1.2, 0, bevelShadeMat], [bevelVGeo, FRAME_W / 2 + 1.2, 0, bevelLightMat]].forEach(function (edge) {
+          var bevel = new THREE.Mesh(edge[0], edge[3]);
+          bevel.position.set(edge[1], edge[2], 5);
+          bevel.userData.visualRole = 'frame-inner-bevel'; g2.add(bevel);
+        });
+      }
       if (frameShadowMat && !l.mine) {
         var frameShadow = new THREE.Mesh(new THREE.PlaneGeometry(FRAME_W + 52, FRAME_H + 48), frameShadowMat);
         frameShadow.position.z = -0.35; frameShadow.userData.visualRole = 'frame-contact-shadow'; g2.add(frameShadow);
       }
-      // Museum "picture light": a warm emissive bar above the frame — reads as a
-      // gallery fixture without the per-frame cost of a real THREE light.
-      var lampBar = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W * 0.72, 7, 9), lampMat);
-      lampBar.position.set(0, FRAME_H / 2 + 24, 6);
-      g2.add(lampBar);
+      // A slim brass hood projects from the frame on two supports. Its warm
+      // underside illuminates the display without a bright front-facing bar.
+      var lampHood = new THREE.Mesh(lampHoodGeo, lampHoodMat);
+      lampHood.rotation.z = Math.PI / 2;
+      lampHood.position.set(0, FRAME_H / 2 + 24, 15);
+      lampHood.userData.visualRole = 'picture-light-hood'; g2.add(lampHood);
+      [-1, 1].forEach(function (side) {
+        var arm = new THREE.Mesh(lampArmGeo, lampHoodMat);
+        arm.position.set(side * FRAME_W * 0.2, FRAME_H / 2 + 24, 5);
+        g2.add(arm);
+      });
+      var lampBar = new THREE.Mesh(lampDiffuserGeo, lampMat);
+      lampBar.position.set(0, FRAME_H / 2 + 18.6, 15);
+      lampBar.userData.visualRole = 'picture-light-diffuser'; g2.add(lampBar);
       // A student-built locus stands free in the room rather than hanging on a
       // wall, so it gets a post and a base plate to sit on — and skips the wall
       // wash, which would otherwise glow on thin air behind it.
@@ -1697,7 +1981,7 @@
         } catch (eEmptyBeacon) {}
       }
       // Item label under the frame ('?' while its answer is unearned in recall).
-      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy);
+      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
       lab.userData.visualRole = 'locus-caption'; lab.userData.locusId = l.id;
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
@@ -2009,7 +2293,7 @@
     var zoomValue = null, zoomOutBtn = null, zoomInBtn = null, resetViewBtn = null;
     function _setJourneyMapState() {
       if (!journeyMap) return;
-      var show = !!overview && !routeVisible && !helpVisible && !recall && journeyMapStops.length > 0;
+      var show = !!overview && !routeVisible && !helpVisible && !recall && !buildMode && journeyMapStops.length > 0;
       journeyMap.hidden = !show;
       if (!show) return;
       var totalStops = Math.max(0, palace.route.length - 1);
@@ -2020,10 +2304,12 @@
         var active = stop.index === curIdx;
         var color = stop.color || '#818cf8';
         stop.button.setAttribute('aria-current', active ? 'step' : 'false');
-        stop.button.style.backgroundColor = active ? color : '#0f172a';
+        stop.button.style.backgroundColor = active ? '#24334b' : '#0c182b';
         stop.button.style.borderColor = active ? '#ffffff' : color;
-        stop.button.style.color = active ? contrastForeground(color) : '#f8fafc';
-        stop.button.style.transform = active ? 'scale(1.08)' : 'scale(1)';
+        stop.button.style.color = '#f8fafc';
+        if(stop.number){stop.number.style.backgroundColor=active?color:'#25334b';stop.number.style.color=active?contrastForeground(color):'#dce5f5';}
+        stop.button.style.transform = 'none';
+        stop.button.setAttribute('data-visited', visitedStops[palace.route[stop.index]] ? 'true' : 'false');
         stop.button.style.outline = active ? '2px solid #ffffff' : 'none';
         stop.button.style.outlineOffset = active ? '2px' : '0';
         stop.button.style.boxShadow = active ? ('0 0 0 3px ' + color + '55') : 'none';
@@ -2101,7 +2387,7 @@
           try { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } catch (eD) {}
         }
         var overlay = !!(ref.locus && ref.locus.roomIdx === _captionOverlayRoomIdx);
-        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy);
+        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls ? 'plaque' : undefined);
         ref.label.userData.visualRole = 'locus-caption'; ref.label.userData.locusId = ref.locus && ref.locus.id;
         ref.label.position.set(0, -(FRAME_H / 2 + 38), 11);
         if (ref.label.material) ref.label.material.opacity = 1;
@@ -2380,8 +2666,8 @@
           for (var si = 0; si < _starMats.length; si++) {
             _starMats[si].opacity = 0.42 + 0.18 * Math.sin(now * 0.0012 + (_starMats[si].userData.phase || 0));
           }
-          if (_motes) { _motes.rotation.y += 0.00035; _motes.position.y = Math.sin(now * 0.0005) * 6; }
-          if (_orbRing) { _orbRing.rotation.y += 0.012; }
+          if (_motes) { _motes.rotation.y = now * 0.000021; _motes.position.y = Math.sin(now * 0.0005) * 6; }
+          if (_orbRing) { _orbRing.rotation.y = now * 0.00072; }
         }
         if (completionGlow && completionGlow.group.visible) {
           var completionWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.0032));
@@ -2486,6 +2772,30 @@
     // any guided nav returns to the rails.
     var freeMode = false, freeYaw = 0, freePitch = 0, moveF = 0, moveR = 0;
     var MOVE_SPEED = 14;
+    var explorationControls = null;
+    function stopWalking() { moveF = 0; moveR = 0; }
+    function stepInRoom(direction) {
+      if (!freeMode || recall || overview || buildMode || state.xrActive || helpVisible || routeVisible) return;
+      stopWalking();
+      var distance = direction * 64, bounds = palace.bounds;
+      var x = _cl(camPos.x + Math.sin(freeYaw) * distance, bounds.minX + 40, bounds.maxX - 40);
+      var z = _cl(camPos.z + Math.cos(freeYaw) * distance, bounds.minZ + 40, bounds.maxZ - 40);
+      var next = theme.walls ? resolvePalaceMovement(palace, camPos.x, camPos.z, x, z, WALK_RADIUS) : { x: x, z: z, collided: false };
+      camPos.x = next.x; camPos.z = next.z;
+      if (next.collided) _noteWallCollision();
+      _syncFreeRoomContext();
+      if (freeNavLive && !next.collided) freeNavLive.textContent = direction > 0
+        ? _tr(t, 'memory_palace.step_forward_done', 'Stepped forward.')
+        : _tr(t, 'memory_palace.step_back_done', 'Stepped back.');
+    }
+    function turnInRoom(direction) {
+      if (!freeMode || recall || overview || buildMode || state.xrActive || helpVisible || routeVisible) return;
+      stopWalking(); freeYaw += direction * Math.PI / 6; freePitch = 0;
+      _freeCueKey = ''; _syncFreeRoomContext();
+      if (freeNavLive) freeNavLive.textContent = direction > 0
+        ? _tr(t, 'memory_palace.turned_left', 'Turned left 30 degrees.')
+        : _tr(t, 'memory_palace.turned_right', 'Turned right 30 degrees.');
+    }
     function _cl(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function enterFree() {
       if (freeMode) return;
@@ -2499,6 +2809,29 @@
       _setNextStopBeaconState();
       _setGuidedTetherState();
       _setArrivalHaloState();
+    }
+
+    function inspectRoom() {
+      if (recall || state.xrActive || buildMode || palace.rooms.length < 2) return;
+      var currentLocus = locusById(palace, palace.route[curIdx]);
+      var roomIdx = currentLocus && currentLocus.roomIdx > 0 ? currentLocus.roomIdx : 1;
+      var room = palace.rooms[roomIdx];
+      if (!room) return;
+      if (routeVisible) setRouteVisible(false, false);
+      if (helpVisible) _setHelpVisible(false, false);
+      _hideCtrlHint();
+      moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;
+      var angle = room.angle || 0;
+      var localX = -ROOM_W / 2 + 76;
+      camPos.set(room.center.x + Math.cos(angle) * localX, EYE, room.center.z - Math.sin(angle) * localX);
+      look.set(room.center.x + Math.cos(angle) * 200, EYE + 10, room.center.z - Math.sin(angle) * 200);
+      // A deliberate instant cut avoids flying through walls or unrelated rooms.
+      freeMode = false; enterFree();
+      _setCameraFov(68, false);
+      _setActiveRoom(roomIdx); _setRouteGuideState(); _setCrossLinkState();
+      _syncFreeRoomContext(); updateHud();
+      if (live) live.textContent = _tr(t, 'memory_palace.room_orientation', 'Explore {room}. Notice its doorway, landmark and memory locations. Resume your stop when ready.').replace('{room}', room.label || '');
+      renderer.domElement.focus();
     }
 
     // Content-aware camera framing keeps the featured cue legible when a locus
@@ -2578,7 +2911,18 @@
         var verticalCenter = (minVertical + maxVertical) / 2;
         _adaptiveFocus.copy(_adaptiveFrameCenter).add(_adaptiveRight.multiplyScalar(lateralCenter));
         _adaptiveFocus.y += verticalCenter;
-        camPosT.copy(_adaptiveFocus).add(_adaptiveForward.multiplyScalar(baseDistance * distanceScale));
+        var framedDistance = baseDistance * distanceScale;
+        // Fit the frame, molding and caption to a portrait viewport at the default
+        // lens. Keeping this independent of the current FOV preserves manual zoom.
+        if (camera.aspect < 1) {
+          var portraitFit = (spanWidth + 54) / (2 * Math.tan(58 * Math.PI / 360) * Math.max(0.35, camera.aspect) * 0.84);
+          framedDistance = Math.max(framedDistance, portraitFit);
+        }
+        camPosT.copy(_adaptiveFocus).add(_adaptiveForward.multiplyScalar(framedDistance));
+        if (theme.walls && camera.aspect < 1) {
+          var safeFit = resolvePalaceMovement(palace, _adaptiveBaseCam.x, _adaptiveBaseCam.z, camPosT.x, camPosT.z, WALK_RADIUS);
+          camPosT.x = safeFit.x; camPosT.z = safeFit.z;
+        }
         camPosT.y = _adaptiveBaseCam.y;
         lookT.copy(_adaptiveFocus).add(_adaptiveLookOffset);
       } catch (e) {
@@ -2591,6 +2935,11 @@
       if (!l) return;
       camPosT.set(l.camPos.x, l.camPos.y, l.camPos.z);
       lookT.set(l.lookAt.x, l.lookAt.y, l.lookAt.z);
+      if (id === '__entry' && !state.xrActive) {
+        // Include the plinth base and more of the plaza in the opening view.
+        camPosT.set(0, EYE + 30, ROOM_D / 2 - 28);
+        lookT.set(0, 110, 0);
+      }
       _applyAdaptiveFraming(l, frameRefs[id]);
     }
     function applyOverview() {
@@ -2756,6 +3105,13 @@
       try { ref.borderMat.emissiveIntensity = ref.busy ? 0.72 : (ref.empty ? 0.12 : 0); } catch (e) {}
     }
     function _setRoomOutlineMode() {
+      Object.keys(_roomCanopies).forEach(function (key) { _roomCanopies[key].visible = !overview; });
+      Object.keys(_roomLabels).forEach(function(key){
+        var sign=_roomLabels[key],position=sign.userData && (overview?sign.userData.roomMapPosition:sign.userData.roomWalkPosition);
+        if(position)sign.position.copy(position);
+      });
+      // Overview is a navigation map: eye-level fog must not obscure distant rooms.
+      if (root.fog) root.fog.density = overview ? 0 : theme.fog;
       Object.keys(_roomOutlines).forEach(function (key) {
         var outline = _roomOutlines[key];
         var active = Number(key) === _activeRoomIdx;
@@ -2803,7 +3159,7 @@
     function _setFocusCardState() {
       if (!focusCard) return;
       var l = _hlRef && _hlRef.locus ? _hlRef.locus : locusById(palace, palace.route[curIdx]);
-      var show = !recall && !overview && !freeMode && !state.xrActive && !routeVisible && !helpVisible && !!l;
+      var show = !recall && !overview && !freeMode && !state.xrActive && !routeVisible && !helpVisible && !buildMode && !!l;
       focusCard.hidden = !show;
       if (!show) return;
       var idx = Math.max(0, palace.route.indexOf(l.id));
@@ -2815,13 +3171,16 @@
       focusCardKicker.textContent = entry ? _tr(t, 'memory_palace.focus_entry', 'Palace entrance') : _tr(t, 'memory_palace.focus_current', 'Current locus');
       focusCardTitle.textContent = l.label || _tr(t, 'memory_palace.focus_stop', 'Stop {index}').replace('{index}', String(idx));
       focusCardMeta.textContent = entry
-        ? _tr(t, 'memory_palace.focus_start', 'Start of the route')
+        ? _tr(t, 'memory_palace.entrance_counts', '{rooms} rooms · {stops} memory stops').replace('{rooms}', String(Math.max(0, palace.rooms.length - 1))).replace('{stops}', String(total))
         : roomLabel + ' · ' + _tr(t, 'memory_palace.focus_progress', 'Stop {current} of {total}').replace('{current}', String(idx)).replace('{total}', String(total));
+      focusCardCue.style.webkitLineClamp = cueExpanded || (l.mnemonic || '').length <= 120 ? 'unset' : '2';
       focusCardCue.textContent = entry
-        ? _tr(t, 'memory_palace.focus_begin', 'Choose a locus to begin your route.')
+        ? _tr(t, 'memory_palace.entrance_guidance', 'Begin at the first stop. Connect each idea to its location, then walk the same route again.')
         : (l.mnemonic
           ? _tr(t, 'memory_palace.focus_picture', 'Picture: {mnemonic}').replace('{mnemonic}', l.mnemonic)
           : _tr(t, 'memory_palace.focus_follow', 'Follow the highlighted frame to place this idea.'));
+      if (beginWalkBtn) { beginWalkBtn.hidden = !entry; beginWalkBtn.disabled = total === 0; }
+      if (cueToggle) cueToggle.hidden = entry || !l.mnemonic || l.mnemonic.length <= 120;
       focusCard.style.borderColor = accent;
       focusCard.style.boxShadow = '0 12px 30px ' + accent + '33';
       focusCard.setAttribute('aria-label', focusCardTitle.textContent + '. ' + focusCardMeta.textContent);
@@ -2848,8 +3207,16 @@
       completionCard.hidden = !complete || completionCardDismissed;
       if (complete) {
         var finalLocus = locusById(palace, palace.route[palace.route.length - 1]);
-        completionCardTitle.textContent = _tr(t, 'memory_palace.complete_title', 'Route complete');
-        completionCardMeta.textContent = _tr(t, 'memory_palace.complete_meta', 'You walked all {total} loci. Final stop: {label}.').replace('{total}', String(total)).replace('{label}', finalLocus && finalLocus.label ? finalLocus.label : _tr(t, 'memory_palace.complete_final', 'final locus'));
+        var visited = Object.keys(visitedStops).length;
+        completionCardTitle.textContent = visited >= total
+          ? _tr(t, 'memory_palace.complete_title', 'Route complete')
+          : _tr(t, 'memory_palace.final_stop_title', 'Final stop reached');
+        completionCardMeta.textContent = _tr(t, 'memory_palace.visited_summary', 'Visited {visited} of {total} stops. Try recalling the ideas without looking, then revisit anything uncertain.').replace('{visited}', String(visited)).replace('{total}', String(total));
+        if (visitRemainingBtn) {
+          visitRemainingBtn.hidden = visited >= total;
+          visitRemainingBtn.textContent = _tr(t, 'memory_palace.visit_remaining', 'Visit remaining stops ({count})').replace('{count}', String(Math.max(0, total - visited)));
+          visitRemainingBtn.setAttribute('aria-label', visitRemainingBtn.textContent);
+        }
         completionCard.setAttribute('aria-label', completionCardTitle.textContent + '. ' + completionCardMeta.textContent);
       }
       _setCompletionGlowState();
@@ -2885,6 +3252,7 @@
     }
     function _updateFreeCue(roomIdx, ref) {
       if (!freeNavCue) return;
+      if (explorationControls) explorationControls.hidden = !freeMode || overview || recall || buildMode || state.xrActive || routeVisible || helpVisible;
       if (!freeMode || routeVisible || helpVisible) {
         freeNavCue.hidden = true;
         if (freeReturnBtn) freeReturnBtn.hidden = true;
@@ -2896,7 +3264,7 @@
         return;
       }
       var room = roomIdx >= 0 ? palace.rooms[roomIdx] : null;
-      var stop = ref && ref.locus ? ref.locus.label : '';
+      var stop = !recall && ref && ref.locus ? ref.locus.label : ''; // Free-roam must not reveal answers during recall.
       var target = ref && ref.locus ? ref.locus : locusById(palace, palace.route[curIdx]);
       var headingBin = -99, headingGlyph = '';
       if (target && target.camPos) {
@@ -2996,10 +3364,8 @@
           focusRef.stopRing.material.opacity = reduce ? 0.58 : (0.42 + 0.22 * wave);
           focusRef.stopRing.scale.setScalar(reduce ? 1.08 : (1.04 + 0.08 * wave));
         }
-        var activeLight = _focusLight;
-        if (activeLight && _activeRoomIdx >= 0 && !reduce) activeLight.intensity = (theme.walls ? 0.74 : 0.52) + 0.16 * wave;
-        var activePortal = _roomPortals[_activeRoomIdx];
-        if (activePortal && !reduce) activePortal.emissiveIntensity = 0.32 + 0.16 * wave;
+        // Room illumination and doorway accents stay steady; motion belongs
+        // to the active stop marker and its slim frame inlay.
         var activeOutline = _roomOutlines[_activeRoomIdx];
         if (activeOutline && !reduce) activeOutline.opacity = overview ? (0.54 + 0.14 * wave) : (0.24 + 0.12 * wave);
         var activeHeatmap = _roomHeatmaps[_activeRoomIdx];
@@ -3019,9 +3385,18 @@
         focusRef.borderMat.emissiveIntensity = focusRef.busy ? (0.62 + 0.18 * wave) : (0.24 + 0.2 * wave);
       } catch (e) {}
     }
+    var visitedStops = Object.create(null);
+    if (!recall && curIdx > 0) visitedStops[palace.route[curIdx]] = true;
     function goTo(idx, skipAnnounce) {
       try { if (typeof _xrHideBank === 'function') _xrHideBank(); } catch (eB) {}   // navigating away closes an open VR answer bank
+      if (freeMode) _setCameraFov(58, false);
+      if (idx !== curIdx && cueToggle) {
+        cueExpanded = false; focusCard.scrollTop = 0;
+        cueToggle.textContent = _tr(t, 'memory_palace.cue_expand', 'Read full cue');
+        cueToggle.setAttribute('aria-label', cueToggle.textContent); cueToggle.setAttribute('aria-expanded', 'false');
+      }
       curIdx = Math.max(0, Math.min(palace.route.length - 1, idx));
+      if (!recall && curIdx > 0) visitedStops[palace.route[curIdx]] = true;
       overview = false; freeMode = false; moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;   // guided nav returns to the rails
       focusedCrossLink = -1;
       completionCardDismissed = false;
@@ -3049,28 +3424,60 @@
       var b = document.createElement('button');
       b.textContent = txt; b.setAttribute('aria-label', label);
       b.style.cssText = 'border:1px solid #475569;background:#1e293b;color:#e2e8f0;border-radius:999px;min-width:44px;min-height:44px;padding:8px 13px;font-size:0.8125rem;font-weight:800;white-space:nowrap;flex:0 0 auto;cursor:pointer;';
-      b.onclick = fn; return b;
+      b.type = 'button'; b.onclick = fn; return b;
     }
+    function palaceIcon(kind, size) {
+      var paths={previous:'M15 5l-7 7 7 7',next:'M9 5l7 7-7 7',map:'M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2V5m6-2v16m6-14v16',home:'M3 11l9-8 9 8M6 9v12h12V9M10 21v-7h4v7',orbit:'M18 6a8 8 0 1 0 0 12',diamond:'M12 2l9 10-9 10L3 12z',weave:'M4 8c0-8 16-8 16 0S4 24 4 16 20 0 20 8',facet:'M12 2l9 7-3 11H6L3 9zm0 0L6 20m6-18 6 18M3 9h18'};
+      var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width',String(size||20));svg.setAttribute('height',String(size||20));
+      svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.style.cssText='display:block;flex:none;';
+      var path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',paths[kind]||paths.map);
+      path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','1.7');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.appendChild(path);return svg;
+    }
+    function setPalaceIcon(button, kind) { button.textContent='';button.appendChild(palaceIcon(kind));button.style.display='inline-flex';button.style.alignItems='center';button.style.justifyContent='center'; }
     var prevBtn = mkBtn('◀', _tr(t, 'memory_palace.prev', 'Previous locus'), function () { goTo(curIdx - 1); });
-    prevBtn.setAttribute('data-palace-action', 'previous');
+    prevBtn.setAttribute('data-palace-action', 'previous'); setPalaceIcon(prevBtn,'previous');
     focusCard = document.createElement('section');
     focusCard.hidden = true;
     focusCard.setAttribute('role', 'group');
     focusCard.setAttribute('aria-label', _tr(t, 'memory_palace.focus_card', 'Current locus focus'));
     focusCard.setAttribute('data-palace-overlay', 'focus');
-    focusCard.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;width:min(340px,calc(100% - 24px));box-sizing:border-box;padding:11px 13px 12px;border:1px solid #818cf8;border-radius:14px;background:rgba(2,6,23,0.94);color:#f8fafc;box-shadow:0 12px 30px rgba(2,6,23,0.3);pointer-events:none;transition:border-color 180ms ease,box-shadow 180ms ease;';
+    focusCard.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;width:min(350px,calc(100% - 24px));box-sizing:border-box;padding:11px 13px 12px;border:1px solid #818cf8;border-radius:14px;background:rgba(2,6,23,0.94);color:#f8fafc;box-shadow:0 12px 30px rgba(2,6,23,0.3);pointer-events:auto;overflow:auto;scrollbar-width:thin;backdrop-filter:blur(14px);transition:border-color 180ms ease,box-shadow 180ms ease;';
     focusCardKicker = document.createElement('div');
     focusCardKicker.style.cssText = 'color:#c4b5fd;font-size:clamp(0.625rem,1.5vw,0.75rem);font-weight:900;letter-spacing:0.06em;line-height:1.2;text-transform:uppercase;';
     focusCard.appendChild(focusCardKicker);
     focusCardTitle = document.createElement('div');
+    focusCardTitle.setAttribute('data-palace-focus-heading','true');
     focusCardTitle.style.cssText = 'margin-top:4px;color:#ffffff;font-size:clamp(0.95rem,2.2vw,1.2rem);font-weight:950;line-height:1.18;overflow-wrap:anywhere;';
     focusCard.appendChild(focusCardTitle);
     focusCardMeta = document.createElement('div');
     focusCardMeta.style.cssText = 'margin-top:4px;color:#cbd5e1;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:800;line-height:1.25;overflow-wrap:anywhere;';
     focusCard.appendChild(focusCardMeta);
     focusCardCue = document.createElement('div');
-    focusCardCue.style.cssText = 'margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.35);color:#f8fafc;font-size:clamp(0.6875rem,1.55vw,0.8125rem);font-weight:750;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;';
+    focusCardCue.style.cssText = 'margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.35);color:#f8fafc;font-size:clamp(0.8125rem,1.55vw,0.875rem);font-weight:500;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;';
     focusCard.appendChild(focusCardCue);
+    var cueExpanded = false;
+    var cueToggle = mkBtn(_tr(t, 'memory_palace.cue_expand', 'Read full cue'), _tr(t, 'memory_palace.cue_expand', 'Read full cue'), function () {
+      cueExpanded = !cueExpanded;
+      focusCardCue.style.webkitLineClamp = cueExpanded ? 'unset' : '2';
+      cueToggle.textContent = cueExpanded ? _tr(t, 'memory_palace.cue_collapse', 'Collapse cue') : _tr(t, 'memory_palace.cue_expand', 'Read full cue');
+      cueToggle.setAttribute('aria-label', cueToggle.textContent);
+      cueToggle.setAttribute('aria-expanded', String(cueExpanded));
+      _syncDockLayout();
+    });
+    cueToggle.setAttribute('data-palace-action', 'expand-cue');
+    cueToggle.setAttribute('aria-expanded', 'false');
+    focusCardCue.id = 'palace-cue-' + (window.__palaceCueSeq = (window.__palaceCueSeq || 0) + 1);
+    cueToggle.setAttribute('aria-controls', focusCardCue.id);
+    cueToggle.style.cssText += 'margin-top:10px;background:#253652;border-radius:10px;font-size:0.75rem;';
+    focusCard.appendChild(cueToggle);
+    var beginWalkBtn = mkBtn(_tr(t, 'memory_palace.begin_walk', 'Begin walk'), _tr(t, 'memory_palace.begin_walk', 'Begin walk'), function () {
+      if (palace.route.length < 2) return;
+      goTo(1); renderer.domElement.focus();
+    });
+    beginWalkBtn.setAttribute('data-palace-action', 'begin-walk');
+    beginWalkBtn.style.cssText += 'margin-top:12px;background:#6366f1;border-color:#c4b5fd;border-radius:10px;color:#fff;';
+    focusCard.appendChild(beginWalkBtn);
     var roomBadge = document.createElement('span');
     roomBadge.hidden = true;
     roomBadge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:min(34vw,160px);padding:5px 9px;border:1px solid #475569;border-radius:999px;background:#172033;color:#f8fafc;font-size:0.75rem;font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;';
@@ -3092,12 +3499,18 @@
     progress.style.cssText = 'font-size:0.75rem;font-weight:800;min-width:76px;flex:0 1 auto;line-height:1.2;text-align:center;';
     progressWrap.appendChild(progressTrack); progressWrap.appendChild(progress);
     var nextBtn = mkBtn('▶', _tr(t, 'memory_palace.next', 'Next locus'), function () { goTo(curIdx + 1); });
-    nextBtn.setAttribute('data-palace-action', 'next');
+    nextBtn.setAttribute('data-palace-action', 'next'); setPalaceIcon(nextBtn,'next');
     var ovBtn = mkBtn('🗺', _tr(t, 'memory_palace.overview', 'Overview'), function () {
       overview = !overview;
+      if (overview) { freeMode = false; moveF = 0; moveR = 0; _updateFreeCue(-1, null); }
       if (overview) { applyOverview(); if (reduce) { camPos.copy(camPosT); look.copy(lookT); } } else { goTo(curIdx, true); }
     });
-    ovBtn.setAttribute('data-palace-action', 'overview');
+    ovBtn.setAttribute('data-palace-action', 'overview'); setPalaceIcon(ovBtn,'map');
+    var inspectRoomBtn = mkBtn(_tr(t, 'memory_palace.room_view', 'Room'), _tr(t, 'memory_palace.inspect_room', 'Explore the current room'), inspectRoom);
+    inspectRoomBtn.setAttribute('data-palace-action', 'inspect-room');
+    inspectRoomBtn.setAttribute('aria-keyshortcuts', 'R');
+    inspectRoomBtn.hidden = recall;
+    inspectRoomBtn.disabled = palace.rooms.length < 2;
     var routeVisible = false;
     var routePanel = buildRouteDom(palace, t, true, recall, decor, function (index) {
       goTo(index);
@@ -3142,6 +3555,7 @@
       ['Drag', _tr(t, 'memory_palace.help_look', 'Look around from your current position')],
       ['Home / End', _tr(t, 'memory_palace.help_ends', 'Jump to the entrance or final locus')],
       ['O', _tr(t, 'memory_palace.help_overview', 'Toggle the overview map')],
+      ['R', _tr(t, 'memory_palace.help_room', 'Open Room to inspect the space. Use its step and turn buttons, then resume your stop.')],
       ['+  −  0', _tr(t, 'memory_palace.help_zoom', 'Zoom in, zoom out, or reset the view')]
     ].forEach(function (row) {
       var keys = document.createElement('kbd'); keys.textContent = row[0];
@@ -3150,6 +3564,18 @@
       helpGrid.appendChild(keys); helpGrid.appendChild(desc);
     });
     helpPanel.appendChild(helpGrid);
+    var practiceHeading = document.createElement('h3');
+    practiceHeading.textContent = _tr(t, 'memory_palace.practice_heading', 'Make each stop memorable');
+    practiceHeading.style.cssText = 'font-size:0.95rem;margin:20px 0 10px;color:#ddd6fe;'; helpPanel.appendChild(practiceHeading);
+    [
+      ['place', '1 · Notice the place', 'Notice a doorway, shape or direction. Keep the same route each time.'],
+      ['picture', '2 · Connect your idea', 'Invent an unusual action at this spot. A sound, feeling or short sentence can work too.'],
+      ['retrieve', '3 · Recall, then check', 'Look away and retrieve the idea before checking your cue. Use Recall practice when you are ready.']
+    ].forEach(function (step) {
+      var p = document.createElement('p'); p.style.cssText = 'font-size:0.8125rem;line-height:1.6;color:#cbd5e1;';
+      var strong = document.createElement('strong'); strong.style.color = '#f8fafc'; strong.textContent = _tr(t, 'memory_palace.practice_' + step[0] + '_title', step[1]);
+      p.appendChild(strong); p.appendChild(document.createElement('br')); p.appendChild(document.createTextNode(_tr(t, 'memory_palace.practice_' + step[0], step[2]))); helpPanel.appendChild(p);
+    });
     holder.appendChild(helpPanel);
     holder.appendChild(focusCard);
     completionCard = document.createElement('section');
@@ -3174,14 +3600,23 @@
     completionWalkBtn.type = 'button';
     completionWalkBtn.textContent = _tr(t, 'memory_palace.complete_walk_again', 'Walk again');
     completionWalkBtn.setAttribute('aria-label', _tr(t, 'memory_palace.complete_walk_again', 'Walk again'));
-    completionWalkBtn.style.cssText = 'min-height:38px;padding:7px 12px;border:1px solid #a5b4fc;border-radius:999px;background:#6366f1;color:#ffffff;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
-    completionWalkBtn.onclick = function () { completionCardDismissed = false; goTo(0); };
+    completionWalkBtn.style.cssText = 'min-height:44px;padding:9px 12px;border:1px solid #a5b4fc;border-radius:999px;background:#6366f1;color:#ffffff;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
+    completionWalkBtn.onclick = function () { visitedStops = Object.create(null); completionCardDismissed = false; goTo(0); try { renderer.domElement.focus(); } catch (e) {} };
     completionActions.appendChild(completionWalkBtn);
+    var visitRemainingBtn = mkBtn('', '', function () {
+      for (var remainingIdx = 1; remainingIdx < palace.route.length; remainingIdx++) {
+        if (!visitedStops[palace.route[remainingIdx]]) { goTo(remainingIdx); renderer.domElement.focus(); break; }
+      }
+    });
+    visitRemainingBtn.hidden = true;
+    visitRemainingBtn.setAttribute('data-palace-action', 'visit-remaining');
+    visitRemainingBtn.style.cssText += 'border-color:#86efac;background:#14532d;color:#fff;';
+    completionActions.appendChild(visitRemainingBtn);
     completionOverviewBtn = document.createElement('button');
     completionOverviewBtn.type = 'button';
     completionOverviewBtn.textContent = _tr(t, 'memory_palace.complete_overview', 'Review overview');
     completionOverviewBtn.setAttribute('aria-label', _tr(t, 'memory_palace.complete_overview', 'Review overview'));
-    completionOverviewBtn.style.cssText = 'min-height:38px;padding:7px 12px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#f8fafc;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
+    completionOverviewBtn.style.cssText = 'min-height:44px;padding:9px 12px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#f8fafc;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
     completionOverviewBtn.onclick = function () {
       completionCardDismissed = true;
       if (routeVisible) setRouteVisible(false, false);
@@ -3196,7 +3631,7 @@
     completionCardDismiss.textContent = '\u00d7';
     completionCardDismiss.setAttribute('aria-label', _tr(t, 'memory_palace.complete_dismiss', 'Dismiss completion message'));
     completionCardDismiss.title = _tr(t, 'memory_palace.complete_dismiss', 'Dismiss completion message');
-    completionCardDismiss.style.cssText = 'min-width:34px;min-height:34px;margin-left:auto;padding:5px 9px;border:1px solid #475569;border-radius:999px;background:transparent;color:#cbd5e1;font-size:1.05rem;font-weight:900;cursor:pointer;';
+    completionCardDismiss.style.cssText = 'min-width:44px;min-height:44px;margin-left:auto;padding:5px 9px;border:1px solid #475569;border-radius:999px;background:transparent;color:#cbd5e1;font-size:1.05rem;font-weight:900;cursor:pointer;';
     completionCardDismiss.onclick = function () { completionCardDismissed = true; _setCompletionCardState(); };
     completionActions.appendChild(completionCardDismiss);
     completionCard.appendChild(completionActions);
@@ -3206,10 +3641,10 @@
     journeyMap.setAttribute('role', 'region');
     journeyMap.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map', 'Visual journey map'));
     journeyMap.setAttribute('data-palace-overlay', 'journey');
-    journeyMap.style.cssText = 'position:absolute;right:12px;top:12px;z-index:6;width:min(380px,calc(100% - 24px));max-height:min(52%,360px);overflow:auto;box-sizing:border-box;background:rgba(2,6,23,0.94);color:#f8fafc;border:1px solid #475569;border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px rgba(2,6,23,0.34);';
+    journeyMap.style.cssText = 'position:absolute;right:12px;top:12px;z-index:6;width:min(380px,calc(100% - 24px));height:max-content;max-height:calc(100% - var(--palace-dock-height,70px) - 42px);overflow:auto;scrollbar-width:thin;scrollbar-color:#64748b #101b30;box-sizing:border-box;background:rgba(2,6,23,0.94);color:#f8fafc;border:1px solid #475569;border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px rgba(2,6,23,0.34);';
     journeyMapTitle = document.createElement('div');
     journeyMapTitle.textContent = _tr(t, 'memory_palace.journey_map', 'Visual journey map');
-    journeyMapTitle.style.cssText = 'font-size:0.8125rem;font-weight:900;letter-spacing:0.01em;';
+    journeyMapTitle.style.cssText = 'font-size:0.95rem;font-weight:750;letter-spacing:0.01em;';
     journeyMap.appendChild(journeyMapTitle);
     journeyMapMeta = document.createElement('div');
     journeyMapMeta.setAttribute('role', 'status');
@@ -3229,26 +3664,34 @@
     Object.keys(journeyGroups).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (key) {
       var bucket = journeyGroups[key], room = bucket.room || {};
       var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:8px;min-width:0;';
+      row.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:9px;min-width:0;padding:12px;border:1px solid #334155;border-left:3px solid ' + (room.color || '#818cf8') + ';border-radius:12px;background:#111e33;';
       var roomName = document.createElement('span');
       roomName.textContent = room.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
       roomName.title = roomName.textContent;
-      roomName.style.cssText = 'min-width:82px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cbd5e1;font-size:0.6875rem;font-weight:900;';
-      row.appendChild(roomName);
+      roomName.style.cssText = 'min-width:0;overflow-wrap:anywhere;color:#e2e8f0;font-size:0.8125rem;font-weight:900;';
+      var roomHeading=document.createElement('div');roomHeading.style.cssText='display:flex;align-items:center;gap:9px;min-width:0;';
+      var emblem=document.createElement('span');emblem.style.cssText='display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid '+(room.color||'#818cf8')+';border-radius:9px;flex:none;color:'+(room.color||'#c4b5fd')+';background:#0b1729;';
+      emblem.appendChild(palaceIcon(['orbit','diamond','weave','facet'][(Number(key)-1+4)%4],20));roomHeading.appendChild(emblem);
+      var headingText=document.createElement('div');headingText.style.cssText='min-width:0;flex:1;';headingText.appendChild(roomName);
+      var roomCount=document.createElement('div');roomCount.textContent=bucket.stops.length===1?_tr(t,'memory_palace.room_stop_one','1 stop'):_tr(t,'memory_palace.room_stop_count','{count} stops').replace('{count}',String(bucket.stops.length));
+      roomCount.style.cssText='margin-top:2px;color:#a5b4ca;font-size:0.6875rem;font-weight:500;';headingText.appendChild(roomCount);roomHeading.appendChild(headingText);row.appendChild(roomHeading);
       var stopRail = document.createElement('div');
-      stopRail.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;';
+      stopRail.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;';
       bucket.stops.forEach(function (stop) {
         var color = room.color || '#818cf8';
         var button = document.createElement('button');
         button.type = 'button';
-        button.textContent = String(stop.index);
+        var numberChip=document.createElement('span');numberChip.textContent=String(stop.index).padStart(2,'0');
+        numberChip.setAttribute('aria-hidden','true');numberChip.style.cssText='display:flex;align-items:center;justify-content:center;width:28px;min-height:28px;border-radius:7px;background:#25334b;font-size:0.75rem;font-weight:750;font-variant-numeric:tabular-nums;';
+        var stopText=document.createElement('span');stopText.textContent=stop.locus.label||'';
+        stopText.style.cssText='min-width:0;white-space:normal;overflow-wrap:anywhere;';button.appendChild(numberChip);button.appendChild(stopText);
         button.setAttribute('data-journey-index', String(stop.index));
         button.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map_stop', 'Go to stop {index}: {label}').replace('{index}', String(stop.index)).replace('{label}', stop.locus.label || ''));
         button.title = stop.locus.label || ('Stop ' + stop.index);
-        button.style.cssText = 'width:30px;height:30px;padding:0;border:2px solid ' + color + ';border-radius:999px;background:#0f172a;color:#f8fafc;font-size:0.6875rem;font-weight:900;line-height:1;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,background-color 160ms ease;';
+        button.style.cssText = 'display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;min-width:44px;min-height:44px;max-width:100%;padding:7px 9px;text-align:left;border:1px solid ' + color + ';border-radius:10px;background:#0f172a;color:#f8fafc;font-size:0.75rem;font-weight:800;line-height:1.3;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,background-color 160ms ease;';
         button.onclick = function () { goTo(stop.index); };
         stopRail.appendChild(button);
-        journeyMapStops.push({ index: stop.index, button: button, color: color });
+        journeyMapStops.push({ index: stop.index, button: button, color: color, number: numberChip });
       });
       row.appendChild(stopRail);
       journeyMapBody.appendChild(row);
@@ -3290,7 +3733,7 @@
           jumpButton.textContent = label;
           jumpButton.setAttribute('aria-label', _tr(t, 'memory_palace.jump_connection', 'Jump to {room}').replace('{room}', roomLabel));
           jumpButton.title = _tr(t, 'memory_palace.jump_connection', 'Jump to {room}').replace('{room}', roomLabel);
-          jumpButton.style.cssText = 'min-width:36px;min-height:36px;padding:5px 6px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#e2e8f0;font-size:0.5625rem;font-weight:900;cursor:pointer;';
+          jumpButton.style.cssText = 'min-width:44px;min-height:44px;padding:5px 6px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#e2e8f0;font-size:0.5625rem;font-weight:900;cursor:pointer;';
           jumpButton.onclick = function (event) { event.stopPropagation(); _jumpToRoom(roomIdx); };
           actionBody.appendChild(jumpButton);
         }
@@ -3345,7 +3788,7 @@
         holder.setAttribute('data-memory-palace-viewport', 'true');
         hud.style.width = compact ? 'calc(100% - 16px)' : 'max-content';
         hud.style.maxWidth = compact ? 'calc(100% - 16px)' : 'calc(100% - 24px)';
-        hud.style.borderRadius = compact ? '16px' : '999px';
+        hud.style.borderRadius = compact ? '16px' : '20px';
         hud.style.padding = compact ? '7px 8px' : '6px 10px';
         var hudHeight = Math.ceil(hud.getBoundingClientRect().height || 0);
         var overlayBottom = Math.max(70, hudHeight + 22);
@@ -3366,7 +3809,10 @@
         if (completionCard) completionCard.style.bottom = (overlayBottom + 8) + 'px';
         var hintVisible = ctrlHint && parseFloat(ctrlHint.style.opacity || '1') > 0.05;
         var statusTop = 12 + (hintVisible ? Math.ceil(ctrlHint.getBoundingClientRect().height || 0) + 8 : 0);
-        if (focusCard) focusCard.style.top = statusTop + 'px';
+        if (focusCard) {
+          focusCard.style.top = statusTop + 'px';
+          focusCard.style.maxHeight = Math.max(80, bounds.height - statusTop - overlayBottom - 20) + 'px';
+        }
         if (masteryLegend) {
           var focusHeight = focusCard && !focusCard.hidden ? Math.ceil(focusCard.getBoundingClientRect().height || 0) + 8 : 0;
           masteryLegend.style.top = Math.max(56, statusTop + focusHeight) + 'px';
@@ -3391,6 +3837,7 @@
     }
     function _setHelpVisible(visible, moveFocus) {
       helpVisible = !!visible;
+      if (helpVisible) stopWalking();
       if (helpVisible && routeVisible) {
         routeVisible = false; routePanel.hidden = true;
         routeBtn.setAttribute('aria-pressed', 'false'); routeBtn.setAttribute('aria-expanded', 'false');
@@ -3411,6 +3858,7 @@
     }
     function setRouteVisible(visible, moveFocus) {
       routeVisible = !!visible;
+      if (routeVisible) stopWalking();
       if (routeVisible && helpVisible) {
         helpVisible = false; if (helpPanel) helpPanel.hidden = true;
         if (helpBtn) { helpBtn.setAttribute('aria-pressed', 'false'); helpBtn.setAttribute('aria-expanded', 'false'); }
@@ -3453,13 +3901,13 @@
     zoomInBtn = mkBtn('+', _tr(t, 'memory_palace.zoom_in', 'Zoom in'), function () { _setCameraFov(camera.fov - 4, true); });
     zoomInBtn.setAttribute('data-palace-action', 'zoom-in');
     resetViewBtn = mkBtn('⌂', _tr(t, 'memory_palace.reset_view', 'Reset view and zoom'), _resetView);
-    resetViewBtn.setAttribute('data-palace-action', 'reset-view');
+    resetViewBtn.setAttribute('data-palace-action', 'reset-view'); setPalaceIcon(resetViewBtn,'home');
     helpBtn = mkBtn('?', _tr(t, 'memory_palace.help_title', 'How to explore the memory palace'), function () { _setHelpVisible(!helpVisible, true); });
     helpBtn.setAttribute('data-palace-action', 'help');
     helpBtn.setAttribute('aria-controls', helpPanel.id); helpBtn.setAttribute('aria-pressed', 'false'); helpBtn.setAttribute('aria-expanded', 'false');
     helpCloseBtn.onclick = function () { _setHelpVisible(false, true); };
     helpPanel.addEventListener('keydown', onHelpKeyDown);
-    hud.appendChild(prevBtn); hud.appendChild(roomBadge); hud.appendChild(progressWrap); hud.appendChild(nextBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
+    hud.appendChild(prevBtn); hud.appendChild(roomBadge); hud.appendChild(progressWrap); hud.appendChild(nextBtn); hud.appendChild(inspectRoomBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
     hud.appendChild(zoomOutBtn); hud.appendChild(zoomValue); hud.appendChild(zoomInBtn); hud.appendChild(resetViewBtn); hud.appendChild(helpBtn);
     holder.appendChild(hud);
     _updateZoomControls();
@@ -3474,6 +3922,7 @@
         ? _tr(t, 'memory_palace.progress_entrance_aria', 'Palace entrance. {total} loci.').replace('{total}', String(totalStops))
         : _tr(t, 'memory_palace.progress_locus_aria', 'Locus {current} of {total}').replace('{current}', String(curIdx)).replace('{total}', String(totalStops)));
       ovBtn.setAttribute('aria-pressed', overview ? 'true' : 'false');
+      if (inspectRoomBtn) inspectRoomBtn.disabled = buildMode || state.xrActive || palace.rooms.length < 2;
       prevBtn.disabled = curIdx <= 0; nextBtn.disabled = curIdx >= palace.route.length - 1;
       Array.prototype.forEach.call(routePanel.querySelectorAll('[data-route-index]'), function (button) {
         if (Number(button.getAttribute('data-route-index')) === curIdx) button.setAttribute('aria-current', 'step');
@@ -3499,7 +3948,7 @@
     el.setAttribute('role', 'region');
     el.setAttribute('aria-roledescription', _tr(t, 'memory_palace.canvas_role', 'Memory palace 3D walk'));
     el.setAttribute('aria-label', _tr(t, 'memory_palace.canvas_label', 'Memory palace. Use the left and right arrow keys to walk the route in order.'));
-    el.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End O W A S D + - 0 H');
+    el.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End O R W A S D + - 0 H');
     var instrId = 'palace-instr-' + (window.__palaceSeq = (window.__palaceSeq || 0) + 1);
     var instr = document.createElement('p'); instr.id = instrId; instr.style.cssText = SR_ONLY;
     instr.textContent = _tr(t, 'memory_palace.canvas_instructions', 'W A S D keys walk you around the palace and dragging looks around. The right and left arrow keys jump to the next or previous locus in order; Home returns to the entrance and End jumps to the last locus. O toggles the overview map. Each stop announces the room, the item, and its mnemonic image.');
@@ -3509,7 +3958,7 @@
     var ctrlHint = document.createElement('div');
     ctrlHint.setAttribute('aria-hidden', 'true');
     ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;max-width:calc(100% - 24px);box-sizing:border-box;background:rgba(2,6,23,0.82);color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:7px 10px;font-size:0.75rem;line-height:1.35;pointer-events:none;transition:opacity 260ms ease,transform 260ms ease;';
-    ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'WASD to walk · drag to look · ◀ ▶ for the guided tour');
+    ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'Room for touch controls · WASD to walk · drag to look');
     holder.appendChild(ctrlHint);
     var ctrlHintTimer = 0;
     function _hideCtrlHint() {
@@ -3548,16 +3997,36 @@
     freeNavCompass.appendChild(freeNavCompassArrow);
     freeNavCue.appendChild(freeNavCompass);
     freeNavText = document.createElement('span');
-    freeNavText.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    freeNavText.style.cssText = 'min-width:0;overflow:hidden;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.35;overflow-wrap:anywhere;';
     freeNavCue.appendChild(freeNavText);
     freeReturnBtn = document.createElement('button');
     freeReturnBtn.type = 'button';
-    freeReturnBtn.textContent = '\u21a9';
+    freeReturnBtn.textContent = _tr(t, 'memory_palace.resume_stop', 'Resume stop');
     freeReturnBtn.setAttribute('aria-label', _tr(t, 'memory_palace.free_return', 'Return to guided route'));
     freeReturnBtn.title = _tr(t, 'memory_palace.free_return', 'Return to guided route');
-    freeReturnBtn.style.cssText = 'border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:#fff;border-radius:999px;min-width:30px;min-height:30px;padding:2px 8px;font-size:0.875rem;font-weight:900;cursor:pointer;flex:0 0 auto;';
-    freeReturnBtn.onclick = function () { goTo(curIdx); };
+    freeReturnBtn.style.cssText = 'border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:#fff;border-radius:999px;min-width:44px;min-height:44px;padding:6px 10px;font-size:0.875rem;font-weight:900;cursor:pointer;flex:0 0 auto;';
+    freeReturnBtn.onclick = function () { goTo(curIdx); renderer.domElement.focus(); };
     freeNavCue.appendChild(freeReturnBtn);
+    freeNavCue.style.cssText += 'box-sizing:border-box;width:min(440px,calc(100% - 24px));flex-wrap:wrap;border-radius:16px;padding:8px;';
+    freeNavText.style.flex = '1 1 0';
+    explorationControls = document.createElement('div');
+    explorationControls.hidden = true;
+    explorationControls.setAttribute('role', 'group');
+    explorationControls.setAttribute('aria-label', _tr(t, 'memory_palace.room_controls', 'Room exploration controls'));
+    explorationControls.setAttribute('data-palace-room-controls', 'true');
+    explorationControls.style.cssText = 'flex:1 0 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding-top:5px;border-top:1px solid #334155;';
+    [
+      ['turn-left', 'Left', 'Turn left', function () { turnInRoom(1); }],
+      ['step-forward', 'Forward', 'Step forward', function () { stepInRoom(1); }],
+      ['step-back', 'Back', 'Step back', function () { stepInRoom(-1); }],
+      ['turn-right', 'Right', 'Turn right', function () { turnInRoom(-1); }]
+    ].forEach(function (action) {
+      var button = mkBtn(_tr(t, 'memory_palace.control_' + action[0], action[1]), _tr(t, 'memory_palace.control_' + action[0] + '_label', action[2]), action[3]);
+      button.setAttribute('data-palace-action', action[0]);
+      button.style.cssText = 'min-width:0;min-height:44px;padding:7px 3px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#f8fafc;font-size:0.75rem;font-weight:800;line-height:1.25;overflow-wrap:anywhere;cursor:pointer;';
+      explorationControls.appendChild(button);
+    });
+    freeNavCue.appendChild(explorationControls);
     holder.appendChild(freeNavCue);
     freeNavLive = document.createElement('div');
     freeNavLive.style.cssText = SR_ONLY;
@@ -3643,6 +4112,7 @@
     hud.setAttribute('aria-label', _tr(t, 'memory_palace.controls', 'Memory palace route controls'));
 
     function onKeyDown(e) {
+      if (e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
       _hideCtrlHint();
       var k = e.key;
       var lk = (k && k.length === 1) ? k.toLowerCase() : k;
@@ -3657,6 +4127,7 @@
       else if (k === 'ArrowLeft' || k === 'ArrowUp') { e.preventDefault(); goTo(curIdx - 1); }
       else if (k === 'Home') { e.preventDefault(); goTo(0); }
       else if (k === 'End') { e.preventDefault(); goTo(palace.route.length - 1); }
+      else if (k === 'r' || k === 'R') { e.preventDefault(); inspectRoom(); }
       else if (k === 'o' || k === 'O') { e.preventDefault(); ovBtn.onclick(); }
       else if (k === '+' || k === '=') { e.preventDefault(); _setCameraFov(camera.fov - 4, true); }
       else if (k === '-' || k === '_') { e.preventDefault(); _setCameraFov(camera.fov + 4, true); }
@@ -3672,6 +4143,19 @@
     el.addEventListener('keyup', onKeyUp);
 
     var dragging = false, moved = false, lx = 0, ly = 0;
+    var dragPointerId = null;
+    function finishDrag() {
+      var pointerId = dragPointerId;
+      dragging = false; dragPointerId = null;
+      el.style.cursor = buildMode ? 'crosshair' : 'grab';
+      try { if (pointerId != null && el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId); } catch (e) {}
+    }
+    function cancelInteraction() { stopWalking(); finishDrag(); }
+    function onPointerCancel(event) {
+      if (dragPointerId == null || event.pointerId === dragPointerId) cancelInteraction();
+    }
+    el.addEventListener('blur', cancelInteraction);
+    window.addEventListener('blur', cancelInteraction);
     var raycaster = new THREE.Raycaster(); var ndc = new THREE.Vector2();
     // ── Build mode: click the floor to drop a new locus where you are looking ──
     // The palace is the student's to extend, so placement happens IN the walk
@@ -3717,13 +4201,22 @@
     }
     state.setBuildMode = function (on) {
       buildMode = !!on;
+      stopWalking();
+      _updateFreeCue(_activeRoomIdx, _freeStopRef);
+      updateHud();
       var g = _ensureGhost();
       if (g && !buildMode) g.visible = false;
       try { el.style.cursor = buildMode ? 'crosshair' : 'grab'; } catch (e) {}
     };
-    function onDown(e) { _hideCtrlHint(); dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; try { el.focus(); } catch (er) {} }   // focus so WASD/arrows work after a click
+    function onDown(e) {
+      if (e.isPrimary === false || (e.button != null && e.button !== 0)) return;
+      _hideCtrlHint(); dragging = true; moved = false; lx = e.clientX; ly = e.clientY;
+      dragPointerId = e.pointerId;
+      el.style.cursor = 'grabbing';
+      try { el.focus(); el.setPointerCapture(e.pointerId); } catch (er) {}
+    }   // focus so WASD/arrows work after a click
     function onMove(e) {
-      if (!dragging) return;
+      if (!dragging || (dragPointerId != null && e.pointerId !== dragPointerId)) return;
       var dx = e.clientX - lx, dy = e.clientY - ly;
       if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
       if (freeMode) {                          // free look: turn the head fully
@@ -3738,6 +4231,7 @@
     }
     function onHover(e) { if (buildMode && !dragging) _updateGhost(e.clientX, e.clientY); }
     function onUp(e) {
+      if (dragPointerId != null && e.pointerId !== dragPointerId) return;
       if (dragging && !moved && buildMode) {
         dragging = false;
         try {
@@ -3749,6 +4243,7 @@
             opts.onFloorPlace(null);                 // outside a room — the host explains why
           }
         } catch (er) {}
+        finishDrag();
         return;
       }
       if (dragging && !moved) {
@@ -3765,7 +4260,7 @@
           }
         } catch (er) {}
       }
-      dragging = false; el.style.cursor = 'grab';
+      finishDrag();
     }
     // Scroll to zoom the lens (narrower FOV = zoom in) — lets you zoom into a
     // sculpture or frame from where you stand, in either walk mode.
@@ -3774,6 +4269,9 @@
       _setCameraFov(camera.fov + (e.deltaY > 0 ? 3 : -3), false);
     }
     el.style.cursor = 'grab';
+    el.style.touchAction = 'none';
+    el.addEventListener('pointercancel', onPointerCancel);
+    el.addEventListener('lostpointercapture', onPointerCancel);
     el.addEventListener('pointerdown', onDown);
     el.addEventListener('pointermove', onHover);
     window.addEventListener('pointermove', onMove);
@@ -3781,6 +4279,11 @@
     el.addEventListener('wheel', onWheel, { passive: false });
 
     state.cleanup.push(function () {
+      cancelInteraction();
+      el.removeEventListener('blur', cancelInteraction);
+      window.removeEventListener('blur', cancelInteraction);
+      el.removeEventListener('pointercancel', onPointerCancel);
+      el.removeEventListener('lostpointercapture', onPointerCancel);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keyup', onKeyUp);
       try { el.removeEventListener('pointermove', onHover); } catch (eH) {}
@@ -3818,6 +4321,7 @@
       guidedTether = null;
       arrivalHalo = null;
       freeNavCue = null;
+      explorationControls = null;
       freeNavLive = null;
       freeNavText = null;
       freeReturnBtn = null;
@@ -3830,6 +4334,7 @@
       crossLinkGroup = null;
       crossLinks = [];
       _roomHeatmaps = {};
+      _roomCanopies = {};
       journeyMap = null;
       journeyMapTitle = null;
       journeyMapMeta = null;
@@ -4055,8 +4560,13 @@
 
     // ── tick: ease camera along the rails; apply drag look-around ──
     var lookBase = new THREE.Vector3();
+    var previousWalkFrame = null;
     function tick() {
       if (state.disposed) return;
+      var frameNow = window.performance && window.performance.now ? window.performance.now() : Date.now();
+      var elapsed = previousWalkFrame == null ? 1000 / 60 : Math.max(0, Math.min(50, frameNow - previousWalkFrame));
+      previousWalkFrame = frameNow;
+      var walkScale = elapsed / (1000 / 60) / Math.max(1, Math.hypot(moveF, moveR));
       // While an immersive session drives the frame loop (state.xrActive), the
       // HEADSET owns the camera pose — skip all rail/free-roam camera writes and
       // let the XR compositor schedule frames (no window rAF). Controllers still
@@ -4067,8 +4577,8 @@
         if (moveF || moveR) {
           var sinY = Math.sin(freeYaw), cosY = Math.cos(freeYaw);
           var b = palace.bounds;
-          var nextX = _cl(camPos.x + (moveF * sinY + moveR * cosY) * MOVE_SPEED, b.minX + 40, b.maxX - 40);
-          var nextZ = _cl(camPos.z + (moveF * cosY - moveR * sinY) * MOVE_SPEED, b.minZ + 40, b.maxZ - 40);
+          var nextX = _cl(camPos.x + (moveF * sinY + moveR * cosY) * MOVE_SPEED * walkScale, b.minX + 40, b.maxX - 40);
+          var nextZ = _cl(camPos.z + (moveF * cosY - moveR * sinY) * MOVE_SPEED * walkScale, b.minZ + 40, b.maxZ - 40);
           var movedPosition = theme.walls ? resolvePalaceMovement(palace, camPos.x, camPos.z, nextX, nextZ, WALK_RADIUS) : { x: nextX, z: nextZ, collided: false };
           camPos.x = movedPosition.x; camPos.z = movedPosition.z;
           if (movedPosition.collided) _noteWallCollision();
@@ -4081,9 +4591,11 @@
         camera.position.copy(camPos);
         camera.lookAt(lookBase);
       } else {
-        var ease = reduce ? 1 : Math.min(0.2, 0.07 * railEaseMultiplier);
+        // Preserve the 60 Hz feel while using elapsed time at other frame rates.
+        var railFrames = elapsed / (1000 / 60);
+        var ease = reduce ? 1 : 1 - Math.pow(1 - Math.min(0.2, 0.07 * railEaseMultiplier), railFrames);
         camPos.lerp(camPosT, ease);
-        look.lerp(lookT, reduce ? 1 : Math.min(0.25, 0.09 * railEaseMultiplier));
+        look.lerp(lookT, reduce ? 1 : 1 - Math.pow(1 - Math.min(0.25, 0.09 * railEaseMultiplier), railFrames));
         camera.position.copy(camPos);
         lookBase.copy(look);
         if (!overview && (yawOff || pitchOff)) {
@@ -4120,6 +4632,7 @@
     // on return. XR sessions run on the headset's own setAnimationLoop — never
     // touched here (guarded by state.xrActive).
     function _pauseLoop() {
+      cancelInteraction(); previousWalkFrame = null;
       state.loopPaused = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
     }
@@ -4154,6 +4667,10 @@
       var W = holder.clientWidth || w, H = holder.clientHeight || hgt;
       if (!W || !H) return;
       camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);
+      if (!state.xrActive) {
+        if (overview) applyOverview();
+        else if (!freeMode) stopTargets(curIdx);
+      }
     };
     window.addEventListener('resize', state.onResize);
     // The container frequently reaches its final width AFTER mount (panel expand /

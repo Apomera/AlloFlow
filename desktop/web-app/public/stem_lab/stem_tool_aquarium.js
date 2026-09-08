@@ -631,6 +631,11 @@ window.StemLab = window.StemLab || {
         if (Number(beforeEquipment[key] || 0) !== Number(afterEquipment[key] || 0)) changes.push({ id: 'equipment:' + key, label: key + ' level' });
       });
       if ((before.lightsOn !== false) !== (after.lightsOn !== false)) changes.push({ id: 'lights', label: 'light state' });
+      if (typeof before.tankVolume === 'number' && typeof after.tankVolume === 'number' && before.tankVolume !== after.tankVolume) changes.push({ id: 'volume', label: 'tank volume' });
+      if (before.tankShape && after.tankShape && before.tankShape !== after.tankShape) changes.push({ id: 'shape', label: 'tank shape' });
+      var priorSizes = before.plantSizeEdits || {}, currentSizes = after.plantSizeEdits || {}, sizeIds = {};
+      Object.keys(priorSizes).concat(Object.keys(currentSizes)).forEach(function(id) { sizeIds[id] = true; });
+      Object.keys(sizeIds).sort().forEach(function(id) { if ((Number(priorSizes[id]) || 0) !== (Number(currentSizes[id]) || 0)) changes.push({ id: 'plantSize:' + id, label: 'plant size: ' + id.replace(/_/g, ' ') }); });
       return {
         changes: changes,
         count: changes.length,
@@ -11616,6 +11621,80 @@ window.StemLab = window.StemLab || {
     futureGoal: 'Best-in-class STEM curriculum tool for aquatic sciences in K-12 education'
   };
 
+  // Stable catalog identities, never editable resident names. These are representative
+  // visual forms; the normalized scene does not claim measured animal lengths.
+// Growth-form references and model limits: docs/aquarium-plant-visual-follow-up-2026-09-08.md.
+  // Catalog identities select representative anatomy; presentation names never classify plants.
+  function getAquariumPlantVisualProfile(id) {
+    var profiles = {
+      java_fern: ['Java fern form', 'rhizome_fern', 'Long, simple fronds grow from a creeping horizontal rhizome with fine anchoring roots.', 'Representative plain-leaved Java fern; cultivated leaf forms vary.'],
+      amazon_sword: ['Amazon sword form', 'rosette', 'Broad lance-shaped leaves on petioles rise from one basal crown.', 'Representative Amazon sword trade group; exact species and mature dimensions are not resolved.'],
+      java_moss: ['Java moss form', 'moss', 'Fine branching shoots with tiny leaves form an irregular attached mat.', 'Representative aquarium Java moss; the visible tuft does not depict microscopic leaf detail.'],
+      hornwort: ['Hornwort form', 'whorled_stem', 'Slender stems carry whorls of fine forked leaves; this submerged plant has no true roots.', 'Representative coontail hornwort form; its drifting or anchored position is simplified.'],
+      anubias: ['Anubias form', 'rhizome_broadleaf', 'Thick entire leaves rise on petioles along an exposed creeping rhizome, with roots beneath.', 'Representative broad-leaved Anubias; leaf outline and size vary across species and cultivars.'],
+      water_wisteria: ['Water wisteria form', 'dissected_stem', 'Opposite, deeply divided submerged leaves spread from branching stems.', 'Representative submerged growth. Leaves formed above water are less divided; changing a placement label does not simulate that development.'],
+      duckweed: ['Duckweed form', 'floating_fronds', 'Small flat fronds float in budding groups, with fine roots hanging below.', 'Representative Lemna-like duckweed; root number and frond shape differ among duckweed groups.'],
+      dwarf_hairgrass: ['Dwarf hairgrass form', 'sedge_carpet', 'Fine upright green stems form small tufts connected by creeping runners.', 'Representative Eleocharis trade group: a grasslike sedge, with photosynthetic stems rather than broad grass blades.'],
+      red_root_floater: ['Red root floater form', 'floating_leaves', 'Rounded leaves sit in two rows along short floating stems, with reddish roots dangling below.', 'Representative floating growth; red and green coloration varies and is not a nutrient test.'],
+      rotala: ['Rotala rotundifolia form', 'opposite_stem', 'Slender branching stems bear paired narrow submerged leaves.', 'Representative submerged growth; aerial leaves are rounder, and color alone cannot diagnose iron or carbon supply.'],
+      monte_carlo: ['Monte Carlo carpet form', 'roundleaf_carpet', 'Small rounded leaves on creeping stems make a low mat with roots at its nodes.', 'Representative Monte Carlo aquarium trade form; trade identity and taxonomy are not inferred from this mesh.'],
+      chaeto: ['Chaetomorpha form', 'filament_alga', 'Tangled green filaments form a loose mass without true leaves, stems or roots.', 'Representative unbranched marine macroalga; the catalog does not resolve an exact Chaetomorpha species.'],
+      mangrove: ['Mangrove seedling form', 'emergent_tree', 'A woody shoot carries leaves above the water, while developing roots extend into the water below.', 'Representative red-mangrove-type seedling; this is an emergent tree, and root architecture changes as it grows.'],
+      caulerpa: ['Caulerpa form', 'stolon_alga', 'Upright fronds rise along a creeping stolon with fine anchoring rhizoids.', 'Representative feather-like Caulerpa form; other species have blades or beadlike branches. These are algal structures, not true leaves and roots.']
+    };
+    if (typeof id !== 'string' || !Object.prototype.hasOwnProperty.call(profiles, id)) return null;
+    var entry = profiles[id], aerial = id === 'duckweed' || id === 'red_root_floater' || id === 'mangrove';
+    var placement = { java_fern: 'hardscape', amazon_sword: 'background', java_moss: 'hardscape', hornwort: 'background', anubias: 'hardscape', water_wisteria: 'background', duckweed: 'surface', dwarf_hairgrass: 'foreground', red_root_floater: 'surface', rotala: 'background', monte_carlo: 'foreground', chaeto: 'refugium', mangrove: 'emergent', caulerpa: 'refugium' };
+    return { id: id, label: entry[0], growthForm: entry[1], placement: placement[id], identification: entry[2], variation: entry[3],
+      scaleNote: 'Visible size follows a relative biomass index, not measured centimeters or grams. Zero biomass has no live foliage.',
+      modelNote: aerial ? 'Leaves at or above the surface access air. The simulator still uses shared simplified plant gas-flow estimates; its dissolved-water contributions are not species-specific measurements.' : 'Growth form is illustrative. Modeled plant gas flows and health do not measure leaf anatomy or diagnose a nutrient deficiency.' };
+  }
+
+  function getAquariumSpeciesVisualProfile(speciesId) {
+    var profiles = {
+      neon: ['Neon tetra','tetra','neon',0xb9d4cd,[.43,.16,.115],'swim','fork','Blue lateral stripe; red on the rear half.',''],
+      cardinal: ['Cardinal tetra','tetra','cardinal',0xb9d4cd,[.43,.16,.115],'swim','fork','Blue lateral stripe; red extends along the lower body.',''],
+      rummy: ['Rummy-nose tetra','tetra','rummy',0xc7d6c8,[.46,.17,.12],'swim','fork','Red head and contrasting black-and-white tail bars.','Representative rummy-nose tetra group.'],
+      guppy: ['Guppy','guppy','guppy',0xbca56d,[.4,.16,.12],'swim','fan','Slender livebearer with a broad patterned fan tail.','Representative fancy male; sexes and domestic strains vary.'],
+      cory: ['Corydoras catfish','corydoras','cory',0x9c9279,[.47,.19,.22],'swim','fork','Short armored body, mottling and short mouth barbels.','Representative Corydoras group.'],
+      angel: ['Angelfish','angelfish','angel',0xcbd0bf,[.38,.43,.115],'swim','fork','Tall diamond silhouette, dark vertical bars and long pelvic filaments.','Representative silver domestic form.'],
+      platy: ['Platy','platy','plain',0xe78d46,[.4,.255,.17],'swim','rounded','Short, deep livebearer body with a small rounded tail.','Representative orange domestic form.'],
+      molly: ['Molly','molly','plain',0x343e3b,[.54,.235,.18],'swim','rounded','Longer livebearer body and a modest rounded dorsal fin.','Representative black domestic form; not a claim of a sailfin male.'],
+      nerite: ['Nerite snail','snail','nerite',0xb19e66,null,'crawl',null,'Rounded patterned shell, muscular foot and two tentacles.','Representative patterned nerite group.'],
+      dwarffrog: ['African dwarf frog','frog','frog',0x8e9270,null,'swim',null,'Flattened frog body, folded long hind legs and webbed feet.','Representative African dwarf frog.'],
+      oto: ['Otocinclus','otocinclus','oto',0xb4ad87,[.55,.13,.135],'swim','fork','Slender armored body, dark lateral stripe and underside sucker mouth.','Representative Otocinclus group.'],
+      shrimp: ['Cherry shrimp','shrimp','cherry',0xbe493e,null,'crawl',null,'Red translucent segmented shrimp with antennae and walking legs.','Representative red cherry shrimp.'],
+      betta: ['Betta','betta','plain',0xb83c65,[.49,.2,.135],'swim','flowing','Slender body with flowing caudal, dorsal and anal fins.','Representative long-fin domestic male; other forms vary.'],
+      clown: ['Clownfish','clownfish','clown',0xef8b2e,[.43,.245,.15],'swim','rounded','Three white body bands edged in black on an orange body.','Representative orange three-band clownfish.'],
+      tang: ['Palette tang','tang','tang',0x2875d8,[.49,.35,.125],'swim','fork','Blue compressed oval body, black palette marking and yellow tail.','Representative palette tang coloration.'],
+      goby: ['Watchman goby','goby','goby',0xb7ab6a,[.61,.18,.18],'swim','rounded','Elongate bottom fish with a blunt head and two separate dorsal fins.','Representative watchman goby group.'],
+      anemone: ['Sea anemone','anemone','anemone',0xbe8d9d,null,'sessile',null,'Attached column with a central oral disc and tentacle crown.','Representative sea anemone.'],
+      stonycoral: ['Stony coral','coral','coral',0xc8ad8d,null,'sessile',null,'Attached branching colony; no fish eyes or fins.','Representative branching growth form; coral forms vary.'],
+      copepods: ['Copepod colony','copepod','copepod',0xb6c7b8,null,'swim',null,'Segmented tapering abdomen, long antennae and forked tail.','One enlarged representative of a colony, not a population count.'],
+      pistol: ['Pistol shrimp','shrimp','pistol',0xb58c66,null,'crawl',null,'Segmented shrimp with one enlarged snapping claw.','Representative pistol shrimp group.'],
+      pederson: ["Pederson's cleaner shrimp",'shrimp','pederson',0xccddda,null,'crawl',null,'Mostly transparent shrimp with violet markings and long pale antennae.','Representative coloration.'],
+      oscar: ['Oscar','oscar','oscar',0x655d4b,[.6,.34,.23],'swim','rounded','Deep oval cichlid, orange mottling and a tail-base eyespot.','Representative coloration; domestic forms vary.'],
+      pike: ['Pike cichlid','pikecichlid','pike',0xa8a98e,[.86,.17,.18],'swim','rounded','Long, low body with a subdued lateral stripe and long dorsal fin.','Representative pike cichlid group.'],
+      pleco: ['Plecostomus','pleco','pleco',0x7d8069,[.65,.18,.26],'swim','fork','Broad flattened head, tapering armored body, sucker mouth and large dorsal.','Representative suckermouth armored catfish group.'],
+      slider: ['Red-eared slider','turtle','slider',0x6c7849,null,'swim',null,'Scuted shell, webbed clawed feet, yellow neck stripes and red patches behind the eyes.','Representative red-eared slider.'],
+      goldfish: ['Goldfish','goldfish','plain',0xe79b3d,[.57,.235,.18],'swim','fork','Elongate gold body with a single forked tail.','Representative common or feeder goldfish; fancy breeds differ.'],
+      cleaner: ['Cleaner shrimp','shrimp','cleaner',0xcf6b54,null,'crawl',null,'White dorsal stripe bordered in red, long white antennae and walking legs.','Representative skunk cleaner shrimp.'],
+      urchin: ['Sea urchin','urchin','urchin',0x6b587b,null,'crawl',null,'Rounded test with radiating spines.','Representative sea urchin group.'],
+      crab: ['Hermit crab','hermitcrab','hermit',0xa9704a,null,'crawl',null,'Carried spiral shell with legs, eyestalks and claws projecting from the opening.','Representative occupied shell; shell shapes vary.'],
+      starfish: ['Sea star','starfish','starfish',0xc58b57,null,'crawl',null,'Central disc with five tapered arms and a textured upper surface.','Representative five-arm sea star.'],
+      rockfish: ['Pacific rockfish','rockfish','rockfish',0x9c7055,[.59,.28,.2],'swim','rounded','Robust fish with a spiny dorsal and angular head silhouette.','Representative Pacific rockfish group; colors vary by species.'],
+      seastar: ['Sunflower sea star','sunflowerstar','sunflowerstar',0xb19c72,null,'crawl',null,'Broad central disc surrounded by many flexible arms.','Adult representative with twenty arms; arm counts vary.'],
+      kelp: ['Giant kelp','kelp','kelp',0x938241,null,'sessile',null,'Attached holdfast, branching stipes, blades and small buoyancy floats.','One stocked macroalga; no fish eyes, fins or free swimming.'],
+      archer: ['Archerfish','archerfish','archer',0xc6cab1,[.55,.255,.145],'swim','fork','Silver compressed body, dark oblique bands and an upturned mouth.','Representative banded archerfish group.'],
+      puffer: ['Figure-eight puffer','pufferfish','figure8',0x848352,[.44,.24,.23],'swim','rounded','Rounded olive back, pale belly and yellow-outlined dark loops on the back.','Normal uninflated posture.'],
+      mudskip: ['Mudskipper','mudskipper','mudskip',0x979777,[.66,.17,.17],'crawl','rounded','Elongate body, raised eyes and supportive pectoral fins.','Representative mudskipper group.']
+    };
+    var id=String(speciesId||'').toLowerCase(),row=Object.prototype.hasOwnProperty.call(profiles,id)?profiles[id]:null;
+    if(!row)return null;
+    return {id:id,label:row[0],shape:row[1],pattern:row[2],color:row[3],body:row[4]&&row[4].slice(),locomotion:row[5],tail:row[6],identification:row[7],variation:row[8],scaleNote:'Illustrative normalized body size, not a measured physical length.'};
+  }
+
+
   function createAquariumHabitatScene(canvas, initialOptions) {
     var THREE = window.THREE;
     if (!THREE || !canvas) return null;
@@ -11653,6 +11732,64 @@ window.StemLab = window.StemLab || {
     scene.add(tankGroup, habitatRoot, plantRoot, creatureRoot, overlayRoot, equipmentRoot, environmentRoot, foodRoot);
     var persistentTextures = [], fishById = {}, plantById = {}, habitatSignature = '', overlaySignature = '', currentMood = '';
     function clamp(value, low, high) { return Math.max(low, Math.min(high, value)); }
+    function readDimensions() {
+      var input=options.dimensions||{},volume=Number(input.volumeGallons),scale=Math.cbrt((Number.isFinite(volume)&&volume>0?clamp(volume,5,200):20)/20);
+      function dimension(value,fallback){value=Number(value);return Number.isFinite(value)&&value>0?clamp(value,1,40):fallback*scale;}
+      return {width:dimension(input.width,12),height:dimension(input.height,5.2),depth:dimension(input.depth,6.4),volumeGallons:Number.isFinite(volume)&&volume>0?clamp(volume,5,200):20,baselineGallons:20,shape:String(input.shape||'standard')};
+    }
+    var tankSize=readDimensions(),dimensionSignature='',focusState=null;
+    function sizeX(){return tankSize.width/12;}function sizeY(){return tankSize.height/5.2;}function sizeZ(){return tankSize.depth/6.4;}
+    function waterTop(){return tankSize.height-.09*sizeY();}
+    function waterSurfaceY(){return tankSize.height+.03*sizeY();}
+    function mapPosition(x,y,z){return new THREE.Vector3(x*sizeX(),y*sizeY(),z*sizeZ());}
+    function framingRadius(size,direction) {
+      var eye=(direction||new THREE.Vector3(0,0,1)).clone().normalize(),right=new THREE.Vector3().crossVectors(camera.up,eye).normalize(),up=new THREE.Vector3().crossVectors(eye,right).normalize();
+      var tangent=Math.tan(camera.fov*Math.PI/360),targetY=size.height*.452,distance=0;
+      function include(x,y,z){var point=new THREE.Vector3(x,y-targetY,z),depth=point.dot(eye);distance=Math.max(distance,depth+Math.max(Math.abs(point.dot(right))/(tangent*camera.aspect),Math.abs(point.dot(up))/tangent)*1.08);}
+      var halfX=size.width/2+.42*size.width/12,halfZ=size.depth/2+.38*size.depth/6.4;
+      [-halfX,halfX].forEach(function(x){[-1.08*size.height/5.2,size.height+.84].forEach(function(y){[-halfZ,halfZ].forEach(function(z){include(x,y,z);});});});
+      // Supported emergent seedlings remain above the waterline at every tank size.
+      plantRoot.children.forEach(function(plant){if(!plant.visible||plant.userData.placement!=='emergent')return;var bounds=visibleObjectBounds(plant);if(bounds.isEmpty())return;
+        [bounds.min.x,bounds.max.x].forEach(function(x){[bounds.min.y,bounds.max.y].forEach(function(y){[bounds.min.z,bounds.max.z].forEach(function(z){include(x-plant.position.x+plant.position.x*size.width/tankSize.width,y-tankSize.height+size.height,z-plant.position.z+plant.position.z*size.depth/tankSize.depth);});});});
+      });return distance;
+    }
+    function applyDimensions() {
+      var next=readDimensions(),signature=JSON.stringify(next);if(signature===dimensionSignature)return false;
+      var previous=tankSize,hadDimensions=!!dimensionSignature;dimensionSignature=signature;tankSize=next;
+      stageShadow.scale.set(sizeX(),sizeZ(),sizeY());stageShadow.position.y=-1.09*sizeY();
+      tankGroup.scale.set(sizeX(),sizeY(),sizeZ());algaeFilm.scale.copy(tankGroup.scale);overlayRoot.scale.copy(tankGroup.scale);
+      Object.assign(tankGroup.userData,tankSize,{innerMinX:-tankSize.width/2,innerMaxX:tankSize.width/2,innerMinY:0,innerMaxY:tankSize.height,waterSurfaceY:waterSurfaceY(),innerMinZ:-tankSize.depth/2,innerMaxZ:tankSize.depth/2,dimensionUnits:'Illustrative normalized display units; not inches.'});
+      keyLight.position.copy(mapPosition(-4,10,6));fillLight.position.copy(mapPosition(5,5,-2));rimLight.position.copy(mapPosition(-2,4,-6));
+      fillLight.distance=30*Math.max(sizeX(),sizeY(),sizeZ());
+      var sceneScale=Math.max(sizeX(),sizeY(),sizeZ());scene.fog.near=19*sceneScale;scene.fog.far=55*sceneScale;camera.far=Math.max(90,sceneScale*100);camera.updateProjectionMatrix();
+      bubbleRoot.children.forEach(function(bubble){bubble.position.set(-tankSize.width/2+.95,.3,-tankSize.depth/2+.85);});
+      if(hadDimensions){
+        if(focusState)focusState.relocated=true;
+        // A deliberate tank resize moves layout anchors; it never stretches bodies.
+        plantRoot.children.forEach(function(group){group.position.x*=next.width/previous.width;group.position.z*=next.depth/previous.depth;if(group.userData.placement==='surface'||group.userData.placement==='emergent')group.position.y+=(next.height+.03*next.height/5.2)-(previous.height+.03*previous.height/5.2);else group.position.y*=next.height/previous.height;});
+        creatureRoot.children.forEach(function(group){group.position.x*=next.width/previous.width;group.position.y*=next.height/previous.height;group.position.z*=next.depth/previous.depth;});
+        if(!focusState){var target=controls?controls.target:cameraTarget,offset=camera.position.clone().sub(target),ratio=framingRadius(next,offset)/framingRadius(previous,offset);
+        cameraTarget.set(0,tankSize.height*.452,0);camera.position.copy(offset.multiplyScalar(ratio).add(cameraTarget));
+        if(controls){controls.target.copy(cameraTarget);controls.minDistance=Math.max(3,Math.min(tankSize.width,tankSize.depth)*.85);controls.maxDistance=Math.max(32,framingRadius(next)*1.6);controls.update();}else camera.lookAt(cameraTarget);}
+      }
+      return true;
+    }
+    function updateResidentBounds(group) {
+      var data=group.userData,radius=data.turnRadius||.5,minY=.12*sizeY()-data.bodyMinY+data.verticalMotionMargin,maxY=waterTop()-data.bodyMaxY-data.verticalMotionMargin;
+      var x=tankSize.width/2-.08*sizeX()-radius,z=tankSize.depth/2-.02*sizeZ()-radius;
+      data.fitsTank=x>=0&&z>=0&&minY<=maxY;data.fitWarning=data.fitsTank?'':'This fixed-size representative cannot fit this vessel; increase tank size.';
+      data.boundX=Math.max(0,x);data.boundZ=Math.max(0,z);
+      if(minY>maxY)minY=maxY=(tankSize.height-data.bodyMinY-data.bodyMaxY)/2;
+      data.minY=minY;data.maxY=maxY;
+    }
+    function placePlant(group,plant,index) {
+      var coords=plantCoordinates(plant.zone,index);group.position.copy(mapPosition(coords.x,coords.y,coords.z));
+      if(group.userData.placement==='surface'||group.userData.morphology==='floating')group.position.y=waterSurfaceY()-.025;
+      if(group.userData.placement==='emergent')group.position.y=waterSurfaceY()-.03;
+      // Keep this low mat above both the rippled sand and its caustic layer.
+      if(group.userData.morphology==='roundleaf_carpet')group.position.y=Math.max(group.position.y,.11*sizeY());
+      group.userData.waterlineY=waterSurfaceY();group.userData.anchorX=group.position.x;group.userData.anchorY=group.position.y;group.userData.anchorZ=group.position.z;
+    }
     function hash(value) { var result = 17; String(value).split('').forEach(function(c) { result = (result * 31 + c.charCodeAt(0)) >>> 0; }); return result; }
     function noise(index, seed) { var x = Math.sin(index * 127.1 + seed * 0.013) * 43758.5453; return x - Math.floor(x); }
     function mesh(geometry, material, parent, x, y, z, sx, sy, sz) {
@@ -11741,7 +11878,7 @@ window.StemLab = window.StemLab || {
     mesh(new THREE.BoxGeometry(12.45, 0.09, 6.9), trimMat, tankGroup, 0, -0.53, 0);
     mesh(new THREE.BoxGeometry(12.2, 0.28, 6.7), frameMat, tankGroup, 0, -0.34, 0);
     var stageShadow = mesh(new THREE.PlaneGeometry(19, 12), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: 0.75, depthWrite: false }), tankGroup, 0, -1.09, 0);
-    stageShadow.rotation.x = -Math.PI / 2;
+    stageShadow.rotation.x = -Math.PI / 2; stageShadow.name = 'aquarium-ground-shadow'; scene.add(stageShadow);
     var sandMaterial = material(0xe2cfac, { map: sandMap, roughness: 0.98, metalness: 0 });
     mesh(new THREE.BoxGeometry(11.9, 0.3, 6.45), sandMaterial, tankGroup, 0, -0.13, 0);
     var sandGeometry = new THREE.PlaneGeometry(11.9, 6.45, 34, 20);
@@ -11777,8 +11914,8 @@ window.StemLab = window.StemLab || {
     var causticFloor = mesh(new THREE.PlaneGeometry(11.88, 6.4), causticMaterial, tankGroup, 0, 0.095, 0); causticFloor.rotation.x = -Math.PI / 2;
     var glassGlintMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.13, depthWrite: false });
     [-5.8, 5.8].forEach(function(x) { var glint = mesh(new THREE.PlaneGeometry(0.05, 4.95), glassGlintMaterial, tankGroup, x, 2.7, 3.33); glint.rotation.z = -0.022; });
-    var grid = new THREE.GridHelper(11.4, 12, 0x67dbe5, 0x24576c); grid.position.y = 0.12; grid.visible = false; tankGroup.add(grid);
-    var bubbleRoot = new THREE.Group(); bubbleRoot.name = 'aeration-bubbles'; tankGroup.add(bubbleRoot);
+    var grid = new THREE.GridHelper(11.4, 12, 0x67dbe5, 0x24576c); grid.scale.z = 6.2 / 11.4; grid.position.y = 0.12; grid.visible = false; tankGroup.add(grid);
+    var bubbleRoot = new THREE.Group(); bubbleRoot.name = 'aeration-bubbles'; scene.add(bubbleRoot);
     var bubbleMaterial = new THREE.MeshPhongMaterial({ color: 0xc9f7ff, transparent: true, opacity: 0.33, shininess: 120, specular: 0xffffff, depthWrite: false });
     for (var bubbleIndex = 0; bubbleIndex < 14; bubbleIndex++) {
       var bubble = sphere(bubbleRoot, bubbleMaterial, -5.05, 0.3, -2.35, 0.025 + bubbleIndex % 3 * 0.012, undefined, undefined, 8);
@@ -11837,7 +11974,7 @@ window.StemLab = window.StemLab || {
     }
     function buildHabitatItem(item, type, selected) {
       var group = new THREE.Group();
-      group.position.set(item.x, item.y, item.z); group.rotation.y = item.rotation * Math.PI / 180; group.scale.setScalar(item.scale);
+      group.position.copy(mapPosition(item.x, item.y, item.z)); group.rotation.y = item.rotation * Math.PI / 180; group.scale.setScalar(item.scale);
       if (type.id === 'river_stone') {
         addStone(group, 0, 0.42, 0, 0.92, 0x858d82, selected); addStone(group, 0.55, 0.18, 0.2, 0.35, 0x777e74, selected);
       } else if (type.id === 'driftwood') {
@@ -11864,7 +12001,7 @@ window.StemLab = window.StemLab || {
         }
       }
       var shadow = mesh(new THREE.PlaneGeometry(3.1, 2.4), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: .46, depthWrite: false }), group, 0,.03,0); shadow.rotation.x = -Math.PI / 2; shadow.userData.ignorePick = true;
-      if (selected) { var ring = mesh(new THREE.TorusGeometry(1.25,.035,6,48),new THREE.MeshBasicMaterial({color:0xf0abfc}),group,0,.08,0); ring.rotation.x = Math.PI/2; ring.userData.ignorePick = true; }
+      if (selected) { var ring = mesh(new THREE.TorusGeometry(1.25,.035,6,48),new THREE.MeshBasicMaterial({color:0xf0abfc}),group,0,.08,0); ring.rotation.x = Math.PI/2; ring.userData.ignorePick = true; ring.userData.inspectionHalo = true; }
       tagHabitat(group, item.id); return group;
     }
     function plantCoordinates(zone, index) { return AquariumEcosystemCore.getPlantHabitatPosition(zone, index); }
@@ -11879,41 +12016,139 @@ window.StemLab = window.StemLab || {
     }
 
     function addPlant(plant,index) {
-      var coords=plantCoordinates(plant.zone,index),group=new THREE.Group();
+      var group=new THREE.Group(),profile=plant.visualProfile||(typeof getAquariumPlantVisualProfile==='function'?getAquariumPlantVisualProfile(plant.id):null);
       var key=[plant.morphology,plant.form,plant.growthForm,plant.name,plant.id].join(' ').toLowerCase();
+      var form=profile&&profile.growthForm;
+      if(!form)form=/chaeto/.test(key)?'filament_alga':/moss|marimo/.test(key)?'moss':/fern/.test(key)?'fern':/hairgrass|grass/.test(key)?'sedge_carpet':/monte carlo|carpet/.test(key)?'roundleaf_carpet':plant.zone==='surface'||/floating|duckweed/.test(key)?'floating':/anubias|rhizome/.test(key)?'rhizome_broadleaf':/sword|rosette|broad/.test(key)?'rosette':/caulerpa/.test(key)?'stolon_alga':'opposite_stem';
       var ratio=plant.biomassRatio===null||plant.biomassRatio===undefined?NaN:Number(plant.biomassRatio),biomass=Number(plant.biomass);
       if(!Number.isFinite(ratio))ratio=plant.biomass!==undefined&&Number.isFinite(biomass)&&biomass===0?0:1;
       ratio=clamp(ratio,0,2.5);
       var health=Number.isFinite(Number(plant.health))?clamp(Number(plant.health),0,100):80;
-      var color=new THREE.Color(typeof plant.color==='string'?plant.color:options.saltwater?0x62a662:0x49a76e);
+      var palette={java_fern:0x3f7b48,amazon_sword:0x639459,java_moss:0x39784b,hornwort:0x497f45,anubias:0x38724f,water_wisteria:0x65a653,duckweed:0x78a34b,dwarf_hairgrass:0x63a14b,red_root_floater:0x789159,rotala:0x739f63,monte_carlo:0x61a055,chaeto:0x508847,mangrove:0x497541,caulerpa:0x74a355};
+      var color=new THREE.Color(typeof plant.color==='string'?plant.color:palette[plant.id]||0x49a76e);
       color.lerp(new THREE.Color(0x93815a),clamp((65-health)/65,0,1)*.8);
-      var stemMat=material(color,{roughness:.73,side:THREE.DoubleSide}),darkMat=material(color.clone().multiplyScalar(.58),{roughness:.85,side:THREE.DoubleSide});
-      var low=appearanceOptions().quality==='low',form=/chaeto|moss|marimo/.test(key)?'moss':/carpet|dwarf hair|monte carlo/.test(key)?'carpet':/fern/.test(key)?'fern':plant.zone==='surface'||/floating|duckweed|frogbit|water lettuce|lily/.test(key)?'floating':/anubias|sword|crypt|broad|rosette|rhizome/.test(key)?'rosette':/kelp|seaweed|macro|ribbon|caulerpa/.test(key)?'macroalgae':'stem';
-      group.position.set(coords.x,coords.y,coords.z);
-      group.userData.modelBiomass=plant.biomass;group.userData.biomassRatio=ratio;group.userData.health=health;group.userData.morphology=form;
-      group.userData.phase=hash(plant.id||index)%100*.13;group.userData.baseRotation=0;
+      var plantMaterials=[];
+      function pigment(value,extra){if(ratio===0)return null;var mat=material(value,extra);mat.color.convertSRGBToLinear();plantMaterials.push(mat);return mat;}
+      var leafMat=pigment(color,{roughness:.71,side:THREE.DoubleSide}),stemMat=pigment(color.clone().multiplyScalar(.73),{roughness:.83,side:THREE.DoubleSide}),veinMat=pigment(color.clone().multiplyScalar(.58),{roughness:.82});
+      var rootMat=pigment(form==='floating_leaves'?0x93515c:0x88755a,{roughness:.9}),low=appearanceOptions().quality==='low';
+      var leaves=[],leafIndices=[],fine=[],fineIndices=[];
+      function geometryBatch(vertices,indices,mat,part){if(!vertices.length)return;var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geo.setIndex(indices);geo.computeVertexNormals();var node=mesh(geo,mat,group);node.userData.plantPart=part;return node;}
+      function appendGeometry(geometry,position,rotation,scale,vertices,indices){
+        var matrix=new THREE.Matrix4().compose(new THREE.Vector3().fromArray(position),new THREE.Quaternion().setFromEuler(new THREE.Euler(rotation[0],rotation[1],rotation[2])),new THREE.Vector3().fromArray(scale||[1,1,1]));
+        var positions=geometry.attributes.position,offset=vertices.length/3;
+        for(var vertex=0;vertex<positions.count;vertex++){var point=new THREE.Vector3().fromBufferAttribute(positions,vertex).applyMatrix4(matrix);vertices.push(point.x,point.y,point.z);}
+        var order=geometry.index;if(order)for(var triangle=0;triangle<order.count;triangle++)indices.push(offset+order.getX(triangle));else for(var triangle=0;triangle<positions.count;triangle++)indices.push(offset+triangle);
+        geometry.dispose();
+      }
+      function bladeGeometry(length,width,bend,round){
+        var vertices=[],indices=[],steps=low?6:10;
+        for(var row=0;row<=steps;row++){var t=row/steps,w=Math.pow(Math.sin(Math.PI*t),round?.58:.95)*width,x=Math.sin(t*1.7)*bend;
+          for(var side=-1;side<=1;side++)vertices.push(x+side*w,length*t,Math.sin(Math.PI*t)*(.017+(side===0?.025:0)));
+          if(row<steps)for(var side=0;side<2;side++){var a=row*3+side;indices.push(a,a+1,a+3,a+1,a+4,a+3);}
+        }
+        var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+      }
+      function blade(length,width,bend,position,rotation,round,veined){
+        if(veined){var leafGroup=new THREE.Group();leafGroup.position.fromArray(position);leafGroup.rotation.set(rotation[0],rotation[1],rotation[2]);group.add(leafGroup);
+          mesh(bladeGeometry(length,width,bend,round),leafMat,leafGroup).userData.plantPart='leaf';
+          curve(leafGroup,[[0,0,.004],[Math.sin(.85)*bend,length*.5,.05],[Math.sin(1.7)*bend,length,.004]],.004,veinMat,low?6:10).userData.plantPart='leaf-vein';
+        }else appendGeometry(bladeGeometry(length,width,bend,round),position,rotation,[1,1,1],leaves,leafIndices);
+      }
+      function needle(start,end,width){var a=new THREE.Vector3().fromArray(start),b=new THREE.Vector3().fromArray(end),cross=b.clone().sub(a).cross(new THREE.Vector3(0,1,0));if(cross.lengthSq()<.00001)cross.set(1,0,0);cross.normalize().multiplyScalar(width);var offset=fine.length/3;[a.clone().add(cross),a.clone().sub(cross),b.clone().sub(cross),b.clone().add(cross)].forEach(function(point){fine.push(point.x,point.y,point.z);});fineIndices.push(offset,offset+1,offset+2,offset,offset+2,offset+3);}
+      function stem(points,radius,mat,part){var node=curve(group,points,radius,mat||stemMat,low?8:12);node.userData.plantPart=part||'stem';return node;}
+      group.name='plant-'+String(plant.id||index);group.userData.visualProfileId=profile?profile.id:'legacy';group.userData.morphology=form;
+      group.userData.modelBiomass=plant.biomass;group.userData.biomassRatio=ratio;group.userData.health=health;
+      group.userData.placement=form==='emergent_tree'?'emergent':/floating/.test(form)?'surface':/rhizome|fern/.test(form)?'exposed-rhizome':form==='whorled_stem'?'water-column':'substrate';
+      group.userData.placementGuidance=profile&&profile.placement||'';group.userData.identification=profile&&profile.identification||'';
+      group.userData.phase=hash(plant.id||index)%100*.13;group.userData.baseRotation=0;group.userData.trueRoots=form!=='whorled_stem'&&form!=='moss'&&form!=='filament_alga'&&form!=='stolon_alga';
       group.scale.setScalar(ratio===0?1:clamp(Math.pow(ratio,1/3),.12,1.36));group.visible=ratio>0;
       if(ratio>0){
-        if(form==='moss'){
-          if(/chaeto/.test(key)){
-            for(var strand=0;strand<(low?9:18);strand++){var sa=strand*2.4;curve(group,[[Math.cos(sa)*.38,.12,Math.sin(sa)*.3],[Math.cos(sa+.9)*.35,.35,Math.sin(sa+.9)*.33],[Math.cos(sa+2)*.29,.56,Math.sin(sa+2)*.29],[Math.cos(sa+3)*.4,.25,Math.sin(sa+3)*.35]],.021,strand%3?stemMat:darkMat,11);}
-          }else for(var tuft=0;tuft<(low?10:19);tuft++){var ta=tuft*2.4;sphere(group,tuft%3?stemMat:darkMat,Math.cos(ta)*Math.sqrt(tuft/19)*.54,.11+(tuft%3)*.04,Math.sin(ta)*Math.sqrt(tuft/19)*.46,.18,.17,.17,low?7:10);}
-        }else if(form==='carpet'){
-          for(var shoot=0;shoot<(low?10:18);shoot++){var ca=shoot*2.4;var leaf=mesh(leafBlade(.2+(shoot%3)*.075,.045,.07),shoot%3?stemMat:darkMat,group,Math.cos(ca)*Math.sqrt(shoot/18)*.62,.015,Math.sin(ca)*Math.sqrt(shoot/18)*.5);leaf.rotation.y=ca;}
-        }else if(form==='floating'){
-          for(var pad=0;pad<(low?3:5);pad++){var leaf=sphere(group,stemMat,(pad%3-.8)*.32,.04,Math.floor(pad/3)*.3-.16,.25,.035,.19,10);curve(group,[[leaf.position.x,0,leaf.position.z],[leaf.position.x+.07,-.22,leaf.position.z],[leaf.position.x-.04,-.55,leaf.position.z+.09]],.012,darkMat,7);}
+        if(form==='rhizome_fern'||form==='fern'||form==='rhizome_broadleaf'){
+          stem([[-.48,.07,0],[-.15,.105,.035],[.2,.09,-.025],[.48,.1,.025]],.038,stemMat,'rhizome');
+          for(var root=0;root<(low?4:7);root++){var rx=-.4+root*.13;stem([[rx,.07,0],[rx-.06,-.015,.1],[rx-.1,-.085,.16]],.009,rootMat,'root');}
+          var count=low?4:7,broad=form==='rhizome_broadleaf';
+          for(var frond=0;frond<count;frond++){var x=-.39+frond*.12,angle=frond*2.4,petiole=broad?.34:.13;
+            stem([[x,.1,0],[x+Math.cos(angle)*.08,.1+petiole*.6,Math.sin(angle)*.06],[x+Math.cos(angle)*.15,.1+petiole,Math.sin(angle)*.13]],.011,stemMat,'petiole');
+            blade(broad?.62:1.25+(frond%3)*.19,broad?.22:.105,broad?.11:.14,[x+Math.cos(angle)*.15,.1+petiole,Math.sin(angle)*.13],[Math.sin(angle)*.23,angle,Math.cos(angle)*.29],broad,true);
+          }
+          group.userData.leafArrangement=broad?'entire-broad-blades-on-rhizome':'simple-lanceolate-fronds-on-rhizome';
         }else if(form==='rosette'){
-          for(var broad=0;broad<(low?4:7);broad++){var angle=broad*2.4,leafY=.46+(broad%3)*.27,lx=Math.cos(angle)*.38,lz=Math.sin(angle)*.35;curve(group,[[0,0,0],[lx*.3,leafY*.6,lz*.3],[lx,leafY,lz]],.018,darkMat,8);var blade=mesh(leafBlade(.72,.21,.16),stemMat,group,lx,leafY,lz);blade.rotation.set(.3*Math.sin(angle),angle,.28*Math.cos(angle));}
-        }else if(form==='fern'){
-          for(var frond=0;frond<(low?3:5);frond++){var fa=frond*2.4,height=1.3+frond%3*.19;curve(group,[[0,0,0],[Math.cos(fa)*.15,height*.5,Math.sin(fa)*.15],[Math.cos(fa)*.35,height,Math.sin(fa)*.35]],.014,darkMat,10);for(var pinna=0;pinna<5;pinna++)[-1,1].forEach(function(side){var leaf=mesh(leafBlade(.29-pinna*.025,.068,.11),stemMat,group,Math.cos(fa)*pinna*.06,.25+pinna*.22,Math.sin(fa)*pinna*.06);leaf.rotation.set(.1,fa,side*.95);});}
-        }else{
-          var grassy=/grass|vallis|hair|sagitt|seagrass/.test(key),kelp=form==='macroalgae';
-          var count=grassy?11:7;if(low)count=Math.ceil(count*.65);
-          for(var stemIndex=0;stemIndex<count;stemIndex++){var phase=stemIndex*2.4;var blade=mesh(leafBlade((grassy?1.25:kelp?2.3:1.65)+(stemIndex%3)*.2,grassy?.055:kelp?.14:.1,Math.sin(phase)*.3),stemIndex%3?stemMat:darkMat,group,Math.cos(phase)*.21,0,Math.sin(phase)*.21);blade.rotation.y=phase;if(!grassy&&!kelp)for(var branch=0;branch<3;branch++){var leaflet=mesh(leafBlade(.42,.11,.25),stemMat,group,Math.cos(phase)*.18,.28+branch*.4,Math.sin(phase)*.18);leaflet.rotation.set(.12,phase,stemIndex%2?.6:-.6);}}
+          for(var bladeIndex=0;bladeIndex<(low?5:8);bladeIndex++){var angle=bladeIndex*2.4,reach=.3+(bladeIndex%3)*.08,petiole=.36+bladeIndex%3*.12;
+            stem([[0,.04,0],[Math.cos(angle)*reach*.5,petiole*.7,Math.sin(angle)*reach*.5],[Math.cos(angle)*reach,petiole,Math.sin(angle)*reach]],.013,stemMat,'petiole');
+            blade(.95+(bladeIndex%3)*.21,.16,.14,[Math.cos(angle)*reach,petiole,Math.sin(angle)*reach],[Math.sin(angle)*.33,angle,Math.cos(angle)*.33],false,true);
+          }
+          group.userData.leafArrangement='basal-rosette';
+        }else if(form==='moss'){
+          for(var shoot=0;shoot<(low?7:12);shoot++){var angle=shoot*2.4,radius=.13+shoot%4*.1,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius,top=.27+shoot%3*.085;
+            stem([[x,.025,z],[x+.09,top*.6,z+.07],[x+.17,top,z+.12]],.009,stemMat,'moss-axis');
+            for(var node=0;node<5;node++)[-1,1].forEach(function(side){var bx=x+node*.032,by=.05+node*top*.18,bz=z+node*.02;needle([bx,by,bz],[bx+side*.095,by+.035,bz+side*.065],.018);if(node%2===0)needle([bx,by,bz],[bx+side*.055,by+.1,bz-side*.07],.014);});
+          }
+          group.userData.leafArrangement='branching-fine-leaved-mat';
+        }else if(form==='whorled_stem'){
+          for(var stalk=0;stalk<(low?2:3);stalk++){var x=(stalk-1)*.26,z=Math.sin(stalk*2.4)*.13,top=1.45+stalk*.17;stem([[x,.03,z],[x+.08,top*.55,z+.03],[x+.16,top,z+.07]],.013);
+            for(var whorl=0;whorl<(low?5:7);whorl++){var y=.19+whorl*(top-.26)/(low?5:7),bx=x+y/top*.16,bz=z+y/top*.07;
+              for(var ray=0;ray<(low?6:8);ray++){var angle=ray*Math.PI*2/(low?6:8)+whorl*.23,dx=Math.cos(angle),dz=Math.sin(angle),reach=.21+(1-y/top)*.1;
+                var joint=[bx+dx*reach*.67,y+.055,bz+dz*reach*.67];needle([bx,y,bz],joint,.008);
+                [-1,1].forEach(function(side){needle(joint,[bx+dx*reach+Math.sin(angle)*side*.07,y+.13,bz+dz*reach-Math.cos(angle)*side*.07],.007);});
+              }
+            }
+          }
+          group.userData.leafArrangement='forked-leaves-in-whorls';
+        }else if(form==='opposite_stem'||form==='dissected_stem'){
+          for(var stalk=0;stalk<(low?2:3);stalk++){var x=(stalk-1)*.3,z=Math.sin(stalk*2.4)*.2,top=1.45+stalk%2*.27;stem([[x,.025,z],[x+.07,top*.55,z+.03],[x+.13,top,z+.06]],.012);
+            for(var node=0;node<(low?4:6);node++){var y=.2+node*(top-.25)/(low?4:6),bx=x+y/top*.13,bz=z+y/top*.06,turn=node*Math.PI*.47;
+              [-1,1].forEach(function(side){var angle=turn+(side<0?Math.PI:0);
+                if(form==='opposite_stem')blade(.27,.046,.07,[bx,y,bz],[0,angle,side*.97],false,false);
+                else{var length=.37,outline=[[0,0]];for(var lobe=1;lobe<=5;lobe++){var t=lobe/6,width=Math.sin(t*Math.PI)*.15;outline.push([-width,t*length],[-.025,(t+.065)*length]);}outline.push([0,length]);for(var lobe=5;lobe>=1;lobe--){var t=lobe/6,width=Math.sin(t*Math.PI)*.15;outline.push([.025,(t+.065)*length],[width,t*length]);}appendGeometry(finShape(outline),[bx,y,bz],[0,angle,side*1.05],[1,1,1],leaves,leafIndices);}
+              });
+            }
+          }
+          group.userData.leafArrangement=form==='opposite_stem'?'opposite-narrow-submerged-leaves':'opposite-deeply-divided-submerged-leaves';
+        }else if(form==='roundleaf_carpet'){
+          for(var runner=0;runner<(low?3:4);runner++){var z=-.28+runner*.18;stem([[-.48,.035,z],[0,.045,z+.06],[.48,.035,z-.02]],.009,stemMat,'creeping-stem');
+            for(var node=0;node<5;node++){var x=-.4+node*.2;[-1,1].forEach(function(side){blade(.17,.081,.015,[x,.048,z+side*.07],[-Math.PI/2,0,side*.42],true,false);});}
+          }
+          group.userData.leafArrangement='paired-round-leaves-on-creeping-stems';
+        }else if(form==='sedge_carpet'){
+          for(var clump=0;clump<(low?5:7);clump++){var angle=clump*2.4,x=Math.cos(angle)*.34,z=Math.sin(angle)*.28;
+            for(var culm=0;culm<(low?4:6);culm++){var sway=Math.sin(culm*2.4)*.055,top=.34+(culm%3)*.13;var path=new THREE.CatmullRomCurve3([new THREE.Vector3(x,.025,z),new THREE.Vector3(x+sway,top*.6,z+.02),new THREE.Vector3(x+sway*1.4,top,z+.035)]);appendGeometry(new THREE.TubeGeometry(path,low?5:8,.007,4,false),[0,0,0],[0,0,0],[1,1,1],fine,fineIndices);}
+          }
+          group.userData.leafArrangement='fine-upright-sedge-culms';
+        }else if(form==='floating_fronds'||form==='floating_leaves'||form==='floating'){
+          var red=form==='floating_leaves';
+          for(var cluster=0;cluster<(low?3:5);cluster++){var x=-.45+cluster*.21,z=cluster%2?.17:-.12;
+            if(red)stem([[x-.08,.025,z],[x+.1,.03,z+.08],[x+.23,.025,z+.02]],.012,stemMat,'floating-stem');
+            for(var pad=0;pad<(red?2:3);pad++){var px=x+pad*(red?.16:.07),pz=z+(pad%2?.08:0);blade(red?.34:.13,red?.18:.07,.015,[px,.035,pz],[-Math.PI/2,0,pad*.9],true,false);
+              for(var root=0;root<(red?(low?3:5):1);root++){var rz=(root-2)*.016;stem([[px,0,pz],[px+.03,-.22,pz+rz],[px-.025,-(red?.66:.32)-root*.025,pz+rz+.025]],red?.006:.004,rootMat,'root');}
+            }
+          }
+          group.userData.leafArrangement=red?'two-ranks-on-floating-stems':'budding-floating-fronds';
+        }else if(form==='filament_alga'){
+          for(var strand=0;strand<(low?10:20);strand++){var angle=strand*2.4;stem([[Math.cos(angle)*.39,.12,Math.sin(angle)*.3],[Math.cos(angle+.9)*.35,.35,Math.sin(angle+.9)*.33],[Math.cos(angle+2)*.29,.58,Math.sin(angle+2)*.29],[Math.cos(angle+3)*.4,.25,Math.sin(angle+3)*.35]],.013,strand%3?leafMat:stemMat,'unbranched-filament');}
+          group.userData.leafArrangement='unbranched-tangled-filaments';
+        }else if(form==='stolon_alga'){
+          stem([[-.58,.04,0],[-.2,.065,.035],[.22,.05,-.035],[.58,.06,0]],.019,stemMat,'stolon');
+          for(var frond=0;frond<(low?4:6);frond++){var x=-.45+frond*.18,top=.64+frond%3*.15;stem([[x,.06,0],[x+.045,top*.55,.04],[x+.07,top,.07]],.012,stemMat,'frond-axis');
+            for(var branch=0;branch<6;branch++){var y=.16+branch*top*.115;[-1,1].forEach(function(side){blade(.18-branch*.012,.047,.025,[x+y/top*.07,y,y/top*.07],[0,0,side*1.02],false,false);});}
+            stem([[x,.06,0],[x+.04,-.005,.07],[x+.08,-.045,.11]],.01,stemMat,'holdfast');
+          }
+          group.userData.leafArrangement='representative-feather-fronds-on-stolon';
+        }else if(form==='emergent_tree'){
+          var wood=pigment(0x927359,{roughness:.88});
+          stem([[0,-.24,0],[.02,.6,.025],[.055,1.25,.045],[.08,1.75,.035]],.036,wood,'woody-stem');
+          for(var root=0;root<(low?4:6);root++){var angle=root*2.4;stem([[.01,.12,0],[Math.cos(angle)*.25,-.25,Math.sin(angle)*.23],[Math.cos(angle)*.36,-.84,Math.sin(angle)*.34]],.022,rootMat,'root');}
+          for(var branch=0;branch<(low?4:6);branch++){var side=branch%2?1:-1,level=1.04+Math.floor(branch/2)*.24,x=side*.2,z=Math.sin(branch*2.4)*.15;stem([[.04,level-.13,.035],[x*.6,level-.04,z*.6],[x,level,z]],.013,wood,'petiole');blade(.55,.15,.045,[x,level,z],[.4,branch*2.4,side*.55],true,true);}
+          group.userData.leafArrangement='opposite-aerial-blades-with-submerged-roots';
         }
+        geometryBatch(leaves,leafIndices,leafMat,'leaf');geometryBatch(fine,fineIndices,leafMat,form==='sedge_carpet'?'culm':'fine-leaf');
       }
-      group.traverse(function(node){node.userData.plantId=plant.id;});plantRoot.add(group);return group;
+      // Some forms have no veins or roots. Release any optional material that
+      // has no mesh owner, so rebuild/disposal never leaves it unreachable.
+      var usedMaterials=new Set();group.traverse(function(node){if(node.material)(Array.isArray(node.material)?node.material:[node.material]).forEach(function(mat){usedMaterials.add(mat);});});
+      plantMaterials.forEach(function(mat){if(!usedMaterials.has(mat))mat.dispose();});
+      placePlant(group,plant,index);group.traverse(function(node){node.userData.plantId=plant.id;});plantRoot.add(group);return group;
     }
+
     function behaviorOffset(mode, angle, span) {
       if (mode === 'holding-territory') return { x: Math.sin(angle) * span, z: Math.sin(angle * 2) * span * 0.38 };
       if (mode === 'using-refuge' || mode === 'using-spawning-refuge') return { x: Math.cos(angle) * span, z: Math.sin(angle) * span * 0.72 };
@@ -11922,47 +12157,35 @@ window.StemLab = window.StemLab || {
       return { x: Math.sin(angle) * span, z: Math.cos(angle) * Math.min(0.65, span * 0.32) };
     }
 
+    function visualProfile(fish) {
+      return getAquariumSpeciesVisualProfile(fish.speciesId||fish.id);
+    }
     function organismShape(fish) {
-      var label = [fish.bodyPlan,fish.id,fish.organismType].join(' ').toLowerCase();
-      if (/coral/.test(label)) return 'coral';
-      if (/anemone|polyp/.test(label)) return 'anemone';
-      if (/urchin/.test(label)) return 'urchin';
-      if (/seacucumber|sea cucumber|holothur/.test(label)) return 'seacucumber';
-      if (/copepod/.test(label)) return 'copepod';
-      if (/starfish|sea star|echinoderm/.test(label)) return 'starfish';
-      if (/snail|gastropod/.test(label)) return 'snail';
-      if (/clam|mussel|oyster|bivalve/.test(label)) return 'bivalve';
-      if (/crab/.test(label)) return 'crab';
-      if (/shrimp|prawn|crustacean/.test(label)) return 'shrimp';
-      if (/turtle|chelonian/.test(label)) return 'turtle';
-      if (/octopus|squid|cephalopod/.test(label)) return 'cephalopod';
-      if (/frog|amphib/.test(label)) return 'frog';
-      if (/clownfish/.test(label)) return 'clownfish';
-      if (/betta/.test(label)) return 'betta';
-      if (/guppy/.test(label)) return 'guppy';
-      if (/angel|discus/.test(label)) return 'angelfish';
-      if (/goldfish|koi/.test(label)) return 'goldfish';
-      if (/tang|surgeon/.test(label)) return 'tang';
-      if (/cory|catfish|pleco|loach/.test(label)) return 'corydoras';
-      if (/puffer/.test(label)) return 'pufferfish';
-      if (/neon|cardinal|tetra/.test(label)) return 'tetra';
-      return 'fish';
+      var profile=visualProfile(fish);if(profile)return profile.shape;
+      // Exact aliases preserve legacy fixtures; no substrings or editable names.
+      var aliases={clownfish:'clownfish',snail:'snail',clam:'bivalve',mussel:'bivalve',oyster:'bivalve',turtle:'turtle',frog:'frog',octopus:'cephalopod',squid:'cephalopod',pufferfish:'pufferfish',seacucumber:'seacucumber',coral:'coral',copepod:'copepod'};
+      var bodies={tetra:'tetra',guppy_body:'guppy',corydoras:'corydoras',angelfish:'angelfish',betta:'betta',clownfish_body:'clownfish',goldfish_body:'goldfish',pufferfish:'pufferfish',sea_anemone:'anemone',chelonian:'turtle',cephalopod:'cephalopod',echinoderm:'starfish',crustacean:'shrimp'};
+      return aliases[String(fish.speciesId||fish.id||'').toLowerCase()]||bodies[String(fish.bodyPlan||'').toLowerCase()]||'fish';
     }
     function fishAppearanceSignature(fish) {
       return JSON.stringify([fish.id,fish.bodyPlan,fish.organismType,fish.color,fish.displaySize,!!fish.selected,options.overlay==='organisms',options.overlay==='organisms'?Math.floor((Number(fish.fitScore)||0)/20):0,((options.fish||[]).length>32||appearanceOptions().quality==='low'),appearanceOptions().animalScale]);
     }
     function addFish(fish,index) {
-      var group=new THREE.Group(),shape=organismShape(fish),seed=hash(fish.instanceId||fish.id||index),lowDetail=(options.fish||[]).length>32||appearanceOptions().quality==='low';
+      // r128 does not automatically decode sRGB palette colors. Convert pigments
+      // once so identification markings retain their intended color under lighting.
+      function pigment(color,extra){var mat=material(color,extra);mat.color.convertSRGBToLinear();return mat;}
+      var profile=visualProfile(fish),group=new THREE.Group(),shape=organismShape(fish),seed=hash(fish.instanceId||fish.id||index),lowDetail=(options.fish||[]).length>32||appearanceOptions().quality==='low';
       group.name='resident-'+String(fish.instanceId||fish.id||index);
       var palette={clownfish:0xf89136,betta:0xb84175,guppy:0xd4b469,angelfish:0xc9d0b6,goldfish:0xed9a39,tang:0x296fe3,corydoras:0x8e9985,pufferfish:0xc5ba75,tetra:0x58b7be,shrimp:0xd36543,crab:0xa36545,snail:0xcbb37b,bivalve:0x7b94a8,turtle:0x6d8350,frog:0x939453,cephalopod:0xb9878f,anemone:0xc98caf,coral:0xcda88d,urchin:0x6e527d,starfish:0xda9f68,seacucumber:0x887254,copepod:0xb9c8b6,fish:0x93b8b3};
-      var chosen=(typeof fish.color==='string'||typeof fish.color==='number')?fish.color:palette[shape];
+      var chosen=profile?profile.color:(typeof fish.color==='string'||typeof fish.color==='number')?fish.color:palette[shape]||0x93b8b3;
+      group.userData.profileId=profile?profile.id:'legacy';group.userData.identification=profile?profile.identification:'';group.userData.variation=profile?profile.variation:'';group.userData.pattern=profile?profile.pattern:'legacy';
       var baseColor=new THREE.Color(chosen),fitScore=clamp(Number(fish.fitScore)||0,0,100);
       if(options.overlay==='organisms')baseColor.set(fitScore>=85?0x34d399:fitScore>=65?0x22d3ee:fitScore>=45?0xfbbf24:0xfb7185);
-      var skin=material(baseColor,{roughness:.4,metalness:.07});
-      var belly=material(baseColor.clone().lerp(new THREE.Color(0xfff0d1),.5),{roughness:.52});
-      var finMat=material(baseColor.clone().lerp(new THREE.Color(0xecd8bd),.18),{transparent:true,opacity:.8,side:THREE.DoubleSide,roughness:.55,depthWrite:false});
-      var dark=material(0x182c30,{roughness:.48}),ivory=material(0xf9f4d8,{roughness:.35});
-      var eyeMat=material(0x080f12,{roughness:.12}),eyeRim=material(0xe9c67c,{roughness:.25,metalness:.2});
+      var skin=pigment(baseColor,{roughness:.4,metalness:.07});
+      var belly=pigment(baseColor.clone().lerp(new THREE.Color(0xfff0d1),.5),{roughness:.52});
+      var finMat=pigment(baseColor.clone().lerp(new THREE.Color(0xecd8bd),.18),{transparent:true,opacity:.8,side:THREE.DoubleSide,roughness:.55,depthWrite:false});
+      var dark=pigment(0x182c30,{roughness:.48}),ivory=pigment(0xf9f4d8,{roughness:.35});
+      var eyeMat=pigment(0x080f12,{roughness:.12}),eyeRim=pigment(0xe9c67c,{roughness:.25,metalness:.2});
       var tail=null,fins=[],stationary=/anemone|coral|urchin|bivalve/.test(shape),bottom=/shrimp|crab|snail|starfish|bivalve|urchin|anemone|coral/.test(shape);
       function eyes(x,y,z,r){
         [-1,1].forEach(function(side){
@@ -11972,7 +12195,31 @@ window.StemLab = window.StemLab || {
         });
       }
       function ribbon(parent,points,mat,x,y,z){return mesh(finShape(points),mat,parent,x||0,y||0,z||0);}
-      if(shape==='seacucumber'){
+      if(shape==='kelp'){
+        // A stocked macroalga, with anchored holdfast and blades, never a fish.
+        for(var root=0;root<7;root++){var ra=root*2.4;curve(group,[[0,0,0],[Math.cos(ra)*.17,.08,Math.sin(ra)*.17],[Math.cos(ra)*.31,.015,Math.sin(ra)*.31]],.025,skin,8);}
+        for(var stipe=0;stipe<(lowDetail?3:5);stipe++){
+          var ka=stipe*2.4,kx=Math.cos(ka)*.3,kz=Math.sin(ka)*.25,kh=1.55+stipe%3*.2;
+          curve(group,[[0,0,0],[kx*.6,kh*.55,kz*.6],[kx,kh,kz]],.016,skin,12);
+          for(var bladeIndex=0;bladeIndex<4;bladeIndex++){
+            var by=.28+bladeIndex*kh*.19,bx=kx*by/kh,bz=kz*by/kh;
+            sphere(group,belly,bx,by,bz,.041,.068,.04,8).userData.kelpPneumatocyst=true;
+            var blade=mesh(leafBlade(.57,.105,.19),finMat,group,bx,by+.035,bz);blade.rotation.set(.2,ka,stipe%2?.7:-.7);blade.userData.kelpBlade=true;
+          }
+        }
+      }else if(shape==='hermitcrab'){
+        var shellMat=pigment(0x9e9475,{roughness:.76});
+        sphere(group,shellMat,-.19,.23,0,.42,.38,.31,18).userData.carriedShell=true;
+        var shellSpiral=[];for(var turn=0;turn<54;turn++){var sa=turn*.2,sr=.015+turn*.0045;shellSpiral.push([-.2+Math.cos(sa)*sr,.25+Math.sin(sa)*sr,.3-sr*sr*.4]);}curve(group,shellSpiral,.019,dark,44);
+        sphere(group,dark,.16,.09,0,.18,.16,.22,12);
+        sphere(group,skin,.28,.055,0,.19,.14,.16,14);
+        [-1,1].forEach(function(side){
+          for(var leg=0;leg<3;leg++)curve(group,[[.14-leg*.1,.05,side*.12],[.37-leg*.13,-.1,side*.33],[.44-leg*.15,-.24,side*.42]],.025,skin,8);
+          segment(group,[.3,.07,side*.08],[.56,.18,side*.28],side>0?.057:.043,skin);
+          sphere(group,skin,.61,.18,side*.29,side>0?.145:.1,.087,.083,12);
+          segment(group,[.3,.12,side*.07],[.39,.3,side*.115],.018,belly);sphere(group,eyeMat,.4,.31,side*.115,.027);
+        });
+      }else if(shape==='seacucumber'){
         sphere(group,skin,0,0,0,.64,.19,.22,lowDetail?14:20);
         sphere(group,belly,.48,-.015,0,.17,.15,.16,12);
         for(var papilla=0;papilla<(lowDetail?12:22);papilla++){
@@ -11996,9 +12243,19 @@ window.StemLab = window.StemLab || {
       }else if(shape==='shrimp'||shape==='crab'){
         sphere(group,skin,0,0,0,shape==='crab'?.38:.42,.16,shape==='crab'?.31:.15);
         if(shape==='shrimp'){
+          if(profile&&(profile.pattern==='pederson'||profile.pattern==='cherry')){skin.transparent=true;skin.opacity=profile.pattern==='pederson'?.44:.83;}
           for(var abdominal=0;abdominal<4;abdominal++)sphere(group,abdominal%2?belly:skin,-.28-abdominal*.11,-abdominal*.017,0,.16-abdominal*.019,.13-abdominal*.015,.135-abdominal*.012,12);
           ribbon(group,[[0,0],[-.24,.15],[-.29,-.12]],finMat,-.63,-.035,0);
-          for(var antenna=0;antenna<2;antenna++)curve(group,[[.26,.09,antenna?.06:-.06],[.64,.2,antenna?.18:-.18],[.98,.25,antenna?.3:-.3]],.008,belly,10);
+          for(var antenna=0;antenna<2;antenna++)curve(group,[[.26,.09,antenna?.06:-.06],[.64,.2,antenna?.18:-.18],[profile&&/cleaner|pederson/.test(profile.pattern)?1.18:.98,.25,antenna?.3:-.3]],.008,profile&&/cleaner|pederson/.test(profile.pattern)?ivory:belly,10);
+          if(profile&&profile.pattern==='pistol'){
+            segment(group,[.24,-.02,.12],[.5,.025,.28],.061,skin);sphere(group,skin,.65,.055,.29,.23,.13,.12,14).userData.snappingClaw=true;
+            ribbon(group,[[0,0],[.22,.08],[.1,-.065]],belly,.77,.08,.29);
+          }
+          if(profile&&profile.pattern==='cleaner')curve(group,[[-.62,.04,0],[-.3,.13,0],[0,.17,0],[.34,.12,0]],.028,ivory,14);
+          if(profile&&profile.pattern==='pederson'){
+            var violet=pigment(0x695796,{roughness:.4});
+            for(var mark=0;mark<8;mark++)sphere(group,violet,-.51+mark*.11,.105,mark%2?.045:-.045,.032,.014,.026,8);
+          }
         }
         for(var leg=0;leg<4;leg++)[-1,1].forEach(function(side){
           var x=.24-leg*.16;
@@ -12020,11 +12277,13 @@ window.StemLab = window.StemLab || {
       }else if(shape==='bivalve'){
         [-1,1].forEach(function(side){var shell=sphere(group,skin,0,side*.045,0,.4,.13,.27,18);shell.rotation.x=side*.13;});
         for(var rib=0;rib<8;rib++){var rz=-.2+rib*.055;curve(group,[[-.32,.075,rz],[0,.18,rz],[.32,.075,rz]],.009,belly,9);}
-      }else if(shape==='starfish'){
-        var points=[];for(var star=0;star<10;star++){var starA=star*Math.PI/5,starR=star%2?.16:.54;points.push([Math.cos(starA)*starR,Math.sin(starA)*starR]);}
+      }else if(shape==='starfish'||shape==='sunflowerstar'){
+        var arms=shape==='sunflowerstar'?20:5;group.userData.armCount=arms;
+        var points=[];for(var star=0;star<arms*2;star++){var starA=star*Math.PI/arms,starR=star%2?(arms>5?.27:.16):.54;points.push([Math.cos(starA)*starR,Math.sin(starA)*starR]);}
         var starMesh=ribbon(group,points,skin);starMesh.rotation.x=-Math.PI/2;
         sphere(group,belly,0,.015,0,.18,.065,.18,12);
-        for(var arm=0;arm<5;arm++)for(var spot=1;spot<5;spot++)sphere(group,belly,Math.cos(arm*Math.PI/2.5)*spot*.09,.025,Math.sin(arm*Math.PI/2.5)*spot*.09,.023,.025,.023,7);
+        for(var ridge=0;ridge<arms;ridge++){var ridgeAngle=ridge*Math.PI*2/arms;segment(group,[Math.cos(ridgeAngle)*.1,.035,Math.sin(ridgeAngle)*.1],[Math.cos(ridgeAngle)*.49,.025,Math.sin(ridgeAngle)*.49],arms>5?.037:.076,skin,.016);}
+        for(var arm=0;arm<arms;arm++)for(var spot=1;spot<(lowDetail?3:5);spot++)sphere(group,belly,Math.cos(arm*Math.PI*2/arms)*spot*.09,.025,Math.sin(arm*Math.PI*2/arms)*spot*.09,.023,.025,.023,7);
       }else if(shape==='urchin'){
         sphere(group,skin,0,0,0,.28,.24,.28);
         for(var spine=0;spine<(lowDetail?24:48);spine++){var u=1-spine/(lowDetail?24:48),az=spine*2.399,rad=Math.sqrt(1-u*u),direction=new THREE.Vector3(Math.cos(az)*rad,u,Math.sin(az)*rad);segment(group,direction.clone().multiplyScalar(.2).toArray(),direction.clone().multiplyScalar(.46+noise(spine,seed)*.09).toArray(),.018,dark);}
@@ -12033,20 +12292,26 @@ window.StemLab = window.StemLab || {
         for(var branchIndex=0;branchIndex<(lowDetail?5:8);branchIndex++){var ba=branchIndex*2.4,bx=Math.cos(ba)*.26,bz=Math.sin(ba)*.22,by=.4+(branchIndex%3)*.15;curve(group,[[bx*.3,-.04,bz*.3],[bx*.65,by*.5,bz*.6],[bx,by,bz]],.044,skin,9);curve(group,[[bx*.6,by*.4,bz*.5],[bx+.12,by*.68,bz-.1],[bx+.17,by*.9,bz-.15]],.024,belly,8);sphere(group,belly,bx,by,bz,.058,.044,.058,8);}
       }else if(shape==='anemone'){
         sphere(group,skin,0,-.07,0,.23,.18,.23);
-        var tentacleMat=material(baseColor.clone().lerp(new THREE.Color(0xf4d7b5),.33),{roughness:.6});
+        var tentacleMat=pigment(baseColor.clone().lerp(new THREE.Color(0xf4d7b5),.33),{roughness:.6});
         for(var tentacle=0;tentacle<(lowDetail?14:26);tentacle++){var ta=tentacle*2.4,tr=.14+tentacle%3*.085,x=Math.cos(ta)*tr,z=Math.sin(ta)*tr;curve(group,[[x*.45,0,z*.45],[x,.22+tentacle%3*.05,z],[x+Math.sin(ta)*.1,.42+tentacle%4*.065,z+.07]],.025,tentacleMat,8);}
         sphere(group,belly,0,.055,0,.16,.025,.16,12);
       }else if(shape==='turtle'||shape==='frog'){
         if(shape==='turtle'){
           sphere(group,skin,-.04,0,0,.48,.24,.34,20);
           sphere(group,belly,.04,-.1,0,.43,.09,.3,14);
-          for(var plate=0;plate<5;plate++){var shellPlate=sphere(group,material(plate%2?0x677b40:0x8b9b59,{roughness:.75}),-.27+plate%3*.22,.205,Math.floor(plate/3)*.2-.1,.135,.055,.12,10);}
+          for(var plate=0;plate<5;plate++){var shellPlate=sphere(group,pigment(plate%2?0x677b40:0x8b9b59,{roughness:.75}),-.27+plate%3*.22,.205,Math.floor(plate/3)*.2-.1,.135,.055,.12,10);}
           sphere(group,belly,.46,.03,0,.17,.125,.13);
-          for(var limb=0;limb<4;limb++){var side=limb%2?1:-1;var flipper=sphere(group,skin,limb<2?.25:-.32,-.065,side*.33,.2,.06,.14,10);flipper.rotation.y=side*.6;fins.push(flipper);}
+          for(var limb=0;limb<4;limb++){var side=limb%2?1:-1,lx=limb<2?.25:-.32;
+            segment(group,[lx,-.03,side*.24],[lx+.05,-.13,side*.42],.064,skin);
+            var foot=ribbon(group,[[0,0],[.18,.08],[.21,-.08],[-.06,-.12]],finMat,lx,-.16,side*.42);foot.rotation.x=-Math.PI/2;foot.userData.webbedFoot=true;
+            for(var toe=0;toe<3;toe++)segment(group,[lx+.11+toe*.025,-.16,side*(.39+toe*.045)],[lx+.22+toe*.025,-.18,side*(.39+toe*.045)],.009,ivory);
+          }
+          if(profile&&profile.pattern==='slider')[-1,1].forEach(function(side){sphere(group,pigment(0xbb4935),.474,.065,side*.131,.059,.027,.014,10).userData.anatomyPart='red-ear-patch';curve(group,[[.26,-.005,side*.1],[.42,-.03,side*.126],[.58,-.015,side*.079]],.012,ivory,9);});
           eyes(.51,.07,.105,.028);
         }else{
           sphere(group,skin,0,0,0,.35,.13,.22,16);sphere(group,belly,.3,.035,0,.19,.12,.2,16);
           [-1,1].forEach(function(side){curve(group,[[-.17,0,side*.13],[-.45,.02,side*.35],[-.21,-.07,side*.45]],.067,skin,8);segment(group,[.18,-.04,side*.12],[.25,-.15,side*.3],.035,skin);});
+          [-1,1].forEach(function(side){var web=ribbon(group,[[0,0],[.21,.11],[.2,-.1]],finMat,-.21,-.07,side*.45);web.rotation.x=-Math.PI/2;web.userData.webbedFoot=true;});
           eyes(.34,.12,.15,.045);
         }
       }else if(shape==='cephalopod'){
@@ -12054,37 +12319,81 @@ window.StemLab = window.StemLab || {
         for(var armIndex=0;armIndex<8;armIndex++){var aa=armIndex*Math.PI/4;curve(group,[[.05,-.13,0],[Math.cos(aa)*.3,-.34,Math.sin(aa)*.3],[Math.cos(aa)*.55,-.3,Math.sin(aa)*.55],[Math.cos(aa)*.68,-.17,Math.sin(aa)*.63]],.037,skin,10);}
         eyes(.15,.06,.22,.07);
       }else{
-        var tall=shape==='angelfish'||shape==='tang',round=shape==='pufferfish';
-        var bodyX=shape==='tetra'?.43:round?.36:.48,bodyY=tall?.42:round?.34:shape==='goldfish'?.29:shape==='corydoras'?.17:.23,bodyZ=tall?.12:round?.28:.17;
-        sphere(group,skin,0,0,0,bodyX,bodyY,bodyZ,lowDetail?14:22);
-        sphere(group,belly,.04,-bodyY*.42,0,bodyX*.78,bodyY*.47,bodyZ*.91,lowDetail?12:18);
-        function band(x,bandWidth,color){var ratio=Math.sqrt(Math.max(.08,1-Math.pow(x/bodyX,2))),geometry=new THREE.CylinderGeometry(1,1,bandWidth,18,1,true);geometry.rotateZ(Math.PI/2);geometry.scale(1,bodyY*ratio*1.027,bodyZ*ratio*1.035);mesh(geometry,material(color,{roughness:.4}),group,x,0,0);}
-        if(shape==='clownfish'){
-          [-.28,.04,.28].forEach(function(bx){band(bx,.09,0x18262b);band(bx,.063,0xfff8e9);});
-        }else if(shape==='angelfish'){
-          [-.24,0,.25].forEach(function(bx){band(bx,.065,0x334142);});
-        }else if(shape==='tetra'){
-          [-1,1].forEach(function(side){sphere(group,material(0x37d7e5,{emissive:0x087389,emissiveIntensity:.3,roughness:.24}),.015,.035,side*bodyZ*.9,.34,.031,.022,12);sphere(group,material(0xe85c59,{roughness:.4}),-.1,-.064,side*bodyZ*.81,.25,.041,.028,12);});
-        }else if(shape==='tang'){
-          [-1,1].forEach(function(side){sphere(group,dark,-.03,.04,side*.11,.27,.22,.027,14);sphere(group,skin,.04,.03,side*.135,.18,.12,.016,12);});
-        }else if(shape==='pufferfish'||shape==='corydoras'){
-          for(var dot=0;dot<(lowDetail?9:19);dot++){var dx=-.24+noise(dot,seed)*.49,dy=-.08+noise(dot+19,seed)*bodyY*1.1,side=dot%2?1:-1,z=Math.sqrt(Math.max(.05,1-Math.pow(dx/bodyX,2)-Math.pow(dy/bodyY,2)))*bodyZ;sphere(group,dark,dx,dy,side*z,.024,.024,.014,7);}
+        var tall=shape==='angelfish',round=shape==='pufferfish',body=profile&&profile.body;
+        var bodyX=body?body[0]:shape==='tetra'?.43:round?.36:.48,bodyY=body?body[1]:tall?.42:round?.3:.23,bodyZ=body?body[2]:tall?.12:round?.25:.17;
+        var pattern=profile?profile.pattern:'legacy',catfish=shape==='corydoras'||shape==='pleco'||shape==='otocinclus';
+        var bodyMesh=sphere(group,skin,0,0,0,bodyX,bodyY,bodyZ,lowDetail?14:24);bodyMesh.userData.anatomyPart='body';
+        sphere(group,belly,.04,-bodyY*.48,0,bodyX*.79,bodyY*.43,bodyZ*.91,lowDetail?12:18);
+        function band(x,bandWidth,color,tilt){var ratio=Math.sqrt(Math.max(.08,1-Math.pow(x/bodyX,2))),geometry=new THREE.CylinderGeometry(1,1,bandWidth,18,1,true);geometry.rotateZ(Math.PI/2);geometry.scale(1,bodyY*ratio*1.027,bodyZ*ratio*1.035);var mark=mesh(geometry,pigment(color,{roughness:.4}),group,x,0,0);mark.rotation.z=tilt||0;mark.userData.anatomyPart='body-marking';}
+        function lateral(color,x,y,length,thickness){[-1,1].forEach(function(side){var stripe=sphere(group,pigment(color,{roughness:.34}),x,y,side*bodyZ*.9,length,thickness,.022,14);stripe.userData.anatomyPart='lateral-marking';});}
+        function spots(color,count,size){var mat=pigment(color);for(var dot=0;dot<count;dot++){var dx=(noise(dot,seed)-.5)*bodyX*1.65,dy=(noise(dot+19,seed)-.35)*bodyY*1.2,side=dot%2?1:-1,z=Math.sqrt(Math.max(.05,1-Math.pow(dx/bodyX,2)-Math.pow(dy/bodyY,2)))*bodyZ;sphere(group,mat,dx,dy,side*z,size*(.65+noise(dot+8,seed)),size,.012,8);}}
+        if(shape==='clownfish'){[-.28,.04,.28].forEach(function(bx){band(bx,.095,0x18262b);band(bx,.066,0xfff8e9);});}
+        else if(shape==='angelfish'){[-.21,0,.23].forEach(function(bx){band(bx,.061,0x334142);});}
+        else if(pattern==='neon'||pattern==='cardinal'){
+          lateral(0x27bfd3,.012,.035,.35,.026);
+          lateral(0xcd3e36,pattern==='neon'?-.17:-.015,-.055,pattern==='neon'?.19:.35,.038);
+          group.userData.redExtent=pattern==='neon'?'rear-half':'full-lower-body';
+        }else if(pattern==='rummy'){band(.29,.18,0xb8463d);group.userData.redExtent='head-only';}
+        else if(shape==='tang'){[-1,1].forEach(function(side){sphere(group,dark,-.03,.04,side*bodyZ,.28,.24,.025,16);sphere(group,skin,.03,.035,side*(bodyZ+.022),.19,.145,.012,12);});}
+        else if(pattern==='oto'||pattern==='pike'){lateral(0x484b3c,-.03,-.005,bodyX*.87,pattern==='oto'?.038:.025);}
+        else if(pattern==='cory'||pattern==='pleco'){spots(0x485043,lowDetail?11:23,.033);}
+        else if(pattern==='oscar'){
+          spots(0xc9823f,lowDetail?13:25,.047);
+          [-1,1].forEach(function(side){sphere(group,pigment(0xd49a51),-bodyX*.71,.005,side*bodyZ*.73,.079,.072,.017,12);sphere(group,dark,-bodyX*.72,.005,side*(bodyZ*.73+.013),.045,.043,.013,10);});
+        }else if(pattern==='archer'){[-.3,-.07,.2].forEach(function(bx){band(bx,.086,0x394741,-.24);});}
+        else if(pattern==='goby'||pattern==='mudskip'||pattern==='rockfish'){spots(pattern==='goby'?0x8b966d:0x5d6957,lowDetail?8:16,.027);}
+        else if(pattern==='figure8'){
+          // Variable dorsal ocelli/loops; not an inflated or spiny generic puffer.
+          [0,.25,-.24].forEach(function(px,index){
+            var radius=.085+(index?0:.01),points=[],vertices=[],indices=[];
+            function dorsalY(x,z){return bodyY*Math.sqrt(Math.max(.02,1-x*x/(bodyX*bodyX)-z*z/(bodyZ*bodyZ)));}
+            vertices.push(px,dorsalY(px,0)+.008,0);
+            for(var step=0;step<=24;step++){var angle=step*Math.PI*2/24,x=px+Math.cos(angle)*radius,z=Math.sin(angle)*radius*.82,y=dorsalY(x,z);points.push([x,y+.019,z]);vertices.push(x,y+.008,z);if(step<24)indices.push(0,step+1,step+2);}
+            var patchGeometry=new THREE.BufferGeometry();patchGeometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));patchGeometry.setIndex(indices);patchGeometry.computeVertexNormals();
+            mesh(patchGeometry,pigment(0x3c4637,{side:THREE.DoubleSide}),group);
+            var loop=curve(group,points,.013,pigment(0xd5bc63),32);loop.userData.dorsalOcellus=true;
+          });
         }
-        tail=new THREE.Group();tail.position.x=-bodyX*.83;group.add(tail);
-        var fan=shape==='betta'||shape==='guppy'||shape==='goldfish',tailHeight=shape==='betta'?.46:fan?.34:tall?.25:.22;
-        var tailColor=shape==='tang'?material(0xfbd24b,{side:THREE.DoubleSide,roughness:.45}):finMat;
-        var tailPoints=fan?[[0,0],[-.22,tailHeight*.76],[-.5,tailHeight],[-.59,tailHeight*.42],[-.6,-tailHeight*.46],[-.48,-tailHeight],[-.19,-tailHeight*.7]]:[[0,0],[-.38,tailHeight],[-.27,0],[-.38,-tailHeight]];
-        ribbon(tail,tailPoints,tailColor);
-        if(!lowDetail){for(var finRay=0;finRay<5;finRay++){var finY=(finRay/4*2-1)*tailHeight*.83;segment(tail,[-.04,0,0],[fan?-.51:-.31,finY,0],.005,belly);}}
-        var dorsal=ribbon(group,[[.23,bodyY*.65],[-.09,bodyY+(tall?.4:fan?.2:.13)],[-.34,bodyY*.45]],finMat);fins.push(dorsal);
-        if(tall||shape==='betta')ribbon(group,[[.12,-bodyY*.65],[-.28,-bodyY-(tall?.29:.18)],[-.3,-bodyY*.42]],finMat);
+        tail=new THREE.Group();tail.position.x=-bodyX*.86;group.add(tail);
+        var tailType=profile?profile.tail:shape==='betta'?'flowing':shape==='guppy'?'fan':'fork',fan=tailType==='fan'||tailType==='flowing',rounded=tailType==='rounded';
+        var tailHeight=tailType==='flowing'?.43:fan?.33:rounded?.19:tall?.25:.21;
+        var tailColor=shape==='tang'?pigment(0xfbd24b,{side:THREE.DoubleSide,roughness:.45}):finMat;
+        var tailPoints=fan?[[0,0],[-.22,tailHeight*.76],[-.5,tailHeight],[-.59,tailHeight*.42],[-.6,-tailHeight*.46],[-.48,-tailHeight],[-.19,-tailHeight*.7]]:rounded?[[0,0],[-.24,tailHeight],[-.34,tailHeight*.66],[-.36,0],[-.34,-tailHeight*.66],[-.24,-tailHeight]]:[[0,0],[-.38,tailHeight],[-.27,0],[-.38,-tailHeight]];
+        ribbon(tail,tailPoints,tailColor).userData.anatomyPart='caudal-fin';
+        if(pattern==='rummy'){
+          ribbon(tail,tailPoints,pigment(0xe9ece5,{side:THREE.DoubleSide,roughness:.72}));
+          var tailBars=new THREE.MeshBasicMaterial({color:new THREE.Color(0x172422).convertSRGBToLinear(),side:THREE.DoubleSide,toneMapped:false});
+          // Raised layers on both faces avoid opaque-material sorting and z-fighting.
+          [-1,1].forEach(function(face){
+            [-1,1].forEach(function(lobe){var stripe=ribbon(tail,[[-.182,lobe*.10],[-.322,lobe*.10],[-.346,lobe*.145],[-.262,lobe*.145]],tailBars,0,0,face*.009);stripe.userData.caudalBarFace=face;});
+            var centerBar=ribbon(tail,[[0,.02],[-.274,.02],[-.274,-.02],[0,-.02]],tailBars,0,0,face*.009);centerBar.userData.caudalBarFace=face;
+          });group.userData.tailPattern='black-white-bars';
+        }
+        if(pattern==='guppy')for(var spot=0;spot<6;spot++)sphere(tail,spot%2?dark:pigment(0x5d9195),-.25-spot%2*.17,(Math.floor(spot/2)-1)*.13,.012,.03,.04,.012,8);
+        if(!lowDetail)for(var finRay=0;finRay<5;finRay++){var finY=(finRay/4*2-1)*tailHeight*.83;segment(tail,[-.04,0,0],[fan?-.51:rounded?-.3:-.31,finY,0],.005,belly);}
+        var dorsalPoints;
+        if(shape==='pikecichlid')dorsalPoints=[[.4,bodyY*.6],[.25,bodyY+.09],[-.64,bodyY+.09],[-.7,bodyY*.35]];
+        else if(shape==='pleco')dorsalPoints=[[.16,bodyY*.6],[-.02,bodyY+.43],[-.45,bodyY*.55]];
+        else if(shape==='rockfish'){
+          dorsalPoints=[[.32,bodyY*.65]];for(var spine=0;spine<8;spine++){var sx=.29-spine*.08;dorsalPoints.push([sx,bodyY+.13+(spine<4?.035:0)],[sx-.037,bodyY+.025]);}dorsalPoints.push([-.39,bodyY*.45]);
+        }else dorsalPoints=[[bodyX*.5,bodyY*.65],[-.09,bodyY+(tall?.4:tailType==='flowing'?.25:fan?.18:.12)],[-bodyX*.73,bodyY*.45]];
+        if(shape==='goby'||shape==='mudskipper'){
+          var dorsal1=ribbon(group,[[.15,bodyY*.7],[.035,bodyY+.19],[-.14,bodyY*.68]],finMat),dorsal2=ribbon(group,[[-.18,bodyY*.75],[-.27,bodyY+.14],[-.49,bodyY*.37]],finMat);fins.push(dorsal1,dorsal2);group.userData.dorsalFinCount=2;
+        }else{fins.push(ribbon(group,dorsalPoints,finMat));group.userData.dorsalFinCount=1;}
+        if(tall||shape==='betta')ribbon(group,[[.12,-bodyY*.65],[-.28,-bodyY-(tall?.29:.25)],[-.38,-bodyY*.42]],finMat);
         [-1,1].forEach(function(side){
-          var pectoral=ribbon(group,[[0,0],[-.18,-.17],[.08,-.1]],finMat,.13,-.04,side*bodyZ*.91);pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;fins.push(pectoral);
-          if(shape==='angelfish')curve(group,[[.16,-.25,side*.065],[.1,-.58,side*.1],[-.03,-.81,side*.09]],.009,belly,9);
-          if(shape==='corydoras')curve(group,[[.4,-.065,side*.06],[.54,-.14,side*.14],[.59,-.18,side*.2]],.008,belly,7);
+          var pectoral=ribbon(group,shape==='mudskipper'?[[0,0],[-.19,-.03],[-.23,-.14],[.1,-.14]]:[[0,0],[-.18,-.17],[.08,-.1]],finMat,.13,-.04,side*bodyZ*.91);pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;fins.push(pectoral);
+          if(tall)curve(group,[[.16,-.25,side*.065],[.1,-.58,side*.1],[-.03,-.81,side*.09]],.009,belly,9);
+          if(shape==='corydoras')curve(group,[[bodyX*.86,-.08,side*.06],[bodyX+.09,-.13,side*.11],[bodyX+.14,-.15,side*.16]],.008,belly,7);
+          if(catfish)for(var plate=0;plate<5;plate++){var plateX=-bodyX*.65+plate*bodyX*.25;segment(group,[plateX,-.035,side*bodyZ*.97],[plateX+.07,.08,side*bodyZ*.9],.007,dark);}
         });
-        eyes(bodyX*.62,bodyY*.24,bodyZ*.76,round?.057:.048);
-        if(!lowDetail){[-1,1].forEach(function(side){curve(group,[[.21,.105,side*bodyZ*.86],[.17,.025,side*bodyZ*1.025],[.2,-.075,side*bodyZ*.91]],.008,dark,7);});sphere(group,dark,bodyX*.974,-.025,0,.017,.035,.028,8);}
+        var eyeY=shape==='mudskipper'?bodyY*.99:bodyY*.24,eyeZ=shape==='mudskipper'?bodyZ*.48:bodyZ*.76;
+        if(shape==='mudskipper')[-1,1].forEach(function(side){sphere(group,skin,bodyX*.59,eyeY,side*eyeZ,.082,.075,.06,12);});
+        eyes(bodyX*.62,eyeY,eyeZ,round?.052:shape==='otocinclus'?.034:.045);
+        if(shape==='otocinclus'||shape==='pleco'){
+          var sucker=mesh(new THREE.TorusGeometry(shape==='pleco'?.07:.039,.014,7,18),belly,group,bodyX*.81,-bodyY*.66,0);sucker.rotation.x=-Math.PI/2;sucker.userData.suckerMouth=true;
+        }else sphere(group,dark,bodyX*.974,shape==='archerfish'?.045:-.025,0,.017,.026,.025,8);
+        if(shape==='rockfish')[-1,1].forEach(function(side){ribbon(group,[[0,0],[-.12,.1],[-.06,-.06]],dark,.29,.02,side*bodyZ*.88);});
       }
       var displaySize=Number(fish.displaySize&&fish.displaySize.w||fish.displaySize),scale=clamp(Number.isFinite(displaySize)&&displaySize>0?displaySize/40*1.6:1.6,.85,2.15);
       if(shape==='tetra'||shape==='guppy')scale*=.83;
@@ -12092,13 +12401,12 @@ window.StemLab = window.StemLab || {
       scale*=appearanceOptions().animalScale;group.scale.setScalar(scale);
       var bodyBounds=new THREE.Box3().setFromObject(group),extentX=Math.max(Math.abs(bodyBounds.min.x),Math.abs(bodyBounds.max.x)),extentZ=Math.max(Math.abs(bodyBounds.min.z),Math.abs(bodyBounds.max.z));
       var turnRadius=Math.sqrt(extentX*extentX+extentZ*extentZ)+.09;
-      group.userData.boundX=Math.max(.4,5.92-turnRadius);group.userData.boundZ=Math.max(.3,3.2-turnRadius);
-      group.userData.minY=.12-bodyBounds.min.y;group.userData.maxY=5.11-bodyBounds.max.y;
+      group.userData.turnRadius=turnRadius;group.userData.bodyMinY=bodyBounds.min.y;group.userData.bodyMaxY=bodyBounds.max.y;group.userData.verticalMotionMargin=extentX*.03;updateResidentBounds(group);
       if(fish.selected){
         var selection=new THREE.Mesh(new THREE.TorusGeometry(.67,.018,6,48),new THREE.MeshBasicMaterial({color:0xfde68a,transparent:true,opacity:.86,depthTest:false}));
-        selection.userData.ignorePick=true;selection.scale.y=shape==='angelfish'?1.3:.75;group.add(selection);
+        selection.userData.ignorePick=true;selection.userData.inspectionHalo=true;selection.scale.y=shape==='angelfish'?1.3:.75;group.add(selection);
       }
-      group.userData.shape=shape;group.userData.stationary=stationary;group.userData.bottom=bottom;
+      group.userData.shape=shape;group.userData.profileLocomotion=profile?profile.locomotion:null;group.userData.stationary=stationary;group.userData.bottom=bottom;
       group.userData.phase=seed%1000*.00628;group.userData.tail=tail;group.userData.fins=fins;
       group.userData.appearanceSignature=fishAppearanceSignature(fish);
       group.traverse(function(node){node.userData.fishInstanceId=fish.instanceId||fish.id;});
@@ -12106,19 +12414,21 @@ window.StemLab = window.StemLab || {
     }
 
     function updateFishState(group,fish,index,initial) {
-      var data=group.userData;
+      var data=group.userData;updateResidentBounds(group);
       data.speciesId=String(fish.id||fish.speciesId||'unknown');data.schoolGroup=String(fish.schoolGroup||data.speciesId);data.schoolEligible=fish.schooling===true;
       var legacyStationary=/anemone|coral|urchin|bivalve/.test(data.shape),legacyBottom=legacyStationary||/shrimp|crab|snail|starfish|seacucumber/.test(data.shape);
       var explicitLocomotion=['swim','crawl','sessile'].indexOf(fish.locomotion)>=0?fish.locomotion:null;
-      data.locomotion=explicitLocomotion||(legacyStationary?'sessile':legacyBottom?'crawl':'swim');
+      data.locomotion=data.shape==='kelp'?'sessile':explicitLocomotion||data.profileLocomotion||(legacyStationary?'sessile':legacyBottom?'crawl':'swim');
       data.stationary=data.locomotion==='sessile';data.bottom=data.stationary||data.locomotion==='crawl';
       data.hunger=clamp(Number.isFinite(Number(fish.hunger))?Number(fish.hunger):50,0,100);
       data.stress=clamp(Number(fish.stress)||0,0,100);data.health=fish.health!==null&&fish.health!==undefined&&Number.isFinite(Number(fish.health))?clamp(Number(fish.health),0,100):null;data.activityHealth=data.health===null?100:data.health;
       data.motionCue='Activity, excursion and food response are illustrative cues from modeled vitality, stress and hunger.';
-      data.baseX=clamp(Number.isFinite(Number(fish.targetX))?Number(fish.targetX):-3.9+(index*1.71)%7.8,-4.5,4.5);
-      data.baseZ=clamp(Number.isFinite(Number(fish.targetZ))?Number(fish.targetZ):-1.6+(index*1.13)%3.2,-2.25,2.25);
+      data.baseX=clamp(Number.isFinite(Number(fish.targetX))?Number(fish.targetX):-3.9+(index*1.71)%7.8,-4.5,4.5)*sizeX();
+      data.baseZ=clamp(Number.isFinite(Number(fish.targetZ))?Number(fish.targetZ):-1.6+(index*1.13)%3.2,-2.25,2.25)*sizeZ();
       var anchor=fish.anchorId&&habitatRoot.children.find(function(item){return item.userData.habitatId===fish.anchorId;});
-      var y=Number.isFinite(Number(fish.targetY))?Number(fish.targetY):data.bottom?.37:fish.zone==='bottom'?.72:fish.zone==='top'?4.2:2.4;
+      var y=(Number.isFinite(Number(fish.targetY))?Number(fish.targetY):data.bottom?.37:fish.zone==='bottom'?.72:fish.zone==='top'?4.2:2.4)*sizeY();
+      if(data.bottom)y=data.minY;
+      if(data.shape==='kelp')y=.12*sizeY()-data.bodyMinY;
       if(anchor&&data.stationary&&/coral|anemone/.test(data.shape)&&!Number.isFinite(Number(fish.targetY))){
         var support=new THREE.Box3().setFromObject(anchor);data.baseX=anchor.position.x;data.baseZ=anchor.position.z;y=support.max.y+data.minY;
       }
@@ -12127,8 +12437,9 @@ window.StemLab = window.StemLab || {
       data.mode=fish.behaviorMode||'open-water';
       data.speed=(data.bottom?.1:.28)*(.7+data.activityHealth*.003);
       if(data.feedingEventId)data.foodInterest=data.stationary?0:Math.max(.18,data.hunger/100);
-      if(initial){var offset=behaviorOffset(data.mode,data.phase,data.span);group.position.set(clamp(data.baseX+offset.x,-data.boundX,data.boundX),data.baseY,clamp(data.baseZ+offset.z,-data.boundZ,data.boundZ));var nextOffset=behaviorOffset(data.mode,data.phase+.04,data.span);group.rotation.y=data.stationary?0:Math.atan2(-(nextOffset.z-offset.z),nextOffset.x-offset.x);}
+      if(initial){var offset=behaviorOffset(data.mode,data.phase,data.span);group.position.set(clamp(data.baseX+offset.x*sizeX(),-data.boundX,data.boundX),data.baseY,clamp(data.baseZ+offset.z*sizeZ(),-data.boundZ,data.boundZ));var nextOffset=behaviorOffset(data.mode,data.phase+.04,data.span);group.rotation.y=data.stationary?0:Math.atan2(-(nextOffset.z-offset.z)*sizeZ(),(nextOffset.x-offset.x)*sizeX());}
       else if(data.stationary){group.position.set(clamp(data.baseX,-data.boundX,data.boundX),data.baseY,clamp(data.baseZ,-data.boundZ,data.boundZ));}
+      else{group.position.x=clamp(group.position.x,-data.boundX,data.boundX);group.position.y=clamp(group.position.y,data.minY,data.maxY);group.position.z=clamp(group.position.z,-data.boundZ,data.boundZ);}
     }
     function addOverlay(overlay, layout, catalogById, fishItems, interactions) {
       if (overlay === 'flow') {
@@ -12258,7 +12569,7 @@ window.StemLab = window.StemLab || {
     }
     function buildEquipment() {
       var definitions=['filter','heater','aerator','light'].map(function(key){return [key,equipmentState(key)];});
-      var signature=JSON.stringify(definitions);
+      var signature=JSON.stringify([definitions,dimensionSignature]);
       if(signature!==equipmentSignature){
         equipmentSignature=signature;disposeGroup(equipmentRoot);
         definitions.forEach(function(entry){
@@ -12269,7 +12580,7 @@ window.StemLab = window.StemLab || {
           var housing=material(0x23383d,{roughness:.38,metalness:.2}),rubber=material(0x141f22,{roughness:.88});
           var indicator=material(state.on?0x72d49b:0x735b4a,{emissive:state.on?0x215738:0,emissiveIntensity:.65,roughness:.35});
           if(key==='filter'){
-            group.position.set(5.28,0,-2.57);
+            group.position.set(tankSize.width/2-.72,Math.max(0,tankSize.height-5.2),-tankSize.depth/2+.63);
             if(/sponge/.test(state.type.toLowerCase())){
               mesh(new THREE.CylinderGeometry(.36,.4,.92,16),rubber,group,0,.7,0);
               for(var groove=0;groove<6;groove++)mesh(new THREE.TorusGeometry(.365,.018,5,22),housing,group,0,.35+groove*.14,0).rotation.x=Math.PI/2;
@@ -12283,7 +12594,7 @@ window.StemLab = window.StemLab || {
             curve(group,[[0,3.8,0],[0,4.38,.05],[-.25,4.51,.18],[-.62,4.51,.25]],.09,housing,12);
             sphere(group,indicator,.25,3.48,.29,.042);
           }else if(key==='heater'){
-            group.position.set(-5.35,0,-2.65);
+            group.position.set(-tankSize.width/2+.65,Math.max(-.7,tankSize.height-5.2),-tankSize.depth/2+.55);
             mesh(new THREE.CylinderGeometry(.1,.1,2.72,12),new THREE.MeshPhongMaterial({color:0xa6cac8,transparent:true,opacity:.55,shininess:100}),group,0,2.34,0);
             mesh(new THREE.CylinderGeometry(.057,.057,2.1,10),material(0x70685a,{metalness:.6,roughness:.35}),group,0,2.15,0);
             for(var coil=0;coil<10;coil++)mesh(new THREE.TorusGeometry(.06,.01,5,14),housing,group,0,1.32+coil*.16,0).rotation.x=Math.PI/2;
@@ -12292,14 +12603,14 @@ window.StemLab = window.StemLab || {
             [1.25,3.1].forEach(function(y){sphere(group,rubber,0,y,-.13,.19,.12,.06,10);});
             curve(group,[[0,4,0],[.02,4.9,-.03],[.14,5.6,-.21],[.4,5.72,-.5]],.025,rubber,12);
           }else if(key==='aerator'){
-            group.position.set(-5.05,0,-2.35);
+            group.position.set(-tankSize.width/2+.95,0,-tankSize.depth/2+.85);
             var stone=mesh(new THREE.CylinderGeometry(.2,.22,.14,14),material(0x7f9c9b,{roughness:1}),group,0,.16,0);
-            curve(group,[[0,.22,0],[-.15,.32,-.22],[-.22,2.4,-.45],[-.2,5.47,-.55],[-.02,5.62,-.87]],.022,new THREE.MeshPhongMaterial({color:0xc9e9df,transparent:true,opacity:.5}),14);
+            curve(group,[[0,.22,0],[-.15,.32,-.22],[-.22,tankSize.height*.46,-.45],[-.2,tankSize.height+.27,-.55],[-.02,tankSize.height+.42,-.87]],.022,new THREE.MeshPhongMaterial({color:0xc9e9df,transparent:true,opacity:.5}),14);
           }else{
-            group.position.set(0,5.84,0);
-            mesh(new THREE.BoxGeometry(10.15,.2,1.02),housing,group);
-            mesh(new THREE.PlaneGeometry(9.6,.72),new THREE.MeshBasicMaterial({color:state.on?0xd7eff3:0x57636b,transparent:true,opacity:state.on?.85:.4,side:THREE.DoubleSide}),group,0,-.106,0).rotation.x=-Math.PI/2;
-            [-4.7,4.7].forEach(function(x){segment(group,[x,-.1,0],[x,-.37,-.25],.035,rubber);});
+            group.position.set(0,tankSize.height+.64,0);var fixtureWidth=Math.min(10.15,tankSize.width-.6);
+            mesh(new THREE.BoxGeometry(fixtureWidth,.2,1.02),housing,group);
+            mesh(new THREE.PlaneGeometry(fixtureWidth-.55,.72),new THREE.MeshBasicMaterial({color:state.on?0xd7eff3:0x57636b,transparent:true,opacity:state.on?.85:.4,side:THREE.DoubleSide}),group,0,-.106,0).rotation.x=-Math.PI/2;
+            [-fixtureWidth*.46,fixtureWidth*.46].forEach(function(x){segment(group,[x,-.1,0],[x,-.37,-.25],.035,rubber);});
           }
           group.traverse(function(node){node.userData.equipmentId=id;});equipmentRoot.add(group);
         });
@@ -12354,12 +12665,12 @@ window.StemLab = window.StemLab || {
       var type=String(event.foodType||'').toLowerCase(),sinking=/pellet|wafer|algae|bottom/.test(type);
       foodRoot.userData.sinking=sinking;foodRoot.visible=true;
       var targeted=event.targetId&&fishById[String(event.targetId)],x=targeted?targeted.position.x:0,z=targeted?targeted.position.z:.6;
-      foodRoot.userData.feedX=clamp(x,-3.8,3.8);foodRoot.userData.feedZ=clamp(z,-1.8,1.8);
+      foodRoot.userData.feedX=clamp(x,-tankSize.width/2+.8,tankSize.width/2-.8);foodRoot.userData.feedZ=clamp(z,-tankSize.depth/2+.6,tankSize.depth/2-.6);
       var foodMaterial=material(/algae|veget/.test(type)?0x91a75b:/live/.test(type)?0xca9a7e:0xcda566,{roughness:.9,side:THREE.DoubleSide});
       for(var grain=0;grain<12;grain++){
         var particle=sinking?sphere(foodRoot,foodMaterial,0,0,0,.038,.026,.03,7):mesh(finShape([[0,.045],[-.035,-.018],[.045,-.03]]),foodMaterial,foodRoot);
         particle.userData.seed=grain;particle.userData.offsetX=(noise(grain,hash(id))-.5)*1.4;particle.userData.offsetZ=(noise(grain+18,hash(id))-.5)*.8;
-        particle.position.set(foodRoot.userData.feedX+particle.userData.offsetX,4.91-(grain%3)*.045,foodRoot.userData.feedZ+particle.userData.offsetZ);
+        particle.position.set(foodRoot.userData.feedX+particle.userData.offsetX,waterTop()-.2-(grain%3)*.045,foodRoot.userData.feedZ+particle.userData.offsetZ);
       }
       creatureRoot.children.forEach(function(group){var data=group.userData;data.feedingEventId=accepted.indexOf(String(data.fishInstanceId))>=0?id:'';data.foodInterest=data.feedingEventId&&!data.stationary?Math.max(.18,data.hunger/100):0;});
     }
@@ -12388,8 +12699,9 @@ window.StemLab = window.StemLab || {
     function rebuild(nextOptions) {
       if(disposed||contextLost)return;
       options=nextOptions||options;
+      var dimensionsChanged=applyDimensions();
       var catalogById={};(options.catalog||[]).forEach(function(type){catalogById[type.id]=type;});
-      var nextHabitatSignature=JSON.stringify([options.layout||[],options.selectedId]);
+      var nextHabitatSignature=JSON.stringify([options.layout||[],options.selectedId,dimensionSignature]);
       if(nextHabitatSignature!==habitatSignature){
         habitatSignature=nextHabitatSignature;disposeGroup(habitatRoot);
         (options.layout||[]).forEach(function(item){var type=catalogById[item.type];if(type)habitatRoot.add(buildHabitatItem(item,type,item.id===options.selectedId));});
@@ -12401,8 +12713,9 @@ window.StemLab = window.StemLab || {
         if(!old||old.userData.appearanceSignature!==signature){
           if(old){disposeGroup(old);plantRoot.remove(old);}
           var next=addPlant(plant,index);next.userData.appearanceSignature=signature;plantById[key]=next;
-          if(plant.selected){var halo=mesh(new THREE.TorusGeometry(.48,.018,6,40),new THREE.MeshBasicMaterial({color:0xfde68a,transparent:true,opacity:.82}),next,0,.12,0);halo.rotation.x=Math.PI/2;halo.userData.ignorePick=true;}
+          if(plant.selected){var halo=mesh(new THREE.TorusGeometry(.48,.018,6,40),new THREE.MeshBasicMaterial({color:0xfde68a,transparent:true,opacity:.82}),next,0,.12,0);halo.rotation.x=Math.PI/2;halo.userData.ignorePick=true;halo.userData.inspectionHalo=true;}
         }
+        if(dimensionsChanged)placePlant(plantById[key],plant,index);
       });
       Object.keys(plantById).forEach(function(key){if(!nextPlantKeys[key]){disposeGroup(plantById[key]);plantRoot.remove(plantById[key]);delete plantById[key];}});
       var nextFishKeys={};
@@ -12417,10 +12730,78 @@ window.StemLab = window.StemLab || {
       Object.keys(fishById).forEach(function(key){if(!nextFishKeys[key]){disposeGroup(fishById[key]);creatureRoot.remove(fishById[key]);delete fishById[key];}});
       var nextOverlaySignature=JSON.stringify([options.overlay,options.layout,options.overlay==='organisms'?options.fish:[],options.overlay==='interactions'?options.interactions:[]]);
       if(nextOverlaySignature!==overlaySignature){overlaySignature=nextOverlaySignature;disposeGroup(overlayRoot);addOverlay(options.overlay||'none',options.layout||[],catalogById,options.fish||[],options.interactions||[]);}
-      syncSchools();syncFeeding();applyMood();applyEnvironment();lastTime=null;
+      syncSchools();syncFeeding();applyMood();applyEnvironment();syncFocusedCamera(false);syncInspectionHalos();lastTime=null;
       if(controls)controls.enableDamping=!(reducedMotion||options.reducedMotion||options.paused);
       requestRender();
     }
+    function visibleObjectBounds(object) {
+      var bounds=new THREE.Box3();if(!object||!object.isObject3D||!object.visible)return bounds;
+      object.updateWorldMatrix(true,true);
+      function visit(node){if(!node.visible||node.userData.ignorePick)return;if(node.geometry){if(!node.geometry.boundingBox)node.geometry.computeBoundingBox();if(node.geometry.boundingBox)bounds.union(node.geometry.boundingBox.clone().applyMatrix4(node.matrixWorld));}node.children.forEach(visit);}
+      visit(object);return bounds;
+    }
+    function resolveFocusTarget(request) {
+      if(!request||['fish','plant','habitat'].indexOf(request.kind)<0||request.id===undefined||request.id===null)return null;
+      var id=String(request.id),root=request.kind==='fish'?creatureRoot:request.kind==='plant'?plantRoot:habitatRoot,key=request.kind==='fish'?'fishInstanceId':request.kind==='plant'?'plantId':'habitatId';
+      return root.children.find(function(group){return String(group.userData[key])===id;})||null;
+    }
+    function focusDistance(bounds,direction) {
+      var center=bounds.getCenter(new THREE.Vector3()),eye=direction.clone().normalize(),right=new THREE.Vector3().crossVectors(camera.up,eye).normalize(),up=new THREE.Vector3().crossVectors(eye,right).normalize(),tangent=Math.tan(camera.fov*Math.PI/360),distance=.35;
+      [bounds.min.x,bounds.max.x].forEach(function(x){[bounds.min.y,bounds.max.y].forEach(function(y){[bounds.min.z,bounds.max.z].forEach(function(z){var point=new THREE.Vector3(x,y,z).sub(center);distance=Math.max(distance,point.dot(eye)+Math.max(Math.abs(point.dot(right))/(tangent*camera.aspect),Math.abs(point.dot(up))/tangent)*1.18);});});});
+      return distance;
+    }
+    function focusMetadata(center) {
+      scene.userData.focusKind=focusState?focusState.kind:null;scene.userData.focusId=focusState?focusState.id:null;
+      scene.userData.focusCenterX=center?center.x:null;scene.userData.focusCenterY=center?center.y:null;scene.userData.focusCenterZ=center?center.z:null;
+    }
+    function syncInspectionHalos() {
+      var focused=focusState?resolveFocusTarget(focusState):null,show=!options.appearance||options.appearance.showHalos!==false;
+      [creatureRoot,plantRoot,habitatRoot].forEach(function(root){root.children.forEach(function(group){group.traverse(function(node){if(node.userData.inspectionHalo)node.visible=show&&group!==focused;});});});
+    }
+    function clearFocus() {
+      if(!focusState)return;focusState=null;focusMetadata(null);syncInspectionHalos();
+      if(typeof options.onFocusChange==='function')options.onFocusChange(null);
+    }
+    function focusGrowthKey(object,kind) {
+      return kind==='plant'?String(object.userData.biomassRatio)+':'+String(object.userData.visualProfileId):kind==='habitat'?object.scale.toArray().join(':'):String(object.userData.profileId);
+    }
+    function focusSelection(request) {
+      var object=resolveFocusTarget(request),bounds=visibleObjectBounds(object);if(bounds.isEmpty())return false;
+      var center=bounds.getCenter(new THREE.Vector3()),direction;
+      if(request.kind==='fish'&&!object.userData.stationary){direction=new THREE.Vector3(0,.18,1).applyQuaternion(object.getWorldQuaternion(new THREE.Quaternion()));direction.y=Math.max(.14,Math.abs(direction.y));}
+      else if(request.kind==='plant'&&object.userData.placement==='emergent'){
+        // Look toward the seedling from inside the vessel, so the front rim
+        // remains behind the camera instead of crossing the submerged roots.
+        direction=new THREE.Vector3(-center.x,0,-center.z);if(direction.lengthSq()<.001)direction.set(.35,0,1);direction.normalize();direction.y=.45;
+      }else{direction=camera.position.clone().sub(controls?controls.target:cameraTarget);direction.y=Math.max(Math.abs(direction.y),direction.length()*(object.userData.morphology==='roundleaf_carpet'?.8:.22));}
+      if(direction.lengthSq()<.001)direction.set(.3,.25,1);direction.normalize();
+      var distance=focusDistance(bounds,direction),radius=Math.max(.1,bounds.getSize(new THREE.Vector3()).length()/2);
+      focusState={kind:request.kind,id:String(request.id),object:object,localCenter:object.worldToLocal(center.clone()),scale:object.scale.clone(),fitDistance:distance,radius:radius,growthKey:focusGrowthKey(object,request.kind)};
+      cameraTarget.copy(center);camera.position.copy(direction.multiplyScalar(distance).add(center));
+      camera.near=Math.max(.01,Math.min(.1,radius*.08));camera.updateProjectionMatrix();
+      if(controls){controls.minDistance=Math.max(.16,radius*.65);controls.maxDistance=Math.max(32,framingRadius(tankSize)*1.6);controls.target.copy(center);controls.update();}else camera.lookAt(center);
+      focusMetadata(center);syncInspectionHalos();if(typeof options.onFocusChange==='function')options.onFocusChange({kind:focusState.kind,id:focusState.id});
+      requestRender();return true;
+    }
+    function syncFocusedCamera(forceFit) {
+      if(!focusState)return;
+      var object=resolveFocusTarget(focusState);if(!object||!object.visible){setView('front');return;}
+      var target=controls?controls.target:cameraTarget,offset=camera.position.clone().sub(target);
+      var growthKey=focusGrowthKey(object,focusState.kind);
+      if(forceFit||growthKey!==focusState.growthKey){
+        var bounds=visibleObjectBounds(object);if(bounds.isEmpty()){setView('front');return;}
+        var center=bounds.getCenter(new THREE.Vector3()),nextDistance=focusDistance(bounds,offset);
+        offset.multiplyScalar(nextDistance/Math.max(.1,focusState.fitDistance));
+        focusState.object=object;focusState.localCenter=object.worldToLocal(center.clone());focusState.scale.copy(object.scale);focusState.growthKey=growthKey;focusState.fitDistance=nextDistance;focusState.radius=Math.max(.1,bounds.getSize(new THREE.Vector3()).length()/2);
+        if(controls)controls.minDistance=Math.max(.16,focusState.radius*.65);
+        camera.near=Math.max(.01,Math.min(.1,focusState.radius*.08));camera.updateProjectionMatrix();
+      }
+      if(object!==focusState.object){object.updateWorldMatrix(true,false);var replacementCenter=focusState.relocated?visibleObjectBounds(object).getCenter(new THREE.Vector3()):target.clone();focusState.localCenter=object.worldToLocal(replacementCenter);focusState.object=object;focusState.scale.copy(object.scale);}
+      focusState.relocated=false;
+      object.updateWorldMatrix(true,false);var center=object.localToWorld(focusState.localCenter.clone());
+      cameraTarget.copy(center);camera.position.copy(offset.add(center));if(controls)controls.target.copy(center);else camera.lookAt(center);focusMetadata(center);
+    }
+
     var raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(),pointerStart=null;
     function onPointerDown(event){if(event.button!==undefined&&event.button!==0)return;pointerStart={x:event.clientX,y:event.clientY,id:event.pointerId,moved:false};}
     function onPointerMove(event){if(pointerStart&&(event.pointerId===undefined||event.pointerId===pointerStart.id)&&Math.hypot(event.clientX-pointerStart.x,event.clientY-pointerStart.y)>6)pointerStart.moved=true;}
@@ -12446,7 +12827,7 @@ window.StemLab = window.StemLab || {
     function requestRender(){needsRender=true;if(isVisible()&&!animationFrame)animationFrame=requestAnimationFrame(animate);}
     function resize(){
       var nextWidth=canvas.clientWidth||760,nextHeight=canvas.clientHeight||420;camera.aspect=nextWidth/Math.max(1,nextHeight);camera.updateProjectionMatrix();renderer.setSize(nextWidth,nextHeight,false);
-      if(currentView)setView(currentView);requestRender();
+      if(focusState)syncFocusedCamera(true);else if(currentView)setView(currentView);requestRender();
     }
     var resizeObserver=typeof ResizeObserver!=='undefined'?new ResizeObserver(resize):null;
     if(resizeObserver)resizeObserver.observe(canvas);else window.addEventListener('resize',resize);
@@ -12467,16 +12848,16 @@ window.StemLab = window.StemLab || {
           var foodActive=foodRoot.visible&&feedingAge<10;
           creatureRoot.children.forEach(function(group){
             var data=group.userData,angle=motionTime*data.speed+data.phase,offset=behaviorOffset(data.mode,angle,data.span),ahead=behaviorOffset(data.mode,angle+.04,data.span);
-            var tx=data.baseX+offset.x,tz=data.baseZ+offset.z,ty=data.baseY+(data.bottom?0:Math.sin(angle*1.7)*.045);
-            var dx=ahead.x-offset.x,dz=ahead.z-offset.z;
+            var tx=data.baseX+offset.x*sizeX(),tz=data.baseZ+offset.z*sizeZ(),ty=data.baseY+(data.bottom?0:Math.sin(angle*1.7)*.045);
+            var dx=(ahead.x-offset.x)*sizeX(),dz=(ahead.z-offset.z)*sizeZ();
             if(data.schoolSize>1&&!data.stationary){
               var schoolAngle=motionTime*.25+data.schoolPhase,schoolOffset=behaviorOffset('open-water',schoolAngle,1.05),schoolAhead=behaviorOffset('open-water',schoolAngle+.04,1.05);
               var lane=(data.schoolIndex-(data.schoolSize-1)/2)*.23;
-              tx=tx*.45+(data.schoolX+schoolOffset.x+lane)*.55;tz=tz*.45+(data.schoolZ+schoolOffset.z+Math.sin(data.schoolIndex*2.4)*.24)*.55;
-              dx=dx*.45+(schoolAhead.x-schoolOffset.x)*.55;dz=dz*.45+(schoolAhead.z-schoolOffset.z)*.55;
+              tx=tx*.45+(data.schoolX+schoolOffset.x*sizeX()+lane)*.55;tz=tz*.45+(data.schoolZ+schoolOffset.z*sizeZ()+Math.sin(data.schoolIndex*2.4)*.24)*.55;
+              dx=dx*.45+(schoolAhead.x-schoolOffset.x)*sizeX()*.55;dz=dz*.45+(schoolAhead.z-schoolOffset.z)*sizeZ()*.55;
             }
             if(foodActive&&data.feedingEventId===foodRoot.userData.eventId&&data.foodInterest>0){
-              var foodY=foodRoot.userData.sinking?Math.max(.26,4.91-feedingAge*.56):Math.max(3.85,4.91-feedingAge*.105);
+              var foodY=foodRoot.userData.sinking?Math.max(.26,waterTop()-.2-feedingAge*.56):Math.max(waterTop()-1.26,waterTop()-.2-feedingAge*.105);
               if(!data.bottom||foodRoot.userData.sinking){
                 var interest=data.foodInterest*Math.min(1,feedingAge/1.3)*Math.min(1,(10-feedingAge)/2)*.78;
                 var feedX=foodRoot.userData.feedX+Math.sin(data.phase)*.35,feedZ=foodRoot.userData.feedZ+Math.cos(data.phase)*.3;
@@ -12494,26 +12875,23 @@ window.StemLab = window.StemLab || {
           plantRoot.children.forEach(function(group){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+group.userData.phase)*sway;});
           if(causticsMap){causticsMap.offset.set(Math.sin(motionTime*.08)*.06,motionTime*.006%1);causticMaterial.opacity=(causticMaterial.userData.baseOpacity||0)*(1+Math.sin(motionTime*.45)*.12);}
           surface.rotation.z=Math.sin(motionTime*.35)*.0015;
-          if(bubbleRoot.visible)bubbleRoot.children.forEach(function(bubble){var phase=(motionTime*(.09+bubbleRoot.userData.effectiveOutput*.07)+bubble.userData.phase)%1;bubble.position.set(-5.05+Math.sin(phase*12+bubble.userData.phase)*.07,.22+phase*4.95,-2.35+Math.cos(phase*8)*.035);});
-          if(foodActive)foodRoot.children.forEach(function(particle){var seed=particle.userData.seed,y=foodRoot.userData.sinking?Math.max(.16,4.91-feedingAge*(.45+seed%3*.08)):Math.max(3.8,4.91-feedingAge*.105);particle.position.set(foodRoot.userData.feedX+particle.userData.offsetX+Math.sin(feedingAge*.5+seed)*.09,y-(seed%3)*.045,foodRoot.userData.feedZ+particle.userData.offsetZ);particle.rotation.set(feedingAge*.28,seed,Math.sin(feedingAge+seed)*.3);particle.visible=feedingAge<7+seed%4;});
+          if(bubbleRoot.visible)bubbleRoot.children.forEach(function(bubble){var phase=(motionTime*(.09+bubbleRoot.userData.effectiveOutput*.07)+bubble.userData.phase)%1;bubble.position.set(-tankSize.width/2+.95+Math.sin(phase*12+bubble.userData.phase)*.07,.22+phase*(waterTop()-.25),-tankSize.depth/2+.85+Math.cos(phase*8)*.035);});
+          if(foodActive)foodRoot.children.forEach(function(particle){var seed=particle.userData.seed,y=foodRoot.userData.sinking?Math.max(.16,waterTop()-.2-feedingAge*(.45+seed%3*.08)):Math.max(waterTop()-1.3,waterTop()-.2-feedingAge*.105);particle.position.set(foodRoot.userData.feedX+particle.userData.offsetX+Math.sin(feedingAge*.5+seed)*.09,y-(seed%3)*.045,foodRoot.userData.feedZ+particle.userData.offsetZ);particle.rotation.set(feedingAge*.28,seed,Math.sin(feedingAge+seed)*.3);particle.visible=feedingAge<7+seed%4;});
           else if(foodRoot.visible){foodRoot.visible=false;creatureRoot.children.forEach(function(group){group.userData.foodInterest=0;});}
           overlayRoot.children.forEach(function(item){var data=item.userData;if(data&&data.isInteractionPulse){var progress=(motionTime*.22+data.phase)%1;if(data.bidirectional)progress=progress<.5?progress*2:(1-progress)*2;item.position.lerpVectors(data.startPoint,data.endPoint,progress);}});
         }
-        needsRender=false;if(controls)controls.update();renderer.render(scene,camera);lastRender=now;
+        syncFocusedCamera(false);needsRender=false;if(controls)controls.update();renderer.render(scene,camera);lastRender=now;
       }
       if(moving&&!animationFrame)animationFrame=requestAnimationFrame(animate);
     }
     var currentView='angle';
     function setView(view){
+      clearFocus();camera.near=.1;camera.updateProjectionMatrix();
       currentView=view==='front'||view==='top'||view==='left'?view:'angle';
-      var tangent=Math.tan(camera.fov*Math.PI/360),frontDistance=3.35+Math.max(6.65/(tangent*camera.aspect),3.25/tangent);
-      frontDistance=clamp(frontDistance,11.7,31);
-      cameraTarget.set(0,2.35,0);
-      if(currentView==='front')camera.position.set(0,2.65,frontDistance);
-      else if(currentView==='top')camera.position.set(0,Math.max(14,7.1/(tangent*camera.aspect)),.02);
-      else if(currentView==='left')camera.position.set(-Math.max(13,4.1/(tangent*camera.aspect)),4.2,0);
-      else {var distance=Math.max(15,frontDistance*1.03);camera.position.set(distance*.5,2.35+distance*.29,distance*.78);}
-      if(controls){controls.maxDistance=Math.max(32,frontDistance*1.3);controls.target.copy(cameraTarget);controls.update();}else camera.lookAt(cameraTarget);
+      cameraTarget.set(0,tankSize.height*.452,0);
+      var direction=currentView==='front'?new THREE.Vector3(0,0,1):currentView==='top'?new THREE.Vector3(0,1,.001):currentView==='left'?new THREE.Vector3(-1,.18,0):new THREE.Vector3(.5,.29,.78);
+      var distance=framingRadius(tankSize,direction);camera.position.copy(direction.normalize().multiplyScalar(distance).add(cameraTarget));
+      if(controls){controls.minDistance=Math.max(3,Math.min(tankSize.width,tankSize.depth)*.85);controls.maxDistance=Math.max(32,distance*1.6);controls.target.copy(cameraTarget);controls.update();}else camera.lookAt(cameraTarget);
       requestRender();
     }
     function nudgeCamera(action){
@@ -12521,13 +12899,13 @@ window.StemLab = window.StemLab || {
       var target=controls?controls.target:cameraTarget,spherical=new THREE.Spherical().setFromVector3(camera.position.clone().sub(target));
       if(action==='left')spherical.theta-=.12;else if(action==='right')spherical.theta+=.12;
       else if(action==='up')spherical.phi-=.08;else if(action==='down')spherical.phi+=.08;
-      else if(action==='in')spherical.radius-=.8;else if(action==='out')spherical.radius+=.8;else return;
-      spherical.phi=clamp(spherical.phi,.04,Math.PI*.49);spherical.radius=clamp(spherical.radius,9,controls?controls.maxDistance:34);
+      else if(action==='in')spherical.radius-=focusState?Math.max(.06,spherical.radius*.15):.8;else if(action==='out')spherical.radius+=focusState?Math.max(.06,spherical.radius*.15):.8;else return;
+      spherical.phi=clamp(spherical.phi,.04,Math.PI*.49);spherical.radius=clamp(spherical.radius,focusState?Math.max(.16,focusState.radius*.65):Math.max(3,Math.min(tankSize.width,tankSize.depth)*.85),controls?controls.maxDistance:Math.max(34,framingRadius(tankSize)*1.6));
       camera.position.copy(new THREE.Vector3().setFromSpherical(spherical).add(target));if(controls)controls.update();else camera.lookAt(target);requestRender();
     }
-    rebuild(options);setView(options.view||'angle');
+    focusMetadata(null);rebuild(options);setView(options.view||'angle');
     return {
-      update:rebuild,setView:setView,nudgeCamera:nudgeCamera,
+      update:rebuild,setView:setView,nudgeCamera:nudgeCamera,focusSelection:focusSelection,
       dispose:function(){
         if(disposed)return;disposed=true;cancelFrame();
         canvas.removeEventListener('pointerdown',onPointerDown);canvas.removeEventListener('pointermove',onPointerMove);canvas.removeEventListener('pointerup',onPointerUp);canvas.removeEventListener('pointercancel',onPointerCancel);canvas.removeEventListener('webglcontextlost',onContextLost,false);
@@ -12537,41 +12915,49 @@ window.StemLab = window.StemLab || {
         if(intersectionObserver)intersectionObserver.disconnect();
         if(controls){if(controls.removeEventListener)controls.removeEventListener('change',requestRender);controls.dispose();}
         disposeGroup(scene);persistentTextures.forEach(function(map){map.dispose();});persistentTextures=[];
-        fishById={};plantById={};if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();renderer.dispose();
+        focusState=null;fishById={};plantById={};if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();renderer.dispose();
       }
     };
   }
 
   function AquariumHabitat3DViewport(props) {
     var React = props.React;
-    var canvasRef = React.useRef(null);
-    var engineRef = React.useRef(null);
-    var latestRef = React.useRef(props);
+    var canvasRef = React.useRef(null), engineRef = React.useRef(null), latestRef = React.useRef(props), focusRef = React.useRef(null);
     latestRef.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
     var retryState = React.useState(0), retry = retryState[0], setRetry = retryState[1];
     var viewState = React.useState('front'), view = viewState[0], setView = viewState[1];
+    var focusState = React.useState(null), focused = focusState[0], setFocused = focusState[1];
+    var noticeState = React.useState(''), notice = noticeState[0], setNotice = noticeState[1];
+    var sceneOptions = props.sceneOptions || {}, fish = (sceneOptions.fish || []).find(function(item) { return item.selected; });
+    var plant = (sceneOptions.plants || []).find(function(item) { return item.selected; });
+    var habitat = (sceneOptions.layout || []).find(function(item) { return item.id === sceneOptions.selectedId; });
+    var habitatType = habitat && (sceneOptions.catalog || []).find(function(item) { return item.id === habitat.type; });
+    var subject = fish ? { kind: 'fish', id: fish.instanceId, label: fish.name } : plant ? { kind: 'plant', id: plant.id, label: plant.name } : habitat ? { kind: 'habitat', id: habitat.id, label: habitatType ? habitatType.label : 'Habitat object' } : null;
+    var subjectKey = subject ? subject.kind + ':' + subject.id : '';
+    var subjectVisible = !!subject && !(subject.kind === 'plant' && (plant.biomass === 0 || plant.biomassRatio === 0));
+    function reportFocus(next) {
+      focusRef.current = next || null; setFocused(next || null); setView(next ? 'closeup' : 'front'); setNotice('');
+    }
     function optionsWithCallbacks(onError) {
       return Object.assign({}, latestRef.current.sceneOptions, {
         onSelect: function(id) { if (latestRef.current.onSelect) latestRef.current.onSelect(id); },
         onSelectFish: function(id) { if (latestRef.current.onSelectFish) latestRef.current.onSelectFish(id); },
         onSelectPlant: function(id) { if (latestRef.current.onSelectPlant) latestRef.current.onSelectPlant(id); },
         onSelectEquipment: function(id) { if (latestRef.current.onSelectEquipment) latestRef.current.onSelectEquipment(id); },
-        onContextLost: onError
+        onFocusChange: reportFocus, onContextLost: onError
       });
     }
     React.useEffect(function() {
       var cancelled = false;
-      setStatus('loading'); setView('front');
-      function fail() { if (!cancelled) setStatus('error'); }
+      setStatus('loading'); setView('front'); focusRef.current = null; setFocused(null); setNotice('');
+      function fail() { if (!cancelled) { setStatus('error'); focusRef.current = null; setFocused(null); } }
       function start() {
         if (cancelled || !canvasRef.current) return;
         try {
           var engine = createAquariumHabitatScene(canvasRef.current, optionsWithCallbacks(fail));
           if (!engine) { fail(); return; }
-          engineRef.current = engine;
-          engine.setView('front');
-          setStatus('ready');
+          engineRef.current = engine; engine.setView('front'); setStatus('ready');
         } catch (_) { fail(); }
       }
       if (window.THREE && window.THREE.OrbitControls) start();
@@ -12581,22 +12967,37 @@ window.StemLab = window.StemLab || {
       else fail();
       return function() {
         cancelled = true;
-        if (engineRef.current && engineRef.current.dispose) engineRef.current.dispose();
-        engineRef.current = null;
+        var engine = engineRef.current; engineRef.current = null; focusRef.current = null;
+        if (engine && engine.dispose) engine.dispose();
       };
     }, [props.instanceKey, retry]);
     var sceneSignature = JSON.stringify(props.sceneOptions);
     React.useEffect(function() {
-      if (engineRef.current && engineRef.current.update) engineRef.current.update(optionsWithCallbacks(function() { setStatus('error'); }));
+      if (engineRef.current && engineRef.current.update) engineRef.current.update(optionsWithCallbacks(function() { setStatus('error'); focusRef.current = null; setFocused(null); }));
     }, [sceneSignature]);
-    function changeView(nextView) { if (engineRef.current) engineRef.current.setView(nextView); setView(nextView); }
-    function moveCamera(action) { if (engineRef.current && engineRef.current.nudgeCamera) engineRef.current.nudgeCamera(action); setView(action === 'reset' ? 'front' : 'custom'); }
+    React.useEffect(function() {
+      var current = focusRef.current, engine = engineRef.current;
+      if (!current || !engine) return;
+      if (!subjectVisible) { engine.setView('front'); return; }
+      if (current.kind + ':' + current.id !== subjectKey && engine.focusSelection) engine.focusSelection({ kind: subject.kind, id: subject.id });
+    }, [subjectKey, subjectVisible]);
+    function changeView(nextView) { if (engineRef.current) engineRef.current.setView(nextView); setView(nextView); setNotice(''); }
+    function moveCamera(action) { if (engineRef.current && engineRef.current.nudgeCamera) engineRef.current.nudgeCamera(action); setView(action === 'reset' ? 'front' : focusRef.current ? 'closeup' : 'custom'); }
+    function inspectCloseUp() {
+      var engine = engineRef.current;
+      if (!subjectVisible || !engine || !engine.focusSelection) return;
+      if (!engine.focusSelection({ kind: subject.kind, id: subject.id })) { setNotice('This subject is not visible in the current scene.'); return; }
+      if (canvasRef.current) {
+        canvasRef.current.focus({ preventScroll: true });
+        if (canvasRef.current.scrollIntoView) canvasRef.current.scrollIntoView({ block: 'center', behavior: 'auto' });
+      }
+    }
     function onCameraKey(event) {
       var actions = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', '+': 'in', '=': 'in', '-': 'out', Home: 'reset' };
       if (actions[event.key]) { event.preventDefault(); moveCamera(actions[event.key]); }
     }
-    return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-3d-status': status },
-      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}'),
+    return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
+      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex:1;min-width:180px;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}'),
       status === 'error' ? React.createElement(React.Fragment, null,
         props.fallback || null,
         React.createElement('div', { className: 'aquarium-3d-error', role: 'status' }, React.createElement('p', null, props.fallback ? '3D is unavailable on this device right now. Your illustrated aquarium and all care controls are available.' : 'The 3D view is unavailable. Use the accessible habitat plan and object controls.'),
@@ -12605,11 +13006,36 @@ window.StemLab = window.StemLab || {
           React.createElement('canvas', { ref: canvasRef, className: 'aquarium-3d-canvas', role: 'img', tabIndex: 0, 'aria-label': props.label + ' Camera: arrow keys rotate, plus and minus zoom, Home resets.', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home', onKeyDown: onCameraKey }),
           status === 'loading' && React.createElement('div', { className: 'aquarium-3d-loading', role: 'status' }, React.createElement('span', null, 'Lighting your aquarium…'), React.createElement('small', { style: { marginTop: 8, color: '#83aeb6' } }, 'Preparing the water, habitat, and residents')),
           status === 'ready' && React.createElement(React.Fragment, null,
+            React.createElement('div', { className: 'aquarium-closeup-controls' },
+              React.createElement('button', { type: 'button', disabled: !subjectVisible, 'aria-label': subject ? 'Inspect ' + subject.label + ' close-up' : 'Select a subject for close-up inspection', 'aria-pressed': !!focused, onClick: inspectCloseUp }, 'Focus selected'),
+              focused && React.createElement('button', { type: 'button', onClick: function() { changeView('front'); } }, 'Whole tank'),
+              React.createElement('p', { role: 'status' }, notice || (focused && subject ? 'Close-up: ' + subject.label + '. Camera follows this subject; simulation settings stay unchanged.' : subject && !subjectVisible ? 'No live foliage to inspect at zero biomass.' : 'Select a resident, plant, or habitat object, then focus to examine its details.'))),
             React.createElement('div', { className: 'aquarium-camera-bar' },
               React.createElement('div', { className: 'aquarium-camera-presets', role: 'group', 'aria-label': '3D camera presets' }, ['front', 'angle', 'top', 'left'].map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'aria-pressed': view === preset, onClick: function() { changeView(preset); } }, { front: 'Front', angle: 'Perspective', top: 'Above', left: 'Side' }[preset]); })),
               React.createElement('div', { className: 'aquarium-camera-presets', role: 'group', 'aria-label': 'Camera zoom' }, React.createElement('button', { type: 'button', onClick: function() { moveCamera('in'); }, 'aria-label': 'Zoom in' }, '+'), React.createElement('button', { type: 'button', onClick: function() { moveCamera('out'); }, 'aria-label': 'Zoom out' }, '−'))),
             React.createElement('p', { className: 'aquarium-3d-help' }, 'Drag to look around; select a resident or habitat object to inspect it. Keyboard: arrows rotate, + / − zoom, Home resets.')))
     );
+  }
+
+  function getAquariumTankConfiguration(base, raw) {
+    if (!base) return null;
+    var originalSize = aquariumViewNumber(base.baseSize, aquariumViewNumber(base.size, 20, 5, 200), 5, 200);
+    var saved = raw && typeof raw === 'object' && raw.tankId === base.id ? raw : {};
+    var volume = Math.round(aquariumViewNumber(saved.volumeGallons, originalSize, 5, 200) * 2) / 2;
+    var shape = ['standard', 'long', 'tall', 'cube'].indexOf(saved.shape) >= 0 ? saved.shape : 'standard';
+    var axes = shape === 'long' ? [12 * 1.35, 5.2 * .82, 6.4 / (1.35 * .82)]
+      : shape === 'tall' ? [12 * .86, 5.2 * 1.35, 6.4 / (.86 * 1.35)]
+      : shape === 'cube' ? [Math.cbrt(12 * 5.2 * 6.4), Math.cbrt(12 * 5.2 * 6.4), Math.cbrt(12 * 5.2 * 6.4)] : [12, 5.2, 6.4];
+    var scale = Math.cbrt(volume / 20);
+    var dimensions = { width: axes[0] * scale, height: axes[1] * scale, depth: axes[2] * scale, volumeGallons: volume, baselineGallons: 20, shape: shape };
+    return Object.assign({}, base, { baseSize: originalSize, size: volume, shape: shape, dimensions: dimensions, volumeScale: 20 / volume, surfaceExchangeScale: (dimensions.width * dimensions.depth / (12 * 6.4)) * (20 / volume) });
+  }
+  function buildAquariumInterventionFactors(state, tank) {
+    var data = state || {};
+    return { plants: (data.tankPlants || []).slice(), organisms: (data.tankFish || []).slice(),
+      habitat: AquariumEcosystemCore.sanitizeHabitatLayout(data.habitatLayout).map(function(item) { return item.type + ':' + item.x.toFixed(1) + ':' + item.z.toFixed(1); }),
+      equipment: Object.assign({}, data.equipment || {}), lightsOn: data.lightsOn !== false,
+      tankVolume: tank ? tank.size : 20, tankShape: tank ? tank.shape : 'standard', plantSizeEdits: Object.assign({}, data.plantSizeEdits || {}) };
   }
 
   function aquariumViewNumber(value, fallback, minimum, maximum) {
@@ -12628,6 +13054,7 @@ window.StemLab = window.StemLab || {
   }
   function buildAquariumSceneDynamics(input) {
     var source = input || {}, tick = aquariumViewNumber(source.simTick, 0, 0, 1e9);
+    var configuredTank = source.tankDefinition ? getAquariumTankConfiguration(source.tankDefinition, source.tankConfig) : null;
     var hour = aquariumViewNumber(source.simHour, 12, 0, 23), catalog = source.equipmentCatalog || {};
     var equipment = {}, names = { filter: 'Filter', heater: 'Heater', airPump: 'Air pump', light: 'Light' };
     ['filter', 'heater', 'airPump', 'light'].forEach(function(id) {
@@ -12651,7 +13078,8 @@ window.StemLab = window.StemLab || {
       var id = resident.instanceId, vitality = (source.fishVitality || {})[id] || {}, sickness = (source.fishSickness || {})[id];
       var health = aquariumViewNumber(vitality.score, null, 0, 100);
       var kind = String(resident.id + ' ' + (resident.bodyPlan || '')).toLowerCase();
-      var locomotion = /coral|anemone|bivalve|mussel|oyster|tubeworm|sponge/.test(kind) ? 'sessile'
+      var profileMotion = resident.visualProfile && resident.visualProfile.locomotion;
+      var locomotion = ['swim', 'crawl', 'sessile'].indexOf(profileMotion) >= 0 ? profileMotion : /coral|anemone|bivalve|mussel|oyster|tubeworm|sponge|kelp|macroalga/.test(kind) ? 'sessile'
         : (/snail|nerite|shrimp|crab|urchin|starfish|seastar|seacucumber/.test(kind) || ['pistol', 'cleaner', 'pederson'].indexOf(resident.id) >= 0) ? 'crawl' : 'swim';
       return Object.assign({}, resident, {
         hunger: aquariumViewNumber((source.hungerLevels || {})[id], 50, 0, 100),
@@ -12661,7 +13089,9 @@ window.StemLab = window.StemLab || {
         illness: sickness && typeof sickness === 'object' ? { disease: String(sickness.disease || 'Recorded illness').slice(0, 100), severity: aquariumViewNumber(sickness.severity, null, 1, 3), sinceTick: aquariumViewNumber(sickness.tick, aquariumViewNumber(sickness.sinceTick, null, 0, tick), 0, tick) } : null,
         timeInTankHours: Math.max(0, tick - aquariumViewNumber((source.fishBirthTicks || {})[id], tick, 0, tick)),
         schooling: ['neon', 'cardinal', 'rummy'].indexOf(resident.id) >= 0,
-        schoolGroup: resident.id, locomotion: locomotion
+        schoolGroup: resident.id, locomotion: locomotion,
+        behaviorMode: locomotion === 'sessile' ? 'attached' : resident.behaviorMode,
+        behaviorLabel: locomotion === 'sessile' ? 'Attached at its modeled habitat position' : locomotion === 'crawl' ? 'Moving along the substrate near its habitat position' : resident.behaviorLabel
       });
     });
     var plants = (source.plants || []).map(function(plant) {
@@ -12679,13 +13109,50 @@ window.StemLab = window.StemLab || {
     Object.keys(units).forEach(function(key) { var value = (source.waterChem || {})[key]; chemistry[key] = typeof value === 'number' && Number.isFinite(value) ? value : null; });
     var overlay = ['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions'].indexOf(source.overlay) >= 0 ? source.overlay : 'none';
     return {
-      appearance: sanitizeAquariumAppearance(source.appearance), overlay: overlay, equipment: equipment,
+      appearance: sanitizeAquariumAppearance(source.appearance), overlay: overlay, equipment: equipment, dimensions: configuredTank ? configuredTank.dimensions : undefined,
       aeration: equipment.aerator.on ? equipment.aerator.intensity : 0,
       algaeLevel: aquariumViewNumber(source.algaeLevel, 0, 0, 100), fish: fish, plants: plants,
       lighting: !daylight ? 'night' : source.viewingLight === 'blue' ? 'blue' : source.viewingLight === 'night' ? 'night' : 'day',
       feeding: event && event.scope === 'display' ? event : null,
-      model: { tick: tick, hour: hour, day: aquariumViewNumber(source.simDay, 0, 0, 1e8), daylight: daylight, lightPhase: phase, chemistry: chemistry, feeding: event }
+      model: { volumeGallons: configuredTank ? configuredTank.size : 20, tankShape: configuredTank ? configuredTank.shape : 'standard', stockMinimumGallons: aquariumViewNumber(source.stockMinimumGallons, 5, 5, 200), capacity: configuredTank ? Math.floor(configuredTank.size / 2) : 10, surfaceExchangeScale: configuredTank ? configuredTank.surfaceExchangeScale : 1, tick: tick, hour: hour, day: aquariumViewNumber(source.simDay, 0, 0, 1e8), daylight: daylight, lightPhase: phase, chemistry: chemistry, feeding: event }
     };
+  }
+
+  function AquariumPlantSizeControl(props) {
+    var React = props.React, h = React.createElement, plant = props.plant, pending = React.useState(null), draft = pending[0], setDraft = pending[1];
+    var value = draft === null ? Math.round(plant.biomass * 100) / 100 : draft;
+    var valid = typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= plant.maxBiomass;
+    function change(event) { setDraft(event.target.value === '' ? '' : Number(event.target.value)); }
+    return h('div', { className: 'aquarium-plant-sizing' },
+      h('div', { className: 'aquarium-sizing-row' }, h('strong', null, plant.name), h('span', null, plant.biomass.toFixed(2) + ' / ' + plant.maxBiomass.toFixed(2) + ' current biomass')),
+      h('label', { htmlFor: 'aquarium-plant-size-' + plant.id }, 'Plant size · ' + (valid ? Math.round(value / plant.maxBiomass * 100) + '% of modeled maximum' : 'enter a valid biomass')),
+      h('input', { type: 'range', id: 'aquarium-plant-size-' + plant.id, min: 0, max: plant.maxBiomass, step: .05, value: valid ? value : plant.biomass, onChange: change, 'aria-valuetext': valid ? value.toFixed(2) + ' biomass index' : 'Enter a valid biomass' }),
+      h('div', { className: 'aquarium-sizing-row' },
+        h('label', { htmlFor: 'aquarium-plant-biomass-' + plant.id }, 'Biomass index', h('input', { type: 'number', id: 'aquarium-plant-biomass-' + plant.id, min: 0, max: plant.maxBiomass, step: .01, value: value, onChange: change, 'aria-invalid': !valid })),
+        h('button', { type: 'button', disabled: !valid || Math.abs(value - plant.biomass) < .00001, 'aria-label': 'Apply size for ' + plant.name, onClick: function() { if (valid && props.onApply(plant.id, value) !== false) setDraft(null); } }, 'Apply plant size')),
+      props.count > 1 && h('p', null, props.count + ' clumps of this plant share the same modeled size.'),
+      !valid && h('p', { role: 'status' }, 'Enter a biomass index from 0 to ' + plant.maxBiomass + '.'));
+  }
+  function AquariumModelSizing(props) {
+    var React = props.React, h = React.createElement, tank = props.tank;
+    var volumeState = React.useState(null), volumeDraft = volumeState[0], setVolumeDraft = volumeState[1];
+    var shapeState = React.useState(null), shapeDraft = shapeState[0], setShapeDraft = shapeState[1];
+    var volume = volumeDraft === null ? tank.size : volumeDraft, shape = shapeDraft === null ? tank.shape : shapeDraft;
+    var valid = typeof volume === 'number' && Number.isFinite(volume) && volume >= 5 && volume <= 200 && volume >= props.stockMinimum;
+    var changed = volume !== tank.size || shape !== tank.shape, seen = {};
+    return h('details', { id: 'aquarium-size-controls', className: 'aquarium-model-sizing', tabIndex: -1 },
+      h('summary', null, 'Tank & plant size'),
+      h('div', { className: 'aquarium-sizing-body' },
+        h('p', null, 'Edit the scenario, then observe the consequences. Applying a size pauses the clock and records an intervention. Current water concentrations, resident identities, and health are retained.'),
+        h('div', { className: 'aquarium-settings-grid' },
+          h('label', { className: 'aquarium-view-setting', htmlFor: 'aquarium-tank-volume' }, 'Tank capacity · US gallons', h('input', { id: 'aquarium-tank-volume', type: 'number', min: 5, max: 200, step: .5, value: volume, 'aria-describedby': 'aquarium-volume-help', 'aria-invalid': !valid, onChange: function(event) { setVolumeDraft(event.target.value === '' ? '' : Number(event.target.value)); } })),
+          h('label', { className: 'aquarium-view-setting', htmlFor: 'aquarium-tank-shape' }, 'Tank shape', h('select', { id: 'aquarium-tank-shape', value: shape, onChange: function(event) { setShapeDraft(event.target.value); } }, [['standard','Standard'],['long','Long & shallow'],['tall','Tall'],['cube','Cube']].map(function(option) { return h('option', { key: option[0], value: option[0] }, option[1]); })))),
+        h('p', { id: 'aquarium-volume-help', className: 'aquarium-sizing-note' }, '5–200 US gal. Current residents require at least ' + props.stockMinimum + ' US gal in the catalog. Larger volumes reduce concentration changes from the same biological load. Shape changes the surface-area-to-volume exchange estimate.'),
+        h('button', { type: 'button', disabled: !valid || !changed, onClick: function() { if (valid && props.onTank({ volumeGallons: volume, shape: shape }) !== false) { setVolumeDraft(null); setShapeDraft(null); } } }, 'Apply tank size'),
+        h('p', { className: 'aquarium-sizing-note' }, 'This is a scenario resize, not a water change. Shape preserves the selected volume. The vessel, residents, and plants are illustrative; display units are not measured inches or centimeters.'),
+        h('h5', null, 'Living plant size'),
+        h('p', null, 'Size edits change actual modeled biomass, including photosynthesis, respiration, nutrient uptake, and growth. This relative index is not a length or mass measurement. Zero leaves an empty clump marker; later growth follows the model.'),
+        props.plants.length ? props.plants.filter(function(plant) { if (seen[plant.id]) return false; seen[plant.id] = true; return true; }).map(function(plant) { return h(AquariumPlantSizeControl, { key: plant.id, React: React, plant: plant, count: props.plants.filter(function(other) { return other.id === plant.id; }).length, onApply: props.onPlant }); }) : h('p', null, 'Add a living plant to adjust its biomass here. Photosynthetic animal and kelp stock keep their separate stock model.')));
   }
 
   function AquariumSceneSettings(props) {
@@ -12733,7 +13200,7 @@ window.StemLab = window.StemLab || {
     };
     var feed = model.feeding, feedNames = { flake: 'Flake / pellet feed', live: 'Live feed', individual: 'Individual feed' };
     return React.createElement('section', { className: 'aquarium-scene-evidence', 'aria-label': 'Simulation in view' },
-      React.createElement('div', { className: 'aquarium-evidence-heading' }, React.createElement('h4', null, 'Simulation in view'), React.createElement('span', null, 'Day ' + model.day + ' · ' + String(model.hour).padStart(2, '0') + ':00')),
+      React.createElement('div', { className: 'aquarium-evidence-heading' }, React.createElement('h4', null, 'Simulation in view'), React.createElement('span', null, (model.volumeGallons || 20) + ' US gal · ' + (model.tankShape || 'standard') + ' · Day ' + model.day + ' · ' + String(model.hour).padStart(2, '0') + ':00')),
       React.createElement('dl', { className: 'aquarium-evidence-grid' },
         React.createElement('div', null, React.createElement('dt', null, 'Dissolved oxygen'), React.createElement('dd', null, reading(chemistry.dissolvedO2, 2) + (chemistry.dissolvedO2 !== null ? ' mg/L' : ''))),
         React.createElement('div', null, React.createElement('dt', null, 'Algae index'), React.createElement('dd', null, reading(scene.algaeLevel, 0) + ' / 100')),
@@ -12756,36 +13223,58 @@ window.StemLab = window.StemLab || {
     var selectedHabitat = props.sceneOptions.layout.find(function(item) { return item.id === props.sceneOptions.selectedId; });
     var selectedHabitatType = selectedHabitat && props.sceneOptions.catalog.find(function(type) { return type.id === selectedHabitat.type; });
     var inspectionValue = selectedFish ? 'fish:' + selectedFish.instanceId : selectedPlant ? 'plant:' + selectedPlant.id : selectedHabitat ? 'habitat:' + selectedHabitat.id : '';
+    function adjustSelectedPlant() {
+      if (!selectedPlant || typeof document === 'undefined') return;
+      var panel = document.getElementById('aquarium-size-controls');
+      if (!panel) return;
+      panel.open = true;
+      var input = document.getElementById('aquarium-plant-biomass-' + selectedPlant.id);
+      var target = input || panel;
+      if (target.focus) target.focus({ preventScroll: true });
+      if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
     return React.createElement('section', { id: props.id, tabIndex: -1, className: 'aquarium-live-display' + (props.paused ? ' aquarium-visuals-paused' : ''), 'data-aquarium-live-tank': 'true', 'data-aquarium-view': props.mode, 'aria-label': props.label },
-      React.createElement('style', null, '.aquarium-live-display{border:1px solid #bad6d8;border-radius:20px;background:#f4faf9;box-shadow:0 12px 35px -22px #0b526a;overflow:hidden;min-width:0}.aquarium-display-heading{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.aquarium-display-heading h3{font-size:19px;line-height:1.2;color:#123f49;font-weight:850;margin:0}.aquarium-display-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#47727a;margin:0 0 5px;font-weight:800}.aquarium-display-counts{font-size:12px;color:#527079;margin:6px 0 0}.aquarium-view-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 18px 14px}.aquarium-view-controls button{min-height:42px;padding:9px 13px;border-radius:10px;border:1px solid #adc7cd;background:#fff;color:#244e59;font-size:12px;font-weight:750}.aquarium-view-controls button[aria-pressed=true]{background:#124d5a;border-color:#124d5a;color:#f0fffd}.aquarium-view-controls button:focus-visible,.aquarium-resident-inspector select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-live-display .aquarium-3d-viewport{border-radius:0}.aquarium-display-mood{font-size:11px;color:#42676e;background:#e4f2ee;padding:7px 10px;border:1px solid #c5dcd4;border-radius:20px}.aquarium-resident-inspector{padding:12px 18px 14px;display:grid;gap:8px;font-size:12px;color:#365d66;border-top:1px solid #cfdfdf}.aquarium-resident-inspector label{font-weight:800;color:#244b55}.aquarium-resident-inspector select{width:100%;max-width:480px;min-height:42px;border:1px solid #98b8c2;border-radius:9px;padding:8px;background:#fff;color:#214953}.aquarium-resident-inspector p{margin:0;line-height:1.5}.aquarium-resident-inspector button{min-height:40px;border:1px solid #6a9896;border-radius:8px;padding:7px 10px;margin:5px 0;background:#fff;color:#184b52;font-size:12px;font-weight:750}.aquarium-resident-inspector button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail{background:#e5f2ed;padding:10px 12px;border-radius:9px;border-left:3px solid #267775}.aquarium-visuals-paused #aquarium-illustrated-tank *{animation-play-state:paused!important}.aquarium-display-footnote{font-size:11px!important;color:#607b80}@media(prefers-reduced-motion:reduce){#aquarium-illustrated-tank *{animation:none!important;transition:none!important}}@media(max-width:480px){.aquarium-display-heading{padding:14px 13px 10px}.aquarium-view-controls{padding:0 13px 12px}.aquarium-view-controls button{min-height:44px;padding:8px 10px}.aquarium-resident-inspector{padding:12px 13px}}'),
+      React.createElement('style', null, '.aquarium-live-display{border:1px solid #bad6d8;border-radius:20px;background:#f4faf9;box-shadow:0 12px 35px -22px #0b526a;overflow:hidden;min-width:0}.aquarium-display-heading{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.aquarium-display-heading h3{font-size:19px;line-height:1.2;color:#123f49;font-weight:850;margin:0}.aquarium-display-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#47727a;margin:0 0 5px;font-weight:800}.aquarium-display-counts{font-size:12px;color:#527079;margin:6px 0 0}.aquarium-view-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 18px 14px}.aquarium-view-controls button{min-height:42px;padding:9px 13px;border-radius:10px;border:1px solid #adc7cd;background:#fff;color:#244e59;font-size:12px;font-weight:750}.aquarium-view-controls button[aria-pressed=true]{background:#124d5a;border-color:#124d5a;color:#f0fffd}.aquarium-view-controls button:focus-visible,.aquarium-resident-inspector select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-live-display .aquarium-3d-viewport{border-radius:0}.aquarium-display-mood{font-size:11px;color:#42676e;background:#e4f2ee;padding:7px 10px;border:1px solid #c5dcd4;border-radius:20px}.aquarium-resident-inspector{padding:12px 18px 14px;display:grid;gap:8px;font-size:12px;color:#365d66;border-top:1px solid #cfdfdf}.aquarium-resident-inspector label{font-weight:800;color:#244b55}.aquarium-resident-inspector select{width:100%;max-width:480px;min-height:42px;border:1px solid #98b8c2;border-radius:9px;padding:8px;background:#fff;color:#214953}.aquarium-resident-inspector p{margin:0;line-height:1.5}.aquarium-resident-inspector button{min-height:40px;border:1px solid #6a9896;border-radius:8px;padding:7px 10px;margin:5px 0;background:#fff;color:#184b52;font-size:12px;font-weight:750}.aquarium-resident-inspector button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail{background:#e5f2ed;padding:10px 12px;border-radius:9px;border-left:3px solid #267775}.aquarium-visuals-paused #aquarium-illustrated-tank *{animation-play-state:paused!important}.aquarium-display-footnote{font-size:11px!important;color:#607b80}@media(prefers-reduced-motion:reduce){#aquarium-illustrated-tank *{animation:none!important;transition:none!important}}@media(max-width:480px){.aquarium-display-heading{padding:14px 13px 10px}.aquarium-view-controls{padding:0 13px 12px}.aquarium-view-controls button{min-height:44px;padding:8px 10px}.aquarium-resident-inspector{padding:12px 13px}}.aquarium-inspection-picker{display:grid;gap:6px;padding:10px 18px 13px;background:#e8f3ef;border-top:1px solid #c6dcd6;color:#244b55;font-size:12px}.aquarium-inspection-picker label{font-weight:800}.aquarium-inspection-picker select{width:100%;min-height:44px;border:1px solid #8cadae;border-radius:9px;background:#fff;padding:9px;color:#214953;font:inherit}.aquarium-inspection-picker select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail .aquarium-identification{margin-top:7px}.aquarium-resident-detail .aquarium-identification p+p{margin-top:5px}'),
       React.createElement('style', null, ".aquarium-view-settings{border-top:1px solid #cbdedc;background:#eef6f3;color:#244b55}.aquarium-view-settings summary,.aquarium-model-legend summary{cursor:pointer;min-height:44px;padding:13px 18px;font-size:12px;font-weight:800}.aquarium-settings-body{padding:0 18px 16px}.aquarium-settings-body p{margin:0 0 13px;font-size:12px;line-height:1.55}.aquarium-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.aquarium-view-setting{display:grid;gap:6px;font-size:12px;font-weight:750;min-width:0}.aquarium-view-setting select{width:100%;min-height:42px;border:1px solid #90b2b7;border-radius:8px;background:#fff;color:#244b55;padding:8px;font:inherit}.aquarium-view-setting input[type=range]{width:100%;min-height:32px;accent-color:#246960}.aquarium-view-check{display:flex;gap:9px;align-items:center;min-height:44px;font-size:12px;margin:8px 0}.aquarium-view-check input{width:18px;height:18px;accent-color:#246960}.aquarium-settings-note{font-size:11px!important;color:#4d6b71}.aquarium-settings-body button,.aquarium-model-legend button{min-height:42px;border:1px solid #8aadaf;border-radius:8px;background:#fff;color:#244b55;font-size:12px;font-weight:750;padding:8px 12px}.aquarium-live-display summary:focus-visible,.aquarium-view-settings input:focus-visible,.aquarium-view-settings select:focus-visible,.aquarium-settings-body button:focus-visible,.aquarium-model-legend button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-scene-evidence{padding:15px 18px;border-top:1px solid #cfdfdf;background:#fcfefa;color:#315760}.aquarium-evidence-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.aquarium-evidence-heading h4{margin:0;font-size:13px;color:#204e50}.aquarium-evidence-heading span{font-size:11px;color:#5c7376}.aquarium-evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.aquarium-evidence-grid>div{border-left:2px solid #8fbcb2;padding-left:9px}.aquarium-evidence-grid dt,.aquarium-resident-readings dt,.aquarium-chemistry-readings dt{font-size:10px;color:#547076}.aquarium-evidence-grid dd{font-size:12px;font-weight:750;line-height:1.5;margin:4px 0 0;color:#204e50}.aquarium-feeding-evidence{font-size:11px;line-height:1.6;margin:0;color:#536e74}.aquarium-model-legend{margin-top:9px;border-top:1px solid #e1eae4}.aquarium-model-legend summary{padding:10px 0}.aquarium-model-legend p{font-size:12px;line-height:1.6;margin:0 0 10px}.aquarium-chemistry-readings,.aquarium-resident-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:10px 0}.aquarium-chemistry-readings dd,.aquarium-resident-readings dd{font-size:12px;margin:3px 0 0;line-height:1.5}.aquarium-equipment-readings{background:#e8f3ee;padding:10px;border-radius:8px;margin-bottom:10px}.aquarium-equipment-readings p:last-child{margin-bottom:0}@media(max-width:580px){.aquarium-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.aquarium-scene-evidence{padding:13px}.aquarium-settings-body{padding:0 13px 13px}.aquarium-view-settings summary{padding:13px}.aquarium-settings-grid{grid-template-columns:1fr}}"),
+      React.createElement('style', null, ".aquarium-model-sizing{background:#f1f6ef;color:#274e49;border-top:1px solid #cbd9c9}.aquarium-model-sizing summary{cursor:pointer;padding:13px 18px;min-height:44px;font-size:12px;font-weight:800}.aquarium-sizing-body{padding:0 18px 16px}.aquarium-sizing-body p{font-size:12px;line-height:1.6;margin:0 0 12px}.aquarium-sizing-body h5{margin:20px 0 9px;font-size:13px}.aquarium-sizing-body input[type=number]{display:block;box-sizing:border-box;min-height:42px;padding:8px;border-radius:8px;border:1px solid #91ada0;background:#fff;color:#254b45;font:inherit;width:100%}.aquarium-sizing-body button{min-height:42px;padding:8px 12px;border:1px solid #6c9584;border-radius:8px;background:#fff;color:#235345;font-size:12px;font-weight:750}.aquarium-sizing-body button:disabled{opacity:.5;cursor:not-allowed}.aquarium-sizing-note{font-size:11px!important;color:#526e60;margin-top:10px!important}.aquarium-sizing-body input:focus-visible,.aquarium-sizing-body select:focus-visible,.aquarium-sizing-body button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-plant-sizing{border:1px solid #c0d4c5;border-radius:10px;padding:12px;margin-top:10px;background:#fafdf8}.aquarium-plant-sizing label{font-size:12px;line-height:1.6;font-weight:650}.aquarium-plant-sizing input[type=range]{width:100%;min-height:32px;accent-color:#276d52}.aquarium-sizing-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:12px}.aquarium-sizing-row>span{font-size:11px;color:#587166}.aquarium-sizing-row input[type=number]{max-width:130px}.aquarium-sizing-notice{padding:12px 18px;font-size:12px;line-height:1.6;color:#24534a;background:#e5f4e6;border-top:1px solid #b9d9bf;margin:0}@media(max-width:580px){.aquarium-sizing-body{padding:0 13px 13px}.aquarium-model-sizing summary{padding:13px}.aquarium-sizing-notice{padding:12px 13px}}"),
       React.createElement('div', { className: 'aquarium-display-heading' }, React.createElement('div', null, React.createElement('p', { className: 'aquarium-display-eyebrow' }, 'A living window'), React.createElement('h3', null, props.name), React.createElement('p', { className: 'aquarium-display-counts' }, props.sceneOptions.fish.length + ' residents · ' + props.sceneOptions.plants.length + ' plants · ' + props.sceneOptions.layout.length + ' habitat objects')), React.createElement('span', { className: 'aquarium-display-mood' }, props.lightLabel)),
       React.createElement('div', { className: 'aquarium-view-controls', role: 'group', 'aria-label': 'Aquarium view controls' },
         React.createElement('button', { type: 'button', 'aria-pressed': props.mode === '3d', onClick: function() { props.onView('3d'); } }, '3D aquarium'),
         React.createElement('button', { type: 'button', 'aria-pressed': props.mode === 'illustrated', onClick: function() { props.onView('illustrated'); } }, 'Illustrated view'),
         React.createElement('button', { type: 'button', 'aria-pressed': props.paused, onClick: props.onPause }, props.paused ? 'Resume visual motion' : 'Pause visual motion'),
         props.onArrange && React.createElement('button', { type: 'button', onClick: props.onArrange }, 'Arrange habitat')),
-      props.mode === '3d' ? React.createElement(AquariumHabitat3DViewport, { React: React, instanceKey: props.instanceKey, sceneOptions: props.sceneOptions, label: props.label, onSelect: props.onSelect, onSelectFish: props.onSelectFish, onSelectPlant: props.onSelectPlant, onSelectEquipment: props.onSelectEquipment, fallback: props.children }) : props.children,
-      props.onAppearance && React.createElement(AquariumSceneSettings, { React: React, appearance: props.sceneOptions.appearance, overlay: props.sceneOptions.overlay, onAppearance: props.onAppearance, onResetAppearance: props.onResetAppearance, onOverlay: props.onOverlay }),
-      props.sceneOptions.model && React.createElement(AquariumSceneEvidence, { React: React, sceneOptions: props.sceneOptions, onSelectEquipment: props.onSelectEquipment }),
-      React.createElement('div', { className: 'aquarium-resident-inspector' },
-        props.sceneOptions.fish.length || props.sceneOptions.plants.length || props.sceneOptions.layout.length ? React.createElement(React.Fragment, null,
+      (props.sceneOptions.fish.length || props.sceneOptions.plants.length || props.sceneOptions.layout.length) > 0 && React.createElement('div', { className: 'aquarium-inspection-picker' },
           React.createElement('label', { htmlFor: 'aquarium-resident-inspect' }, 'Inspect life and habitat'),
           React.createElement('select', { id: 'aquarium-resident-inspect', value: inspectionValue, onChange: function(event) { var value = event.target.value; if (value.indexOf('fish:') === 0) props.onSelectFish(value.slice(5)); else if (value.indexOf('plant:') === 0) props.onSelectPlant(value.slice(6)); else if (value.indexOf('habitat:') === 0) props.onSelect(value.slice(8)); } }, React.createElement('option', { value: '', disabled: true }, 'Choose an organism or habitat object…'),
             props.sceneOptions.fish.length ? React.createElement('optgroup', { label: 'Residents' }, props.sceneOptions.fish.map(function(fish, index) { return React.createElement('option', { key: fish.instanceId, value: 'fish:' + fish.instanceId }, fish.name + ' · resident ' + (index + 1)); })) : null,
             props.sceneOptions.plants.length ? React.createElement('optgroup', { label: 'Plants' }, props.sceneOptions.plants.map(function(plant) { return React.createElement('option', { key: plant.id, value: 'plant:' + plant.id }, plant.name); })) : null,
-            props.sceneOptions.layout.length ? React.createElement('optgroup', { label: 'Habitat objects' }, props.sceneOptions.layout.map(function(item, index) { var type = props.sceneOptions.catalog.find(function(candidate) { return candidate.id === item.type; }); return React.createElement('option', { key: item.id, value: 'habitat:' + item.id }, (type ? type.label : item.type) + ' · object ' + (index + 1)); })) : null),
+            props.sceneOptions.layout.length ? React.createElement('optgroup', { label: 'Habitat objects' }, props.sceneOptions.layout.map(function(item, index) { var type = props.sceneOptions.catalog.find(function(candidate) { return candidate.id === item.type; }); return React.createElement('option', { key: item.id, value: 'habitat:' + item.id }, (type ? type.label : item.type) + ' · object ' + (index + 1)); })) : null)),
+      props.mode === '3d' ? React.createElement(AquariumHabitat3DViewport, { React: React, instanceKey: props.instanceKey, sceneOptions: props.sceneOptions, label: props.label, onSelect: props.onSelect, onSelectFish: props.onSelectFish, onSelectPlant: props.onSelectPlant, onSelectEquipment: props.onSelectEquipment, fallback: props.children }) : props.children,
+      React.createElement('div', { className: 'aquarium-resident-inspector' },
+        props.sceneOptions.fish.length || props.sceneOptions.plants.length || props.sceneOptions.layout.length ? React.createElement(React.Fragment, null,
           selectedFish ? React.createElement('div', { className: 'aquarium-resident-detail', role: 'status' },
             React.createElement('p', null, React.createElement('strong', null, selectedFish.name + '. '), selectedFish.behaviorLabel + ' · ' + selectedFish.zone + ' water zone.'),
+            selectedFish.visualProfile && React.createElement('div', { className: 'aquarium-identification' },
+              React.createElement('p', null, React.createElement('strong', null, 'Rendered form: ' + selectedFish.visualProfile.label + '. '), selectedFish.visualProfile.identification),
+              React.createElement('p', { className: 'aquarium-display-footnote' }, selectedFish.visualProfile.variation)),
             props.sceneOptions.model && React.createElement(React.Fragment, null,
               React.createElement('dl', { className: 'aquarium-resident-readings' },
                 [['Hunger', Math.round(selectedFish.hunger) + '/100 · higher means hungrier'], ['Stress', Math.round(selectedFish.stress) + '/100'], ['Last modeled vitality', selectedFish.healthKnown ? Math.round(selectedFish.health) + '/100' + (selectedFish.vitalityTick !== null ? ' · model hour ' + selectedFish.vitalityTick : '') : 'Not yet measured'], ['Time in tank', selectedFish.timeInTankHours + ' model hours'], ['Illness record', selectedFish.illness ? selectedFish.illness.disease + (selectedFish.illness.severity !== null ? ' · severity ' + selectedFish.illness.severity : '') : 'No recorded illness']].map(function(row) { return React.createElement('div', { key: row[0] }, React.createElement('dt', null, row[0]), React.createElement('dd', null, row[1])); })),
               selectedFish.healthKnown && React.createElement('p', null, 'Last vitality limiting factor: ' + selectedFish.limitingFactor + '.')),
             props.onAnatomy && React.createElement('button', { type: 'button', onClick: function() { props.onAnatomy(selectedFish.id); } }, 'Explore anatomy')) : selectedPlant ? React.createElement('div', { className: 'aquarium-resident-detail', role: 'status' },
               React.createElement('p', null, React.createElement('strong', null, selectedPlant.name + '. '), selectedPlant.zone + ' placement · modeled health ' + Math.round(selectedPlant.health) + '/100.'),
-              props.sceneOptions.model && React.createElement('p', null, 'Biomass index ' + selectedPlant.biomass.toFixed(2) + ' / ' + selectedPlant.maxBiomass.toFixed(2) + ' · ' + Math.round(selectedPlant.biomassRatio * 100) + '% of modeled maximum. ' + (selectedPlant.biomass === 0 ? 'No foliage at this snapshot.' : selectedPlant.photosynthesisActive ? 'Biological light available for photosynthesis.' : 'Photosynthesis inactive in this snapshot.'))) : selectedHabitatType ? React.createElement('p', { className: 'aquarium-resident-detail', role: 'status' }, React.createElement('strong', null, selectedHabitatType.label + '. '), 'Use Arrange habitat to move or rotate this object and explore its shelter and territory effects.') : null)
+              selectedPlant.visualProfile && React.createElement('div', { className: 'aquarium-identification' },
+                React.createElement('p', null, React.createElement('strong', null, 'Growth form: ' + selectedPlant.visualProfile.label + '. '), selectedPlant.visualProfile.identification),
+                React.createElement('p', { className: 'aquarium-display-footnote' }, selectedPlant.visualProfile.variation + ' ' + selectedPlant.visualProfile.scaleNote),
+                selectedPlant.visualProfile.modelNote && React.createElement('p', { className: 'aquarium-display-footnote' }, selectedPlant.visualProfile.modelNote)),
+              props.sceneOptions.model && React.createElement('p', null, 'Biomass index ' + selectedPlant.biomass.toFixed(2) + ' / ' + selectedPlant.maxBiomass.toFixed(2) + ' · ' + Math.round(selectedPlant.biomassRatio * 100) + '% of modeled maximum. ' + (selectedPlant.biomass === 0 ? 'No foliage at this snapshot.' : selectedPlant.photosynthesisActive ? 'Biological light available for photosynthesis.' : 'Photosynthesis inactive in this snapshot.')),
+              props.onResizePlant && React.createElement('button', { type: 'button', onClick: adjustSelectedPlant }, 'Adjust plant size')) : selectedHabitatType ? React.createElement('p', { className: 'aquarium-resident-detail', role: 'status' }, React.createElement('strong', null, selectedHabitatType.label + '. '), 'Use Arrange habitat to move or rotate this object and explore its shelter and territory effects.') : null)
           : React.createElement('p', null, 'Your tank is ready for its first residents. Add organisms and plants below, or arrange a habitat in the habitat studio.'),
-        React.createElement('p', { className: 'aquarium-display-footnote' }, 'Visual motion does not advance the simulation clock. Reduced-motion preferences are respected.'))
+        React.createElement('p', { className: 'aquarium-display-footnote' }, 'Visual motion does not advance the simulation clock. Reduced-motion preferences are respected.')),
+      props.onAppearance && React.createElement(AquariumSceneSettings, { React: React, appearance: props.sceneOptions.appearance, overlay: props.sceneOptions.overlay, onAppearance: props.onAppearance, onResetAppearance: props.onResetAppearance, onOverlay: props.onOverlay }),
+      props.onResizeTank && React.createElement(AquariumModelSizing, { key: props.instanceKey, React: React, tank: props.tankConfiguration, stockMinimum: props.sceneOptions.model.stockMinimumGallons, plants: props.sceneOptions.plants, onTank: props.onResizeTank, onPlant: props.onResizePlant }),
+      props.sizingNotice && React.createElement('p', { id: 'aquarium-sizing-notice', className: 'aquarium-sizing-notice', role: 'status' }, props.sizingNotice),
+      props.sceneOptions.model && React.createElement(AquariumSceneEvidence, { React: React, sceneOptions: props.sceneOptions, onSelectEquipment: props.onSelectEquipment })
     );
   }
   // ═══════════════════════════════════════════════════════════════
@@ -15523,7 +16012,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               { id: 'cleaner', name: __alloT('stem.aquarium.cleaner_shrimp', 'Cleaner Shrimp'), icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: __alloT('stem.aquarium.they_set_up_cleaning_stations_where_fi', 'They set up cleaning stations where fish line up to be groomed!'), organismType: 'Crustacean', ecosystemRole: 'Cleaning-station partner', cleaningRate: 0.04 },
 
-              { id: 'urchin', name: __alloT('stem.aquarium.sea_urchin', 'Sea Urchin'), icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: __alloT('stem.aquarium.urchin_spines_are_actually_modified_te', 'Urchin spines are actually modified teeth.'), organismType: 'Echinoderm', ecosystemRole: 'Rock-surface grazer' },
+              { id: 'urchin', name: __alloT('stem.aquarium.sea_urchin', 'Sea Urchin'), icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: __alloT('stem.aquarium.urchin_spines_and_teeth', 'Sea urchins have movable spines on a hard skeletal test. Five teeth in a separate feeding structure called Aristotle\'s lantern scrape food at the mouth underneath.'), organismType: 'Echinoderm', ecosystemRole: 'Rock-surface grazer' },
 
               { id: 'crab', name: __alloT('stem.aquarium.hermit_crab', 'Hermit Crab'), icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: __alloT('stem.aquarium.hermit_crabs_form_vacancy_chains_swapp', 'Hermit crabs form "vacancy chains" — swapping shells in order of size!'), organismType: 'Crustacean', ecosystemRole: 'Mobile scavenger' },
 
@@ -15612,7 +16101,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             brackish: [
 
-              { id: 'mangrove', name: __alloT('stem.aquarium.mangrove_seedling_2', 'Mangrove Seedling'), icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: __alloT('stem.aquarium.grows_roots_in_brackish_water_while_le', 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.'), fact: __alloT('stem.aquarium.mangroves_can_filter_salt_from_seawate', 'Mangroves can filter salt from seawater — their roots excrete salt crystals.') },
+              { id: 'mangrove', name: __alloT('stem.aquarium.mangrove_seedling_2', 'Mangrove Seedling'), icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: __alloT('stem.aquarium.grows_roots_in_brackish_water_while_le', 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.'), fact: __alloT('stem.aquarium.mangrove_salt_exclusion_and_leaf_glands', 'Red mangroves exclude much of the salt at their roots; other mangrove groups can secrete salt through leaf glands.') },
 
               { id: 'java_fern', name: __alloT('stem.aquarium.java_fern_3', 'Java Fern'), icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: __alloT('stem.aquarium.tolerates_mild_brackish_conditions_har', 'Tolerates mild brackish conditions. Hardy and low-maintenance.'), fact: __alloT('stem.aquarium.java_fern_is_one_of_the_few_plants_tha', 'Java Fern is one of the few plants that can tolerate slight salinity.') }
 
@@ -16139,7 +16628,13 @@ var d = (labToolData && labToolData._aquarium) || {};
             return migrated;
           }
 
-          var currentTankDefinition = TANK_TYPES.find(function (tank) { return tank.id === selectedTank; });
+          var currentTankDefinition = getAquariumTankConfiguration(TANK_TYPES.find(function (tank) { return tank.id === selectedTank; }), d.aquariumTankConfig);
+          var aquariumVolumeScale = currentTankDefinition ? currentTankDefinition.volumeScale : 1;
+          var aquariumStockMinimumGallons = tankFish.reduce(function(minimum, speciesId, index) {
+            if ((d.quarantinedFish || {})[fishInstanceIds[index]]) return minimum;
+            var definition = (SPECIES_BY_TANK[selectedTank] || []).find(function(item) { return item.id === speciesId; });
+            return Math.max(minimum, definition && typeof definition.minTank === 'number' ? definition.minTank : 5);
+          }, 5);
           var chemDefaults = {
             pH: currentTankDefinition ? currentTankDefinition.pH : 7,
             temp: currentTankDefinition ? currentTankDefinition.temp : 76,
@@ -16334,7 +16829,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (stepId === 'equipment') return { complete: d.tutorialEquipmentMaintained === true, label: d.tutorialEquipmentMaintained === true ? 'Life-support maintenance recorded.' : 'Upgrade, service, or repair one system.' };
             if (stepId === 'exchange') {
               var baselineAge = d.ecosystemBaseline && typeof d.ecosystemBaseline.tick === 'number' ? simTick - d.ecosystemBaseline.tick : 0;
-              var currentInterventionFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
+              var currentInterventionFactors = buildAquariumInterventionFactors(d, currentTankDefinition);
               var currentInterventionSignature = JSON.stringify(currentInterventionFactors);
               var tutorialInterventionComparison = d.ecosystemBaseline && d.ecosystemBaseline.factors
                 ? AquariumEcosystemCore.compareInterventionFactors(d.ecosystemBaseline.factors, currentInterventionFactors)
@@ -16419,7 +16914,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               snapshotParts.push('NO3 ' + (noteDeltas.nitrate >= 0 ? '+' : '') + noteDeltas.nitrate.toFixed(1));
               snapshotParts.push('vitality ' + (noteDeltas.vitality >= 0 ? '+' : '') + Math.round(noteDeltas.vitality));
               if (d.ecosystemBaseline.factors) {
-                var noteCurrentFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], habitat: AquariumEcosystemCore.sanitizeHabitatLayout(d.habitatLayout).map(function(item) { return item.type + ':' + item.x.toFixed(1) + ':' + item.z.toFixed(1); }), equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
+                var noteCurrentFactors = buildAquariumInterventionFactors(d, currentTankDefinition);
                 var noteInterventionComparison = AquariumEcosystemCore.compareInterventionFactors(d.ecosystemBaseline.factors, noteCurrentFactors);
                 snapshotParts.push(noteInterventionComparison.controlled ? 'Design: controlled (' + noteInterventionComparison.summary + ')' : noteInterventionComparison.confounded ? 'Design: confounded (' + noteInterventionComparison.summary + ')' : 'Design: no intervention yet');
               }
@@ -16522,10 +17017,10 @@ var d = (labToolData && labToolData._aquarium) || {};
           var selectedPlantPhotoRate = selectedPlantHealthFactor * selectedPlantBiomassFactor * selectedPlantLightEfficiency;
           var selectedPlantPhotosynthesisActive = !!selectedPlant && lightsOn && simHour >= 6 && simHour < 20 && currentLightOutput > 0;
           var selectedPlantLiveContribution = selectedPlant ? {
-            oxygenPerHour: selectedPlantPhotosynthesisActive ? selectedPlant.o2 * selectedPlantPhotoRate : 0,
-            co2UsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.co2Need * selectedPlantPhotoRate : 0,
-            nitrateUsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.nitrateAbsorb * selectedPlantPhotoRate : 0,
-            nightOxygenUse: selectedPlant.o2 * 0.15 * selectedPlantBiomassFactor,
+            oxygenPerHour: selectedPlantPhotosynthesisActive ? selectedPlant.o2 * selectedPlantPhotoRate * aquariumVolumeScale : 0,
+            co2UsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.co2Need * selectedPlantPhotoRate * aquariumVolumeScale : 0,
+            nitrateUsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.nitrateAbsorb * selectedPlantPhotoRate * aquariumVolumeScale : 0,
+            nightOxygenUse: selectedPlant.o2 * 0.15 * selectedPlantBiomassFactor * aquariumVolumeScale,
             projectedGrowth: selectedPlant.growth * selectedPlantHealthFactor * (0.5 + currentLightDefinition.plantBoost) * currentLightOutput
           } : null;
           var selectedPlantCareAlerts = [];
@@ -17050,7 +17545,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               }).join(', ');
 
-              var tankInfo = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+              var tankInfo = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
 
               var prompt = 'You are an aquarium science educator generating an interactive learning event for a tank simulation. Current tank state:\n' +
 
@@ -17519,7 +18014,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               if (Object.keys(unique).length >= 5 && !unlockedAchievements['five_species']) {
                 unlockAchievement('five_species');
               }
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+              var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
               if (tank) {
                 var load = tankFish.reduce(function (s, f) {
                   var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (x) { return x.id === f; });
@@ -17662,6 +18157,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             updMulti({
 
               selectedTank: tankId,
+              aquariumTankConfig: null, aquariumModelEditRevision: 0, aquariumSizingNotice: null, plantSizeEdits: {},
               selectedPlantId: null,
               ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', habitatLayout: [], habitatUndoLayout: [], habitatPlantZones: {}, habitatStudioOpen: false, habitatViewMode: 'plan', habitatOverlay: 'none', habitatInteractionFilter: 'all', habitatInteractionBaseline: null, habitatSelectedInteractionId: null, selectedHabitatItemId: null, nextHabitatItemId: 1, lastEcosystemExchange: null,
               ecosystemExchangeHistory: [], vitalityHistory: [], fishVitality: {}, ecosystemBaseline: null, ecosystemPrediction: { oxygen: null, nitrate: null, vitality: null }, ecosystemInterventionNote: '',
@@ -17693,11 +18189,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var addFish = function (speciesId) {
 
-            var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+            var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
 
             var species = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === speciesId; });
 
             if (!tank || !species) return;
+            if (typeof species.minTank === 'number' && tank.size < species.minTank) { if (addToast) addToast(species.name + ' needs at least ' + species.minTank + ' US gal in this catalog. Increase tank size before adding it.', 'warning'); return; }
 
             var currentLoad = tankFish.reduce(function (sum, f) {
 
@@ -17999,10 +18496,45 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+          function aquariumSizeEditPatch(message) {
+            var previous = d.ecosystemBaseline;
+            var legacy = !!(previous && (!previous.factors || typeof previous.factors.tankVolume !== 'number'));
+            return { simRunning: false, lastEcosystemExchange: null,
+              aquariumModelEditRevision: Math.max(0, Number(d.aquariumModelEditRevision) || 0) + 1,
+              ecosystemBaseline: legacy ? null : previous || null,
+              aquariumSizingNotice: message + (legacy ? ' The older experiment baseline lacked size information and was cleared; mark a new baseline.' : ' Simulation paused. A recorded baseline can be used to compare this intervention.'),
+              eventLog: appendTankEvent(message) };
+          }
+          function applyAquariumTankSize(request) {
+            var volume = request && request.volumeGallons, shape = request && request.shape;
+            if (!currentTankDefinition || typeof volume !== 'number' || !Number.isFinite(volume) || volume < 5 || volume > 200 || ['standard', 'long', 'tall', 'cube'].indexOf(shape) < 0) { if (addToast) addToast('Choose a capacity between 5 and 200 US gallons and a supported shape.', 'warning'); return false; }
+            volume = Math.round(volume * 2) / 2;
+            if (volume < aquariumStockMinimumGallons) { if (addToast) addToast('Current display residents need at least ' + aquariumStockMinimumGallons + ' US gal in the species catalog. Their stock is unchanged.', 'warning'); return false; }
+            if (volume === currentTankDefinition.size && shape === currentTankDefinition.shape) return false;
+            stopAquariumRuntime(false);
+            var message = 'Tank scenario changed to ' + volume + ' US gal (' + shape + '). Water concentrations and residents were retained; future rates use the new volume and surface area.';
+            updMulti(Object.assign(aquariumSizeEditPatch(message), { aquariumTankConfig: { tankId: selectedTank, volumeGallons: volume, shape: shape } }));
+            if (announceToSR) announceToSR(message);
+            return true;
+          }
+          function applyAquariumPlantSize(plantId, requestedBiomass) {
+            var definition = getPlantsForTank(selectedTank).find(function(item) { return item.id === plantId; });
+            if (!definition || tankPlants.indexOf(plantId) < 0 || typeof requestedBiomass !== 'number' || !Number.isFinite(requestedBiomass) || requestedBiomass < 0 || requestedBiomass > definition.maxSize) return false;
+            var nextBiomass = Math.round(requestedBiomass * 100) / 100, currentBiomass = typeof plantBiomass[plantId] === 'number' ? plantBiomass[plantId] : 1;
+            if (Math.abs(nextBiomass - currentBiomass) < .00001) return false;
+            var sizes = Object.assign({}, plantBiomass), edits = Object.assign({}, d.plantSizeEdits || {});
+            sizes[plantId] = nextBiomass; edits[plantId] = Math.max(0, Number(edits[plantId]) || 0) + 1;
+            stopAquariumRuntime(false);
+            var message = definition.name + ' modeled biomass changed from ' + currentBiomass.toFixed(2) + ' to ' + nextBiomass.toFixed(2) + ' / ' + definition.maxSize + '. Growth and exchange rates now use this size.';
+            updMulti(Object.assign(aquariumSizeEditPatch(message), { plantBiomass: sizes, plantSizeEdits: edits, selectedPlantId: plantId, ecosystemFocusType: 'plant', ecosystemFocusId: plantId }));
+            if (announceToSR) announceToSR(message);
+            return true;
+          }
+
           // ── Water chemistry helpers ──
 
           var getChemStatus = function (param, value) {
-            var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+            var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
             return AquariumEcosystemCore.classifyWaterParameter(param, value, tank);
           };
 
@@ -18020,7 +18552,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             var remaining = 1 - fraction;
             if (!waterChem) return;
 
-            var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+            var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
 
             var newChem = Object.assign({}, waterChem, {
 
@@ -18062,7 +18594,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + 0.15 * displayFishCount,
+              ammonia: waterChem.ammonia + 0.15 * displayFishCount * aquariumVolumeScale,
 
             });
 
@@ -18115,7 +18647,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishCareLog: newCareLog,
               aquariumFeedingEvent: { eventId: 'feed-' + simTick + '-' + feedingSequence + '-' + Date.now().toString(36), sequence: feedingSequence, tick: simTick, foodType: 'flake', targetId: null, acceptedIds: acceptedIds, scope: 'display' },
 
-              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * displayFishCount, overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * displayFishCount * aquariumVolumeScale, overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed — hunger reduced by ' + avgDrop + ' avg' }])
 
@@ -18138,7 +18670,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (displayFishCount === 0) { if (addToast) addToast('All fish are in the hospital tank. Feed them individually from their care cards.', 'warning'); return; }
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + 0.22 * displayFishCount
+              ammonia: waterChem.ammonia + 0.22 * displayFishCount * aquariumVolumeScale
 
             });
 
@@ -18198,7 +18730,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishCareLog: newCareLog,
               aquariumFeedingEvent: { eventId: 'feed-' + simTick + '-' + feedingSequence + '-' + Date.now().toString(36), sequence: feedingSequence, tick: simTick, foodType: 'live', targetId: null, acceptedIds: acceptedIds, scope: 'display' },
 
-              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.22 * displayFishCount, overfedCount: 0, tip: tipText },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.22 * displayFishCount * aquariumVolumeScale, overfedCount: 0, tip: tipText },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: 'Live food added — hunger fell for ' + fedCarnivores + ' carnivores and ' + fedOmnivores + ' omnivores; ' + (Math.round(avgDrop * 10) / 10) + ' average points' + (displayFishCount > acceptedIds.length ? '; ' + (displayFishCount - acceptedIds.length) + ' residents had no hunger reduction' : '') }])
 
@@ -18221,13 +18753,13 @@ var d = (labToolData && labToolData._aquarium) || {};
             var updatedCareLog = Object.assign({}, fishCareLog);
             updatedHunger[fishId] = Math.max(0, currentHunger - hungerDrop);
             updatedCareLog[fishId] = (updatedCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: 'Individually fed; hunger reduced by ' + hungerDrop }]).slice(-8);
-            var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05;
+            var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05 * aquariumVolumeScale;
             var updatedChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + individualAmmonia });
             var previousFeedingSequence = Number(d.aquariumFeedingEvent && d.aquariumFeedingEvent.sequence);
             var feedingSequence = Math.max(Number.isFinite(previousFeedingSequence) ? Math.max(0, Math.floor(previousFeedingSequence)) : 0, runtimeRef.current.feedingSequence || 0) + 1;
             runtimeRef.current.feedingSequence = feedingSequence;
             updMulti({ aquariumFeedingEvent: { eventId: 'feed-' + simTick + '-' + feedingSequence + '-' + Date.now().toString(36), sequence: feedingSequence, tick: simTick, foodType: 'individual', targetId: fishId, acceptedIds: updatedHunger[fishId] < currentHunger ? [fishId] : [], scope: quarantinedFish[fishId] ? 'hospital' : 'display' }, waterChem: updatedChem, hungerLevels: updatedHunger, fishCareLog: updatedCareLog, eventLog: appendTankEvent('Fed ' + displayName + ' individually') });
-            if (addToast) addToast('Fed ' + displayName + (individualAmmonia ? '. Small ammonia impact: +0.05 ppm.' : ' in the hospital tank. Display tank chemistry was protected.'), 'success');
+            if (addToast) addToast('Fed ' + displayName + (individualAmmonia ? '. Small ammonia impact: +' + individualAmmonia.toFixed(3) + ' ppm.' : ' in the hospital tank. Display tank chemistry was protected.'), 'success');
             sfxFeed();
           };
 
@@ -18252,6 +18784,23 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (addToast) addToast(msg, 'info');
 
           };
+          var getAquariumHospitalReturnReason = function (fishId) {
+            var fishIndex = fishInstanceIds.indexOf(fishId);
+            if (fishIndex < 0 || !currentTankDefinition) return '';
+            var catalog = SPECIES_BY_TANK[selectedTank] || [];
+            var returning = catalog.find(function(candidate) { return candidate.id === tankFish[fishIndex]; });
+            if (returning && typeof returning.minTank === 'number' && currentTankDefinition.size < returning.minTank) {
+              return 'Needs at least ' + returning.minTank + ' US gal before returning from the hospital tank. Adjust Tank & plant size above.';
+            }
+            var projectedDisplayLoad = tankFish.reduce(function(total, speciesId, index) {
+              if (fishInstanceIds[index] !== fishId && quarantinedFish[fishInstanceIds[index]]) return total;
+              var definition = catalog.find(function(candidate) { return candidate.id === speciesId; });
+              return total + (definition && typeof definition.load === 'number' ? definition.load : 0);
+            }, 0);
+            var capacity = Math.floor(currentTankDefinition.size / 2);
+            if (projectedDisplayLoad > capacity) return 'Returning from the hospital tank would exceed display capacity (' + Math.round(projectedDisplayLoad * 100) / 100 + ' load / ' + capacity + '). Increase Tank & plant size or reduce display stock first.';
+            return '';
+          };
           var toggleFishQuarantine = function (fishId) {
 
             var fishIndex = fishInstanceIds.indexOf(fishId);
@@ -18270,6 +18819,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (addToast) addToast(displayName + ' should stay isolated until treatment clears the illness.', 'warning');
                 return;
               }
+              var returnReason = getAquariumHospitalReturnReason(fishId);
+              if (returnReason) { if (addToast) addToast(displayName + ': ' + returnReason, 'warning'); return; }
               delete nextQuarantined[fishId];
               message = 'Released from hospital tank';
             } else {
@@ -18511,11 +19062,12 @@ var d = (labToolData && labToolData._aquarium) || {};
               var _heaterEquipment = getTickEquipmentDefinition('heater');
               var _lightEquipment = getTickEquipmentDefinition('light');
               var _airPumpEquipment = getTickEquipmentDefinition('airPump');
-              var _equipmentTank = TANK_TYPES.find(function (candidate) { return candidate.id === _selectedTank; });
+              var _equipmentTank = getAquariumTankConfiguration(TANK_TYPES.find(function (candidate) { return candidate.id === _selectedTank; }), aq.aquariumTankConfig);
               // Biological rates are expressed as concentration change relative to a 20-gallon
               // reference tank. Larger volumes buffer the same organism or plant exchange.
               var volumeGallons = _equipmentTank && _equipmentTank.size ? _equipmentTank.size : 20;
-              var volumeScale = Math.max(0.2, Math.min(2, 20 / volumeGallons));
+              var volumeScale = 20 / volumeGallons;
+              var surfaceExchangeScale = _equipmentTank ? _equipmentTank.surfaceExchangeScale : 1;
               var oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL(_waterChem.temp, _waterChem.salinity);
 
               // ── Plant state ──
@@ -18554,11 +19106,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var ammoniaGen = bioload * 0.02 * volumeScale;
 
-              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter));
+              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (Math.min(1, 0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter * volumeScale)));
 
               var nitriteBact = _waterChem.ammonia * 0.15;
 
-              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter));
+              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (Math.min(1, 0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter * volumeScale)));
 
               var nitrateBact = _waterChem.nitrite * 0.2;
 
@@ -18576,7 +19128,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var deltaCO2 = fishCO2Produce;
 
-              var airPumpOxygenAdded = _airPumpEquipment.o2Boost * _equipmentOutput.airPump;
+              var airPumpOxygenAdded = _airPumpEquipment.o2Boost * _equipmentOutput.airPump * volumeScale;
               var airPumpCO2Removed = airPumpOxygenAdded * 0.15;
               deltaO2 += airPumpOxygenAdded;
               deltaCO2 -= airPumpCO2Removed;
@@ -18596,11 +19148,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (!stockSpecies || !stockSpecies.photosyntheticStock) return;
                 var heatFactor = stockSpecies.bleachingTemp && _waterChem.temp >= stockSpecies.bleachingTemp ? 0.1 : 1;
                 if (isDaylight) {
-                  stockDayO2Produced += (stockSpecies.dayO2 || 0) * stockLightFactor * heatFactor;
-                  stockDayCO2Consumed += (stockSpecies.dayCO2 || 0) * stockLightFactor * heatFactor;
+                  stockDayO2Produced += (stockSpecies.dayO2 || 0) * stockLightFactor * heatFactor * volumeScale;
+                  stockDayCO2Consumed += (stockSpecies.dayCO2 || 0) * stockLightFactor * heatFactor * volumeScale;
                 } else {
-                  stockNightO2Consumed += stockSpecies.nightO2 || 0;
-                  stockNightCO2Released += stockSpecies.nightCO2 || 0;
+                  stockNightO2Consumed += (stockSpecies.nightO2 || 0) * volumeScale;
+                  stockNightCO2Released += (stockSpecies.nightCO2 || 0) * volumeScale;
                 }
               });
               deltaO2 += stockDayO2Produced - stockNightO2Consumed;
@@ -18730,7 +19282,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // Atmospheric exchange moves the tank toward temperature- and salinity-aware
               // saturation. It is intentionally gradual so aeration and biology remain visible.
-              var surfaceExchange = Math.max(-0.2, Math.min(0.2, (oxygenSaturationTarget - _dissolvedO2) * 0.04));
+              var surfaceExchange = Math.max(-0.2, Math.min(0.2, (oxygenSaturationTarget - _dissolvedO2) * 0.04)) * surfaceExchangeScale;
 
               deltaO2 += surfaceExchange;
 
@@ -18740,7 +19292,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // CO2 atmospheric off-gassing (tendency toward ~3 mg/L)
 
-              var co2Offgas = newCO2 > 3 ? Math.min(0.1, (newCO2 - 3) * 0.05) : 0;
+              var co2Offgas = newCO2 > 3 ? Math.min(newCO2 - 3, Math.min(0.1, (newCO2 - 3) * 0.05) * surfaceExchangeScale) : 0;
               newCO2 -= co2Offgas;
 
               var pHdrift = (Math.random() - 0.5) * 0.05;
@@ -18793,7 +19345,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               // before assignment (undefined) and threw on EVERY tick, freezing the whole sim.
               // Declare them here (both are pure: a log clone + a tank lookup, no dependencies).
               var newLog = _eventLog.slice();
-              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+              var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === _selectedTank; }), aq.aquariumTankConfig);
 
               // Neglected equipment can fail once condition enters the critical zone. Servicing above
               // that zone prevents the outage; failed devices stay offline until explicitly repaired.
@@ -19189,7 +19741,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // ── Species aggression ──
 
-              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+              var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === _selectedTank; }), aq.aquariumTankConfig);
 
               var maxLoad = tank ? Math.floor(tank.size / 2) : 10;
 
@@ -19408,7 +19960,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var speciesList = SPECIES_BY_TANK[_selectedTank] || [];
 
-              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+              var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === _selectedTank; }), aq.aquariumTankConfig);
 
               var _maxLoad = tank ? Math.floor(tank.size / 2) : 10;
 
@@ -19811,7 +20363,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   criticalCount: vitalitySnapshot.criticalCount
                 },
                 model: {
-                  volumeGallons: volumeGallons,
+                  volumeGallons: volumeGallons, tankShape: _equipmentTank ? _equipmentTank.shape : 'standard', surfaceExchangeScale: surfaceExchangeScale,
                   volumeScale: Math.round(volumeScale * 100) / 100,
                   rateBasis: '20-gallon reference concentration model',
                   uncertainty: 'Teaching estimate; compare trends, not clinical predictions.'
@@ -19928,7 +20480,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var phSt = getChemStatus('pH', waterChem.pH);
 
-            if (phSt === 'warn') { score -= 10; tips.push({ icon: '\u2697\uFE0F', text: 'pH drifting (' + waterChem.pH.toFixed(1) + '). Fish prefer stable pH near ' + (TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { pH: 7 }).pH + '.', color: 'text-amber-600' }); }
+            if (phSt === 'warn') { score -= 10; tips.push({ icon: '\u2697\uFE0F', text: 'pH drifting (' + waterChem.pH.toFixed(1) + '). Fish prefer stable pH near ' + (getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig) || { pH: 7 }).pH + '.', color: 'text-amber-600' }); }
 
             if (phSt === 'danger') { score -= 25; tips.push({ icon: '\u2697\uFE0F', text: 'pH dangerously off-target (' + waterChem.pH.toFixed(1) + ')! Osmotic stress is likely.', color: 'text-red-600' }); }
 
@@ -19938,7 +20490,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var currentLoad = tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
 
-            var maxLoad = Math.floor((TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { size: 20 }).size / 2);
+            var maxLoad = Math.floor((getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig) || { size: 20 }).size / 2);
 
             var loadPct = Math.round(currentLoad / maxLoad * 100);
 
@@ -20209,7 +20761,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var aquariumWorkspaceOpen = selectedTank && mode === 'tank';
           var activeModeMeta = modeTabs.filter(function (tab) { return tab.id === mode; })[0] || modeTabs[0];
-          var activeTankMeta = selectedTank ? TANK_TYPES.filter(function (tank) { return tank.id === selectedTank; })[0] : null;
+          var activeTankMeta = selectedTank ? getAquariumTankConfiguration(TANK_TYPES.filter(function (tank) { return tank.id === selectedTank; })[0], d.aquariumTankConfig) : null;
           var missionRoutes = [
             { id: 'cycle', mode: 'tank', icon: '\uD83D\uDC20', title: __alloT('stem.aquarium.route_cycle_tank', 'Cycle a living tank'), detail: __alloT('stem.aquarium.route_cycle_tank_detail', 'Watch fish waste become chemistry data.'), tone: 'from-cyan-50 to-sky-50 border-cyan-200 text-cyan-900' },
             { id: 'chem', mode: 'waterlab', icon: '\uD83E\uDDEA', title: __alloT('stem.aquarium.route_balance_chemistry', 'Balance chemistry'), detail: __alloT('stem.aquarium.route_balance_chemistry_detail', 'Test pH, ammonia, nitrite, nitrate, oxygen.'), tone: 'from-violet-50 to-fuchsia-50 border-violet-200 text-violet-900' },
@@ -20935,7 +21487,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             mode === 'tank' && selectedTank && (() => {
 
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+              var tank = getAquariumTankConfiguration(TANK_TYPES.find(function (t) { return t.id === selectedTank; }), d.aquariumTankConfig);
 
               var species = SPECIES_BY_TANK[selectedTank] || [];
 
@@ -20949,7 +21501,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var maxLoad = Math.floor(tank.size / 2);
 
-              var loadPct = Math.min(100, Math.round(currentLoad / maxLoad * 100));
+              var loadPct = Math.round(currentLoad / maxLoad * 100);
               var availableStockTypes = species.map(function (candidate) { return candidate.organismType || 'Fish'; }).filter(function (type, index, types) { return types.indexOf(type) === index; });
               var activeStockFilter = stockCatalogFilter === 'All' || availableStockTypes.indexOf(stockCatalogFilter) !== -1 ? stockCatalogFilter : 'All';
               var filteredStockSpecies = species.filter(function (candidate) { return activeStockFilter === 'All' || (candidate.organismType || 'Fish') === activeStockFilter; });
@@ -20982,7 +21534,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-              var ecosystemVolumeScale = Math.max(0.2, Math.min(2, 20 / (tank.size || 20)));
+              var ecosystemVolumeScale = 20 / (tank.size || 20);
               var ecosystemPlantTotals = {
                 biomass: 0,
                 dayOxygen: 0,
@@ -21106,16 +21658,16 @@ var d = (labToolData && labToolData._aquarium) || {};
                 layout: habitatLayout, catalog: habitatCatalog, selectedId: selectedHabitatItemId, overlay: 'none', paused: aquariumVisualPaused,
                 lighting: aquariumSceneLighting, tankType: selectedTank,
                 saltwater: selectedTank === 'reef' || selectedTank === 'invert' || selectedTank === 'marine' || selectedTank === 'coldwater',
-                plants: tankPlants.map(function(plantId) { var plantDef = plantCatalog.find(function(candidate) { return candidate.id === plantId; }) || {}; return { id: plantId, name: plantDef.name || plantId, color: plantDef.color, biomass: plantBiomass[plantId], maxBiomass: plantDef.maxSize, growthForm: (getPlantProfile(plantDef) || {}).form, selected: ecosystemFocusType === 'plant' && ecosystemFocusId === plantId, health: plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80, zone: habitatPlantZones[plantId] || inferPlantHabitatZone(plantDef) }; }),
+                plants: tankPlants.map(function(plantId) { var plantDef = plantCatalog.find(function(candidate) { return candidate.id === plantId; }) || {}; return { id: plantId, name: plantDef.name || plantId, visualProfile: getAquariumPlantVisualProfile(plantId), color: plantDef.color, biomass: plantBiomass[plantId], maxBiomass: plantDef.maxSize, growthForm: (getPlantProfile(plantDef) || {}).form, selected: ecosystemFocusType === 'plant' && ecosystemFocusId === plantId, health: plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80, zone: habitatPlantZones[plantId] || inferPlantHabitatZone(plantDef) }; }),
                 fish: habitatFitItems.filter(function(fitItem) { return !quarantinedFish[fitItem.id]; }).map(function(fitItem) { var fishDef = species.find(function(candidate) { return candidate.id === fitItem.speciesId; }) || {}; return {
-                  id: fitItem.speciesId, instanceId: fitItem.id, name: fitItem.name, organismType: fishDef.organismType || 'Fish', bodyPlan: SPECIES_BODY_MAP[fitItem.speciesId], color: SPECIES_COLORS[fitItem.speciesId], displaySize: SPECIES_DISPLAY_SIZE[fitItem.speciesId],
+                  id: fitItem.speciesId, instanceId: fitItem.id, name: fitItem.name, visualProfile: getAquariumSpeciesVisualProfile(fitItem.speciesId), organismType: fishDef.organismType || 'Fish', bodyPlan: SPECIES_BODY_MAP[fitItem.speciesId], color: SPECIES_COLORS[fitItem.speciesId], displaySize: SPECIES_DISPLAY_SIZE[fitItem.speciesId],
                   zone: fitItem.zone, fitScore: fitItem.score, stress: fishStress[fitItem.id] || 0, targetX: fitItem.targetX, targetZ: fitItem.targetZ, pathSpan: fitItem.pathSpan,
                   behaviorMode: fitItem.behaviorMode, behaviorLabel: fitItem.behaviorLabel, anchorId: fitItem.anchorId, selected: ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id
                 }; }), interactions: habitatInteractionLinksForScene
               };
 
               aquariumSceneOptions = Object.assign({}, aquariumSceneOptions, buildAquariumSceneDynamics({
-                fish: aquariumSceneOptions.fish, plants: aquariumSceneOptions.plants,
+                fish: aquariumSceneOptions.fish, plants: aquariumSceneOptions.plants, tankDefinition: tank, tankConfig: d.aquariumTankConfig, stockMinimumGallons: aquariumStockMinimumGallons,
                 appearance: aquariumSceneAppearance, overlay: aquariumSceneOverlay, simTick: simTick, simDay: simDay, simHour: simHour,
                 lightsOn: lightsOn, viewingLight: d.tankLight, algaeLevel: algaeLevel, waterChem: waterChem,
                 equipment: equipment, equipmentCondition: equipmentCondition, equipmentFaults: equipmentFaults, equipmentCatalog: EQUIPMENT_CATALOG,
@@ -21358,7 +21910,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 vitality: latestVitalityAverage,
                 stress: habitatMissionCurrentStress
               };
-              var habitatMissionLayoutSignature = JSON.stringify(habitatLayout);
+              var habitatMissionLayoutSignature = JSON.stringify(habitatLayout) + (d.aquariumModelEditRevision ? '|sizes:' + d.aquariumModelEditRevision : '');
               var habitatMissionObservationControlled = !habitatMissionObservationLayoutSignature || habitatMissionObservationLayoutSignature === habitatMissionLayoutSignature;
               habitatMissionCurrent.controlled = habitatMissionObservationControlled;
               var habitatMissionLayoutChanged = !!(habitatMissionBaseline && habitatMissionBaseline.layoutSignature !== habitatMissionLayoutSignature);
@@ -21440,7 +21992,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 });
               }
 
-              var ecosystemCurrentFactors = { plants: tankPlants.slice(), organisms: tankFish.slice(), habitat: habitatLayout.map(function(item) { return item.type + ':' + item.x.toFixed(1) + ':' + item.z.toFixed(1); }), equipment: Object.assign({}, equipment), lightsOn: lightsOn };
+              var ecosystemCurrentFactors = buildAquariumInterventionFactors(d, tank);
               var baselineAge = ecosystemBaseline && typeof ecosystemBaseline.tick === 'number' ? simTick - ecosystemBaseline.tick : 0;
               var baselineDeltas = ecosystemBaseline && ecosystemBaseline.chemistry ? {
                 oxygen: waterChem.dissolvedO2 - ecosystemBaseline.chemistry.dissolvedO2,
@@ -21737,6 +22289,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   onSelectPlant: selectPlant, onAnatomy: openAnatomy,
                   onAppearance: function(patch) { upd('aquariumSceneAppearance', sanitizeAquariumAppearance(Object.assign({}, aquariumSceneAppearance, patch))); },
                   onResetAppearance: function() { upd('aquariumSceneAppearance', sanitizeAquariumAppearance(null)); },
+                  tankConfiguration: currentTankDefinition, onResizeTank: applyAquariumTankSize, onResizePlant: applyAquariumPlantSize, sizingNotice: d.aquariumSizingNotice,
                   onOverlay: function(value) { upd('aquariumSceneOverlay', value); },
                   onSelectEquipment: function() { focusAquariumWorkspaceSection('aquarium-life-support'); },
                   onArrange: function() { upd('habitatStudioOpen', true); requestAnimationFrame(function() { focusAquariumWorkspaceSection('aquarium-habitat-studio'); }); }
@@ -22497,7 +23050,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var info = CHEM_INFO[chemTooltip];
 
-                    var t = TANK_TYPES.find(function (x) { return x.id === selectedTank; }) || {};
+                    var t = getAquariumTankConfiguration(TANK_TYPES.find(function (x) { return x.id === selectedTank; }), d.aquariumTankConfig) || {};
 
                     var bio = tankFish.reduce(function (s, f) { var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
 
@@ -22632,6 +23185,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                       var projectedLoad = Math.round((currentLoad + sp.load) * 100) / 100;
                       var projectedPct = Math.round(projectedLoad / maxLoad * 100);
                       var capacityExceeded = projectedLoad > maxLoad;
+                      var belowMinimum = typeof sp.minTank === 'number' && tank.size < sp.minTank;
+                      var stockUnavailable = capacityExceeded || belowMinimum;
                       var existingSpecies = tankFish.map(function (existingId) { return species.find(function (candidate) { return candidate.id === existingId; }); }).filter(Boolean);
                       var conflictNames = existingSpecies.filter(function (existing) {
                         if (existing.id === sp.id) return false;
@@ -22643,12 +23198,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                       if (waterChem && sp.pHRange && (waterChem.pH < sp.pHRange[0] || waterChem.pH > sp.pHRange[1])) chemistryWarnings.push('pH');
                       var symbiosisPartnerPresent = !!sp.symbiosisWith && tankFish.indexOf(sp.symbiosisWith) !== -1;
                       var compatibilityLabel = tankFish.length === 0 ? 'Good first resident' : conflictNames.length ? 'Review with ' + conflictNames.join(', ') : 'Compatible with current stock';
-                      var capacityLabel = capacityExceeded ? 'Over capacity at ' + projectedPct + '%' : 'After adding: ' + projectedPct + '% capacity';
-                      var cardTone = capacityExceeded ? 'border-rose-400 bg-rose-50 opacity-75' : conflictNames.length || chemistryWarnings.length ? 'border-amber-500 bg-amber-50 hover:bg-amber-100' : 'border-cyan-500 bg-cyan-50 hover:border-cyan-700 hover:bg-cyan-100';
+                      var capacityLabel = belowMinimum ? 'Needs at least ' + sp.minTank + ' US gal; current tank is ' + tank.size + ' US gal. Adjust Tank & plant size above' : capacityExceeded ? 'Over capacity at ' + projectedPct + '%' : 'After adding: ' + projectedPct + '% capacity';
+                      var cardTone = stockUnavailable ? 'border-rose-400 bg-rose-50 opacity-75' : conflictNames.length || chemistryWarnings.length ? 'border-amber-500 bg-amber-50 hover:bg-amber-100' : 'border-cyan-500 bg-cyan-50 hover:border-cyan-700 hover:bg-cyan-100';
 
                       return React.createElement("button", {
                         type: "button",
-                        disabled: capacityExceeded,
+                        disabled: stockUnavailable,
                         "aria-label": "Add " + sp.name + ". " + organismType + ". Role: " + ecosystemRole + ". Bioload " + sp.load + ". " + capacityLabel + ". " + compatibilityLabel + (chemistryWarnings.length ? ". Check " + chemistryWarnings.join(' and ') : "") + (mechanicLabel ? ". Mechanic: " + mechanicLabel : "") + ".",
 
                         key: sp.id,
@@ -22657,7 +23212,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         className: "rounded-lg border px-2 py-1.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 disabled:cursor-not-allowed " + cardTone,
 
-                        title: capacityExceeded ? capacityLabel : sp.fact
+                        title: stockUnavailable ? capacityLabel : sp.fact
 
                       },
                         React.createElement("span", { className: "flex items-center justify-between gap-2 text-[0.6875rem] font-extrabold text-slate-900" },
@@ -22666,7 +23221,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         ),
                         React.createElement("span", { className: "mt-0.5 block text-[0.5625rem] font-semibold text-slate-800" }, organismType + " \u2022 " + ecosystemRole),
                         React.createElement("span", { className: "mt-1 flex flex-wrap gap-1" },
-                          React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[0.5rem] font-bold " + (capacityExceeded ? "bg-rose-200 text-rose-900" : conflictNames.length ? "bg-amber-200 text-amber-950" : "bg-emerald-100 text-emerald-900") }, capacityExceeded ? '\u26D4 Over capacity' : conflictNames.length ? '\u26A0 Compatibility review' : '\u2713 Stock fit'),
+                          React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[0.5rem] font-bold " + (stockUnavailable ? "bg-rose-200 text-rose-900" : conflictNames.length ? "bg-amber-200 text-amber-950" : "bg-emerald-100 text-emerald-900") }, belowMinimum ? 'Needs ' + sp.minTank + ' US gal' : capacityExceeded ? '\u26D4 Over capacity' : conflictNames.length ? '\u26A0 Compatibility review' : '\u2713 Stock fit'),
                           chemistryWarnings.length > 0 && React.createElement("span", { className: "inline-flex rounded-full bg-orange-100 px-1.5 py-0.5 text-[0.5rem] font-bold text-orange-900" }, "Check " + chemistryWarnings.join(' + ')),
                           sp.symbiosisWith && React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[0.5rem] font-bold " + (symbiosisPartnerPresent ? "bg-violet-100 text-violet-900" : "bg-slate-200 text-slate-900") }, symbiosisPartnerPresent ? '\u21C4 Partner active' : '\u21C4 Partner absent'),
                           mechanicLabel && React.createElement("span", { className: "inline-flex rounded-full bg-indigo-100 px-1.5 py-0.5 text-[0.5rem] font-bold text-indigo-900" }, "\u2699 " + mechanicLabel)
@@ -22925,6 +23480,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var careScoreColor = careScore >= 80 ? 'text-green-700' : careScore >= 55 ? 'text-amber-700' : 'text-red-700';                        var historyExpanded = expandedCareFish === fishKey;
                         var historyId = 'aquarium-care-history-' + fishKey;
                         var isQuarantined = !!quarantinedFish[fishKey];
+                        var quarantineReturnReason = isQuarantined ? getAquariumHospitalReturnReason(fishKey) : '';
                         var quarantineHours = isQuarantined ? Math.max(0, simTick - quarantinedFish[fishKey].sinceTick) : 0;
                         return React.createElement("div", { key: fishKey, className: "flex items-center gap-2 rounded-lg border p-1.5 " + (isQuarantined ? "border-violet-300 bg-violet-50" : "border-transparent bg-slate-50") },
 
@@ -23008,10 +23564,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                               React.createElement("button", {
                                 type: "button",
                                 'aria-pressed': isQuarantined,
-                                'aria-label': isQuarantined ? (fishSickness[fishKey] ? displayName + " is recovering in the hospital tank" : "Release " + displayName + " from the hospital tank") : "Move " + displayName + " to the hospital tank",
+                                disabled: !!quarantineReturnReason,
+                                title: quarantineReturnReason || undefined,
+                                'aria-label': quarantineReturnReason ? displayName + ': ' + quarantineReturnReason : isQuarantined ? (fishSickness[fishKey] ? displayName + " is recovering in the hospital tank" : "Release " + displayName + " from the hospital tank") : "Move " + displayName + " to the hospital tank",
                                 onClick: function () { toggleFishQuarantine(fishKey); },
-                                className: "rounded-md border px-1.5 py-0.5 text-[0.625rem] font-bold " + (isQuarantined ? "border-violet-500 bg-violet-100 text-violet-700 hover:bg-violet-200" : "border-violet-400 bg-white text-violet-700 hover:bg-violet-50")
-                              }, isQuarantined ? (fishSickness[fishKey] ? "Hospital" : "Release") : "Isolate"),
+                                className: "rounded-md border px-1.5 py-0.5 text-[0.625rem] font-bold disabled:cursor-not-allowed disabled:opacity-60 " + (isQuarantined ? "border-violet-500 bg-violet-100 text-violet-700 hover:bg-violet-200" : "border-violet-400 bg-white text-violet-700 hover:bg-violet-50")
+                              }, quarantineReturnReason ? "Resize to release" : isQuarantined ? (fishSickness[fishKey] ? "Hospital" : "Release") : "Isolate"),
                               React.createElement("button", {
                                 type: "button",
                                 'aria-expanded': historyExpanded,
@@ -23670,7 +24228,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                           ? React.createElement(AquariumHabitat3DViewport, {
                               React: React,
                               instanceKey: selectedTank,
-                              onSelect: function(itemId) { upd('selectedHabitatItemId', itemId); },
+                              onSelect: function(itemId) { updMulti({ selectedHabitatItemId: itemId, ecosystemFocusType: 'all', ecosystemFocusId: null }); },
                               onSelectFish: function(instanceId) { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: instanceId }); },
                               onSelectPlant: function(plantId) { selectPlant(plantId); },
                               onSelectEquipment: function() { focusAquariumWorkspaceSection('aquarium-life-support'); },
@@ -24654,7 +25212,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
 
-                      React.createElement("div", { style: { width: loadPct + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
+                      React.createElement("div", { style: { width: Math.min(100, loadPct) + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
 
                     )
 

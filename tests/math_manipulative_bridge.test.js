@@ -121,16 +121,16 @@ describe('step 2/3: inline parametric diagram renderer (_renderDiagramSvg, canon
   it('fractions → divided bar with N/D label + accessible desc', () => {
     const svg = render('fractions', { numerator: 3, denominator: 4 }, '');
     expect(svg).toContain('role="img"');
-    expect(svg).toMatch(/<desc>[^<]*3 of 4 equal parts shaded/);
+    expect(svg).toMatch(/<desc>[^<]*3 parts shaded, with 4 equal parts per whole/);
     expect(svg).toContain('>3/4<');
   });
-  it('fractions clamps numerator to denominator (no out-of-range shading)', () => {
+  it('fractions preserves improper fractions across multiple wholes', () => {
     const svg = render('fractions', { numerator: 9, denominator: 4 }, '');
-    expect(svg).toMatch(/<desc>[^<]*4 of 4 equal parts shaded/);
+    expect(svg).toMatch(/<desc>[^<]*9 parts shaded, with 4 equal parts per whole/);
   });
   it('renders hostile fraction denominators in bounded compact form', () => {
     const svg = render('fractions', { numerator: 500000000, denominator: 1000000000 }, '');
-    expect(svg).toMatch(/<desc>[^<]*500000000 of 1000000000 equal parts shaded/);
+    expect(svg).toMatch(/<desc>[^<]*500000000 parts shaded, with 1000000000 equal parts per whole/);
     expect(svg).toContain('>500000000/1000000000<');
     expect((svg.match(/<rect /g) || []).length).toBeLessThanOrEqual(2);
     expect(svg.length).toBeLessThan(2000);

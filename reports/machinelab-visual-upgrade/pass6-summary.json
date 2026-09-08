@@ -1,0 +1,82 @@
+{
+  "tests": {
+    "passed": 725,
+    "failed": 0,
+    "success": true,
+    "report": "pass6-tests-final.json"
+  },
+  "browser": [
+    {
+      "directory": "pass6-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "damage-impact-field",
+        "damage-cracked-wall",
+        "damage-cracked-rear",
+        "damage-breach-wall",
+        "damage-cracked-field",
+        "damage-breach-field"
+      ]
+    },
+    {
+      "directory": "pass6-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "damage-impact-field",
+        "damage-cracked-wall",
+        "damage-cracked-rear",
+        "damage-breach-wall",
+        "damage-cracked-field",
+        "damage-breach-field"
+      ]
+    },
+    {
+      "directory": "pass6-impact-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "damage-impact-field"
+      ]
+    },
+    {
+      "directory": "pass6-impact-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "damage-impact-field"
+      ]
+    }
+  ],
+  "desktopMirrorIdentical": true,
+  "sourceSha256": "02a94dc40a310d6cdc5e6e39283fd51bf84f8d24bd2d9a99ebf055616bdad9c5"
+}

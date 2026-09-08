@@ -52,6 +52,15 @@ function VideoStudioHostBridgeView(props) {
     addToast,
     t,
     callGemini: callGemini,
+    getCoachAiInfo: () => {
+      const profile = (_alloCmdCtxRef.current || _alloCmdCtx())?.aiProviderProfile || {};
+      const info = {};
+      // Only these configuration labels cross the popup bridge.
+      ['backend', 'provider', 'model', 'visionModel', 'fallbackModel'].forEach(key => {
+        if (typeof profile[key] === 'string') info[key] = profile[key].replace(/[\x00-\x1f\x7f]/g, '').slice(0, 120);
+      });
+      return info;
+    },
     history: history,
     sourceTopic: sourceTopic,
     onSendTranscriptToFlow: resource => {

@@ -1,5 +1,7 @@
 # Aquarium simulation and visual model
 
+Follow-up: [Tank sizing and species models, 2026-09-08](aquarium-sizing-and-species-2026-09-08.md) documents the current configurable volume and shape, manual biomass edits, intervention factors, and revised organism forms. Those changes supersede the fixed-vessel sizing assumptions in this original audit.
+
 Audit: 7 September 2026. Scope: the active Aquarium simulation, its shared 3D viewport, and customization. This document records the baseline state audit, the implemented simulation bridge and visual contract, and remaining model limits. It is a design and scientific review, not a claim that all acceptance checks have passed.
 
 The 3D view should make the same saved tank easier to observe. It must preserve organism identities, habitat assignments, chemistry, and simulation time. The renderer consumes state; it does not run a second ecosystem. Materials, camera, backdrop, and presentation scale can be customized independently of biological controls, with a clear indication of which settings affect the model.

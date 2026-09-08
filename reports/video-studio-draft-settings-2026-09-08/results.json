@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    "independent take titles and all export choices",
+    "fresh take does not inherit title or closing message",
+    "settings survive draft recovery",
+    "programmatic template changes persist",
+    "legacy demo settings initialize once",
+    "manual demo edits survive switching and recovery",
+    "cleared title stays empty",
+    "invalid settings rejected and text bounded",
+    "review acknowledgements excluded",
+    "actual export uses recovered title",
+    "desktop and mobile layout"
+  ],
+  "download": "Recovered_lesson.webm",
+  "errors": []
+}

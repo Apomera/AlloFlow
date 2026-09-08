@@ -1,0 +1,18 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "05-build-trebuchet",
+    "trebuchet-ready",
+    "trebuchet-release",
+    "trebuchet-long",
+    "trebuchet-field"
+  ]
+}

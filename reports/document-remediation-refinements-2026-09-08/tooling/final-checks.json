@@ -1,0 +1,70 @@
+{
+  "mcp": {
+    "summary": {
+      "plannedTrials": 1,
+      "completedTrials": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "trialStatus": "completed",
+    "implementationSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+    "sourceDrift": false,
+    "subprocessDurationMs": 47772.842,
+    "selftestDurationMs": 43778,
+    "checks": {
+      "browserLaunched": true,
+      "modulesBooted": true,
+      "auditAccepted": true,
+      "remediationStarted": true,
+      "contentPreserved": true,
+      "auditorCoverage": true,
+      "taggedArtifact": true,
+      "taggedDelivery": true,
+      "originalLayout": true,
+      "verificationBinding": true,
+      "activeContentScan": true
+    },
+    "modelCalls": 11,
+    "beforeScore": 85,
+    "afterScore": 96
+  },
+  "stage": {
+    "checks": {
+      "stage": {
+        "passed": true,
+        "exitCode": 0
+      },
+      "check": {
+        "passed": true,
+        "exitCode": 0
+      },
+      "ocrMapping": {
+        "passed": true,
+        "exitCode": 0
+      }
+    },
+    "files": 71,
+    "build": {
+      "runnerBuildSha256": "4c810041bc36c549a05cd3904312e4a27ca760fc7082472937a991a36f0d4d7a",
+      "manifestSha256": "a48e5ba690d2b90b97706e4f378e2e04f4b249278c7fe63935e0500b7ed6a31d"
+    },
+    "packagedDriverLoaded": true,
+    "selectedFiles": [
+      {
+        "path": "desktop/mcp/remediation_headless_driver.cjs",
+        "bytes": 172861,
+        "sha256": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61"
+      },
+      {
+        "path": "desktop/mcp/remediation_verification.cjs",
+        "bytes": 11824,
+        "sha256": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2"
+      },
+      {
+        "path": "doc_pipeline_module.js",
+        "bytes": 3333466,
+        "sha256": "a611e6299e7589c1597604c1d403f5e3d3e218409a832a8d688c5cc5e8ac0496"
+      }
+    ]
+  }
+}

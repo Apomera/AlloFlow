@@ -1,0 +1,14 @@
+{
+  "realWebRtc": true,
+  "students": 3,
+  "peerAnswersReceived": 8,
+  "receiptOnlyExcluded": true,
+  "pacingFailureRetried": true,
+  "unscoredPollNeutral": true,
+  "finalHealthComparison": true,
+  "answerReviewReachable": true,
+  "restartReset": true,
+  "mobileHeaderOverlap": false,
+  "horizontalOverflow": false,
+  "errors": []
+}

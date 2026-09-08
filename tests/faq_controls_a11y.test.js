@@ -16,8 +16,8 @@ describe('FAQ keyboard and control semantics', () => {
     expect(source).not.toContain('role={!isEditingFaq ? "button" : undefined}');
   });
 
-  it('provides a visible 32 pixel focus target for answer expansion', () => {
-    expect(source).toContain('w-8 h-8 inline-flex items-center justify-center');
+  it('provides a visible 44 pixel focus target for answer expansion', () => {
+    expect(source).toContain('min-w-11 min-h-11 inline-flex items-center justify-center');
     expect(source).toContain('focus:ring-2 focus:ring-cyan-500');
     expect(fs.readFileSync('desktop/web-app/public/view_faq_module.js', 'utf8')).toBe(fs.readFileSync('view_faq_module.js', 'utf8'));
   });

@@ -206,6 +206,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   // One scheduler for all five animated scenes. Hidden and still scenes have no idle RAF loop.
+  // Small procedural galaxy images are shared by every epoch and baked only once.
+  var universeGalaxyTextures = [];
+  function universeGalaxyTexture(variant) {
+    if (universeGalaxyTextures[variant]) return universeGalaxyTextures[variant];
+    var canvas = document.createElement('canvas'); canvas.width = canvas.height = 160;
+    var brush = canvas.getContext('2d'), pixels = brush.createImageData(160, 160);
+    for (var y = 0; y < 160; y++) for (var x = 0; x < 160; x++) {
+      var px = (x - 79.5) / 72, py = (y - 79.5) / 72;
+      var r = Math.hypot(px, py), a = Math.atan2(py, px), core = Math.exp(-r * r * 38);
+      var arms = variant === 1 ? 0 : Math.pow(0.5 + 0.5 * Math.cos(a * (variant === 2 ? 3 : 2) - r * 12 + variant), 9);
+      var grain = ((Math.imul(x + variant * 71, 374761393) ^ Math.imul(y + 19, 668265263)) >>> 0) / 4294967295;
+      var edge = Math.max(0, Math.min(1, (1.06 - r) / 0.2)); edge = edge * edge * (3 - 2 * edge);
+      var light = (core * 0.8 + Math.exp(-r * r * 3.8) * (variant === 1 ? 0.45 : 0.18) + arms * Math.exp(-r * 2.4) * 0.7 * (1 - core)) * edge * (0.72 + grain * 0.28);
+      var warm = Math.min(1, core * 2 + (variant === 1 ? 0.75 : 0)), i = (y * 160 + x) * 4;
+      pixels.data[i] = Math.round(151 + warm * 104); pixels.data[i + 1] = Math.round(190 + warm * 46); pixels.data[i + 2] = Math.round(255 - warm * 57);
+      pixels.data[i + 3] = Math.round(255 * Math.min(1, light));
+    }
+    brush.putImageData(pixels, 0, 0); universeGalaxyTextures[variant] = canvas; return canvas;
+  }
+
+  // Correlated gas structure is baked once, with transparent edges on local clouds.
+  var universeCloudTextures = [];
+  function universeCloudTexture(kind) {
+    if (universeCloudTextures[kind]) return universeCloudTextures[kind];
+    var canvas = document.createElement('canvas'), field = kind < 2;
+    canvas.width = field ? 256 : 192; canvas.height = field ? 128 : 192;
+    var brush = canvas.getContext('2d'), pixels = brush.createImageData(canvas.width, canvas.height), seed = 1031 + kind * 137;
+    function hash(x, y) {
+      var n = Math.imul(x + seed, 374761393) ^ Math.imul(y + seed, 668265263);
+      n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+    }
+    function noise(x, y) {
+      var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+      fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+      var a = hash(ix, iy), b = hash(ix + 1, iy), c = hash(ix, iy + 1), d = hash(ix + 1, iy + 1);
+      return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+    }
+    var palette = [[255,186,111], [105,135,193], [177,140,235], [112,181,244], [240,160,116], [113,201,193]][kind];
+    for (var y = 0; y < canvas.height; y++) for (var x = 0; x < canvas.width; x++) {
+      var warp = noise(x / 48, y / 48) * 15;
+      var density = noise((x + warp) / 32, y / 28) * 0.56 + noise(x / 13, (y + warp) / 13) * 0.3 + noise(x / 4.5, y / 4.5) * 0.14;
+      var alpha;
+      if (field) alpha = 0.2 + density * 0.65;
+      else {
+        var r = Math.hypot((x + 0.5 - 96) / 91, (y + 0.5 - 96) / 91);
+        var edge = Math.max(0, Math.min(1, (1 - r) / 0.34)); edge = edge * edge * (3 - 2 * edge);
+        var wisps = Math.max(0, Math.min(1, (density - 0.24) / 0.6));
+        alpha = edge * (0.06 + Math.pow(wisps, 1.45) * 0.72) * Math.exp(-r * r * 1.1);
+      }
+      var i = (y * canvas.width + x) * 4;
+      pixels.data[i] = palette[0]; pixels.data[i + 1] = palette[1]; pixels.data[i + 2] = palette[2]; pixels.data[i + 3] = Math.round(alpha * 255);
+    }
+    brush.putImageData(pixels, 0, 0); universeCloudTextures[kind] = canvas; return canvas;
+  }
+
+  // Connect spatial neighbors, with one edge per pair and no long cross-field chords.
+  function universeWebEdges(sites, count, aspect) {
+    count = Math.max(0, Math.min(sites.length, Math.floor(count)));
+    aspect = Math.max(0.1, aspect || 1);
+    var edges = [], seen = new Set();
+    for (var i = 0; i < count; i++) {
+      var neighbors = [];
+      for (var j = 0; j < count; j++) if (i !== j) {
+        var dx = sites[i].x - sites[j].x, dy = (sites[i].y - sites[j].y) / aspect;
+        neighbors.push({ index: j, distance: dx * dx + dy * dy });
+      }
+      neighbors.sort(function (a, b) { return a.distance - b.distance || a.index - b.index; });
+      neighbors.slice(0, 2).forEach(function (neighbor) {
+        var a = Math.min(i, neighbor.index), b = Math.max(i, neighbor.index), key = a + ':' + b;
+        if (neighbor.distance > 0.42 * 0.42 || seen.has(key)) return;
+        seen.add(key); edges.push({ a: a, b: b });
+      });
+    }
+    return edges;
+  }
+
+  var universeDustDisk = null;
+  function universeDustDiskTexture() {
+    if (universeDustDisk) return universeDustDisk;
+    var canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
+    var brush = canvas.getContext('2d'), pixels = brush.createImageData(256, 256);
+    for (var y = 0; y < 256; y++) for (var x = 0; x < 256; x++) {
+      var u = (x - 127.5) / 123, v = (y - 127.5) / 123, r = Math.hypot(u, v), angle = Math.atan2(v, u);
+      var warped = r + 0.018 * Math.sin(angle * 4 + r * 9) + 0.01 * Math.cos(angle * 11 - r * 7);
+      var bands = 0.18 * Math.exp(-r * 2);
+      for (var band = 0; band < 4; band++) {
+        var center = 0.3 + band * 0.19, width = 0.035 + band * 0.009;
+        bands += (0.66 - band * 0.1) * Math.exp(-Math.pow((warped - center) / width, 2));
+      }
+      var inner = Math.max(0, Math.min(1, (r - 0.1) / 0.12)), outer = Math.max(0, Math.min(1, (1 - r) / 0.12));
+      inner = inner * inner * (3 - 2 * inner); outer = outer * outer * (3 - 2 * outer);
+      var threads = 0.76 + 0.16 * Math.sin(angle * 7 + r * 31) + 0.08 * Math.cos(angle * 17 - r * 23);
+      var i = (y * 256 + x) * 4;
+      pixels.data[i] = 247; pixels.data[i + 1] = Math.round(196 - Math.min(1, r) * 53); pixels.data[i + 2] = Math.round(126 - Math.min(1, r) * 54);
+      pixels.data[i + 3] = Math.round(255 * Math.min(1, bands * inner * outer * threads));
+    }
+    brush.putImageData(pixels, 0, 0); universeDustDisk = canvas; return canvas;
+  }
+
   var universeScenes = new Set();
   function startUniverseScene(el, draw) {
     if (el._sceneStop) el._sceneStop();
@@ -334,7 +433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     return { q: q, order: order, correctPos: order.indexOf(q.correct) };
   }
 
-  try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView }; } catch (_e) {}
+  try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView, universeWebEdges: universeWebEdges }; } catch (_e) {}
 
   window.StemLab.registerTool('universe', {
     icon: '\uD83C\uDF20',
@@ -1832,6 +1931,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
             }
 
+            var galaxyTextures = [0, 1, 2, 3].map(universeGalaxyTexture);
+            var cloudTextures = [0, 1, 2, 3, 4, 5].map(universeCloudTexture);
+            var dustDiskTexture = universeDustDiskTexture();
+            var filamentGraphKey = '', filamentEdges = [];
+            var galaxySites = [];
+            for (var site = 0; site < 16; site++) galaxySites.push({ x: 0.07 + ((site * 0.61803398875 + 0.12) % 1) * 0.86, y: 0.12 + ((site * 0.38196601125 + site * site * 0.071) % 1) * 0.73 });
             var deepField = [];
             for (var df = 0; df < 34; df++) {
               deepField.push({
@@ -1855,7 +1960,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               try {
 
                 var stillScene = canvasEl.dataset.sceneMotion === 'still' || (canvasEl.dataset.sceneMotion !== 'animated' && motionPreference && motionPreference.matches);
-                var sceneFrame = [canvasEl.dataset.time, W, H, stillScene].join(':');
+                var showStructureGuides = canvasEl.dataset.structureGuides !== 'false';
+                var sceneFrame = [canvasEl.dataset.time, W, H, stillScene, showStructureGuides].join(':');
                 if (stillScene && sceneFrame === lastSceneFrame) {
                   /* Scheduled by startUniverseScene. */
                   return;
@@ -1908,6 +2014,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }
 
                 ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+                // Full-field gas has no central source; the expanding grid remains readable.
+                if (t < 0.2 || (t >= 0.4 && t < 1)) {
+                  ctx.save(); ctx.globalAlpha = t < 0.2 ? 0.16 : 0.11 * (1 - (t - 0.4) / 0.6);
+                  ctx.drawImage(cloudTextures[t < 0.2 ? 0 : 1], 0, 0, W, H); ctx.restore();
+                }
 
                 // Cinematic deep-field layer: distant galaxies and epoch-specific light.
                 ctx.save();
@@ -1922,27 +2033,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     ctx.save();
                     ctx.translate(dfx, dfy);
                     ctx.rotate(dfg.angle + tick * 0.00015 * (idx % 2 ? -1 : 1));
-                    var dg = ctx.createRadialGradient(0, 0, 0, 0, 0, dfr);
-                    dg.addColorStop(0, 'rgba(255,255,255,' + (0.14 * dfAlpha) + ')');
-                    dg.addColorStop(0.35, 'rgba(' + dfHue + ',' + (0.1 * dfAlpha) + ')');
-                    dg.addColorStop(1, 'rgba(' + dfHue + ',0)');
-                    ctx.scale(1.9, 0.55);
-                    ctx.beginPath(); ctx.arc(0, 0, dfr, 0, Math.PI * 2);
-                    ctx.fillStyle = dg; ctx.fill();
-                    if (idx % 5 === 0) {
-                      ctx.strokeStyle = 'rgba(' + dfHue + ',' + (0.12 * dfAlpha) + ')';
-                      ctx.lineWidth = Math.max(0.5, 0.8 * dpr);
-                      ctx.beginPath(); ctx.arc(0, 0, dfr * 0.65, 0.2, Math.PI * 1.5); ctx.stroke();
-                    }
+                    ctx.scale(1.6, idx % 4 === 3 ? 0.28 : 0.65);
+                    ctx.globalAlpha = Math.max(0, dfAlpha) * 0.5;
+                    ctx.drawImage(galaxyTextures[idx % 4], -dfr, -dfr, dfr * 2, dfr * 2);
                     ctx.restore();
                   });
                 }
-                var horizonAlpha = Math.min(0.18, 0.035 + t / 13.8 * 0.14);
-                ctx.strokeStyle = 'rgba(147,197,253,' + horizonAlpha + ')';
-                ctx.lineWidth = 1 * dpr;
-                ctx.beginPath();
-                ctx.arc(cx, cy, Math.min(W, H) * (0.42 + 0.018 * Math.sin(tick * 0.006)), 0, Math.PI * 2);
-                ctx.stroke();
                 ctx.restore();
 
 
@@ -1960,51 +2056,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   for (var gy2 = 0; gy2 < H; gy2 += spacing) { ctx.beginPath(); ctx.moveTo(0, gy2); ctx.lineTo(W, gy2); ctx.stroke(); }
                 }
 
-                // ── CMB glow (recombination era: 0.2-1.0) ──
-
+                // ── Illustrative afterglow: continuous mottling, rather than isolated light sources ──
                 if (t > 0.15 && t < 1.0) {
-
-                  var cmbPhase = (t - 0.15) / 0.85;
-
-                  var cmbAlpha = Math.max(0, 0.35 * (1 - cmbPhase));
-
-                  // Mottled CMB pattern (simulated)
-
-                  for (var cmi = 0; cmi < 20; cmi++) {
-
-                    var cmx = ((cmi * 173 + 37) % (W / dpr)) * dpr;
-
-                    var cmy = ((cmi * 131 + 19) % (H / dpr)) * dpr;
-
-                    var cms = (15 + cmi * 7 % 20) * dpr;
-
-                    var cmGrad = ctx.createRadialGradient(cmx, cmy, 0, cmx, cmy, cms);
-
-                    var warmth = cmi % 2 === 0 ? '255,200,120' : '255,160,80';
-
-                    cmGrad.addColorStop(0, 'rgba(' + warmth + ',' + (cmbAlpha * 0.5) + ')');
-
-                    cmGrad.addColorStop(1, 'rgba(' + warmth + ',0)');
-
-                    ctx.beginPath(); ctx.arc(cmx, cmy, cms, 0, Math.PI * 2);
-
-                    ctx.fillStyle = cmGrad; ctx.fill();
-
-                  }
-
+                  var cmbPhase = (t - 0.15) / 0.85, cmbAlpha = Math.max(0, 0.35 * (1 - cmbPhase));
+                  ctx.save(); ctx.globalAlpha = cmbAlpha * 0.85;
+                  ctx.drawImage(cloudTextures[0], 0, 0, W, H); ctx.restore();
                 }
 
-
-
-                // ── Stars (appear after Dark Ages) ──
+                // ── Stars                // ── Stars (appear after Dark Ages) ──
 
                 var starBrightness = actualAge < 0.2 ? 0 : Math.min(1, 0.25 + (t - 0.65) / 0.8);
 
-                var starCount = Math.min(particles.length, Math.floor(starBrightness * particles.length));
+                var starCount = Math.min(particles.length, Math.ceil(starBrightness * particles.length));
 
                 for (var pi = 0; pi < starCount; pi++) {
 
                   var p = particles[pi];
+                  var starReveal = Math.max(0, Math.min(1, (starBrightness * particles.length - pi) / 10));
 
                   var depthDrift = 0.34 + (p.depth || 0) * 1.05;
                   if (!stillScene) { p.x += p.vx * depthDrift; p.y += p.vy * depthDrift; }
@@ -2013,7 +2081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
 
-                  var twinkle = 0.5 + 0.5 * Math.sin(tick * 0.03 + pi * 1.7);
+                  var twinkle = 0.84 + 0.16 * Math.sin(tick * 0.012 + pi * 1.7);
 
                   // Star color varies by era
 
@@ -2029,20 +2097,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   else hue = '255,160,120'; // red giant
 
-                  var starDepthSize = p.s * dpr * (0.58 + (p.depth || 0) * 0.9);
+                  var starDepthSize = p.s * dpr * (0.34 + (p.depth || 0) * 0.5);
                   ctx.beginPath(); ctx.arc(p.x, p.y, starDepthSize * twinkle, 0, Math.PI * 2);
 
-                  ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * (0.45 + (p.depth || 0) * 0.55)) + ')';
+                  ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * starReveal * twinkle * (0.45 + (p.depth || 0) * 0.55)) + ')';
 
                   ctx.fill();
 
                   // Glow around bright stars
 
-                  if ((p.s > 1.8 || p.depth > 0.82) && twinkle > 0.7) {
+                  if (p.s > 2.15 && p.depth > 0.7) {
 
                     var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, starDepthSize * 3.8);
 
-                    glow.addColorStop(0, 'rgba(' + hue + ',' + (twinkle * 0.15) + ')');
+                    glow.addColorStop(0, 'rgba(' + hue + ',' + (starBrightness * starReveal * twinkle * 0.15) + ')');
 
                     glow.addColorStop(1, 'rgba(' + hue + ',0)');
 
@@ -2070,17 +2138,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     var nbSize = nb.size * W * (1 + 0.1 * Math.sin(tick * 0.01 + nb.phase));
 
-                    var nbGrad = ctx.createRadialGradient(nbx, nby, 0, nbx, nby, nbSize);
-
-                    nbGrad.addColorStop(0, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.6) + ')');
-
-                    nbGrad.addColorStop(0.4, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.3) + ')');
-
-                    nbGrad.addColorStop(1, 'rgba(' + nb.hue + ',0)');
-
-                    ctx.beginPath(); ctx.arc(nbx, nby, nbSize, 0, Math.PI * 2);
-
-                    ctx.fillStyle = nbGrad; ctx.fill();
+                    ctx.save(); ctx.translate(nbx, nby); ctx.rotate(nb.phase + Math.sin(tick * 0.001 + nb.phase) * 0.025);
+                    ctx.scale(1.5, 0.78); ctx.globalAlpha = nebAlpha;
+                    ctx.drawImage(cloudTextures[2 + nbi % 4], -nbSize, -nbSize, nbSize * 2, nbSize * 2); ctx.restore();
 
                   }
 
@@ -2092,143 +2152,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 if (t > 1) {
 
-                  var galaxyCount = Math.min(16, Math.floor((t - 1) * 2.5));
-
+                  var galaxyGrowth = Math.max(0, (t - 1) * 2.5), galaxyCount = Math.min(16, Math.ceil(galaxyGrowth));
                   for (var gi = 0; gi < galaxyCount; gi++) {
-
-                    var gx = ((gi * 137 + 50) % (W / dpr)) * dpr;
-
-                    var gy = ((gi * 97 + 30) % (H / dpr)) * dpr;
-
-                    var gs = (10 + gi % 6 * 5) * dpr;
-
-                    // Core glow
-
-                    var galGrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gs);
-
-                    var galHue = gi % 4 === 0 ? '180,160,255' : gi % 4 === 1 ? '255,200,150' : gi % 4 === 2 ? '150,200,255' : '255,220,180';
-
-                    galGrad.addColorStop(0, 'rgba(' + galHue + ',0.5)');
-
-                    galGrad.addColorStop(0.3, 'rgba(' + galHue + ',0.2)');
-
-                    galGrad.addColorStop(0.7, 'rgba(' + galHue + ',0.05)');
-
-                    galGrad.addColorStop(1, 'rgba(' + galHue + ',0)');
-
-                    ctx.beginPath(); ctx.arc(gx, gy, gs, 0, Math.PI * 2);
-
-                    ctx.fillStyle = galGrad; ctx.fill();
-
-                    // Spiral arm hints for larger galaxies
-
-                    if (gs > 12 * dpr && t > 3) {
-
-                      ctx.save();
-
-                      ctx.translate(gx, gy);
-
-                      ctx.rotate(gi * 1.3 + tick * 0.001);
-
-                      ctx.globalAlpha = 0.15;
-
-                      ctx.beginPath();
-
-                      for (var sa = 0; sa < Math.PI * 4; sa += 0.1) {
-
-                        var sr = sa * gs * 0.08;
-
-                        ctx.lineTo(Math.cos(sa) * sr, Math.sin(sa) * sr);
-
-                      }
-
-                      ctx.strokeStyle = 'rgba(' + galHue + ',0.3)';
-
-                      ctx.lineWidth = 1.5 * dpr;
-
-                      ctx.stroke();
-
-                      ctx.globalAlpha = 1;
-
-                      ctx.restore();
-
-                    }
-
+                    var gx = galaxySites[gi].x * W, gy = galaxySites[gi].y * H, gs = (15 + gi % 6 * 5) * dpr;
+                    ctx.save(); ctx.translate(gx, gy); ctx.rotate(gi * 1.3 + tick * 0.00035);
+                    ctx.scale(1.35, gi % 4 === 3 ? 0.3 : gi % 4 === 1 ? 0.85 : 0.65);
+                    ctx.globalAlpha = Math.min(1, galaxyGrowth - gi) * 0.88;
+                    ctx.drawImage(galaxyTextures[gi % 4], -gs, -gs, gs * 2, gs * 2); ctx.restore();
                   }
-
                 }
 
-
-
-                // ── Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) ──
-
-                if (t > 2) {
-
+                // ── Cosmic web: local connections with a faint surrounding glow ──
+                if (t > 2 && showStructureGuides) {
                   var filAlpha = Math.min(0.12, (t - 2) * 0.01);
-
-                  var filGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
-
-                  ctx.save();
-
-                  ctx.globalAlpha = filAlpha;
-
-                  ctx.lineWidth = 1.2 * dpr;
-
-                  for (var fi = 0; fi < filGalCount; fi++) {
-
-                    var fx1 = ((fi * 137 + 50) % (W / dpr)) * dpr;
-
-                    var fy1 = ((fi * 97 + 30) % (H / dpr)) * dpr;
-
-                    // Connect to 2 nearest neighbors
-
-                    for (var fj = fi + 1; fj < Math.min(fi + 3, filGalCount); fj++) {
-
-                      var fx2 = ((fj * 137 + 50) % (W / dpr)) * dpr;
-
-                      var fy2 = ((fj * 97 + 30) % (H / dpr)) * dpr;
-
-                      var fDist = Math.sqrt((fx2 - fx1) * (fx2 - fx1) + (fy2 - fy1) * (fy2 - fy1));
-
-                      if (fDist > W * 0.6) continue;
-
-                      // Curved filament with glow
-
-                      var fmx = (fx1 + fx2) / 2 + Math.sin(fi * 2.3 + tick * 0.002) * 20;
-
-                      var fmy = (fy1 + fy2) / 2 + Math.cos(fj * 1.7 + tick * 0.002) * 20;
-
-                      var filGrad = ctx.createLinearGradient(fx1, fy1, fx2, fy2);
-
-                      filGrad.addColorStop(0, 'rgba(100,120,200,0)');
-
-                      filGrad.addColorStop(0.3, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
-
-                      filGrad.addColorStop(0.7, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
-
-                      filGrad.addColorStop(1, 'rgba(100,120,200,0)');
-
-                      ctx.beginPath();
-
-                      ctx.moveTo(fx1, fy1);
-
-                      ctx.quadraticCurveTo(fmx, fmy, fx2, fy2);
-
-                      ctx.strokeStyle = filGrad;
-
-                      ctx.stroke();
-
-                    }
-
+                  var filGalCount = Math.min(16, Math.floor((t - 1) * 2.5)), graphKey = filGalCount + ':' + W + ':' + H;
+                  if (graphKey !== filamentGraphKey) {
+                    filamentEdges = universeWebEdges(galaxySites, filGalCount, W / H); filamentGraphKey = graphKey;
                   }
-
+                  ctx.save(); ctx.lineCap = 'round';
+                  filamentEdges.forEach(function (edge) {
+                    var fx1 = galaxySites[edge.a].x * W, fy1 = galaxySites[edge.a].y * H;
+                    var fx2 = galaxySites[edge.b].x * W, fy2 = galaxySites[edge.b].y * H;
+                    var dx = fx2 - fx1, dy = fy2 - fy1, bend = Math.sin(edge.a * 2.3 + edge.b * 1.7) * 0.15;
+                    var fmx = (fx1 + fx2) / 2 - dy * bend, fmy = (fy1 + fy2) / 2 + dx * bend;
+                    var gradient = ctx.createLinearGradient(fx1, fy1, fx2, fy2);
+                    gradient.addColorStop(0, 'rgba(147,167,222,0)'); gradient.addColorStop(0.2, 'rgba(147,167,222,0.75)');
+                    gradient.addColorStop(0.55, 'rgba(158,180,235,1)'); gradient.addColorStop(0.8, 'rgba(147,167,222,0.65)'); gradient.addColorStop(1, 'rgba(147,167,222,0)');
+                    ctx.beginPath(); ctx.moveTo(fx1, fy1); ctx.quadraticCurveTo(fmx, fmy, fx2, fy2); ctx.strokeStyle = gradient;
+                    ctx.globalAlpha = filAlpha * 0.14; ctx.lineWidth = 4 * dpr; ctx.stroke();
+                    ctx.globalAlpha = filAlpha * 0.72; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  });
                   ctx.restore();
-
                 }
 
-
-
-                // ── Dark Matter Halos (subtle glow behind galaxies) ──
+                // ── Galaxy groups: resolved members with optional structure guides ──
 
                 if (t > 3) {
 
@@ -2240,11 +2197,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   for (var cli = 0; cli < 4; cli++) {
 
-                    var clx = ((cli * 211 + 96) % (W / dpr)) * dpr;
+                    var clx = (0.14 + cli * 0.24) * W;
 
-                    var cly = ((cli * 157 + 72) % (H / dpr)) * dpr;
+                    var cly = (cli % 2 ? 0.64 : 0.29 + cli * 0.04) * H;
 
-                    var clR = (44 + cli * 9) * dpr;
+                    var clR = Math.min((44 + cli * 9) * dpr, W * 0.15, H * 0.25);
 
                     var clPulse = 0.78 + 0.22 * Math.sin(tick * 0.012 + cli);
 
@@ -2262,37 +2219,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     for (var cgi = 0; cgi < 10; cgi++) {
 
-                      var cga = cgi * Math.PI * 2 / 10 + cli * 0.7 + tick * 0.0005;
+                      var cga = cgi * 2.399963 + cli * 1.77 + Math.sin(cgi * 1.7 + cli) * 0.32 + tick * 0.00025;
 
-                      var cgr = clR * (0.16 + ((cgi * 37 + cli * 11) % 100) / 145);
+                      var cgr = clR * Math.sqrt((cgi + 0.5) / 10) * (0.68 + 0.14 * Math.sin(cgi * 2.1 + cli));
 
                       var cgx = clx + Math.cos(cga) * cgr;
 
                       var cgy = cly + Math.sin(cga) * cgr * 0.72;
 
-                      var cgs = (2.4 + (cgi % 4) * 0.75) * dpr;
+                      var cgs = (3.6 + (cgi % 4) * 1.4) * dpr;
 
-                      var cgHue = cgi % 3 === 0 ? '254,240,138' : cgi % 3 === 1 ? '147,197,253' : '244,114,182';
-
-                      ctx.save();
-
-                      ctx.translate(cgx, cgy);
-
-                      ctx.rotate(cga + tick * 0.001);
-
-                      ctx.scale(1.7, 0.55);
-
-                      ctx.beginPath(); ctx.arc(0, 0, cgs, 0, Math.PI * 2);
-
-                      ctx.fillStyle = 'rgba(' + cgHue + ',' + (0.4 * clusterAlpha) + ')';
-
-                      ctx.fill();
-
+                      ctx.save(); ctx.translate(cgx, cgy);
+                      // Member orientations are independent of their position in the group.
+                      ctx.rotate(cgi * 0.93 + cli * 1.3 + tick * 0.0002);
+                      ctx.scale(1.35, cgi % 4 === 3 ? 0.32 : 0.65);
+                      ctx.globalAlpha = clusterAlpha * (0.9 + cgi % 3 * 0.12);
+                      ctx.drawImage(galaxyTextures[cgi % 3 === 0 ? 1 : (cgi + cli) % 4], -cgs, -cgs, cgs * 2, cgs * 2);
                       ctx.restore();
-
                     }
 
-                    if (cli < 3) {
+                    if (cli < 3 && showStructureGuides) {
 
                       ctx.strokeStyle = 'rgba(196,181,253,' + (0.18 * clusterAlpha * clPulse) + ')';
 
@@ -2322,7 +2268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                if (t > 1.5) {
+                if (t > 1.5 && showStructureGuides) {
 
                   var dmGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
 
@@ -2330,9 +2276,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   for (var dmi = 0; dmi < dmGalCount; dmi++) {
 
-                    var dmx = ((dmi * 137 + 50) % (W / dpr)) * dpr;
+                    var dmx = galaxySites[dmi].x * W;
 
-                    var dmy = ((dmi * 97 + 30) % (H / dpr)) * dpr;
+                    var dmy = galaxySites[dmi].y * H;
 
                     var dms = (10 + dmi % 6 * 5) * dpr;
 
@@ -2422,165 +2368,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // ── Protoplanetary Disk (near Sun formation, t ≈ 9.0–9.5) ──
-
+                // ── Protoplanetary disk during the Sun-formation illustration ──
                 if (t > 8.5 && t < 10) {
-
-                  var ppAlpha = t < 9.0 ? (t - 8.5) / 0.5 : t > 9.5 ? Math.max(0, 1 - (t - 9.5) / 0.5) : 1;
-
-                  ppAlpha *= 0.6;
-
-                  var ppx = W * 0.78, ppy = H * 0.25;
-
-                  ctx.save();
-
-                  ctx.translate(ppx, ppy);
-
-                  ctx.rotate(tick * 0.003);
-
-                  ctx.globalAlpha = ppAlpha;
-
-                  // Concentric dust rings
-
-                  var ppRings = [
-
-                    { r: 18, w: 4, color: '255,200,100' },
-
-                    { r: 26, w: 3, color: '220,170,80' },
-
-                    { r: 34, w: 5, color: '180,140,70' },
-
-                    { r: 44, w: 3, color: '140,120,80' }
-
-                  ];
-
-                  for (var pri = 0; pri < ppRings.length; pri++) {
-
-                    var ppr = ppRings[pri];
-
-                    var rr = ppr.r * dpr;
-
-                    ctx.beginPath();
-
-                    ctx.ellipse(0, 0, rr, rr * 0.3, 0, 0, Math.PI * 2);
-
-                    ctx.strokeStyle = 'rgba(' + ppr.color + ',' + (ppAlpha * 0.5) + ')';
-
-                    ctx.lineWidth = ppr.w * dpr;
-
-                    ctx.stroke();
-
-                  }
-
-                  // Central protostar glow
-
-                  var psGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12 * dpr);
-
-                  psGrad.addColorStop(0, 'rgba(255,230,150,' + ppAlpha + ')');
-
-                  psGrad.addColorStop(0.4, 'rgba(255,180,60,' + (ppAlpha * 0.6) + ')');
-
-                  psGrad.addColorStop(1, 'rgba(255,120,20,0)');
-
-                  ctx.beginPath(); ctx.arc(0, 0, 12 * dpr, 0, Math.PI * 2);
-
-                  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = psGrad; ctx.fill(); ctx.restore();
-
-                  // Planetesimal dots orbiting
-
+                  var ppAlpha = (t < 9 ? (t - 8.5) / 0.5 : t > 9.5 ? Math.max(0, 1 - (t - 9.5) / 0.5) : 1) * 0.7;
+                  var ppRadius = Math.min(54 * dpr, W * 0.22, H * 0.2);
+                  var ppx = Math.min(W * 0.76, W - 72 * dpr), ppy = Math.max(50 * dpr, H * 0.27);
+                  ctx.save(); ctx.translate(ppx, ppy); ctx.rotate(-0.23); ctx.globalAlpha = ppAlpha;
+                  ctx.save(); ctx.scale(1, 0.34); ctx.rotate(tick * 0.0007);
+                  ctx.drawImage(dustDiskTexture, -ppRadius, -ppRadius, ppRadius * 2, ppRadius * 2); ctx.restore();
+                  var coreRadius = ppRadius * 0.24, psGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+                  psGrad.addColorStop(0, 'rgba(255,247,216,1)'); psGrad.addColorStop(0.18, 'rgba(255,216,135,0.8)');
+                  psGrad.addColorStop(0.5, 'rgba(249,165,83,0.18)'); psGrad.addColorStop(1, 'rgba(249,165,83,0)');
+                  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = psGrad;
+                  ctx.fillRect(-coreRadius, -coreRadius, coreRadius * 2, coreRadius * 2); ctx.restore();
                   for (var pli = 0; pli < 5; pli++) {
-
-                    var plAngle = pli * Math.PI * 2 / 5 + tick * 0.008 * (1 + pli * 0.3);
-
-                    var plR = (22 + pli * 6) * dpr;
-
-                    var plpx = Math.cos(plAngle) * plR;
-
-                    var plpy = Math.sin(plAngle) * plR * 0.3;
-
-                    ctx.beginPath(); ctx.arc(plpx, plpy, (1.5 + pli * 0.3) * dpr, 0, Math.PI * 2);
-
-                    ctx.fillStyle = 'rgba(200,180,140,' + (ppAlpha * 0.8) + ')'; ctx.fill();
-
+                    var plAngle = pli * 2.399963 + tick * 0.008 / Math.pow(1 + pli * 0.34, 1.5);
+                    var plR = ppRadius * (0.3 + pli * 0.15);
+                    ctx.beginPath(); ctx.arc(Math.cos(plAngle) * plR, Math.sin(plAngle) * plR * 0.34, (0.9 + pli * 0.22) * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(240,209,165,0.7)'; ctx.fill();
                   }
-
                   ctx.restore();
-
-                  // Label
-
-                  ctx.save();
-
-                  ctx.globalAlpha = ppAlpha * 0.8;
-
-                  ctx.font = (7 * dpr) + 'px sans-serif';
-
-                  ctx.fillStyle = 'rgba(255,200,100,' + ppAlpha + ')';
-
-                  ctx.textAlign = 'center';
-
-                  ctx.fillText('Protoplanetary Disk', ppx, ppy + 55 * dpr);
-
-                  ctx.restore();
-
+                  ctx.save(); ctx.globalAlpha = ppAlpha; ctx.font = '500 ' + (11 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
+                  ctx.fillStyle = '#f7d9a8'; ctx.fillText(__alloT('stem.universe.protoplanetary_disk', 'Protoplanetary disk'), ppx, ppy + ppRadius * 0.55 + 18 * dpr); ctx.restore();
                 }
 
-
-
-                // ── Epoch label overlay (bottom-left HUD) ──
-
-                // Dark backdrop for readability
-
-                ctx.save();
-                var topMatte = ctx.createLinearGradient(0, 0, 0, H * 0.22);
-                topMatte.addColorStop(0, 'rgba(2,6,23,0.84)');
-                topMatte.addColorStop(1, 'rgba(2,6,23,0)');
-                ctx.fillStyle = topMatte; ctx.fillRect(0, 0, W, H * 0.22);
-                var bottomMatte = ctx.createLinearGradient(0, H, 0, H * 0.78);
-                bottomMatte.addColorStop(0, 'rgba(2,6,23,0.88)');
-                bottomMatte.addColorStop(1, 'rgba(2,6,23,0)');
-                ctx.fillStyle = bottomMatte; ctx.fillRect(0, H * 0.78, W, H * 0.22);
-                var scanY = H * (0.46 + 0.025 * Math.sin(tick * 0.008));
-                var scanGrad = ctx.createLinearGradient(W * 0.12, scanY, W * 0.88, scanY);
-                scanGrad.addColorStop(0, 'rgba(255,255,255,0)');
-                scanGrad.addColorStop(0.42, 'rgba(125,211,252,0.16)');
-                scanGrad.addColorStop(0.5, 'rgba(255,255,255,0.32)');
-                scanGrad.addColorStop(0.58, 'rgba(244,114,182,0.12)');
-                scanGrad.addColorStop(1, 'rgba(255,255,255,0)');
-                ctx.strokeStyle = scanGrad; ctx.lineWidth = 1 * dpr;
-                ctx.beginPath(); ctx.moveTo(W * 0.12, scanY); ctx.lineTo(W * 0.88, scanY); ctx.stroke();
-                ctx.strokeStyle = 'rgba(226,232,240,0.36)';
-                ctx.lineWidth = 1 * dpr;
-                var gate = 22 * dpr, gateLen = 58 * dpr;
-                [[gate, gate, 1, 1], [W - gate, gate, -1, 1], [gate, H - gate, 1, -1], [W - gate, H - gate, -1, -1]].forEach(function (g) {
-                  ctx.beginPath(); ctx.moveTo(g[0], g[1] + g[3] * gateLen); ctx.lineTo(g[0], g[1]); ctx.lineTo(g[0] + g[2] * gateLen, g[1]); ctx.stroke();
-                });
-                ctx.restore();
-
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-
-                var labelW = 220 * dpr, labelH = 48 * dpr;
-
-                ctx.beginPath();
-
-                ctx.roundRect(6 * dpr, H - (54 * dpr), labelW, labelH, 8 * dpr);
-
-                ctx.fill();
-
-                // Epoch name
-
-                ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold ' + (12 * dpr) + 'px sans-serif';
-
-                ctx.fillText(ep.emoji + ' ' + ep.name, 14 * dpr, H - (20 * dpr));
-
-                // Time
-
-                ctx.fillStyle = 'rgba(160,200,255,0.8)'; ctx.font = (9 * dpr) + 'px sans-serif';
-
-                var timeStr = formatCosmicTimeLabel(actualAge);
-
-                ctx.fillText(timeStr, 14 * dpr, H - (34 * dpr));
-
-
+                // The possible far-future preview should not retain the present-day brightness.
+                if (actualAge >= UNIVERSE_FUTURE_PREVIEW_GYR) {
+                  ctx.fillStyle = 'rgba(1,3,9,0.975)'; ctx.fillRect(0, 0, W, H);
+                }
+                // The epoch caption is HTML so it scales clearly with text zoom.
 
                 /* Scheduled by startUniverseScene. */
 
@@ -3264,9 +3080,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             "[data-universe-tool] .uni-observatory>.uni-epoch-card{grid-area:guide;margin:0;padding:20px;border-color:#667496!important;background:#0e182b!important;}",
             "[data-universe-tool] .uni-observatory>.uni-timeline{grid-area:controls;margin:0;padding:20px;}",
             "[data-universe-tool] .uni-scene{height:350px!important;min-height:300px!important;border-radius:16px;box-shadow:0 8px 26px #0f172a24!important;}",
-            "[data-universe-tool] .uni-scene-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--uni-muted);margin-bottom:8px;}",
+            "[data-universe-tool] .uni-scene-toolbar{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px;color:var(--uni-muted);margin-bottom:8px;}[data-universe-tool] .uni-scene-toolbar>.uni-eyebrow{flex:1 1 150px;}[data-universe-tool] .uni-scene-toolbar button{min-height:44px!important;}",
             "[data-universe-tool] .uni-scene-toolbar button{font-size:12px;font-weight:650;border:1px solid #94a3b8;border-radius:8px;padding:6px 10px;color:var(--uni-ink);background:var(--uni-panel);white-space:nowrap;}",
             "[data-universe-tool] .uni-scene-toolbar button[aria-pressed=true]{border-color:#818cf8;background:#312e81;color:#eef2ff;}",
+            "[data-universe-tool] .uni-scene-caption{position:absolute;bottom:16px;inset-inline-start:16px;max-width:calc(100% - 32px);padding:9px 13px;border:1px solid #ffffff26;border-inline-start:3px solid var(--uni-caption-accent,#a5b4fc);border-radius:10px;background:#020617d9;color:#f8fafc;pointer-events:none;overflow-wrap:anywhere;}",
+            "[data-universe-tool] .uni-scene-caption span{display:block;font-size:11px;line-height:1.5;color:#bfdbfe;}[data-universe-tool] .uni-scene-caption strong{display:block;font-size:14px;font-weight:700;line-height:1.45;}",
             "[data-universe-tool] .uni-model-note{margin:12px 2px 0;font-size:12px;}",
             "[data-universe-tool] .uni-observe-grid{grid-template-columns:1fr;gap:16px;margin:18px 0 0;}",
             "[data-universe-tool] .uni-observe-grid h3{font-size:23px;}",
@@ -3456,6 +3274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             // Canvas
             React.createElement("div", { className: "uni-scene-toolbar" },
               React.createElement("span", { className: "uni-eyebrow" }, "Cosmic history · illustrated"),
+              React.createElement("button", { type: "button", 'aria-label': __alloT('stem.universe.structure_guides', 'Show illustrative matter halos and connections'), 'aria-describedby': 'universe-model-note', 'aria-pressed': d.showStructureGuides !== false, onClick: function () { upd('showStructureGuides', d.showStructureGuides === false); } }, __alloT('stem.universe.structure_guides_short', 'Structure guides')),
               React.createElement("button", { type: "button", 'aria-label': __alloT('stem.universe.a11y_still_scene', 'Still scene'), 'aria-pressed': sceneStill, onClick: function () { upd('sceneMotion', sceneStill ? 'animated' : 'still'); } }, sceneStill ? 'All scenes: still' : 'All scenes: animated')
             ),
               React.createElement("div", { className: "uni-step-controls", role: "group", 'aria-label': __alloT('stem.universe.a11y_step_through_cosmic_epochs', 'Step through cosmic epochs') },
@@ -3470,6 +3289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 "data-universe-canvas": "true",
                 ref: canvasRefCb,
                 "data-time": String(cosmicTime),
+                "data-structure-guides": d.showStructureGuides !== false ? "true" : "false",
                 "data-scene-motion": d.sceneMotion || "system",
                 role: 'img',
                 'aria-label': 'Universe time-lapse visualization showing cosmic history from the Big Bang through the present day, with a future fate preview at the end of the timeline. Currently at ' + formatCosmicTimeSentence(cosmicTime) + ', epoch: ' + epoch.name + '. Use arrow keys to scrub cosmic time, Page Up and Page Down for larger steps, Home for the Big Bang, End for the future preview.',
@@ -3493,13 +3313,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 },
                 style: { width: '100%', height: '100%', display: 'block' }
               }),
-              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 48%, transparent 34%, rgba(2,6,23,0.58) 100%), linear-gradient(rgba(167,139,250,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,0.035) 1px, transparent 1px)', backgroundSize: '100% 100%, 42px 42px, 42px 42px', mixBlendMode: 'screen', opacity: 0.62 } }),
+              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(2,6,23,0.28) 100%)', opacity: 0.65 } }),
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.72) 0%, rgba(2,6,23,0.14) 10%, rgba(2,6,23,0) 22%, rgba(2,6,23,0) 78%, rgba(2,6,23,0.18) 90%, rgba(2,6,23,0.78) 100%)' } }),
-              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(226,232,240,0.07)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px', backgroundRepeat: 'no-repeat', opacity: 0.7 } })
+              React.createElement("div", { className: "uni-scene-caption", "aria-hidden": "true", style: { '--uni-caption-accent': epoch.border } },
+                React.createElement("span", null, formatCosmicTimeLabel(cosmicTime)),
+                React.createElement("strong", null, epoch.name)
+              )
 
             ),
 
-            React.createElement("p", { className: "uni-model-note" }, "Teaching model • Colors, sizes, and motion are illustrative. This is not telescope footage or a view from outside the universe."),
+            React.createElement("p", { id: "universe-model-note", className: "uni-model-note" }, "Teaching model • Colors, sizes, and motion are illustrative. This is not telescope footage or a view from outside the universe. ", __alloT('stem.universe.structure_guides_help', 'Structure guides show illustrative matter halos and connections in later epochs.')),
             ), // visual column
             React.createElement("div", { className: "uni-timeline uni-milestones" },
               h('div',{className:'uni-section-heading'},h('div',null,h('h3',null,u('choose_epoch','Choose an epoch')),h('p',null,u('epoch_chapters','Nine chapters, from early light to possible futures.'))),h('span',{className:'uni-section-count'},visitedEpochIds.length+' / '+EPOCHS.length+' visited')),

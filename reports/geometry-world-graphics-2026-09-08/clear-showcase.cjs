@@ -1,0 +1,6 @@
+const fs=require('node:fs');const p='stem_lab/stem_tool_geometryworld_builder.js';let s=fs.readFileSync(p,'utf8');
+function replace(a,b){if(!s.includes(a))throw Error('Missing '+a.slice(0,100));s=s.replace(a,b);}
+replace('.gwe-showcase{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;position:absolute;', '.gw-root .gwe-showcase[role="dialog"]{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;z-index:205!important}.gwe-showcase{position:absolute;');
+replace('[engine._dimLines,engine._selectionGlows,engine._layerGhosts]', '[engine._dimLines,engine._selectionGlows,engine._layerGhosts,engine._angleHelpers,engine._netHelpers,[engine._rulerLine,engine._rulerLabel,engine._ghostMesh,engine._highlightMesh,engine._hoverGlowMesh].filter(Boolean)]');
+replace('    Object.keys(engine.moveState || {}).forEach(function(key){engine.moveState[key]=false;});', '    Object.keys(engine.moveState || {}).forEach(function(key){engine.moveState[key]=false;});\n    Object.keys(engine.lookState || {}).forEach(function(key){engine.lookState[key]=false;});');
+for(const f of [p,'desktop/web-app/public/'+p]){const fd=fs.openSync(f,'r+');fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));fs.closeSync(fd);}console.log('Showcase overlay specificity and synchronous helper hiding fixed.');

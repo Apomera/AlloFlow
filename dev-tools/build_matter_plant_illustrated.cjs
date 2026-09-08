@@ -59,6 +59,8 @@ pack.allopack.title=opt.title;pack.allopack.contentSources=opt.sources;
 pack.allopack.illustrations={version:1,imageCount:24,provider:'Built-in image generation',review:'AI visual and content review completed; educator review pending',textPolicy:'Text-free artwork with native editable labels, captions, and image-specific alt text'};
 delete pack.allopack.imageShotList;
 for(const r of pack.history)delete r.imageSlot;
+require('./refine_illustrated_quality.cjs')(pack,slug);
+require('./backfill_allopack_resource_images.cjs')(pack,slug);
 const serialized=JSON.stringify(pack,null,2)+'\n';if(serialized.length>2000000)throw Error('Pack exceeds portable artifact limit: '+serialized.length);
 fs.mkdirSync(path.join(root,'allopacks/illustrated'),{recursive:true});save(output,serialized);save(folder+'embedded-assets.json',JSON.stringify(records,null,2)+'\n');
 console.log(JSON.stringify({output,images:24,resources:pack.history.length,characters:serialized.length}));

@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    "caption text/timing/import/delete undo and redo",
+    "redo branches",
+    "per-take history isolation",
+    "unrelated trim retained",
+    "delete focus recovery",
+    "replace/add/cancel import choices",
+    "Escape cancellation",
+    "invalid and unreadable files",
+    "stale import after take switch",
+    "invalid timings excluded from history",
+    "desktop and mobile preview control clearance",
+    "mobile import review fits",
+    "current captions survive reload",
+    "history starts fresh after reload",
+    "no page errors or browser dialogs",
+    "30-change history limit"
+  ],
+  "errors": [],
+  "dialogs": [],
+  "sourceSha256": "c1fd43a26acf3f3f742c673c2d08c1fb1542a33fd529ac335df2c7705e761d31"
+}

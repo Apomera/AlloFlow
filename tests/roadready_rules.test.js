@@ -1970,7 +1970,7 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).not.toContain('Math.floor(t.y / CHUNK_SIZE)');
     expect(src).toContain('function followingVehicleRoadState(world, observer, target, laneTolerance)');
     expect(src).toContain('var followingState = followingVehicleRoadState(');
-    expect(src).toContain('var gapState = followingVehicleRoadState(');
+    expect(src).toContain('var hudGapState = followingVehicleRoadState(');
     expect(src).toContain('var rearState = followingVehicleRoadState(');
     expect(src).toContain('var aiFollowState = followingVehicleRoadState(');
     expect(src).toContain(
@@ -2266,7 +2266,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('function assessRoadLanePosition(profileOrChunk, lateralOffset, travelSign)');
     expect(src).toContain('function controlDistanceAhead(world, signal, car, vehicleLength)');
     expect(src).toContain('var departureAssessment = assessRoadLanePosition');
-    expect(src).toContain('var gapState = followingVehicleRoadState(infiniteWorldRef.current, car, t,');
+    expect(src).toContain('var hudGapState = followingVehicleRoadState(infiniteWorldRef.current, car, t,');
     expect(src).toContain("if (scn.weather === 'rain') streamedPuddlesForChunk(iw, ci)");
     expect(src).toContain('Splash audio is emitted once on puddle entry by the physics loop.');
     expect(src).not.toContain('var offset = car.x - roadCenter;');
@@ -2279,7 +2279,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('oneWayRoadLayoutFor(chunk).laneDividerOffsets.forEach');
     expect(src).toContain('var detailLaneDividerOffsets = chunk.oneWay');
     expect(src).toContain('roadLaneArrowSpecs(chunk).forEach(function(arrowSpec)');
-    expect(src).toContain('shSide * (roadLayout.pavedHalfWidth + 0.8)');
+    expect(src).toContain('shSide * (shPavedEdge + 0.8)');
     expect(src).toContain('markRoadSurfaceHeightAt(cbZ, cbSide) + 0.04');
     expect(src).toContain('var dustVerts = new Float32Array(dustRows * 3 * 3)');
     expect(src).toContain('+ roadCrownHeight(dsOff, iw.profile || chunk, roadHalfW)');

@@ -8,7 +8,7 @@ const publicModule = fs.readFileSync('desktop/web-app/public/view_adventure_modu
 describe('Adventure View WCAG focus behavior', () => {
   it('retains setup focus rings without suppressing the native outline', () => {
     expect(source).not.toContain('focus-within:outline-none');
-    expect(source.match(/focus-within:ring-2 focus-within:ring-indigo-700/g)).toHaveLength(7);
+    expect(fs.readFileSync('view_adventure_settings_source.jsx', 'utf8')).toContain(':focus-visible{outline:3px solid var(--as-accent)');
   });
 
   it('allows both programmatically focused dialogs to show native focus', () => {
@@ -36,7 +36,7 @@ describe('Adventure View reduced motion and generated copies', () => {
   });
 
   it('keeps the generated root and public modules synchronized', () => {
-    expect(moduleSource).toContain('focus-within:ring-2');
+    expect(moduleSource).toContain(':focus-visible{outline:3px solid var(--as-accent)');
     expect(moduleSource).toContain('motion-reduce:animate-none');
     expect(publicModule).toBe(moduleSource);
   });

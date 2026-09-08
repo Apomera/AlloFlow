@@ -1,0 +1,108 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { chromium } = require('@playwright/test');
+const root = path.resolve(__dirname, '..');
+(async () => {
+ const output = path.join(root, 'reports/litlab-refinement'); fs.mkdirSync(output, {recursive:true});
+ const browser = await chromium.launch({headless:true});
+ try {
+  const page = await browser.newPage({viewport:{width:1280,height:1000},reducedMotion:'reduce'});
+  const audits=[];
+  const errors=[]; page.on('pageerror', e=>errors.push(e.message));
+  // A routed test origin provides real localStorage without a network server.
+  await page.route('http://litlab.test/', route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><title>LitLab review</title></head><body style="margin:0;background:#e9e5ef"><div id="root"></div></body></html>'}));
+  await page.goto('http://litlab.test/');
+  await page.addScriptTag({path:path.join(root,'desktop/web-app/node_modules/react/umd/react.development.js')});
+  await page.addScriptTag({path:path.join(root,'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js')});
+  await page.addScriptTag({path:path.join(root,'karaoke_audio_store_module.js')});
+  await page.addScriptTag({path:path.join(root,'read_aloud_audio_service_source.jsx')});
+  await page.addScriptTag({path:path.join(root,'story_stage_module.js')});
+  await page.evaluate(()=>{
+   window.__litRoot = ReactDOM.createRoot(document.getElementById('root'));
+   __litRoot.render(React.createElement(AlloModules.LitLab,{isOpen:true,onClose:()=>{},gradeLevel:'5th Grade',studentNickname:'Bright Owl',geminiVoices:[{id:'Aoede',label:'Aoede'},{id:'Kore',label:'Kore'}],kokoroVoices:[],addToast:()=>{},onCallTTS:async()=>{
+    const bytes=new Uint8Array(192),view=new DataView(bytes.buffer);
+    const tag=(at,value)=>[...value].forEach((c,i)=>bytes[at+i]=c.charCodeAt(0));
+    tag(0,'RIFF');view.setUint32(4,184,true);tag(8,'WAVEfmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,8000,true);view.setUint32(28,8000,true);view.setUint16(32,1,true);view.setUint16(34,8,true);tag(36,'data');view.setUint32(40,148,true);bytes.fill(128,44);
+    return URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));
+  },onCallGemini:async(prompt)=>prompt.includes('EXACTLY 3 tasks') ? JSON.stringify({encouragement:'Your ideas are growing clearer with evidence.',tasks:[{title:'Find evidence',detail:'Choose the line where Fox decides to help the other animals.',why:'A specific line makes your idea easier to understand.',source:'feedback'},{title:'Practice the voice',detail:'Read Fox’s promise with a warm, confident voice.',why:'Your expression can show what Fox cares about.',source:'performance'},{title:'Revise your reflection',detail:'Explain how the promise connects to the theme of helping others.',why:'Connecting an action to a theme strengthens your analysis.',source:'reflection'}]}) : prompt.includes('Student responses:') ? JSON.stringify({overallRating:'proficient',strengths:['You connected Fox’s choice to helping others.'],nudges:['Which words show that Fox wants to help?'],characterInsight:'Fox chooses to share the lantern’s light.',themeInsight:'Support your theme with Fox’s promise.',craftInsight:'The setting makes the lantern feel useful and hopeful.'}) : JSON.stringify({title:'The Lantern Walk',characters:[{id:'fox',name:'Fox',description:'A curious traveler who helps friends find their way.',color:'#7c3aed'}],lines:[{id:'l1',speaker:'narrator',text:'As the sun dipped below the hills, a fox found a lantern beside the stream.',type:'narration'},{id:'l2',speaker:'fox',text:'I will light the path home for everyone.',type:'dialogue'}]})}));
+  });
+  await page.getByRole('heading',{name:'LitLab',exact:true}).waitFor();
+  await page.addScriptTag({path:path.join(root,'desktop/web-app/node_modules/axe-core/axe.min.js')});
+  async function audit(name){const result=await page.evaluate(async()=>{const r=await axe.run(document.querySelector('.litlab-dialog'),{rules:{region:{enabled:false}}});return r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});audits.push({name,violations:result});}
+  await audit('setup');
+  await page.screenshot({path:path.join(output,'desktop-setup.png')});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:path.join(output,'phone-setup.png')});
+  await page.getByRole('button',{name:'AI Generate',exact:false}).click();
+  await page.screenshot({path:path.join(output,'phone-generation.png')});
+  const overflows=[];
+  async function check(name){const bad=await page.evaluate(()=>{const d=document.querySelector('.litlab-body');return {scroll:d.scrollWidth,client:d.clientWidth};});if(bad.scroll>bad.client+1)overflows.push({name,...bad});}
+  await check('phone generation');
+  await page.getByRole('button',{name:'Paste Text',exact:false}).click();
+  await page.getByLabel('Story text input').fill('As the sun dipped below the hills, a fox found a lantern beside the stream. "I will light the path home for everyone," said the fox.');
+  await page.getByRole('button',{name:'Create Script from text',exact:true}).click();
+  await page.getByRole('heading',{name:'Assign Voices',exact:false}).waitFor();
+  await check('phone voices');
+  await page.screenshot({path:path.join(output,'phone-voices.png')});
+  await page.getByRole('button',{name:'Start Performance',exact:false}).click();
+  await check('phone performance');
+  await page.getByRole('button',{name:'Prepare narration',exact:true}).click();
+  await page.getByText('Narration saved with this script on this device.',{exact:true}).waitFor();
+  await page.getByText('2 of 2 narration lines ready',{exact:true}).waitFor();
+  await audit('saved narration');
+  await page.setViewportSize({width:1280,height:1000});
+  await audit('performance');
+  await page.screenshot({path:path.join(output,'desktop-performance.png')});
+  await page.setViewportSize({width:320,height:740});
+  await check('small phone performance');
+  await page.getByRole('button',{name:'Analyze',exact:false}).click();
+  await check('small phone analysis');
+  await audit('analysis');
+  await page.screenshot({path:path.join(output,'phone-analysis.png')});
+  await page.locator('summary').click();
+  await audit('analysis with source evidence');
+  await page.getByLabel('Theme analysis', {exact:true}).fill('Fox shows that helping others can make a difficult journey easier.');
+  await page.getByRole('button',{name:'Submit self-assessment',exact:true}).click();
+  await page.getByRole('button',{name:'Get AI feedback on your analysis',exact:true}).click();
+  await page.getByRole('heading',{name:'Literary Analysis Feedback',exact:false}).waitFor();
+  await check('small phone feedback');
+  await audit('feedback');
+  await page.getByRole('button',{name:'Build a revision plan',exact:true}).click();
+  await page.getByRole('checkbox').first().waitFor();
+  await page.getByRole('checkbox').first().check();
+  await page.getByText('1 of 3 steps complete',{exact:true}).waitFor();
+  await check('small phone revision plan');
+  await audit('revision checklist');
+  await page.getByRole('region',{name:'Revision Plan synthesis',exact:true}).scrollIntoViewIfNeeded();
+  await page.screenshot({path:path.join(output,'phone-revision-plan.png')});
+  await page.setViewportSize({width:1280,height:1000});
+  await page.getByRole('region',{name:'Revision Plan synthesis',exact:true}).scrollIntoViewIfNeeded();
+  await page.screenshot({path:path.join(output,'desktop-revision-plan.png')});
+  await page.getByRole('button',{name:'Save progress',exact:true}).click();
+  await page.getByText('Progress saved on this device.',{exact:true}).waitFor();
+  const saved = await page.evaluate(()=>JSON.parse(localStorage.getItem('alloLitLabScripts')));
+  if(saved.length !== 1 || !saved[0].progress.completedTasks[0]) throw Error('Progress was not saved.');
+  await page.getByRole('button',{name:'Save progress',exact:true}).click();
+  if(await page.evaluate(()=>JSON.parse(localStorage.getItem('alloLitLabScripts')).length) !== 1) throw Error('Repeated save created a duplicate.');
+  await page.evaluate(()=>window.__litRoot.unmount());
+  await page.evaluate(()=>{
+    window.__litRoot = ReactDOM.createRoot(document.getElementById('root'));
+    __litRoot.render(React.createElement(AlloModules.LitLab,{isOpen:true,onClose:()=>{},gradeLevel:'5th Grade',geminiVoices:[],kokoroVoices:[],addToast:()=>{}}));
+  });
+  await page.getByRole('button',{name:'The Lantern Walk',exact:false}).click();
+  await page.getByText('1 of 3 steps complete',{exact:true}).waitFor();
+  if(await page.getByLabel('Theme analysis',{exact:true}).inputValue() !== 'Fox shows that helping others can make a difficult journey easier.') throw Error('Reflection was not restored.');
+  await audit('restored reflection');
+  await page.getByText('2 of 2 narration lines ready',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Back to Performance',exact:false}).click();
+  await page.getByRole('button',{name:'Read line 1 aloud',exact:true}).click();
+  await page.getByRole('button',{name:'Analyze',exact:false}).click();
+  await page.setViewportSize({width:390,height:844});
+  await check('phone restored reflection');
+  await page.getByRole('group',{name:'Save your work',exact:true}).scrollIntoViewIfNeeded();
+  await page.screenshot({path:path.join(output,'phone-resume-progress.png')});
+  fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({errors,overflows,audits},null,2));
+  if(errors.length||overflows.length||audits.some(a=>a.violations.some(v=>['serious','critical'].includes(v.impact))))throw Error(JSON.stringify({errors,overflows,audits}));
+  console.log('LitLab desktop and phone flow passed. Captures: '+output);
+ } finally { await browser.close(); }
+})().catch(e=>{console.error(e);process.exitCode=1;});

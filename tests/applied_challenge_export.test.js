@@ -275,7 +275,11 @@ describe('Applied Challenge Studio host wiring', () => {
     const dispatcher = readFileSync('generate_dispatcher_source.jsx', 'utf8');
     const source = readFileSync('applied_challenge_source.jsx', 'utf8');
     expect(host).toContain("const [appliedChallengeFamily, setAppliedChallengeFamily] = useState('decide');");
-    expect(host).toContain('appliedChallengeFamily, setAppliedChallengeFamily,');
+    const sidebar = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
+    expect(sidebar).toContain('appliedChallengeFamily, setAppliedChallengeFamily,');
+    const sidebarProps = host.slice(host.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"'), host.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"') + 14000);
+    expect(sidebarProps).toMatch(/\bappliedChallengeFamily\b/);
+    expect(sidebarProps).toMatch(/\bsetAppliedChallengeFamily\b/);
     expect(host).toContain('View: window.AlloModules.AppliedChallengeView, studentResponses, studentWorkStatus,');
     expect(host).toContain('handleNoteUpdate, callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, gradeLevel, t,');
     expect(dispatcher).toContain("_acAmbient(appliedChallengeFamily, 'decide')");

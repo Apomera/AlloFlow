@@ -1,0 +1,476 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/document-builder-refinements-2026-09-08/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "document_builder_responsive_keyboard.spec.ts",
+      "file": "document_builder_responsive_keyboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Builder has a usable initial editing surface at 1440x900",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1565,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:36:59.264Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDE0NDAsCiAgICAiaGVpZ2h0IjogOTAwCiAgfSwKICAiZnJhbWUiOiB7CiAgICAieCI6IDM0MCwKICAgICJ5IjogMjY2LAogICAgIndpZHRoIjogMTA0OCwKICAgICJoZWlnaHQiOiA1MTUuNSwKICAgICJyaWdodCI6IDEzODgsCiAgICAiYm90dG9tIjogNzgxLjUKICB9LAogICJ2aXNpYmxlSGVpZ2h0IjogNTE1LjUsCiAgImRvY3VtZW50V2lkdGgiOiAxNDQwCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-54e18be826805aaa7419",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 77,
+          "column": 7
+        },
+        {
+          "title": "Builder has a usable initial editing surface at 1024x768",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9402,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:01.085Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDEwMjQsCiAgICAiaGVpZ2h0IjogNzY4CiAgfSwKICAiZnJhbWUiOiB7CiAgICAieCI6IDMyOS41OTM3NSwKICAgICJ5IjogMzYwLjUsCiAgICAid2lkdGgiOiA2NTIuNzk2ODc1LAogICAgImhlaWdodCI6IDIzNC4wOTM3NSwKICAgICJyaWdodCI6IDk4Mi4zOTA2MjUsCiAgICAiYm90dG9tIjogNTk0LjU5Mzc1CiAgfSwKICAidmlzaWJsZUhlaWdodCI6IDIzNC4wOTM3NSwKICAiZG9jdW1lbnRXaWR0aCI6IDEwMjQKfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-4acfe9eb683f89d12a23",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 77,
+          "column": 7
+        },
+        {
+          "title": "Builder has a usable initial editing surface at 768x1024",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17201,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:10.504Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDc2OCwKICAgICJoZWlnaHQiOiAxMDI0CiAgfSwKICAiZnJhbWUiOiB7CiAgICAieCI6IDM1LjIwMzEyNSwKICAgICJ5IjogMjYyLAogICAgIndpZHRoIjogNjk3LjU5Mzc1LAogICAgImhlaWdodCI6IDYxMi43OTY4NzUsCiAgICAicmlnaHQiOiA3MzIuNzk2ODc1LAogICAgImJvdHRvbSI6IDg3NC43OTY4NzUKICB9LAogICJ2aXNpYmxlSGVpZ2h0IjogNjEyLjc5Njg3NSwKICAiZG9jdW1lbnRXaWR0aCI6IDc2OAp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-a3462354a484b8796be6",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 77,
+          "column": 7
+        },
+        {
+          "title": "Builder has a usable initial editing surface at 390x844",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1455,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:27.721Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "layout.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDM5MCwKICAgICJoZWlnaHQiOiA4NDQKICB9LAogICJmcmFtZSI6IHsKICAgICJ4IjogMzIsCiAgICAieSI6IDQwOCwKICAgICJ3aWR0aCI6IDMyNiwKICAgICJoZWlnaHQiOiAzMjAsCiAgICAicmlnaHQiOiAzNTgsCiAgICAiYm90dG9tIjogNzI4CiAgfSwKICAidmlzaWJsZUhlaWdodCI6IDMyMCwKICAiZG9jdW1lbnRXaWR0aCI6IDM5MAp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-6af2e5fba634a2ea3fa7",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 77,
+          "column": 7
+        },
+        {
+          "title": "mobile settings are reachable, Escape restores focus, and toggling preserves live edits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8700,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:29.193Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-3915fc7705640c04d73d",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 98,
+          "column": 5
+        },
+        {
+          "title": "phone Focus mode preserves a usable preview and returns to standard view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2466,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:37.909Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "focus-layout.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDM5MCwKICAgICJoZWlnaHQiOiA4NDQKICB9LAogICJmcmFtZSI6IHsKICAgICJ4IjogMTYsCiAgICAieSI6IDM5MiwKICAgICJ3aWR0aCI6IDM1OCwKICAgICJoZWlnaHQiOiAzMjAsCiAgICAicmlnaHQiOiAzNzQsCiAgICAiYm90dG9tIjogNzEyCiAgfSwKICAidmlzaWJsZUhlaWdodCI6IDMyMCwKICAiZG9jdW1lbnRXaWR0aCI6IDM5MAp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-c9e7b7452ca65a80b2b1",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 126,
+          "column": 5
+        },
+        {
+          "title": "Quick Access Escape closes its own menu and restores focus before Builder close",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15554,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:40.393Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-3e610657e4759538cc36",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 144,
+          "column": 5
+        },
+        {
+          "title": "Tab from editor entry reaches its native control and editable inspector badge",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2676,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:55.977Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-177dd1dba8cf3c0292b8",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 159,
+          "column": 5
+        },
+        {
+          "title": "a focused table control reaches its inspector badge without inserting a table row",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1850,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:37:58.670Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-481424df51047f75be32",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 184,
+          "column": 5
+        },
+        {
+          "title": "current document heading and timestamped save context follow real edits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28353,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:38:00.533Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-f5fbfe8c89de08a40c24",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 208,
+          "column": 5
+        },
+        {
+          "title": "remediation settings omit History assembly options while retaining the editable document",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3203,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T21:38:28.900Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02257a0ccda66df17620-1620b074d1068974c2ed",
+          "file": "document_builder_responsive_keyboard.spec.ts",
+          "line": 224,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-08T21:36:57.624Z",
+    "duration": 94915.621,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,364 @@
+{
+  "scope": "Actual local React/Three WebGL in touch-capable Chromium; small fractional creation; no source edits",
+  "errors": [],
+  "failures": [
+    "390x844: Turn touch controls off viewport control remains reachable"
+  ],
+  "placements": [],
+  "viewports": [
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "touch": [
+        {
+          "name": "Jump or fly up",
+          "text": "Up",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 394,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Fly down",
+          "text": "Down",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 448,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Place block",
+          "text": "Place",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 502,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Break block",
+          "text": "Break",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 556,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Measure structure",
+          "text": "Measure",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 610,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "name": "Undo last block action",
+          "text": "Undo",
+          "width": 64,
+          "height": 48,
+          "x": 314,
+          "y": 664,
+          "visible": true,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "views": [],
+      "overlaps": [],
+      "joystickOverlaps": [],
+      "flight": [
+        {
+          "before": 8,
+          "during": {
+            "y": 12.31339999991655,
+            "up": true,
+            "down": false
+          },
+          "after": {
+            "y": 13.01339999991655,
+            "up": false,
+            "down": false,
+            "enabled": true
+          },
+          "direction": "up",
+          "ending": "release",
+          "pass": true
+        },
+        {
+          "before": 13.01339999991655,
+          "during": {
+            "y": 9.668800000250336,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 8.31570000016689,
+            "up": false,
+            "down": false,
+            "enabled": true
+          },
+          "direction": "down",
+          "ending": "cancel",
+          "pass": true
+        },
+        {
+          "before": 8.31570000016689,
+          "during": {
+            "y": 5.218899999499318,
+            "up": false,
+            "down": true
+          },
+          "after": {
+            "y": 5.218899999499318,
+            "up": false,
+            "down": false,
+            "enabled": true
+          },
+          "direction": "down",
+          "ending": "blur",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "fixture": {
+    "studentBlocks": 50,
+    "groundBlocks": 99
+  },
+  "initial": {
+    "world": "[{\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2}]",
+    "studentBlocks": 50,
+    "selected": 48,
+    "bytes": 12984,
+    "hash": "d89ff2407b55695caea0a5a5b1f0a8972d2cc3849c8d2b0ab8f030d04ab51715",
+    "undo": "[{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":-1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":-1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":2,\"z\":1,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":3,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":4,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-2,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":0},{\"action\":\"place\",\"x\":-1,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":-1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":6,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":-1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"brick\",\"shape\":\"halfA\",\"rotation\":2},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"sand\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":-1,\"y\":1,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"halfB\",\"rotation\":0}]",
+    "redo": "[]",
+    "placed": 50,
+    "displayedPlaced": 50,
+    "xp": 25,
+    "milestones": "{}"
+  },
+  "modeOff": {
+    "y": 3.0817999998331045,
+    "up": false,
+    "down": false,
+    "enabled": false,
+    "diagnostics": {
+      "pointerLock": "CANVAS",
+      "pointerLockClass": "",
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.\" aria-describedby=\"geoworld-instructions\" tabindex=\"",
+      "stack": [
+        {
+          "tag": "SPAN",
+          "cls": "",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "gw-viewport-control gw-viewport-control--touch gw-focusable",
+          "z": "100",
+          "pointer": "auto"
+        },
+        {
+          "tag": "CANVAS",
+          "cls": "",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "DIV",
+          "cls": "gw-viewport",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "DIV",
+          "cls": "gw-root gwe-enhanced",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "DIV",
+          "cls": "",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "BODY",
+          "cls": "",
+          "z": "auto",
+          "pointer": "auto"
+        },
+        {
+          "tag": "HTML",
+          "cls": "",
+          "z": "auto",
+          "pointer": "auto"
+        }
+      ],
+      "move": {
+        "forward": false,
+        "backward": false,
+        "left": false,
+        "right": false,
+        "sprint": false,
+        "flyDown": false,
+        "flyUp": false
+      }
+    }
+  },
+  "eventTrace": [
+    {
+      "type": "click",
+      "target": "SPAN",
+      "label": null,
+      "pointerType": "mouse",
+      "touchDerived": false,
+      "engineLocked": false,
+      "time": 4675.5
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": null,
+      "pointerType": "mouse",
+      "touchDerived": false,
+      "engineLocked": false,
+      "time": 5249.599999964237
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Select and measure aimed build",
+      "pointerType": "mouse",
+      "touchDerived": false,
+      "engineLocked": false,
+      "time": 12377
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Collapse Free Build Studio",
+      "pointerType": "mouse",
+      "touchDerived": false,
+      "engineLocked": false,
+      "time": 13543.099999964237
+    },
+    {
+      "type": "touchstart",
+      "target": "BUTTON",
+      "label": "Jump or fly up",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 17297.899999976158
+    },
+    {
+      "type": "touchend",
+      "target": "BUTTON",
+      "label": "Jump or fly up",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 20382.799999952316
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Jump or fly up",
+      "pointerType": "touch",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 20401.19999998808
+    },
+    {
+      "type": "touchstart",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 22146.5
+    },
+    {
+      "type": "touchcancel",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 23277.5
+    },
+    {
+      "type": "touchstart",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 24007.799999952316
+    },
+    {
+      "type": "touchend",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 24572.19999998808
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "pointerType": "touch",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 24576.5
+    },
+    {
+      "type": "touchstart",
+      "target": "BUTTON",
+      "label": "Fly down",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 25170.799999952316
+    },
+    {
+      "type": "click",
+      "target": "BUTTON",
+      "label": "Turn touch controls off",
+      "pointerType": "",
+      "engineLocked": false,
+      "time": 25498.599999964237
+    },
+    {
+      "type": "click",
+      "target": "CANVAS",
+      "label": null,
+      "pointerType": "touch",
+      "touchDerived": true,
+      "engineLocked": false,
+      "time": 27013.299999952316
+    },
+    {
+      "type": "pointerlockchange",
+      "locked": "CANVAS",
+      "engineLocked": false,
+      "time": 27993.19999998808
+    }
+  ],
+  "failure": "Error: Bounded diagnostic complete after mode-off release\n    at heldTouch (eval at <anonymous> (eval at <anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\geometry-world-graphics-2026-09-08\\diagnose-touch-mode-off.cjs:16:1)), <anonymous>:48:11)\n    at async verifyControlsViewsPass (eval at <anonymous> (eval at <anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\geometry-world-graphics-2026-09-08\\diagnose-touch-mode-off.cjs:16:1)), <anonymous>:89:148)",
+  "pass": false
+}

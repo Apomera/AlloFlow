@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "accessibilityReport": "complex-table-accessibility-report.json",
+    "accessibleHtml": "complex-table-accessible.html",
+    "privacyReceipt": "complex-table-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "humanReviewRequired": true,
+  "ok": true,
+  "outputDirectory": "artifacts",
+  "outputPathRedacted": true,
+  "pdfUaCompliant": null,
+  "pdfUaValidation": "not_run",
+  "taggedPdfGeneration": "not_run",
+  "verdict": "html_only_review_required"
+}

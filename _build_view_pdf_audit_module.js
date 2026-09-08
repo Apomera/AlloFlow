@@ -28,9 +28,13 @@ if (!fs.existsSync(SOURCE)) {
 }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
+// Keep the UMD helper outside JSX compilation. Its module.exports compatibility
+// branch would otherwise make esbuild wrap the whole entry as CommonJS/ESM.
+const reviewHelpers = fs.readFileSync(path.join(ROOT, 'remediation_review_helpers.js'), 'utf8');
 
 const entry = `
 /* global React */
+${fs.readFileSync(path.join(ROOT, 'remediation_review_component.jsx'), 'utf8')}
 ${source}
 `;
 
@@ -81,8 +85,10 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Sparkles = _lazyIcon('Sparkles');
 var Wrench = _lazyIcon('Wrench');
 var X = _lazyIcon('X');
+${reviewHelpers}
 ${compiled}
 window.AlloModules = window.AlloModules || {};
+window.AlloModules.PdfPreservationReview = _PdfPreservationReview;
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.PdfAuditVerificationEngineList = (typeof _PdfAuditVerificationEngineList !== 'undefined') ? _PdfAuditVerificationEngineList : null;
 window.AlloModules.PdfHtmlFoundationMatrix = (typeof _PdfHtmlFoundationMatrix !== 'undefined') ? _PdfHtmlFoundationMatrix : null;
@@ -109,6 +115,9 @@ window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 })();
 `;
+
+// Validate as a classic browser script before replacing either runtime copy.
+new (require('vm').Script)(outputCode, { filename: OUTPUT });
 
 writeBuildFile(OUTPUT, outputCode, 'utf-8');
 try {

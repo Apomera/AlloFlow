@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "finite and infinite barriers",
+    "shallow bound ground state",
+    "probability without wavefunction toggle",
+    "state selection",
+    "live resistance updates",
+    "zero supply",
+    "LED without external resistor",
+    "steady capacitor",
+    "unsupported saved transistor",
+    "touch removal",
+    "two concept checks",
+    "saved numerical evidence",
+    "desktop and mobile overflow",
+    "WCAG scans"
+  ],
+  "errors": []
+}

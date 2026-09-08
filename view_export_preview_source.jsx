@@ -3171,6 +3171,7 @@ function _builderPrepareComparableDocument(source, ownerDocument) {
     if (!html) return null;
     const doc = new Parser().parseFromString(html, 'text/html');
     _builderFinalizeDocumentForExport(doc);
+    doc.querySelectorAll('[data-allo-semantic-selected]').forEach(node => node.removeAttribute('data-allo-semantic-selected'));
     doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach((node) => node.remove());
     return doc;
   } catch (_) {
@@ -3199,6 +3200,7 @@ function _builderComparableDocument(source, ownerDocument) {
   return {
     blocks,
     entries,
+    revision: doc.body.innerHTML,
     headings: _builderHeadingNodes(doc).map((heading) => String(heading.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean),
     statistics: _builderTextStatistics(text),
   };
@@ -3272,6 +3274,10 @@ function _builderCompareBlockSequences(beforeBlocks, afterBlocks, limit = 400) {
     modified,
     unchanged,
     changed: added + removed + modified,
+    comparedBefore: rows, comparedAfter: columns,
+    totalBefore: beforeBlocks.length, totalAfter: afterBlocks.length,
+    contentWindowTruncated: beforeBlocks.length > limit || afterBlocks.length > limit,
+    excerptWindowTruncated: added + removed + modified > excerpts.length,
     excerpts,
     truncated: beforeBlocks.length > limit || afterBlocks.length > limit || added + removed + modified > excerpts.length,
   };
@@ -3284,6 +3290,9 @@ function _builderCompareDocumentVersions(currentDocument, snapshotHtml) {
   const blocks = _builderCompareBlockSequences(before.blocks, after.blocks);
   const excerpts = blocks.excerpts.map((excerpt) => ({
     ...excerpt,
+    sourceRevision: before.revision, targetRevision: after.revision,
+    beforeHtml: before.entries[excerpt.beforeIndex]?.html || '',
+    afterHtml: after.entries[excerpt.afterIndex]?.html || '',
     beforeTag: Number.isInteger(excerpt.beforeIndex) ? before.entries[excerpt.beforeIndex]?.tag || '' : '',
     afterTag: Number.isInteger(excerpt.afterIndex) ? after.entries[excerpt.afterIndex]?.tag || '' : '',
   }));
@@ -3305,12 +3314,30 @@ function _builderRestoreVersionBlock(currentDocument, snapshotHtml, excerpt) {
   const beforeIndex = Number(excerpt.beforeIndex);
   const afterIndex = Number(excerpt.afterIndex);
   if (!Number.isInteger(beforeIndex) || !Number.isInteger(afterIndex)) return { ok: false, error: 'That comparison block is no longer available.' };
+  const before = _builderComparableDocument(snapshotHtml, currentDocument);
+  const after = _builderComparableDocument(currentDocument, currentDocument);
+  const stale = () => ({ ok: false, reason: 'stale-comparison', error: 'The document or saved version changed. Compare again before restoring a block.' });
+  if (!before || !after || typeof excerpt.targetRevision !== 'string'
+    || excerpt.sourceRevision !== before.revision || excerpt.targetRevision !== after.revision
+    || before.entries[beforeIndex]?.html !== excerpt.beforeHtml || after.entries[afterIndex]?.html !== excerpt.afterHtml) return stale();
+  if (before.entries.filter(entry => entry.html === excerpt.beforeHtml).length !== 1
+    || after.entries.filter(entry => entry.html === excerpt.afterHtml).length !== 1) {
+    return { ok: false, reason: 'ambiguous-block', error: 'This block is not unique. Restore the full version or edit the intended block directly.' };
+  }
   const snapshotDocument = _builderPrepareComparableDocument(snapshotHtml, currentDocument);
   const sourceBlock = _builderComparableBlockElements(snapshotDocument)[beforeIndex];
   const targetBlock = _builderComparableBlockElements(currentDocument)[afterIndex];
   if (!sourceBlock || !targetBlock || !targetBlock.parentNode) return { ok: false, error: 'That comparison block is no longer available.' };
   if (String(sourceBlock.tagName || '').toLowerCase() !== String(targetBlock.tagName || '').toLowerCase()) return { ok: false, error: 'Restore the full version to change this block type safely.' };
   if (targetBlock.matches(_BUILDER_CHANGE_SELECTOR) || targetBlock.querySelector(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending changes in this block before restoring it.' };
+  // The finalized comparison can omit pending deletions. Confirm the live index
+  // still names the exact compared block before any mutation, including table cells.
+  const targetWrapper = currentDocument.createElement('div');
+  targetWrapper.appendChild(targetBlock.cloneNode(true));
+  _builderFinalizeDocumentForExport(targetWrapper);
+  targetWrapper.querySelectorAll('[data-allo-semantic-selected]').forEach(node => node.removeAttribute('data-allo-semantic-selected'));
+  targetWrapper.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach(node => node.remove());
+  if (targetWrapper.firstElementChild?.outerHTML !== excerpt.afterHtml) return stale();
   const replacement = currentDocument.importNode(sourceBlock, true);
   Array.from(replacement.querySelectorAll('[id]')).concat(replacement.hasAttribute('id') ? [replacement] : []).forEach((node) => {
     const duplicate = currentDocument.getElementById(node.id);
@@ -3330,8 +3357,48 @@ function _builderRestoreVersionBlock(currentDocument, snapshotHtml, excerpt) {
   currentDocument.body.setAttribute('data-allo-user-edited', '1');
   return { ok: true, tracked: tracking, marker };
 }
-function _normalizeBuilderLocalDraft(candidate) {
+function _builderDraftContext({ source, mode, history, resourceIds, documentDigest, historySignature }) {
+  const kind = source === 'remediation' ? 'remediation' : 'history';
+  const digest = typeof documentDigest === 'string' ? documentDigest.trim() : '';
+  // A filename or extracted text cannot distinguish two different source assets.
+  if (kind === 'remediation' && !digest) return null;
+  try {
+    return JSON.stringify({ version: 3, source: kind, mode: mode || 'print',
+      resourceIds: kind === 'history' && Array.isArray(resourceIds) ? resourceIds : null,
+      historySignature: kind === 'history' ? historySignature || null : null,
+      document: kind === 'remediation' ? digest : (Array.isArray(history) ? history : []) });
+  } catch (_) { return null; }
+}
+async function _builderDraftIdentity(context, cryptoApi = globalThis.crypto) {
+  if (typeof context !== 'string' || !context || !cryptoApi?.subtle?.digest) return null;
+  try {
+    const digest = await cryptoApi.subtle.digest('SHA-256', new TextEncoder().encode(context));
+    const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    return hash.length === 64 ? 'alloflow-builder-draft-v3:' + hash : null;
+  } catch (_) { return null; }
+}
+function _builderCreateDraftCapture({ capture, isCurrent, schedule = setTimeout, unschedule = clearTimeout }) {
+  let timer = null;
+  let cancelled = false;
+  let pending = false;
+  const clear = () => { if (timer !== null) unschedule(timer); timer = null; };
+  const flush = () => {
+    clear();
+    const dirty = pending;
+    pending = false;
+    if (!dirty || cancelled || !isCurrent()) return false;
+    return capture();
+  };
+  return {
+    schedule() { clear(); if (!cancelled && isCurrent()) { pending = true; timer = schedule(flush, 800); } },
+    flush,
+    cancel() { cancelled = true; pending = false; clear(); },
+  };
+}
+
+function _normalizeBuilderLocalDraft(candidate, identity = null) {
   if (!candidate || typeof candidate !== 'object' || typeof candidate.html !== 'string' || candidate.html.length < 100) return null;
+  if (identity && (candidate.version !== 3 || candidate.sourceIdentity !== identity)) return null;
   const currentAt = Number(candidate.at) || Date.now();
   const rawSnapshots = Array.isArray(candidate.snapshots) ? candidate.snapshots : [];
   const snapshots = rawSnapshots
@@ -3341,10 +3408,11 @@ function _normalizeBuilderLocalDraft(candidate) {
       at: Number(item.at) || currentAt,
       label: String(item.label || 'Auto-save').slice(0, 80),
       html: item.html,
+      ...(identity ? { sourceIdentity: identity } : {}),
     }))
     .slice(0, 10);
-  if (!snapshots.length) snapshots.push({ id: `legacy-${currentAt}`, at: currentAt, label: 'Recovered draft', html: candidate.html });
-  return { ...candidate, version: 2, at: currentAt, snapshots };
+  if (!snapshots.length) snapshots.push({ id: `legacy-${currentAt}`, at: currentAt, label: 'Recovered draft', html: candidate.html, ...(identity ? { sourceIdentity: identity } : {}) });
+  return { ...candidate, version: identity ? 3 : 2, at: currentAt, snapshots };
 }
 
 const _BUILDER_VIEW_PREFS_KEY = 'alloflow-builder-view-prefs-v1';
@@ -3611,6 +3679,213 @@ function _builderEditorPageCss(enabled, pageSetup) {
     ].join('\n');
 }
 
+// One catalog drives the visible resources, their defaults and bulk selection.
+function _builderResourceOptions(history, t) {
+  const translate = typeof t === 'function' ? t : () => '';
+  const entries = [
+    ['includeAnalysis', '📊 Source Analysis', 'analysis'],
+    ['includeSimplified', '📖 Adapted Text', 'simplified'],
+    ['includeGlossary', '📚 Glossary', 'glossary'],
+    ['includeQuiz', '❓ Quiz', 'quiz'],
+    ['includeOutline', '🗂️ Graphic Organizer', 'outline'],
+    ['includeFaq', '💬 FAQ', 'faq'],
+    ['includeMemoryAid', translate('sidebar.tool_memory_aid') || 'Memory Aid Studio', 'memory-aid'],
+    ['includeAppliedChallenge', translate('sidebar.tool_applied_challenge') || 'Applied Challenge Studio', 'applied-challenge'],
+    ['includeSentenceFrames', '✍️ Sentence Frames', 'sentence-frames'],
+    ['includeImage', '🎨 Visual Support', 'image'],
+    ['includeMath', '🔢 Math', 'math'],
+    ['includeDbq', '📜 DBQ', 'dbq'],
+    ['includeLessonPlan', '📋 Lesson Plan', 'lesson-plan'],
+    ['includeUdlAdvice', '🧩 UDL Advice', 'udl-advice'],
+    ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
+  ];
+  const types = new Set((Array.isArray(history) ? history : []).filter(Boolean).map(item => item.type));
+  return entries.filter(([, , type]) => types.has(type));
+}
+function _builderResourceIncluded(config, key) {
+  return ['includeMemoryAid', 'includeAppliedChallenge'].includes(key) ? config?.[key] !== false : !!config?.[key];
+}
+function _builderBulkResourceUpdate(history, config, t) {
+  const available = _builderResourceOptions(history, t);
+  const allOn = available.length > 0 && available.every(([key]) => _builderResourceIncluded(config, key));
+  return Object.fromEntries(available.map(([key]) => [key, !allOn]));
+}
+function _builderSelectedResourceItems(history, config, t) {
+  const options = _builderResourceOptions(history, t);
+  const definitions = new Map(options.map(([key, label, type]) => [type, { key, label }]));
+  return (Array.isArray(history) ? history : []).filter(Boolean).flatMap((item, index) => {
+    const definition = definitions.get(item.type);
+    if (!definition) return [];
+    const candidate = item.title || item.data?.title || item.result?.title;
+    const title = typeof candidate === 'string' && candidate.trim() ? candidate.replace(/<[^>]*>/g, '').trim().slice(0, 120) : definition.label;
+    return [{ id: String(item.id || index), title, type: definition.label, included: _builderResourceIncluded(config, definition.key) }];
+  });
+}
+function _builderVisibleDocumentTitle(doc, fallback) {
+  const title = doc?.querySelector?.('h1')?.textContent || doc?.title || fallback || 'Untitled document';
+  return String(title).replace(/\s+/g, ' ').trim().slice(0, 160) || 'Untitled document';
+}
+function _builderSaveStatusLabel(state, at) {
+  const labels = { capturing: 'Saving changes…', saved: 'Saved on this device', restored: 'Local draft restored', captured: 'Saved for this session', ready: 'No local changes yet', error: 'Changes not captured. Try Save again.' };
+  const label = labels[state] || 'Local save unavailable';
+  const date = new Date(at || 0);
+  return at && Number.isFinite(date.getTime()) && ['saved', 'restored', 'captured'].includes(state)
+    ? label + ' · ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : label;
+}
+
+// Keyboard traversal must agree across the parent dialog and editable iframe.
+function _builderKeyboardTargets(container) {
+  return Array.from(container.querySelectorAll('button,a[href],input:not([type="hidden"]),select,textarea,iframe,[tabindex],summary')).filter((element) => {
+    if (element.tabIndex < 0 || element.matches(':disabled') || element.closest('[inert],[hidden],[aria-hidden="true"]')) return false;
+    if (!element.getClientRects().length) return false;
+    const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+    if (style?.visibility === 'hidden' || style?.visibility === 'collapse') return false;
+    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName !== 'DETAILS' || parent.open) continue;
+      const summary = Array.from(parent.children).find((child) => child.tagName === 'SUMMARY');
+      if (!summary || (element !== summary && !summary.contains(element))) return false;
+    }
+    return true;
+  });
+}
+
+const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
+.allo-docsuite .builder-dialog { height:95vh; height:95dvh; min-height:0; }
+.allo-docsuite .builder-dialog[data-builder-focus="true"] { height:100%; }
+.allo-docsuite .builder-mobile-switch { display:none; }
+.allo-docsuite .builder-preview-shell { display:flex; min-height:0; }
+.allo-docsuite .builder-preview-frame { display:block; flex:1; min-height:0; }
+@media (max-width:1023px) {
+  .allo-docsuite .builder-dialog { overflow:hidden; }
+  .allo-docsuite .builder-mobile-switch { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-shrink:0; padding:.5rem .75rem; border-bottom:1px solid #cbd5e1; background:#fff; }
+  .allo-docsuite .builder-settings-panel { display:none; }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; flex:1 1 0; min-height:0; width:100%; overflow:auto; }
+  .allo-docsuite .builder-editor-pane { min-height:0; overflow-x:hidden; overflow-y:auto; }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-editor-pane { display:none; }
+  .allo-docsuite .builder-preview-stage { flex:1 0 22rem; min-height:22rem; }
+}
+`;
+
+// Shared conversion boundaries for Builder live-document exports.
+function _builderCleanMarkdownRoot(doc) {
+  if (!doc?.body) throw new Error('The editable preview is not ready.');
+  const root = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach(node => node.remove());
+  _builderStripEditorBreakMetadata(root);
+  root.removeAttribute('contenteditable');
+  root.querySelectorAll('[contenteditable]').forEach(node => node.removeAttribute('contenteditable'));
+  return root;
+}
+function _builderMarkdownFromRoot(root, options = {}) {
+  const warnings = new Set();
+  const escaped = value => String(value || '').replace(/([\\`*_[\]])/g, '\\$1');
+  const fence = value => '`'.repeat(Math.max(3, ...((String(value).match(/`+/g) || []).map(run => run.length + 1))));
+  const link = (value, image) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (!image && raw.startsWith('#')) return raw.replace(/[<>\s]/g, ch => encodeURIComponent(ch));
+    if (image && /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw.replace(/\s/g, '');
+    try {
+      const url = new URL(raw, options.baseURI || 'https://invalid.local/');
+      if (!['http:', 'https:', ...(image ? [] : ['mailto:', 'tel:'])].includes(url.protocol)) return '';
+      const target = raw.startsWith('#') ? raw : url.href;
+      return target.replace(/[<>\s]/g, ch => encodeURIComponent(ch));
+    } catch (_) { return ''; }
+  };
+  const mathBlocks = Array.from(root.querySelectorAll('math'));
+  const children = (node, depth) => Array.from(node.childNodes || []).map(child => render(child, depth)).join('');
+  const render = (node, depth = 0) => {
+    if (depth > 100) throw new Error('The document is too deeply nested to convert to Markdown.');
+    if (node.nodeType === 3) return escaped(node.nodeValue);
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    if (['script', 'style', 'head', 'template'].includes(tag)) return '';
+    if (tag === 'math') {
+      const xml = node.outerHTML, mark = fence(xml);
+      const spoken = options.spokenByBlock?.[mathBlocks.indexOf(node)];
+      return '\n\n' + (spoken ? '*Spoken: ' + escaped(String(spoken).trim()) + '*\n\n' : '') + mark + 'mathml\n' + xml + '\n' + mark + '\n\n';
+    }
+    if (tag === 'img') {
+      const alt = escaped(node.getAttribute('alt') || 'Image'), src = link(node.getAttribute('src'), true);
+      if (!src) { warnings.add('An image source could not be included; its description is retained. Use HTML for the complete document.'); return '[Image: ' + alt + ']'; }
+      return '![' + alt + '](<' + src + '>)';
+    }
+    if (tag === 'pre') { const value = node.textContent || '', mark = fence(value); return '\n\n' + mark + '\n' + value + '\n' + mark + '\n\n'; }
+    if (tag === 'code') { const value = node.textContent || '', mark = fence(value); return mark + ' ' + value + ' ' + mark; }
+    if (tag === 'table') {
+      if (node.querySelector('[colspan]:not([colspan="1"]),[rowspan]:not([rowspan="1"]),table,math,img')) {
+        warnings.add('Tables with merged cells, images, or math are retained as HTML. Check that your Markdown reader supports them.');
+        const copy = node.cloneNode(true);
+        [copy, ...copy.querySelectorAll('*')].forEach(el => Array.from(el.attributes).forEach(attr => { if (/^on/i.test(attr.name) || attr.name === 'srcdoc') el.removeAttribute(attr.name); }));
+        copy.querySelectorAll('img').forEach(img => { const src = link(img.getAttribute('src'), true); if (src) img.setAttribute('src', src); else { warnings.add('An image source could not be included; its description is retained. Use HTML for the complete document.'); img.replaceWith(root.ownerDocument.createTextNode('[Image: ' + (img.getAttribute('alt') || 'Image') + ']')); } });
+        copy.querySelectorAll('a[href]').forEach(anchor => { const href = link(anchor.getAttribute('href'), false); if (href) anchor.setAttribute('href', href); else anchor.removeAttribute('href'); });
+        return '\n\n' + copy.outerHTML + '\n\n';
+      }
+      const rows = Array.from(node.rows || []).map(row => Array.from(row.cells).map(cell => children(cell, depth + 1).trim().replace(/\|/g, '\\|').replace(/\n+/g, '<br>')));
+      if (!rows.length) return '';
+      const width = Math.max(...rows.map(row => row.length));
+      const line = row => '| ' + Array.from({ length: width }, (_, index) => row[index] || '').join(' | ') + ' |';
+      const caption = node.caption ? escaped(node.caption.textContent) + '\n\n' : '';
+      return '\n\n' + caption + line(rows[0]) + '\n' + line(Array(width).fill('---')) + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+    }
+    if (tag === 'a') { const label = children(node, depth + 1), href = link(node.getAttribute('href'), false); return href ? '[' + label + '](<' + href + '>)' : label; }
+    if (tag === 'ul' || tag === 'ol') {
+      const start = Number(node.getAttribute('start')) || 1;
+      return '\n\n' + Array.from(node.children).filter(item => item.tagName === 'LI').map((item, index) => (tag === 'ol' ? (start + index) + '. ' : '- ') + children(item, depth + 1).trim().replace(/\n/g, '\n  ')).join('\n') + '\n\n';
+    }
+    const inner = children(node, depth + 1);
+    if (/^h[1-6]$/.test(tag)) return '\n\n' + '#'.repeat(Number(tag[1])) + ' ' + inner.trim() + '\n\n';
+    if (tag === 'strong' || tag === 'b') return '**' + inner + '**';
+    if (tag === 'em' || tag === 'i') return '*' + inner + '*';
+    if (tag === 'br') return '\n';
+    if (tag === 'hr') return '\n\n---\n\n';
+    if (tag === 'blockquote') return '\n\n' + inner.trim().replace(/^/gm, '> ') + '\n\n';
+    if (['p', 'div', 'section', 'article', 'figure', 'figcaption', 'main'].includes(tag)) return '\n\n' + inner.trim() + '\n\n';
+    return inner;
+  };
+  return { markdown: render(root).trim(), warnings: [...warnings] };
+}
+async function _builderFetchExportImage(url, options = {}) {
+  const maxBytes = options.maxBytes || 8 * 1024 * 1024;
+  const timeoutMs = options.timeoutMs || 10000;
+  const fetchImage = options.fetchImpl || fetch;
+  const controller = new AbortController();
+  let reader, finished = false, timer;
+  const cancel = () => { controller.abort(); try { const pending = reader?.cancel(); if (pending?.catch) pending.catch(() => {}); } catch (_) {} };
+  const deadline = new Promise((_, reject) => { timer = setTimeout(() => { cancel(); reject(new Error('Image transfer timed out.')); }, timeoutMs); });
+  try {
+    return await Promise.race([deadline, (async () => {
+      const response = await fetchImage(url, { credentials: 'omit', signal: controller.signal });
+      if (controller.signal.aborted) throw new Error('Image transfer timed out.');
+      if (!response.ok) throw new Error('Image request failed (' + response.status + ')');
+      const mediaType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase();
+      const extension = ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' })[mediaType];
+      if (!extension) throw new Error('Unsupported remote image type');
+      const declared = Number(response.headers.get('content-length'));
+      if (Number.isFinite(declared) && declared > maxBytes) throw new Error('Remote image exceeds the export size limit.');
+      if (!response.body?.getReader) throw new Error('This browser cannot read remote images with a bounded transfer.');
+      reader = response.body.getReader();
+      const chunks = []; let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (controller.signal.aborted) throw new Error('Image transfer timed out.');
+        if (done) break;
+        if (!(value instanceof Uint8Array)) throw new Error('Invalid image response bytes.');
+        if (value.byteLength > maxBytes - size) throw new Error('Remote image exceeds the export size limit.');
+        size += value.byteLength; chunks.push(value);
+      }
+      const bytes = new Uint8Array(size); let offset = 0;
+      chunks.forEach(chunk => { bytes.set(chunk, offset); offset += chunk.byteLength; });
+      finished = true;
+      return { bytes, mediaType, extension };
+    })()]);
+  } finally {
+    clearTimeout(timer);
+    if (!finished) cancel();
+    try { reader?.releaseLock(); } catch (_) {}
+  }
+}
+
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS, FONT_OPTIONS, STYLE_SEEDS, _ensureDiffLib,
@@ -3630,13 +3905,21 @@ function ExportPreviewView(props) {
     t, theme,
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
-    builderResourceIds = null,
+    builderResourceIds = null, builderDraftOwner = null, onBuilderDraftCapture,
     onExportSuccess,
     builderWorkspaceMode = 'author',
     setBuilderWorkspaceMode,
     onAdvancedReviewSessionChange,
   } = props;
   const isAdvancedReview = builderWorkspaceMode === 'advanced-review' && exportPreviewSource === 'remediation';
+  const isRemediationDocument = exportPreviewSource === 'remediation';
+  const resourceItems = _builderSelectedResourceItems(history, exportConfig, t);
+  const includedResourceCount = resourceItems.filter(item => item.included).length;
+  const documentSourceLabel = isRemediationDocument ? 'Remediated document' : (Array.isArray(builderResourceIds) ? 'Current lesson' : 'History selection');
+  const [previewDocumentTitle, setPreviewDocumentTitle] = React.useState(() => _builderVisibleDocumentTitle(null, exportConfig?.title || exportConfig?.docTitle || exportConfig?.lessonTitle));
+  React.useEffect(() => {
+    if (isRemediationDocument && exportPreviewMode === 'worksheet') setExportPreviewMode('print');
+  }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
   // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
@@ -3714,6 +3997,8 @@ function ExportPreviewView(props) {
   const [versionComparison, setVersionComparison] = React.useState(null);
   const [preflightResult, setPreflightResult] = React.useState(null);
   const [isFocusMode, setIsFocusMode] = React.useState(false);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(false);
+  const mobileSettingsButtonRef = React.useRef(null);
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
   const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);
@@ -3721,11 +4006,14 @@ function ExportPreviewView(props) {
   const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
   const [activeRibbonTab, setActiveRibbonTab] = React.useState(() => _readBuilderViewPreferences().ribbonTab);
-  const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => _readBuilderViewPreferences().ribbonCollapsed);
+  const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => (
+    (typeof window !== 'undefined' && window.matchMedia?.('(max-width:1023px)').matches) || _readBuilderViewPreferences().ribbonCollapsed
+  ));
   const [quickAccessItems, setQuickAccessItems] = React.useState(() => _readBuilderViewPreferences().quickAccess);
   const [pageMetrics, setPageMetrics] = React.useState({ count: 1, active: 0, sections: [], documentSections: [{ id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 }], activeSection: 0 });
   const [sectionNameDraft, setSectionNameDraft] = React.useState('Section 1');
   const [draftCaptureState, setDraftCaptureState] = React.useState('ready');
+  const [draftCaptureAt, setDraftCaptureAt] = React.useState(null);
   const [formatState, setFormatState] = React.useState({
     bold: false, italic: false, underline: false,
     strikeThrough: false, subscript: false, superscript: false, fontSize: '3',
@@ -3846,11 +4134,20 @@ function ExportPreviewView(props) {
   const advancedReviewHistoryRef = React.useRef([]);
   const advancedReviewCommandDispatchRef = React.useRef(false);
   const advancedReviewManualTimerRef = React.useRef(null);
-  const draftDocumentTitle = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || 'AlloFlow Document').trim().substring(0, 120) || 'AlloFlow Document';
-  const draftIdentitySeed = Array.isArray(history)
-    ? `${history.length}:${history[0]?.id || history[0]?.type || ''}:${history[history.length - 1]?.id || history[history.length - 1]?.type || ''}`
-    : 'empty';
-  const draftStorageKey = React.useMemo(() => `alloflow-builder-draft-v1:${encodeURIComponent([exportPreviewSource || 'generated', exportPreviewMode || 'print', draftDocumentTitle, draftIdentitySeed].join('|')).substring(0, 220)}`, [exportPreviewSource, exportPreviewMode, draftDocumentTitle, draftIdentitySeed]);
+  const draftDocumentTitle = String(previewDocumentTitle || (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || 'AlloFlow Document').trim().substring(0, 120) || 'AlloFlow Document';
+  const draftContext = _builderDraftContext({ source: exportPreviewSource, mode: exportPreviewMode,
+    history, resourceIds: builderResourceIds, documentDigest: pdfFixResult?.documentDigest, historySignature: builderDraftOwner?.historySignature });
+  const [draftIdentityState, setDraftIdentityState] = React.useState(null);
+  const draftStorageKey = draftIdentityState?.context === draftContext ? draftIdentityState.key : null;
+  const draftCaptureRef = React.useRef(null);
+  const draftCaptureLatestRef = React.useRef(null);
+  const draftContextRef = React.useRef(draftContext);
+  draftContextRef.current = draftContext;
+  React.useEffect(() => {
+    let current = true;
+    _builderDraftIdentity(draftContext).then(key => { if (current) setDraftIdentityState({ context: draftContext, key }); });
+    return () => { current = false; };
+  }, [draftContext]);
 
   const promptForBuilderText = React.useCallback(async (message, defaultValue, options) => {
     if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')) {
@@ -3862,6 +4159,7 @@ function ExportPreviewView(props) {
 
   React.useEffect(() => () => {
     mountedRef.current = false;
+    draftCaptureRef.current?.cancel();
     imageInsertRunRef.current += 1;
     writingCheckRunRef.current += 1;
     auditRunRef.current += 1;
@@ -3986,6 +4284,17 @@ function ExportPreviewView(props) {
     };
   }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
 
+  React.useEffect(() => {
+    if (!showExportPreview) { setMobileSettingsOpen(false); return undefined; }
+    const narrow = window.matchMedia('(max-width:1023px)');
+    const onResize = () => {
+      if (!narrow.matches) setMobileSettingsOpen(false);
+      else if (document.activeElement?.closest?.('#builder-settings-panel')) mobileSettingsButtonRef.current?.focus();
+    };
+    narrow.addEventListener('change', onResize);
+    return () => narrow.removeEventListener('change', onResize);
+  }, [showExportPreview]);
+
   const closeImageDialog = React.useCallback(() => {
     imageInsertRunRef.current += 1;
     setImageInsertBusy(false);
@@ -4000,10 +4309,17 @@ function ExportPreviewView(props) {
     if (!showExportPreview || pendingImageFile) return undefined;
     const dialog = exportDialogRef.current;
     if (!dialog) return undefined;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"]), summary')).filter((el) => !el.matches(':disabled') && el.getClientRects().length > 0);
+    const getFocusable = () => _builderKeyboardTargets(dialog);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); setShowExportPreview(false); return; }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (dialog.getAttribute('data-builder-settings-open') === 'true' && window.matchMedia('(max-width:1023px)').matches) {
+          event.stopPropagation(); setMobileSettingsOpen(false);
+          window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+        } else setShowExportPreview(false);
+        return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
@@ -4355,6 +4671,7 @@ function ExportPreviewView(props) {
       const keys = new Set([...references.bookmarks, ...references.crossReferences, ...references.footnotes, ...(references.citations || []), ...(references.sources || []).map((source) => ({ key: 'source:' + source.id }))].map((entry) => entry.key));
       return keys.has(current) ? current : '';
     });
+    setPreviewDocumentTitle(_builderVisibleDocumentTitle(doc));
     const statistics = _builderDocumentStatistics(doc);
     setWordCount(statistics.words);
     setDocumentStatistics(statistics);
@@ -7243,29 +7560,54 @@ function ExportPreviewView(props) {
 
   const readLocalDraftStore = React.useCallback(() => {
     try {
+      if (!draftStorageKey) return null;
       const rawDraft = window.localStorage.getItem(draftStorageKey);
-      return _normalizeBuilderLocalDraft(rawDraft ? JSON.parse(rawDraft) : null);
+      return _normalizeBuilderLocalDraft(rawDraft ? JSON.parse(rawDraft) : null, draftStorageKey);
     } catch (_) {
       return null;
     }
   }, [draftStorageKey]);
 
   const persistLocalDraft = React.useCallback((html, at = Date.now(), label = 'Auto-save') => {
-    if (typeof html !== 'string' || html.length < 100) return false;
+    if (!draftStorageKey || draftContextRef.current !== draftContext || typeof html !== 'string' || html.length < 100) return false;
     try {
       const existing = readLocalDraftStore();
       const duplicate = existing?.snapshots?.some((snapshot) => snapshot.html === html);
-      const snapshot = { id: `snapshot-${at}-${Math.random().toString(36).slice(2, 8)}`, at, label: String(label || 'Auto-save').slice(0, 80), html };
+      const snapshot = { id: `snapshot-${at}-${Math.random().toString(36).slice(2, 8)}`, sourceIdentity: draftStorageKey, at, label: String(label || 'Auto-save').slice(0, 80), html };
       const snapshots = (duplicate ? (existing?.snapshots || []) : [snapshot, ...(existing?.snapshots || [])]).slice(0, 10);
-      const store = { version: 2, title: draftDocumentTitle, html, at, snapshots };
+      const store = { version: 3, sourceIdentity: draftStorageKey, source: exportPreviewSource, title: draftDocumentTitle, html, at, snapshots };
       window.localStorage.setItem(draftStorageKey, JSON.stringify(store));
       setVersionHistory(store.snapshots);
       setDraftRecovery(null);
+      setDraftCaptureAt(at);
       return true;
     } catch (_) {
       return false;
     }
-  }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle]);
+  }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle, draftContext, exportPreviewSource]);
+
+  const captureBuilderDraftDocument = React.useCallback((doc, label = 'Auto-save', context = draftContext, token = doc?.__alloBuilderCaptureToken) => {
+    if (!mountedRef.current || !showExportPreview || draftContextRef.current !== context
+      || exportPreviewRef.current?.contentDocument !== doc || !doc?.documentElement
+      || doc.__alloBuilderCaptureToken !== token) return false;
+    try {
+      const capturedAt = Date.now();
+      const clean = getCleanBuilderDocument();
+      if (!clean?.html || (typeof onBuilderDraftCapture === 'function'
+        && onBuilderDraftCapture(clean.html, { doc, token, owner: builderDraftOwner }) === false)) {
+        setDraftCaptureState('error');
+        return false;
+      }
+      const savedLocally = persistLocalDraft(clean.html, capturedAt, label);
+      setDraftCaptureAt(capturedAt);
+      setDraftCaptureState(savedLocally ? 'saved' : 'captured');
+      return true;
+    } catch (_) {
+      setDraftCaptureState('error');
+      return false;
+    }
+  }, [showExportPreview, draftContext, exportPreviewRef, getCleanBuilderDocument, onBuilderDraftCapture, builderDraftOwner, persistLocalDraft]);
+  draftCaptureLatestRef.current = captureBuilderDraftDocument;
 
   const saveCurrentAsDocumentTemplate = React.useCallback(async () => {
     if (customDocumentTemplates.length >= 8) {
@@ -7354,6 +7696,7 @@ function ExportPreviewView(props) {
 
   React.useEffect(() => {
     if (!showExportPreview) {
+      draftCaptureRef.current?.cancel();
       setDraftRecovery(null);
       setVersionHistory([]);
       return;
@@ -7365,7 +7708,7 @@ function ExportPreviewView(props) {
 
   const restoreDraftHtml = React.useCallback((html, message = 'Local draft restored.') => {
     const doc = exportPreviewRef.current?.contentDocument;
-    if (!html || !doc) {
+    if (!html || !doc || !draftStorageKey || draftContextRef.current !== draftContext) {
       addToast && addToast('The editable preview is not ready to restore yet.', 'info');
       return false;
     }
@@ -7374,45 +7717,42 @@ function ExportPreviewView(props) {
       doc.open();
       doc.write(html);
       doc.close();
-      setDraftCaptureState('restored');
-      window.setTimeout(() => {
-        const liveDoc = exportPreviewRef.current?.contentDocument;
-        if (!liveDoc?.body) return;
-        liveDoc.body.setAttribute('data-allo-user-edited', '1');
-        window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML, at: Date.now() };
+      if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+      const captured = draftCaptureLatestRef.current?.(doc, 'Restored draft', draftContext);
+      setDraftCaptureState(captured ? 'restored' : 'error');
+      if (captured) setDraftCaptureAt(Date.now());
         refreshDocumentStats();
         refreshReviewComments();
         refreshTrackedChanges();
         refreshActiveHeading();
         refreshPageMetrics();
         refreshFormattingState();
-        if (mountedRef.current) setDraftCaptureState('restored');
-      }, 80);
+      if (mountedRef.current && captured) setDraftCaptureState('restored');
       addToast && addToast(message, 'success');
       return true;
     } catch (_) {
       addToast && addToast('Could not restore that version.', 'error');
       return false;
     }
-  }, [exportPreviewRef, refreshDocumentStats, refreshReviewComments, refreshTrackedChanges, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
+  }, [exportPreviewRef, draftContext, draftStorageKey, refreshDocumentStats, refreshReviewComments, refreshTrackedChanges, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
 
   const restoreLocalDraft = React.useCallback(() => {
-    if (restoreDraftHtml(draftRecovery?.html, 'Local draft restored.')) setDraftRecovery(null);
-  }, [draftRecovery, restoreDraftHtml]);
+    if (draftRecovery?.sourceIdentity === draftStorageKey && restoreDraftHtml(draftRecovery?.html, 'Local draft restored.')) setDraftRecovery(null);
+  }, [draftRecovery, draftStorageKey, restoreDraftHtml]);
 
   const restoreVersionSnapshot = React.useCallback((snapshot) => {
-    if (!snapshot?.html) return;
+    if (!snapshot?.html || snapshot.sourceIdentity !== draftStorageKey) { addToast && addToast('That version belongs to another document. Reopen Version History for the current document.', 'info'); return; }
     const current = getCleanBuilderDocument();
     const now = Date.now();
     const rollbackSaved = Boolean(current?.html && current.html !== snapshot.html && persistLocalDraft(current.html, now, 'Before version restore'));
     setVersionComparison(null);
     persistLocalDraft(snapshot.html, now + 1, 'Restored version');
     restoreDraftHtml(snapshot.html, rollbackSaved ? 'Version restored. A rollback point was saved.' : 'Version restored.');
-  }, [getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml]);
+  }, [getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml, draftStorageKey, addToast]);
 
   const compareVersionSnapshot = React.useCallback((snapshot) => {
     const doc = exportPreviewRef.current?.contentDocument;
-    if (!snapshot?.html || !doc) {
+    if (!snapshot?.html || !doc || snapshot.sourceIdentity !== draftStorageKey) {
       addToast && addToast('That local version is not available to compare.', 'info');
       return;
     }
@@ -7424,13 +7764,13 @@ function ExportPreviewView(props) {
     setVersionComparison({ ...comparison, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
     addToast && addToast(comparison.changed
       ? 'Version comparison ready: ' + comparison.changed + ' changed block' + (comparison.changed === 1 ? '' : 's') + '.'
-      : 'The current document matches that version.', comparison.changed ? 'info' : 'success');
-  }, [exportPreviewRef, addToast]);
+      : 'The compared text matches that version; images, links and formatting are not compared.', comparison.changed ? 'info' : 'success');
+  }, [exportPreviewRef, addToast, draftStorageKey]);
 
   const restoreVersionComparisonBlock = React.useCallback((excerpt) => {
     const doc = exportPreviewRef.current?.contentDocument;
     const snapshot = versionHistory.find((item) => item.id === versionComparison?.snapshotId);
-    if (!doc || !snapshot) {
+    if (!doc || !snapshot || snapshot.sourceIdentity !== draftStorageKey) {
       addToast && addToast('That comparison is no longer available.', 'info');
       return;
     }
@@ -7444,7 +7784,7 @@ function ExportPreviewView(props) {
     commitTrackedChangeMutation(restored.tracked ? 'Saved block applied as a tracked structural change.' : 'Saved block restored from version history.');
     const refreshed = _builderCompareDocumentVersions(doc, snapshot.html);
     if (refreshed.ok) setVersionComparison({ ...refreshed, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
-  }, [exportPreviewRef, versionHistory, versionComparison, commitTrackedChangeMutation, addToast]);
+  }, [exportPreviewRef, versionHistory, versionComparison, commitTrackedChangeMutation, addToast, draftStorageKey]);
 
   const saveVersionSnapshot = React.useCallback(() => {
     const clean = getCleanBuilderDocument();
@@ -7707,6 +8047,7 @@ function ExportPreviewView(props) {
   return (
           <div className={`allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center ${isFocusMode ? 'p-0' : 'p-4'}`} role="presentation"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
+            <style>{_BUILDER_RESPONSIVE_LAYOUT_CSS}</style>
             {pendingImageFile && (
               <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
                 onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
@@ -7733,7 +8074,7 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div data-help-key="doc_builder_document" ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div data-help-key="doc_builder_document" data-builder-focus={isFocusMode ? 'true' : 'false'} data-builder-settings-open={mobileSettingsOpen ? 'true' : 'false'} ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {editingCitationId && (
                 <form ref={citationEditorRef} id="builder-citation-editor" data-builder-citation-editor="1" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-citation-editor-title" aria-describedby="builder-citation-editor-help" onSubmit={saveCitationEdit} className="absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
                   <div className="flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2">
@@ -7790,8 +8131,24 @@ function ExportPreviewView(props) {
                   </div>
                 </form>
               )}
+              <div className="builder-mobile-switch">
+                <button ref={mobileSettingsButtonRef} type="button" aria-controls="builder-settings-panel" aria-expanded={mobileSettingsOpen}
+                  onClick={() => setMobileSettingsOpen((open) => !open)}
+                  className="min-h-9 rounded border border-indigo-600 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50">
+                  {mobileSettingsOpen ? 'Back to document' : 'Document settings'}
+                </button>
+                <button type="button" onClick={() => setShowExportPreview(false)} aria-label={t('a11y.close_doc_builder') || 'Close Document Builder'}
+                  className="min-h-9 rounded px-3 py-1 text-xs font-bold text-slate-700 hover:bg-red-50">Close</button>
+              </div>
               {/* Left Panel — Settings */}
-              <div className={`${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
+              <div id="builder-settings-panel" role="region" aria-label="Document settings"
+                onKeyDownCapture={(event) => {
+                  if (event.key !== 'Escape' || !mobileSettingsOpen) return;
+                  event.preventDefault(); event.stopPropagation();
+                  setMobileSettingsOpen(false);
+                  window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+                }}
+                className={`builder-settings-panel ${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
                 <div className="flex items-center justify-between mb-1">
                   <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">{isAdvancedReview ? 'Review Studio' : 'Document Builder'}</h2>
                   <div className="flex items-center gap-1">
@@ -7815,11 +8172,116 @@ function ExportPreviewView(props) {
                   </div>
                 )}
 
+                {!isRemediationDocument && (<React.Fragment>
+                {/* ── SECTION: Content ── */}
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></h3>
+
+                {/* Resource Toggles */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="text-[11px] font-bold text-slate-600 uppercase">Include Resources</div>
+                    {(() => {
+                      const available = _builderResourceOptions(history, t);
+                      const allOn = available.length > 0 && available.every(([key]) => _builderResourceIncluded(exportConfig, key));
+                      return available.length > 0 && (
+                        <button onClick={() => {
+                          setExportConfigAndRefresh(p => ({ ...p, ..._builderBulkResourceUpdate(history, p, t) }));
+                        }} className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors">
+                          {allOn ? 'Deselect All' : 'Select All'}
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  <div className="space-y-1">
+                    {(() => {
+                      const teacherOnlyDefault = new Set(['includeAnalysis', 'includeUdlAdvice', 'includeBrainstorm']);
+                      const available = _builderResourceOptions(history, t);
+                      if (available.length === 0) return (
+                        <p className="text-[11px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
+                      );
+                      return available.map(([key, label]) => {
+                        const isTeacherOnly = teacherOnlyDefault.has(key);
+                        const tooltip = isTeacherOnly
+                          ? 'Always included in teacher copy. Toggle to also include in student copy.'
+                          : '';
+                        // Cloze is a variant of the leveled text on paper, not a
+                        // resource of its own, so it rides under that checkbox
+                        // rather than adding a row to the list. It needs both a
+                        // worksheet export and a glossary to blank against, so it
+                        // only appears when both are true.
+                        const showCloze = key === 'includeSimplified'
+                          && exportPreviewMode === 'worksheet'
+                          && exportConfig.includeSimplified
+                          && history.some(h => h && h.type === 'glossary');
+                        return (
+                          <React.Fragment key={key}>
+                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
+                            <input type="checkbox" checked={_builderResourceIncluded(exportConfig, key)} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
+                          </label>
+                          {showCloze && (
+                            <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5" title="Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy.">
+                              <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, clozeWorksheet: e.target.checked }))} className="rounded mt-0.5" />
+                              <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
+                            </label>
+                          )}
+                          </React.Fragment>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {(textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && (
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-2" role="status" aria-live="polite">
+                    <p className="text-[11px] font-bold text-amber-950">Text-access review before sharing</p>
+                    {textAccessExportReview.supplementalWithoutPrimary && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.supplementalCount} supplemental text{textAccessExportReview.supplementalCount === 1 ? '' : 's'} but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export.</p>
+                    )}
+                    {textAccessExportReview.unspecifiedAdaptedWithoutPrimary && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.unspecifiedAdaptedCount} adapted text{textAccessExportReview.unspecifiedAdaptedCount === 1 ? '' : 's'} whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution.</p>
+                    )}
+                    {textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution.</p>
+                    )}
+                    <p className="mt-1 text-[10px] text-amber-800">This notice is advisory and does not make an IEP or legal-compliance determination.</p>
+                  </div>
+                )}
+
+                {/* Skipped interactive resources notice */}
+                {(() => {
+                  const skipped = getSkippedResources();
+                  if (skipped.length === 0) return null;
+                  // Adventure/persona DO have static permanent products — they
+                  // just live in their own flows (finished storybook / private
+                  // session page), so point there instead of dead-ending.
+                  const skippedTypes = new Set((Array.isArray(history) ? history : [])
+                    .filter(item => item && (item.type === 'adventure' || item.type === 'persona'))
+                    .map(item => item.type));
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
+                      <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
+                      <p className="text-[11px] text-amber-700 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      {skippedTypes.has('adventure') && <p className="text-[11px] text-amber-800 mt-1">📖 Adventure stories have their own export: open the adventure and use <strong>Export Storybook</strong> for a finished, self-contained HTML book (optionally narrated with saved TTS).</p>}
+                      {skippedTypes.has('persona') && <p className="text-[11px] text-amber-800 mt-1">🎭 Persona conversations: use <strong>Save private session</strong> in the persona view — downloads a private JSON artifact plus a read-anywhere HTML transcript with narration.</p>}
+                    </div>
+                  );
+                })()}
+
+                  <details className="rounded-lg border border-slate-300 bg-white p-2" data-builder-resource-list>
+                    <summary className="cursor-pointer text-xs font-bold text-slate-700">{includedResourceCount} of {resourceItems.length} resources selected</summary>
+                    <ol className="mt-2 space-y-1 text-xs text-slate-700">
+                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}</span></span></li>)}
+                    </ol>
+                  </details>
+                </React.Fragment>)}
+
                 {/* ── SECTION: Quick Start ── */}
                 <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {typeof proposeRestyles === 'function' && (
-                  <details open className="rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden" data-help-key="doc_builder_block_suggestions">
+                  <details className="rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden" data-help-key="doc_builder_block_suggestions">
                     <summary className="cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100">
                       AI block suggestions {Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? '(' + blockSuggestions.length + ')' : ''}
                     </summary>
@@ -7890,8 +8352,8 @@ function ExportPreviewView(props) {
                   </details>
                 )}
 
-                {/* Presets */}
-                <div>
+                {/* Presets apply to assembled resources. */}
+                {!isRemediationDocument && <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Presets</div>
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
@@ -7923,7 +8385,7 @@ function ExportPreviewView(props) {
                   }} className="mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all">
                     + Save Current as Preset
                   </button>
-                </div>
+                </div>}
 
                 {/* Export Mode.
                     "PDF" and "Worksheet" run the SAME delivery path — see
@@ -7942,12 +8404,14 @@ function ExportPreviewView(props) {
                       asserts on the literal `aria-label="Export format" onKeyDown={...}`
                       substring, so aria-describedby goes after, not between. */}
                   <div className="flex gap-1" data-help-key="doc_builder_format" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
-                    {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
+                    {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].filter(([mode]) => !isRemediationDocument || mode !== 'worksheet').map(([m, label]) => (
                       <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                   <p id="doc-builder-format-help" className="mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5" role="status">
-                    {exportPreviewMode === 'worksheet'
+                    {isRemediationDocument
+                      ? 'Exports use the document shown in the editor. PDF opens your print window; HTML opens as a web page; Slides creates an editable PowerPoint. Review the downloaded layout before sharing.'
+                      : exportPreviewMode === 'worksheet'
                       ? (t('export_preview.format_help_worksheet') || 'A paper copy for students to write on. Answer boxes become ruled lines and answer choices become bubbles to fill in, and a name and date header is added. Opens your print window, where you can print it or save it as a PDF.')
                       : exportPreviewMode === 'html'
                       ? (t('export_preview.format_help_html') || 'One web page students open on a device. Highlighting, notes, drawing and typed answers all work, and save on that device.')
@@ -7957,6 +8421,9 @@ function ExportPreviewView(props) {
                   </p>
                 </div>
 
+                <details className="rounded-lg border border-slate-300 p-2" data-builder-appearance>
+                  <summary className="cursor-pointer text-xs font-bold text-slate-700">Appearance and page setup</summary>
+                  <div className="mt-2 space-y-3">
                 {/* ── SECTION: Appearance ── */}
                 <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
@@ -8104,8 +8571,12 @@ function ExportPreviewView(props) {
                   <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
+                  </div>
+                </details>
+
+                <details className="rounded-lg border border-slate-300 p-2">
+                  <summary className="cursor-pointer text-xs font-bold text-slate-700">Word Art</summary>
                 {/* ── SECTION: Word Art ── */}
-                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></h3>
                 <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
                   <input type="text" id="wordart-text-input" placeholder={t("placeholders.word_art_text_input")} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t("a11y.word_art_text")} />
                   <div>
@@ -8229,120 +8700,9 @@ function ExportPreviewView(props) {
                   >✨ Insert Word Art</button>
                 </div>
 
-                {/* ── SECTION: Content ── */}
-                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></h3>
+                </details>
 
-                {/* Resource Toggles */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="text-[11px] font-bold text-slate-600 uppercase">Include Resources</div>
-                    {(() => {
-                      const resourceKeys = ['includeAnalysis','includeSimplified','includeGlossary','includeQuiz','includeOutline','includeFaq','includeSentenceFrames','includeImage','includeMath','includeDbq','includeLessonPlan','includeUdlAdvice','includeBrainstorm'];
-                      const allOn = resourceKeys.every(k => exportConfig[k]);
-                      return history.some(h => h) && (
-                        <button onClick={() => {
-                          const update = {};
-                          resourceKeys.forEach(k => { update[k] = !allOn; });
-                          setExportConfigAndRefresh(p => ({ ...p, ...update }));
-                        }} className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors">
-                          {allOn ? 'Deselect All' : 'Select All'}
-                        </button>
-                      );
-                    })()}
-                  </div>
-                  <div className="space-y-1">
-                    {(() => {
-                      const teacherOnlyDefault = new Set(['includeAnalysis', 'includeUdlAdvice', 'includeBrainstorm']);
-                      const available = [
-                        ['includeAnalysis', '📊 Source Analysis', 'analysis'],
-                        ['includeSimplified', '📖 Adapted Text', 'simplified'],
-                        ['includeGlossary', '📚 Glossary', 'glossary'],
-                        ['includeQuiz', '❓ Quiz', 'quiz'],
-                        ['includeOutline', '🗂️ Graphic Organizer', 'outline'],
-                        ['includeFaq', '💬 FAQ', 'faq'],
-                        ['includeMemoryAid', t('sidebar.tool_memory_aid') || 'Memory Aid Studio', 'memory-aid'],
-                        ['includeAppliedChallenge', t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio', 'applied-challenge'],
-                        ['includeSentenceFrames', '✍️ Sentence Frames', 'sentence-frames'],
-                        ['includeImage', '🎨 Visual Support', 'image'],
-                        ['includeMath', '🔢 Math', 'math'],
-                        ['includeDbq', '📜 DBQ', 'dbq'],
-                        ['includeLessonPlan', '📋 Lesson Plan', 'lesson-plan'],
-                        ['includeUdlAdvice', '🧩 UDL Advice', 'udl-advice'],
-                        ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
-                      ].filter(([,, type]) => history.some(h => h && h.type === type));
-                      if (available.length === 0) return (
-                        <p className="text-[11px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
-                      );
-                      return available.map(([key, label]) => {
-                        const isTeacherOnly = teacherOnlyDefault.has(key);
-                        const tooltip = isTeacherOnly
-                          ? 'Always included in teacher copy. Toggle to also include in student copy.'
-                          : '';
-                        // Cloze is a variant of the leveled text on paper, not a
-                        // resource of its own, so it rides under that checkbox
-                        // rather than adding a row to the list. It needs both a
-                        // worksheet export and a glossary to blank against, so it
-                        // only appears when both are true.
-                        const showCloze = key === 'includeSimplified'
-                          && exportPreviewMode === 'worksheet'
-                          && exportConfig.includeSimplified
-                          && history.some(h => h && h.type === 'glossary');
-                        return (
-                          <React.Fragment key={key}>
-                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
-                            <input type="checkbox" checked={['includeMemoryAid', 'includeAppliedChallenge'].includes(key) ? exportConfig[key] !== false : exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
-                          </label>
-                          {showCloze && (
-                            <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5" title="Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy.">
-                              <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, clozeWorksheet: e.target.checked }))} className="rounded mt-0.5" />
-                              <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
-                            </label>
-                          )}
-                          </React.Fragment>
-                        );
-                      });
-                    })()}
-                  </div>
-                </div>
-
-                {(textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && (
-                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-2" role="status" aria-live="polite">
-                    <p className="text-[11px] font-bold text-amber-950">Text-access review before sharing</p>
-                    {textAccessExportReview.supplementalWithoutPrimary && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.supplementalCount} supplemental text{textAccessExportReview.supplementalCount === 1 ? '' : 's'} but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export.</p>
-                    )}
-                    {textAccessExportReview.unspecifiedAdaptedWithoutPrimary && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.unspecifiedAdaptedCount} adapted text{textAccessExportReview.unspecifiedAdaptedCount === 1 ? '' : 's'} whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution.</p>
-                    )}
-                    {textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution.</p>
-                    )}
-                    <p className="mt-1 text-[10px] text-amber-800">This notice is advisory and does not make an IEP or legal-compliance determination.</p>
-                  </div>
-                )}
-
-                {/* Skipped interactive resources notice */}
-                {(() => {
-                  const skipped = getSkippedResources();
-                  if (skipped.length === 0) return null;
-                  // Adventure/persona DO have static permanent products — they
-                  // just live in their own flows (finished storybook / private
-                  // session page), so point there instead of dead-ending.
-                  const skippedTypes = new Set((Array.isArray(history) ? history : [])
-                    .filter(item => item && (item.type === 'adventure' || item.type === 'persona'))
-                    .map(item => item.type));
-                  return (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-                      <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
-                      <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
-                      <p className="text-[11px] text-amber-700 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
-                      {skippedTypes.has('adventure') && <p className="text-[11px] text-amber-800 mt-1">📖 Adventure stories have their own export: open the adventure and use <strong>Export Storybook</strong> for a finished, self-contained HTML book (optionally narrated with saved TTS).</p>}
-                      {skippedTypes.has('persona') && <p className="text-[11px] text-amber-800 mt-1">🎭 Persona conversations: use <strong>Save private session</strong> in the persona view — downloads a private JSON artifact plus a read-anywhere HTML transcript with narration.</p>}
-                    </div>
-                  );
-                })()}
-
+                {!isRemediationDocument && <React.Fragment>
                 {/* ── SECTION: Export ── */}
                 <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
@@ -8571,6 +8931,8 @@ function ExportPreviewView(props) {
                 {/* Audio embedding moved to the read-aloud modal shown on Download HTML */}
 
                 {/* AI Custom Style */}
+                </React.Fragment>}
+
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">✨ AI Style Studio</div>
                   {/* Quick restyle presets */}
@@ -8852,10 +9214,14 @@ function ExportPreviewView(props) {
               </div>
 
               {/* Right Panel — Live Preview with Editing */}
-              <div className={`flex-1 flex flex-col min-w-0 ${isFocusMode ? 'min-h-0' : 'min-h-[60vh] lg:min-h-0'}`}>
+              <div className="builder-editor-pane flex-1 flex flex-col min-w-0 min-h-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-sm font-bold text-slate-700">{isFocusMode ? 'Document Builder' : 'Live Preview'}</h3>
+                    <div className="min-w-0" style={{ maxWidth: '28rem' }}>
+                      <h3 id="builder-current-document-title" className="truncate text-sm font-bold text-slate-800" title={previewDocumentTitle}>{previewDocumentTitle}</h3>
+                      <p className="text-[11px] text-slate-600" data-builder-document-context>{documentSourceLabel}{!isRemediationDocument && ' · ' + includedResourceCount + ' of ' + resourceItems.length + ' resources'}</p>
+                      <p className="text-[11px] text-slate-600" data-builder-save-status>{_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}</p>
+                    </div>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <span className="text-[11px] text-indigo-700 font-medium">{isFocusMode ? 'Focus mode · write without distractions' : 'Focus the preview and edit text directly'}</span>
                     <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
@@ -8869,7 +9235,12 @@ function ExportPreviewView(props) {
                         const pressed = typeof command.pressed === 'boolean' ? command.pressed : undefined;
                         return <button key={itemId} type="button" onMouseDown={(event) => event.preventDefault()} onClick={command.action} aria-pressed={pressed} aria-keyshortcuts={option.shortcut} aria-label={option.label} title={option.shortcut ? option.label + ' (' + option.shortcut + ')' : option.label} className={'h-7 rounded px-2 text-[10px] font-bold transition-colors ' + (pressed ? 'bg-indigo-700 text-white shadow-inner' : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-800')}>{option.shortLabel}</button>;
                       })}
-                      <details id="builder-quick-access-customize" className="relative">
+                      <details id="builder-quick-access-customize" className="relative" onKeyDownCapture={(event) => {
+                        if (event.key !== 'Escape' || !event.currentTarget.open) return;
+                        event.preventDefault(); event.stopPropagation();
+                        event.currentTarget.open = false;
+                        event.currentTarget.querySelector('summary')?.focus();
+                      }}>
                         <summary className="flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200" aria-label="Customize Quick Access toolbar" title="Customize Quick Access toolbar">+</summary>
                         <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl">
                           <div className="mb-2 flex items-center justify-between gap-2"><strong className="text-[11px] text-slate-800">Customize Quick Access</strong><span className="text-[9px] text-slate-500">Up to 6</span></div>
@@ -9053,55 +9424,24 @@ function ExportPreviewView(props) {
                         <button onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          // #14: strip editor chrome + style/script bodies before the regex conversion.
-                          let html = '';
+                          const preflight = runBuilderPreflight('markdown', false);
+                          if (preflight.errors) { addToast('Markdown export stopped: fix the blocking preflight issues first.', 'error'); return; }
+                          if (!beginAlternativeExport('markdown')) return;
                           try {
-                            let _mClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
-                            _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
-                            _builderStripEditorBreakMetadata(_mClone);
-                            html = _mClone.outerHTML;
-                          } catch (_) { html = doc.documentElement.outerHTML; }
-                          // Spoken-math captions (2026-07-05): the ```mathml fence below is
-                          // opaque to anyone reading the .md without a MathML renderer. When
-                          // SRE (sre_loader.js) can produce a spoken form for a block, emit
-                          // it as a "Spoken:" line above the fence. Fail-soft: any failure
-                          // leaves the fence exactly as before.
-                          const _mathBlocks = html.match(/<math\b[\s\S]*?<\/math>/gi) || [];
-                          let _spokenByBlock = null;
-                          if (_mathBlocks.length) {
-                            try {
-                              if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
-                              if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
-                                _spokenByBlock = await Promise.all(_mathBlocks.map(m => window.AlloMathSpeech.toSpeech(m, { timeoutMs: 8000 })));
-                              }
-                            } catch (_) { _spokenByBlock = null; }
-                          }
-                          let _mathIdx = 0;
-                          // #6 (export-format review): tables/images/math vanished under the final
-                          // tag-strip. Convert tables to GitHub pipe tables, images to md images
-                          // (alt preserved), and MathML to a fenced block BEFORE the strip runs.
-                          const _cellTxt = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
-                          html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
-                            const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt));
-                            if (!rows.length) return '\n';
-                            const w = Math.max(...rows.map(r => r.length));
-                            const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
-                            return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
-                          });
-                          html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
-                          html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => {
-                            const _spoken = (_spokenByBlock && _spokenByBlock[_mathIdx]) ? String(_spokenByBlock[_mathIdx]).trim().replace(/\*/g, '') : '';
-                            _mathIdx++;
-                            return '\n\n' + (_spoken ? ('*Spoken: ' + _spoken + '*\n\n') : '') + '```mathml\n' + m + '\n```\n\n';
-                          });
-                          let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
-                            .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
-                            .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
-                            .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-                            .replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
-                          const blob = new Blob([md], { type: 'text/markdown' });
-                          downloadBuilderBlob(blob, { extension: 'md' });
-                          addToast('Markdown downloaded', 'success');
+                            const root = _builderCleanMarkdownRoot(doc);
+                            const math = Array.from(root.querySelectorAll('math'));
+                            let spokenByBlock = null;
+                            if (math.length) {
+                              try {
+                                if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
+                                if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map(node => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8000 })));
+                              } catch (_) {}
+                            }
+                            const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
+                            downloadBuilderBlob(new Blob([result.markdown], { type: 'text/markdown;charset=utf-8' }), { extension: 'md' });
+                            addToast(result.warnings.length ? result.warnings.join(' ') : 'Markdown prepared from the current document.', result.warnings.length ? 'warning' : 'success');
+                          } catch (error) { addToast('Markdown export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
                         <button disabled={!!altExportBusy} onClick={async () => {
                           if (altExportBusy) return;
@@ -9232,29 +9572,12 @@ function ExportPreviewView(props) {
                                 }
                               });
                             } else if (doc) {
-                              // #14: strip editor chrome before the regex conversion (button labels
-                              // and editor CSS were leaking into the markdown).
-                              let html = '';
-                              try {
-                                let _mdClone = _builderFinalizeDocumentForExport(doc.documentElement.cloneNode(true));
-                                _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
-                                _builderStripEditorBreakMetadata(_mdClone);
-                                html = _mdClone.outerHTML;
-                              } catch (_) { html = doc.documentElement.outerHTML; }
-                              // #6: preserve tables (pipe tables) + image alts before the tag-strip.
-                              const _cellTxt2 = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
-                              html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
-                                const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt2));
-                                if (!rows.length) return '\n';
-                                const w = Math.max(...rows.map(r => r.length));
-                                const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
-                                return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
-                              });
-                              html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
-                              const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
-                              out.push(body);
+                              const root = _builderCleanMarkdownRoot(doc);
+                              const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
+                              out.push(converted.markdown);
+                              converted.warnings.forEach(message => addToast(message, 'warning'));
                             } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
-                            const md = out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+                            const md = out.join('\n').trim() + '\n';
                             let copied = false;
                             try { copied = window.alloCopyText ? await window.alloCopyText(md) : false; } catch (_) {}
                             const blob = new Blob([md], { type: 'text/markdown' });
@@ -9343,18 +9666,7 @@ function ExportPreviewView(props) {
                              try {
                                const absolute = new URL(src, doc.baseURI).href;
                                if (!/^https?:/i.test(absolute)) { _replaceImageFallback(img); continue; }
-                               const controller = typeof AbortController === 'function' ? new AbortController() : null;
-                               const timer = window.setTimeout(() => controller?.abort(), 10000);
-                               let response;
-                               try { response = await fetch(absolute, { credentials: 'omit', signal: controller?.signal }); }
-                               finally { window.clearTimeout(timer); }
-                               if (!response.ok) throw new Error(`Image request failed (${response.status})`);
-                               const mediaType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase();
-                               const extensionByType = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
-                               const ext = extensionByType[mediaType];
-                               if (!ext) throw new Error('Unsupported remote image type');
-                               const bytes = await response.arrayBuffer();
-                               if (bytes.byteLength > 8 * 1024 * 1024) throw new Error('Remote image exceeds 8 MB');
+                               const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
                                const path = 'images/image-' + (index + 1) + '.' + ext;
                                zip.file('OEBPS/' + path, bytes);
                                img.setAttribute('src', path);
@@ -9415,12 +9727,12 @@ function ExportPreviewView(props) {
                           // and emphasis remain future work; structure is the big win.
                           let text = '';
                           try {
-                            const _bClone = doc.body.cloneNode(true);
+                            const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
                             _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-                          } catch (_) { text = doc.body.innerText || doc.body.textContent || ''; }
+                          } catch (_) { throw new Error('Could not prepare the accepted revision view for Braille.'); }
                           // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
                           // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
                           // Computer Code), NOT Unicode braille patterns — embossers and braille
@@ -9462,7 +9774,7 @@ function ExportPreviewView(props) {
                             norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
                             try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
                             const out = []; let dropped = 0;
-                            for (const line of norm.replace(/\n?/g, '\n').split('\n')) {
+                            for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
                               const chars = Array.from(line); let bl = ''; let numMode = false;
                               for (let i = 0; i < chars.length; i++) {
                                 const ch = chars[i];
@@ -9557,7 +9869,7 @@ const _downloadBRF = (brf) => {
                 {draftRecovery && (
                   <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" role="status" aria-live="polite">
                     <span className="font-bold">Local draft available</span>
-                    <span>Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
+                    <span>{draftRecovery.title || draftDocumentTitle} · Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
                     <button type="button" onClick={restoreLocalDraft} className="rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800">Restore draft</button>
                     <button type="button" onClick={dismissLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
                   </div>
@@ -9662,7 +9974,7 @@ const _downloadBRF = (brf) => {
                       <section aria-label={'Version comparison with ' + versionComparison.label} className="mt-2 rounded-lg border border-violet-300 bg-violet-50 p-2 text-[10px] text-violet-950">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div role="status" aria-live="polite">
-                            <h4 className="font-black">Compared with {versionComparison.label}</h4>
+                            <h4 className="font-black">Text compared with {versionComparison.label}</h4>
                             <p className="text-violet-700">{new Date(versionComparison.at).toLocaleString()} · {versionComparison.changed} changed block{versionComparison.changed === 1 ? '' : 's'}</p>
                           </div>
                           <div className="flex items-center gap-1">
@@ -9699,8 +10011,10 @@ const _downloadBRF = (brf) => {
                               })}
                             </ol>
                           </div>
-                        ) : <p className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-2 font-bold text-emerald-800">The current document matches this saved version.</p>}
-                        {versionComparison.truncated && <p className="mt-1 text-violet-700">Showing the first 24 changed blocks. The summary counts include the full comparison window.</p>}
+                        ) : <p className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-2 font-bold text-emerald-800">The compared text matches this saved version. Images, links and formatting are not compared.</p>}
+                        {versionComparison.contentWindowTruncated && <p className="mt-1 text-violet-700">Compared {versionComparison.comparedBefore} of {versionComparison.totalBefore} saved text blocks and {versionComparison.comparedAfter} of {versionComparison.totalAfter} current text blocks. Later blocks are not compared.</p>}
+                        {versionComparison.excerptWindowTruncated && <p className="mt-1 text-violet-700">Showing the first 24 changed text blocks in the comparison window.</p>}
+                        <p className="mt-1 text-slate-600">Text comparison excludes images, link destinations, formatting and other non-text changes.</p>
                         <p className="mt-1 text-slate-600">Using a saved block preserves the rest of the document. If Track Changes is on, the restore becomes a reviewable structural change.</p>
                       </section>
                     )}
@@ -10198,7 +10512,7 @@ const _downloadBRF = (brf) => {
                         doc.designMode = 'on';
                         try {
                           if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
-                          window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() };
+                          draftCaptureLatestRef.current?.(doc, 'Workbench edit');
                         } catch (_) {}
                         auditRunRef.current += 1;
                         writingCheckRunRef.current += 1;
@@ -10286,7 +10600,7 @@ const _downloadBRF = (brf) => {
                 )}
                   </div>
                 )}
-                <div className="flex flex-1 min-h-0 overflow-hidden bg-slate-100">
+                <div className="builder-preview-stage flex flex-1 min-h-0 overflow-hidden bg-slate-100">
                   {showNavigationPane && (
                     <aside id="document-builder-navigation" role="complementary" aria-label="Document navigation" className="relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white" style={{ width: navigationPaneWidth }}>
                       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
@@ -10759,12 +11073,12 @@ const _downloadBRF = (brf) => {
                         }}
                         className="absolute inset-y-0 right-0 w-2 cursor-col-resize bg-transparent hover:bg-indigo-300 focus:bg-indigo-300 focus:outline-none" title="Drag or use arrow keys to resize navigation"></div>
                     </aside>
-                  )}                  <div className="min-w-0 flex-1 overflow-hidden bg-slate-100 p-4">
+                  )}                  <div className="builder-preview-shell min-w-0 flex-1 overflow-hidden bg-slate-100 p-4">
                     <iframe
                     id="document-builder-preview"
                     ref={exportPreviewRef}
                     title="Editable document preview"
-                    className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
+                    className="builder-preview-frame w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
                     sandbox={exportPreviewSource === 'remediation' ? 'allow-same-origin' : 'allow-same-origin allow-scripts allow-forms'}
                     onLoad={() => {
                       console.info('[ExportPreview] iframe loaded');
@@ -10789,7 +11103,10 @@ const _downloadBRF = (brf) => {
                         refreshPageMetrics();
                         applyEditorZoom(editorZoom);
                         if (advancedReviewActiveRef.current) refreshAdvancedReviewTree(doc);
-                        setDraftCaptureState('ready');
+                        if (doc.body?.getAttribute('data-allo-user-edited') !== '1') {
+                          setDraftCaptureState('ready');
+                          setDraftCaptureAt(null);
+                        }
                         editorSelectionRangeRef.current = null;
                         formatPainterRef.current = null;
                         setFormatPainterActive(false);
@@ -10904,20 +11221,17 @@ const _downloadBRF = (brf) => {
                         // global with a timestamp; the persist/restore wiring (project save +
                         // preview re-hydration, with a history-newer invalidation check) is the
                         // follow-up half — design in memory: project_comprehensive_review.
-                        let _capT = null;
-                        const _captureEdits = () => {
-                          try {
-                            const capturedAt = Date.now();
-                            const liveHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-                            const clean = getCleanBuilderDocument();
-                            const fullHtml = clean?.html || liveHtml;
-                            window.__alloBuilderEditedPack = { html: fullHtml, at: capturedAt };
-                            const savedLocally = persistLocalDraft(fullHtml, capturedAt, 'Auto-save');
-                            if (mountedRef.current) {
-                              setDraftCaptureState(savedLocally ? 'saved' : 'captured');
-                            }
-                          } catch (_) {}
-                        };
+                        draftCaptureRef.current?.cancel();
+                        const captureToken = {};
+                        doc.__alloBuilderCaptureToken = captureToken;
+                        const captureContext = draftContext;
+                        const captureController = _builderCreateDraftCapture({
+                          isCurrent: () => mountedRef.current && exportPreviewRef.current?.contentDocument === doc
+                            && doc.__alloBuilderCaptureToken === captureToken && draftContextRef.current === captureContext,
+                          capture: () => draftCaptureLatestRef.current?.(doc, 'Auto-save', captureContext, captureToken) || false,
+                        });
+                        draftCaptureRef.current = captureController;
+                        exportPreviewRef.current.__alloBuilderFlushDraft = captureController.flush;
                         doc.addEventListener('input', () => {
                           try {
                             _builderRefreshAdvancedAfterSnapshots(doc);
@@ -10940,8 +11254,7 @@ const _downloadBRF = (brf) => {
                             refreshPageMetrics();
                             refreshTableContext();
                             setFindDocumentRevision((value) => value + 1);
-                            if (_capT) clearTimeout(_capT);
-                            _capT = setTimeout(_captureEdits, 800);
+                            captureController.schedule();
                           } catch (_) {}
                         }, true);
                       } catch (_) {}
@@ -11069,7 +11382,7 @@ const _downloadBRF = (brf) => {
                     <span className="font-semibold text-slate-700">{isFocusMode ? 'Focus mode' : 'Editing enabled'}</span>
                     <span role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${draftCaptureState === 'capturing' ? 'text-amber-700' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
-                      {draftCaptureState === 'capturing' ? 'Capturing changes…' : draftCaptureState === 'saved' ? 'Saved on this device' : draftCaptureState === 'restored' ? 'Local draft restored' : draftCaptureState === 'captured' ? 'Draft captured in this session' : 'Ready'}
+                      {_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}
                     </span>
                     <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls="document-builder-navigation" className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title="Open tracked changes review">Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
                     <div className="relative">
@@ -11371,7 +11684,7 @@ async function updateExportPreview(deps) {
             if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
             const cell = selectedNode?.closest?.('td,th');
             const table = cell?.closest?.('table');
-            if (cell && table) {
+            if (cell && table && !doc.activeElement?.closest?.('button,a[href],input,select,textarea,[role="button"]')) {
               let cells = Array.from(table.querySelectorAll('th,td'));
               const current = cells.indexOf(cell);
               let target = cells[current + (e.shiftKey ? -1 : 1)] || null;
@@ -11406,16 +11719,25 @@ async function updateExportPreview(deps) {
           // Hand focus across the iframe boundary at either edge so the modal
           // remains a single, closed keyboard loop.
           try {
-            const inner = Array.from(doc.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0 && !el.closest('[aria-hidden="true"]'));
+            const inner = _builderKeyboardTargets(doc);
             const active = doc.activeElement;
+            if (!e.shiftKey && active === doc.body && inner.length) {
+              e.preventDefault(); inner[0].focus(); return;
+            }
+            // designMode can skip a nested inspector badge in native Tab traversal.
+            const innerIndex = inner.indexOf(active);
+            const adjacent = inner[innerIndex + (e.shiftKey ? -1 : 1)];
+            if (innerIndex >= 0 && adjacent) {
+              e.preventDefault(); adjacent.focus(); return;
+            }
             const atStart = !inner.length || active === doc.body || active === inner[0];
-            const atEnd = !inner.length || active === doc.body || active === inner[inner.length - 1];
+            const atEnd = !inner.length || active === inner[inner.length - 1];
             if ((e.shiftKey && atStart) || (!e.shiftKey && atEnd)) {
               const frame = exportPreviewRef.current;
               const dialog = frame && frame.closest('[role="dialog"]');
-              const outer = dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0) : [];
+              const outer = dialog ? _builderKeyboardTargets(dialog) : [];
               const frameIndex = outer.indexOf(frame);
-              const target = e.shiftKey ? outer[Math.max(0, frameIndex - 1)] : outer[0];
+              const target = frameIndex < 0 ? null : outer[(frameIndex + (e.shiftKey ? outer.length - 1 : 1)) % outer.length];
               if (target && target.focus) { e.preventDefault(); target.focus(); return; }
             }
           } catch (_) {}

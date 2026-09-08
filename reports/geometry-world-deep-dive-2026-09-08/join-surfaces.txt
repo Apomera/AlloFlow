@@ -1,0 +1,97 @@
+  // Cells never overlap in volume. Only polygons on their common boundary need
+  // subtraction; general scene booleans or voxel remeshing would lose shape fidelity.
+  function clipFace(poly, a, b, axis, orientation, inside) {
+    var axes = [0,1,2].filter(function(k){return k !== axis;});
+    function distance(p) { return orientation * ((b[axes[0]]-a[axes[0]])*(p[axes[1]]-a[axes[1]])-(b[axes[1]]-a[axes[1]])*(p[axes[0]]-a[axes[0]])); }
+    var out = [];
+    for (var i=0;i<poly.length;i++) {
+      var p=poly[i], q=poly[(i+1)%poly.length], dp=distance(p), dq=distance(q);
+      var pin=inside ? dp>=-1e-9 : dp<=1e-9, qin=inside ? dq>=-1e-9 : dq<=1e-9;
+      if(pin) out.push(p);
+      if(pin!==qin && Math.abs(dp-dq)>1e-12) { var t=dp/(dp-dq); out.push(p.map(function(v,k){return v+(q[k]-v)*t;})); }
+    }
+    return out.filter(function(p,i){var prev=out[(i+out.length-1)%out.length];return p.some(function(v,k){return Math.abs(v-prev[k])>1e-8;});});
+  }
+  function polygonArea(poly) {
+    var area=0;
+    for(var i=1;i+1<poly.length;i++) area+=triangleArea({v:[poly[0],poly[i],poly[i+1]]});
+    return area;
+  }
+  function subtractFace(poly, cutter, axis) {
+    var axes=[0,1,2].filter(function(k){return k!==axis;}), a=cutter[0],b=cutter[1],c=cutter[2];
+    var orientation=((b[axes[0]]-a[axes[0]])*(c[axes[1]]-a[axes[1]])-(b[axes[1]]-a[axes[1]])*(c[axes[0]]-a[axes[0]]))>=0 ? 1 : -1;
+    var overlap=poly;
+    for(var i=0;i<3 && overlap.length;i++) overlap=clipFace(overlap,cutter[i],cutter[(i+1)%3],axis,orientation,true);
+    if(polygonArea(overlap)<1e-9) return {polygons:[poly],touching:false};
+    var remaining=poly, pieces=[];
+    for(var j=0;j<3 && remaining.length;j++) {
+      var outside=clipFace(remaining,cutter[j],cutter[(j+1)%3],axis,orientation,false);
+      if(polygonArea(outside)>1e-9) pieces.push(outside);
+      remaining=clipFace(remaining,cutter[j],cutter[(j+1)%3],axis,orientation,true);
+    }
+    return {polygons:pieces,touching:true};
+  }
+  // Partial face subtraction creates vertices halfway along adjoining edges.
+  // Split those edges too, otherwise an apparently closed surface has T-junctions.
+  function stitchSurface(triangles) {
+    var unique={}, buckets={};
+    triangles=triangles.map(function(t){return {n:t.n.slice(),v:t.v.map(function(p){
+      var v=p.map(function(x){return Math.round(x*1e6)/1e6;}), key=v.join(',');
+      if(!unique[key]) {unique[key]=v; var cell=v.map(Math.floor).join(',');(buckets[cell]=buckets[cell]||[]).push(v);}
+      return unique[key];
+    })};});
+    var out=[];
+    triangles.forEach(function(t){
+      var polygon=[], split=false;
+      for(var i=0;i<3;i++) {
+        var a=t.v[i], b=t.v[(i+1)%3], delta=b.map(function(v,k){return v-a[k];});
+        var length2=delta.reduce(function(n,v){return n+v*v;},0), found=[];
+        if(length2<1e-14) continue;
+        var lo=a.map(function(v,k){return Math.floor(Math.min(v,b[k])-1e-7);}),hi=a.map(function(v,k){return Math.floor(Math.max(v,b[k])+1e-7);});
+        for(var x=lo[0];x<=hi[0];x++)for(var y=lo[1];y<=hi[1];y++)for(var z=lo[2];z<=hi[2];z++) {
+          (buckets[x+','+y+','+z]||[]).forEach(function(p){
+            var u=p.reduce(function(n,v,k){return n+(v-a[k])*delta[k];},0)/length2;
+            if(u<=1e-7 || u>=1-1e-7)return;
+            var error=p.reduce(function(n,v,k){return n+Math.pow(v-a[k]-u*delta[k],2);},0);
+            if(error<1e-12)found.push({u:u,p:p});
+          });
+        }
+        polygon.push(a);found.sort(function(p,q){return p.u-q.u;});found.forEach(function(p){polygon.push(p.p);});
+        if(found.length)split=true;
+      }
+      if(!split){if(triangleArea(t)>1e-9)out.push(t);return;}
+      var center=[0,0,0];polygon.forEach(function(p){p.forEach(function(v,k){center[k]+=v/polygon.length;});});
+      for(var j=0;j<polygon.length;j++) {var v=[center,polygon[j],polygon[(j+1)%polygon.length]];var next={n:triangleNormal(v[0],v[1],v[2]),v:v};if(triangleArea(next)>1e-9)out.push(next);}
+    });
+    return out;
+  }
+  function unionSurface(blocks, selected) {
+    var byKey={}, faces=[], parents=blocks.map(function(_,i){return i;});
+    function root(i){while(parents[i]!==i){parents[i]=parents[parents[i]];i=parents[i];}return i;}
+    blocks.forEach(function(block,index){
+      byKey[keyFor(block.position)]=index;var dirs={};
+      block.triangles.forEach(function(t){var p=axisPlane(t);if(p)(dirs[p.axis+':'+p.sign]=dirs[p.axis+':'+p.sign]||[]).push(t);});faces.push(dirs);
+    });
+    var out=[];
+    blocks.forEach(function(block,index){
+      block.triangles.forEach(function(t){
+        var plane=axisPlane(t), pieces=[t.v];
+        if(plane){
+          var p=Object.assign({},block.position);p[['x','y','z'][plane.axis]]+=plane.sign;
+          var key=keyFor(p), neighbor=byKey[key];
+          if(selected[key] && neighbor!==undefined){
+            (faces[neighbor][plane.axis+':'+(-plane.sign)]||[]).forEach(function(cutter){
+              if(axisPlane(cutter).coordinate!==plane.coordinate)return;
+              var next=[];
+              pieces.forEach(function(poly){var cut=subtractFace(poly,cutter.v,plane.axis);if(cut.touching)parents[root(index)]=root(neighbor);next=next.concat(cut.polygons);});pieces=next;
+            });
+          }
+        }
+        pieces.forEach(function(poly){for(var i=1;i+1<poly.length;i++){var v=[poly[0],poly[i],poly[i+1]];if(triangleArea({v:v})>1e-9)out.push({n:t.n.slice(),v:v});}});
+      });
+    });
+    out=stitchSurface(out);
+    var groups={};blocks.forEach(function(block,i){var id=root(i);(groups[id]=groups[id]||[]).push(block.position);});
+    out.contactGroups=Object.keys(groups).map(function(key){return groups[key];});
+    return out;
+  }

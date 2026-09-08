@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "forces_motion_grade3",
+    "anchorImages": 4,
+    "sortReviewImages": 10,
+    "sortGameImages": 10,
+    "pendingSortImages": 0,
+    "offline": true
+  },
+  {
+    "slug": "materials_grade2",
+    "anchorImages": 4,
+    "sortReviewImages": 9,
+    "sortGameImages": 9,
+    "pendingSortImages": 0,
+    "offline": true
+  },
+  {
+    "slug": "plant_needs_grade3",
+    "anchorImages": 5,
+    "sortReviewImages": 10,
+    "sortGameImages": 10,
+    "pendingSortImages": 0,
+    "offline": true
+  },
+  {
+    "slug": "states_of_matter_grade4",
+    "anchorImages": 5,
+    "sortReviewImages": 9,
+    "sortGameImages": 9,
+    "pendingSortImages": 0,
+    "offline": true
+  },
+  {
+    "slug": "water_cycle_grade6",
+    "anchorImages": 5,
+    "sortReviewImages": 10,
+    "sortGameImages": 10,
+    "pendingSortImages": 0,
+    "offline": true
+  },
+  {
+    "slug": "weather_vs_climate_grade5",
+    "anchorImages": 4,
+    "sortReviewImages": 10,
+    "sortGameImages": 10,
+    "pendingSortImages": 0,
+    "offline": true
+  }
+]

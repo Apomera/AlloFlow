@@ -1,0 +1,251 @@
+{
+  "result": {
+    "checks": [
+      {
+        "id": "pdf.document-title",
+        "status": "passed",
+        "observed": "Resource links",
+        "expected": "Resource links"
+      },
+      {
+        "id": "pdf.tagged-reading-order",
+        "status": "passed",
+        "observed": {
+          "untaggedPages": 0,
+          "anchorsInOrder": true
+        },
+        "expected": [
+          "Resource links",
+          "Course schedule",
+          "Tutoring support"
+        ]
+      },
+      {
+        "id": "pdf.heading-navigation-semantics",
+        "status": "passed",
+        "observed": [
+          {
+            "level": 1,
+            "name": "Resource links"
+          }
+        ],
+        "expected": [
+          {
+            "level": 1,
+            "name": "Resource links"
+          }
+        ]
+      },
+      {
+        "id": "pdf.table-count",
+        "status": "passed",
+        "observed": 0,
+        "expected": 0
+      },
+      {
+        "id": "pdf.link-1",
+        "status": "passed",
+        "observed": {
+          "nameInTags": true,
+          "annotationUrls": [
+            "https://example.invalid/tutoring",
+            "https://example.invalid/schedule"
+          ]
+        },
+        "expected": {
+          "name": "Course schedule",
+          "url": "https://example.invalid/schedule"
+        }
+      },
+      {
+        "id": "pdf.link-2",
+        "status": "passed",
+        "observed": {
+          "nameInTags": true,
+          "annotationUrls": [
+            "https://example.invalid/tutoring",
+            "https://example.invalid/schedule"
+          ]
+        },
+        "expected": {
+          "name": "Tutoring support",
+          "url": "https://example.invalid/tutoring"
+        }
+      }
+    ],
+    "reader": "PDF.js 3.11.174",
+    "pages": 1,
+    "limitations": [
+      "Text is followed through PDF.js structure/marked-content associations; this is not a screen-reader session.",
+      "Native PDF viewer keyboard/form behavior, spoken headers, alternative-text usefulness, OCR correctness, and visual layout require human checks."
+    ]
+  },
+  "raw": {
+    "tree": {
+      "children": [
+        {
+          "role": "Document",
+          "children": [
+            {
+              "role": "NonStruct",
+              "children": [
+                {
+                  "role": "H1",
+                  "children": [
+                    {
+                      "role": "NonStruct",
+                      "children": [
+                        {
+                          "type": "content",
+                          "id": "p2R_mc0"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "role": "P",
+                  "children": [
+                    {
+                      "role": "Link",
+                      "children": [
+                        {
+                          "role": "NonStruct",
+                          "children": [
+                            {
+                              "type": "content",
+                              "id": "p2R_mc1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "id": "6R"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "role": "P",
+                  "children": [
+                    {
+                      "role": "Link",
+                      "children": [
+                        {
+                          "role": "NonStruct",
+                          "children": [
+                            {
+                              "type": "content",
+                              "id": "p2R_mc2"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "id": "7R"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "lang": "en"
+        }
+      ],
+      "role": "Root"
+    },
+    "annotations": [
+      {
+        "annotationFlags": 4,
+        "borderStyle": {
+          "width": 0,
+          "style": 1,
+          "dashArray": [
+            3
+          ],
+          "horizontalCornerRadius": 0,
+          "verticalCornerRadius": 0
+        },
+        "color": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "backgroundColor": null,
+        "borderColor": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "rotation": 0,
+        "contentsObj": {
+          "str": "Course schedule",
+          "dir": "ltr"
+        },
+        "hasAppearance": false,
+        "id": "6R",
+        "modificationDate": null,
+        "rect": [
+          6,
+          719.25,
+          84.75,
+          732
+        ],
+        "subtype": "Link",
+        "hasOwnCanvas": false,
+        "noRotate": false,
+        "noHTML": false,
+        "annotationType": 2,
+        "url": "https://example.invalid/tutoring",
+        "unsafeUrl": "https://example.invalid/tutoring"
+      },
+      {
+        "annotationFlags": 4,
+        "borderStyle": {
+          "width": 0,
+          "style": 1,
+          "dashArray": [
+            3
+          ],
+          "horizontalCornerRadius": 0,
+          "verticalCornerRadius": 0
+        },
+        "color": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "backgroundColor": null,
+        "borderColor": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "rotation": 0,
+        "contentsObj": {
+          "str": "Tutoring support",
+          "dir": "ltr"
+        },
+        "hasAppearance": false,
+        "id": "7R",
+        "modificationDate": null,
+        "rect": [
+          6,
+          693.75,
+          86.25,
+          706.5
+        ],
+        "subtype": "Link",
+        "hasOwnCanvas": false,
+        "noRotate": false,
+        "noHTML": false,
+        "annotationType": 2,
+        "url": "https://example.invalid/schedule",
+        "unsafeUrl": "https://example.invalid/schedule"
+      }
+    ]
+  }
+}

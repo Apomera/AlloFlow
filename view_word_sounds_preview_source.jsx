@@ -20,7 +20,27 @@ function WordSoundsPreviewView(props) {
   // Treat an omitted role as the educator view so older call sites retain the
   // review path. Learner call sites pass false explicitly.
   var isTeacherMode = props.isTeacherMode !== false;
+  // A missing-audio confirmation can outlive the resource that opened it.
+  // Keep its callback tied to the exact prepared lesson and allow one launch.
+  var launchContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.sessionConfig, generatedContent && generatedContent.data, generatedContent && generatedContent.wsPreloadedWords, wsActivitySequence, isTeacherMode]);
+  var launchRef = React.useRef({ context: launchContext, launched: false, mounted: true });
+  if (launchRef.current.context !== launchContext) launchRef.current = { context: launchContext, launched: false, mounted: true };
+  React.useEffect(function () {
+    launchRef.current.mounted = true;
+    return function () { launchRef.current.mounted = false; };
+  }, []);
+  var claimLaunch = function () {
+    var current = launchRef.current;
+    if (!current.mounted || current.context !== launchContext || current.launched) return false;
+    current.launched = true;
+    return true;
+  };
+  var launchErrorState = React.useState('');
+  var launchError = launchErrorState[0], setLaunchError = launchErrorState[1];
   var launchPreparedActivity = function() {
+    if (!claimLaunch()) return;
+    setLaunchError('');
+    try {
     var initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
     if (typeof prepareWordSoundsSession === 'function') {
       prepareWordSoundsSession({
@@ -32,9 +52,13 @@ function WordSoundsPreviewView(props) {
     setWordSoundsActivity(initialActivity);
     setWordSoundsAutoReview(false);
     setIsWordSoundsMode(true);
+    } catch (_) {
+      launchRef.current.launched = false;
+      setLaunchError(label('preview_launch_failed', 'The activity could not open. Please try again.'));
+    }
   };
   return (
-                  <div className="space-y-6">
+                  <div className="space-y-6">{launchError && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{launchError}</p>}
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
                       <div className="text-4xl mb-3">🎵</div>
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('preview_title', 'Word Sounds Studio')}</h3>
@@ -61,6 +85,7 @@ function WordSoundsPreviewView(props) {
                           <button
                             type="button"
                             onClick={() => {
+                              if (!claimLaunch()) return;
                               const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
                               if (typeof prepareWordSoundsSession === 'function') {
                                 prepareWordSoundsSession({

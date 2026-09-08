@@ -1,0 +1,7 @@
+const fs=require('node:fs');
+for(const [file,change] of [
+ ['reports/geometry-world-graphics-2026-09-08/diagnose-touch-landscape.cjs',s=>s.replace("s=s.slice(0,start)+'  const baseline=initial;\\n'+s.slice(end);","s=s.slice(0,start)+`  const baseline=initial;\n  await page.evaluate(()=>Object.defineProperty(navigator,'userAgent',{value:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1',configurable:true}));\n`+s.slice(end);")],
+ ['reports/geometry-world-graphics-2026-09-08/diagnose-touch-mode-off.cjs',s=>s.replace('eval(s);',`s=s.replace(" await page.goto('"," await page.addInitScript(()=>{window.__touchTrace=[];for(const type of ['click','touchstart','touchend','touchcancel','pointerlockchange'])document.addEventListener(type,event=>window.__touchTrace.push({type,target:event.target?.tagName,label:event.target?.getAttribute?.('aria-label'),pointerType:event.pointerType,touchDerived:event.sourceCapabilities?.firesTouchEvents,locked:document.pointerLockElement?.tagName,engineLocked:window.__geoWorldEngine?.isLocked,time:performance.now()}),true);});await page.goto('");
+s=s.replace("results.modeOff=after;", "results.modeOff=after;results.eventTrace=await page.evaluate(()=>window.__touchTrace);");
+eval(s);`)]
+]){let s=change(fs.readFileSync(file,'utf8'));const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s,'utf8');fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}}

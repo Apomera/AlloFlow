@@ -1,0 +1,15 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "all materials",
+    "eight parallel branches",
+    "selected close-up",
+    "camera preserves physics",
+    "reset restores wide view",
+    "top view",
+    "phone layout",
+    "label toggle",
+    "empty close-up disabled"
+  ]
+}

@@ -50,6 +50,17 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_simplified_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_simplified_module.js', moduleSrc);
+writeReaderBuildFile('view_simplified_module.js', moduleSrc);
+writeReaderBuildFile('desktop/web-app/public/view_simplified_module.js', moduleSrc);
 console.log('Wrote view_simplified_module.js (' + moduleSrc.length + ' bytes)');
+
+function writeReaderBuildFile(file, contents, encoding) {
+  const path = require('path');
+  const root = path.resolve(__dirname);
+  const target = path.resolve(file);
+  if (!target.startsWith(root + path.sep)) throw new Error('Build target outside workspace');
+  if (fs.existsSync(target) && fs.readFileSync(target, 'utf8') === contents) return;
+  const temporary = target + '.reader-build-' + process.pid + '.tmp';
+  try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, target); }
+  finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+}

@@ -3227,7 +3227,7 @@ function _alloNormalizeDirectionsData(data) {
 // 'manual' (free-text self-check) — those are universal and not listed per type.
 const _ALLO_GAME_LABELS = {
     crossword: 'Crossword', memory: 'Memory', matching: 'Matching', bingo: 'Bingo',
-    wordScramble: 'Word Scramble', syntaxScramble: 'Sentence Scramble',
+    wordScramble: 'Word Scramble', definitionDetective: 'Definition Detective', syntaxScramble: 'Sentence Scramble',
     conceptSort: 'Concept Sort', timeline: 'Sequence Game', vennDiagram: 'Venn Diagram',
     tchartSort: 'T-Chart Sort', fishboneSort: 'Fishbone Sort', causeEffectSort: 'Cause & Effect Sort',
     problemSolutionSort: 'Problem/Solution Sort', conceptMapSort: 'Concept Map Sort',
@@ -3253,7 +3253,7 @@ const _ALLO_OUTLINE_GAMES = {
     'Structured Outline': 'outlineSort'
 };
 const _ALLO_GOAL_CAPABILITIES = {
-    'glossary':        { games: ['crossword', 'memory', 'matching', 'bingo', 'wordScramble'] },
+    'glossary':        { games: ['crossword', 'memory', 'matching', 'bingo', 'wordScramble', 'definitionDetective'] },
     'concept-sort':    { games: ['conceptSort'] },
     'timeline':        { games: ['timeline'] },
     'sentence-frames': { games: ['syntaxScramble'], responded: true },
@@ -3701,6 +3701,7 @@ if (typeof window !== 'undefined') { window.sanitizeHtml = sanitizeHtml; }
 // progress stores and navigation-capable resource records stay in the host;
 // the CDN module receives bounded strings plus opaque ids only.
 // Keep previews readable before the lazy document/export pipeline is available.
+// BEGIN SHARED DIRECTIONS MARKDOWN
 function _alloParsePreviewMarkdown(text) {
     if (!text) return '';
     const escape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -3716,36 +3717,55 @@ function _alloParsePreviewMarkdown(text) {
                 const safeUrl = /^(?:https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(url) ? url : '#';
                 return hold('<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">' + emphasis(label) + '</a>');
             });
-        return emphasis(content).replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)]);
+        let rendered = emphasis(content);
+        for (let pass = 0; pass <= tokens.length && rendered.includes('\u0000'); pass++) {
+            rendered = rendered.replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)]);
+        }
+        return rendered;
     };
     const lines = String(text).replace(/\\n/g, '\n').replace(/\r\n?/g, '\n').split('\n');
     let html = '';
-    let list = '';
-    const closeList = () => { if (list) { html += '</' + list + '>'; list = ''; } };
+    const lists = [];
+    const closeList = () => {
+        const list = lists.pop();
+        if (list) html += (list.itemOpen ? '</li>' : '') + '</' + list.kind + '>';
+    };
     lines.forEach(line => {
         const content = line.trim();
-        const bullet = content.match(/^[-*•]\s+(.+)$/);
-        const numbered = content.match(/^(\d+)[.)]\s+(.+)$/);
-        if (bullet || numbered) {
-            const kind = numbered ? 'ol' : 'ul';
-            if (list !== kind) {
-                closeList();
-                html += '<' + kind + (numbered ? ' start="' + Number(numbered[1]) + '"' : '') + ' style="margin: 5px 0; padding-left: 20px; list-style-type: ' + (numbered ? 'decimal' : 'disc') + ';">';
-                list = kind;
+        if (!content) return;
+        const indented = line.replace(/\t/g, '    ');
+        const match = indented.match(/^(\s*)(?:([-*•])|(\d+)[.)])\s+(.+)$/);
+        if (match) {
+            const indent = match[1].length;
+            const kind = match[3] ? 'ol' : 'ul';
+            while (lists.length && indent < lists[lists.length - 1].indent) closeList();
+            if (lists.length && indent === lists[lists.length - 1].indent && kind !== lists[lists.length - 1].kind) closeList();
+            let list = lists[lists.length - 1];
+            if (!list || indent > list.indent) {
+                html += '<' + kind + (match[3] ? ' start="' + Number(match[3]) + '"' : '') + ' style="margin: 5px 0; padding-left: 20px; list-style-type: ' + (match[3] ? 'decimal' : 'disc') + ';">';
+                list = { kind, indent, itemOpen: false };
+                lists.push(list);
             }
-            html += '<li style="margin-bottom: 5px;">' + inline(numbered ? numbered[2] : bullet[1]) + '</li>';
+            if (list.itemOpen) html += '</li>';
+            html += '<li' + (match[3] ? ' value="' + Number(match[3]) + '"' : '') + ' style="margin-bottom: 5px;">' + inline(match[4]);
+            list.itemOpen = true;
             return;
         }
-        closeList();
-        if (!content) return;
+        const indent = indented.length - indented.trimStart().length;
+        if (lists.length && indent > lists[lists.length - 1].indent) {
+            html += '<p style="margin-bottom: 10px;">' + inline(content) + '</p>';
+            return;
+        }
+        while (lists.length) closeList();
         const heading = content.match(/^(#{1,6})\s+(.+)$/);
         html += heading
             ? '<h' + heading[1].length + '>' + inline(heading[2]) + '</h' + heading[1].length + '>'
             : '<p style="margin-bottom: 10px;">' + inline(content) + '</p>';
     });
-    closeList();
+    while (lists.length) closeList();
     return html;
 }
+// END SHARED DIRECTIONS MARKDOWN
 
 function _alloBuildDirectionsResultAdapter(options) {
     const input = options && typeof options === 'object' ? options : {};
@@ -3772,8 +3792,7 @@ function _alloBuildDirectionsResultAdapter(options) {
     // opaque id can never resolve to the wrong resource after crossing the
     // module boundary.
     const stationRecords = _alloStudentSafeResources(historyItems)
-        .filter(resource => resource.type !== 'directions' && validId(resource.id))
-        .slice(0, 12);
+        .filter(resource => resource.type !== 'directions' && validId(resource.id));
     const stationById = new Map(stationRecords.map(resource => [String(resource.id), resource]));
     const stationViews = stationRecords.map(resource => {
         const style = _alloStationStyle(resource.type);
@@ -3794,7 +3813,6 @@ function _alloBuildDirectionsResultAdapter(options) {
 
     const goalById = new Map();
     const goalViews = evaluated.reduce((views, goal) => {
-        if (views.length >= 24) return views;
         const id = validId(goal.id);
         if (!id) return views;
         const sourceGoal = normalized.objectives.find(candidate => candidate && String(candidate.id) === id);
@@ -3802,7 +3820,7 @@ function _alloBuildDirectionsResultAdapter(options) {
         goalById.set(id, sourceGoal);
         views.push({
             id,
-            label: clamp(goal.label, 240),
+            label: String(goal.label || '').trim(),
             kind: clamp(goal.kind, 20),
             done: goal.done === true,
             progressText: clamp(goal.progressText, 80),
@@ -3871,7 +3889,7 @@ function _alloBuildDirectionsResultAdapter(options) {
     const translatedTitle = typeof input.t === 'function' ? input.t(defaultTitleKey) : '';
     const title = clamp(item.title, 240)
         || clamp(translatedTitle && translatedTitle !== defaultTitleKey ? translatedTitle : 'Assignment Directions', 240);
-    const markdown = clamp(normalized.body, 20000);
+    const markdown = String(normalized.body || '').trim();
     const parsedBody = markdown && typeof input.parseMarkdownToHTML === 'function'
         ? input.parseMarkdownToHTML(markdown)
         : '';
@@ -3880,7 +3898,7 @@ function _alloBuildDirectionsResultAdapter(options) {
         viewProps: {
             t: input.t,
             title,
-            bodyHtml: sanitizeHtml(String(parsedBody || '')).slice(0, 120000),
+            bodyHtml: sanitizeHtml(String(parsedBody || '')),
             showQuestMap: input.showQuestMap === true,
             stationViews,
             goalViews,
@@ -13953,7 +13971,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // lands, so the fallback resolves on its own.
     window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=34efc6e8b'); }; })();
     loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=34efc6e8b');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=34efc6e8b');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=ba1539a8');
     loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=34efc6e8b');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
@@ -13968,7 +13986,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=34efc6e8b'); };
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=65f3ee12'); };
     window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=34efc6e8b'); };
     window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=34efc6e8b'); };
     loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=34efc6e8b');
@@ -14023,7 +14041,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=34efc6e8b');
     loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=34efc6e8b');
     loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=34efc6e8b');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=34efc6e8b');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=ba195152');
     loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=34efc6e8b');
     window.__alloLazyQuickStartWizard = function() {
       loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=34efc6e8b');
@@ -14068,7 +14086,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=34efc6e8b');
+      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=1f72227c');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14151,12 +14169,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=b1e106e9'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=27eb92e0'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=abe0a8e6'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=34efc6e8b'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=e248e012'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=34efc6e8b'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=34efc6e8b'); }; })();
     loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=34efc6e8b');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=34efc6e8b'); }; })();
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=c3a06009'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
     loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=34efc6e8b');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
@@ -14247,7 +14265,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=188e3e93');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=34efc6e8b');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=34efc6e8b');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=5126a8b8');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=34efc6e8b');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=34efc6e8b');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
@@ -14327,7 +14345,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The registry handles in-flight deduplication and failed-load retries.
     window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=34efc6e8b'); };
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=34efc6e8b');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=34efc6e8b');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=73546106');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=34efc6e8b');
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=34efc6e8b');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=34efc6e8b');
@@ -14335,22 +14353,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=e2691224');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=34efc6e8b');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=34efc6e8b');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=34efc6e8b');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=34efc6e8b');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=34efc6e8b');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=34efc6e8b');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7f03c0f7');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=34efc6e8b');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=1e6c759c');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=e2cd765c');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=ffa8f379');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=00911d4b');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=f81b5ec1');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=60ea23db');
     loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=34efc6e8b');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=34efc6e8b');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=34efc6e8b');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=34efc6e8b');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=60f86165'); }; })();
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=fd5c1012');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=53b8342f');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=0878c7e4');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=33c73ce2'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=34efc6e8b');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=34efc6e8b');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=34efc6e8b');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=34efc6e8b');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=c9f628a7');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=c7db1f1a');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=34efc6e8b');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=34efc6e8b');
     window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=739d7079'); }; })();
@@ -14366,14 +14384,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=34efc6e8b');
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=34efc6e8b');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=34efc6e8b');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=34efc6e8b');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=34efc6e8b');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=689d23ad');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=8254a377');
     loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=34efc6e8b');
     loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=34efc6e8b');
     loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=34efc6e8b');
     loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=34efc6e8b');
     loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=34efc6e8b');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=34efc6e8b');
+    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=a4c406f8');
     window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=34efc6e8b'); };
     loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=34efc6e8b');
     loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=34efc6e8b');
@@ -15767,6 +15785,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           syntaxScramble: [],
           vennDiagram: [],
           wordScramble: [],
+          definitionDetective: [],
           causeEffectSort: []
       };
   });
@@ -16349,7 +16368,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isChunkReaderActive]);
   useEffect(() => {
       // Reset typewriter on chunk change. Tick advance happens in the renderer's
-      // own RAF loop (see view_simplified_module.js?v=60f86165 typewriter logic) so the char
+      // own RAF loop (see view_simplified_module.js?v=e7f6955f typewriter logic) so the char
       // count doesn't depend on prop drilling another timer through the chain.
       setChunkTypewriterCharIdx(0);
   }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
@@ -25506,6 +25525,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // students actually DO; works plan-less). One-way snapshot: the teacher reviews and edits;
   // regenerating never clobbers an added resource. Provenance rides meta.derivedFrom.
   const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
+  const directionsPreviewHtml = useMemo(() => sanitizeHtml(_alloParsePreviewMarkdown((mbDirectionsDraft?.due ? '**Due:** ' + mbDirectionsDraft.due + '\n\n' : '') + (mbDirectionsDraft?.body || ''))), [mbDirectionsDraft?.body, mbDirectionsDraft?.due]);
   const [showDirectionsChoicePreview, setShowDirectionsChoicePreview] = useState(false);
   const [directionsChoiceSelection, setDirectionsChoiceSelection] = useState({});
   const [directionsChoiceOrigin, setDirectionsChoiceOrigin] = useState(null);
@@ -36837,7 +36857,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const _htmlSaveIdentity = _liveSaveBinding
       ? ('sha256:' + _liveSaveBinding.digest)
       : ('local:' + _autosaveHtmlFingerprint(cur.accessibleHtml));
-    const hashKey = _htmlSaveIdentity + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur.verificationState || '') + ':' + String(!!cur.requiresManualReview) + ':' + String(cur.verificationReviewCount || 0) + ':' + String((cur.verificationReasons || []).join('|')) + ':' + String(cur.verificationCoverage && [cur.verificationCoverage.ai, cur.verificationCoverage.axe, cur.verificationCoverage.equalAccess].join('|') || '') + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '') + ':' + String(cur.reviewedFindings ? Object.keys(cur.reviewedFindings).length : 0) + ':' + String(Number(cur.humanEditsAdopted) || 0) + ':' + String(Number(cur.candidateRejectionCount) || 0) + ':' + JSON.stringify((cur.candidateRejections || []).slice(0, 100));
+    const hashKey = _htmlSaveIdentity + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur.verificationState || '') + ':' + String(!!cur.requiresManualReview) + ':' + String(cur.verificationReviewCount || 0) + ':' + String((cur.verificationReasons || []).join('|')) + ':' + String(cur.verificationCoverage && [cur.verificationCoverage.ai, cur.verificationCoverage.axe, cur.verificationCoverage.equalAccess].join('|') || '') + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '') + ':' + String(cur.reviewedFindings ? Object.keys(cur.reviewedFindings).length : 0) + ':' + String(Number(cur.humanEditsAdopted) || 0) + ':' + String(Number(cur.candidateRejectionCount) || 0) + ':' + JSON.stringify((cur.candidateRejections || []).slice(0, 100)) + ':' + JSON.stringify(cur.preservationAcknowledgments || {}) + ':' + String(cur.sourceStructure && cur.sourceStructure.sourceDigest || '');
     if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
     const project = {
       version: 1,
@@ -36882,6 +36902,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       humanEditsAdopted: Number(cur.humanEditsAdopted) || 0,
       candidateRejectionCount: Math.max(0, Number(cur.candidateRejectionCount) || 0),
       candidateRejections: Array.isArray(cur.candidateRejections) ? cur.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
+      sourceStructure: window.AlloModules?.RemediationReview?.normalizeSourceModel(cur.sourceStructure) || null,
+      preservationAcknowledgments: window.AlloModules?.RemediationReview?.acknowledgments(cur.preservationAcknowledgments) || {},
       reviewedFindings: (cur.reviewedFindings && typeof cur.reviewedFindings === 'object') ? cur.reviewedFindings : null,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,
@@ -38766,6 +38788,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   const _syncBuilderEditsToRemediation = () => {
     try {
       const iframe = exportPreviewRef.current;
+      try { iframe?.__alloBuilderFlushDraft?.(); } catch (_) {}
       const doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
       if (!doc || !doc.body || !doc.documentElement) return;
       const hasLiveEdits = doc.body.getAttribute('data-allo-user-edited') === '1';
@@ -38819,6 +38842,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         _builderRecoverySaveTimerRef.current = null;
       }
       _syncBuilderEditsToRemediation();
+      _builderDraftOwnerRef.current = null;
       if (isCanvas) setCanvasRecoveryRevision(value => value + 1);
       setExportPreviewSource('history');
       setBuilderWorkspaceMode('author');
@@ -38843,6 +38867,28 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     let hash = 2166136261;
     for (let i = 0; i < raw.length; i++) { hash ^= raw.charCodeAt(i); hash = Math.imul(hash, 16777619); }
     return raw.length + ':' + (hash >>> 0).toString(16);
+  };
+  // A distinct owner object fences every open document/mode/History generation.
+  // Delayed iframe work must not adopt a newer owner's project attribution.
+  const _builderDraftOwnerRef = React.useRef(null);
+  const _builderDraftHistorySignature = showExportPreview && exportPreviewSource === 'history' ? _getBuilderHistorySignature() : null;
+  const _builderDraftOwnerKey = showExportPreview ? JSON.stringify([exportPreviewSource, exportPreviewMode,
+    _builderDraftHistorySignature, builderResourceIds, exportPreviewSource === 'remediation' ? pdfDocumentEpochLive : null]) : null;
+  if (!_builderDraftOwnerKey) _builderDraftOwnerRef.current = null;
+  else if (_builderDraftOwnerRef.current?.key !== _builderDraftOwnerKey) _builderDraftOwnerRef.current = {
+    key: _builderDraftOwnerKey, source: exportPreviewSource, mode: exportPreviewMode,
+    historySignature: _builderDraftHistorySignature, resourceIds: builderResourceIds,
+  };
+  const _captureBuilderDraft = (html, capture) => {
+    const owner = capture?.owner;
+    const doc = capture?.doc;
+    if (!owner || owner !== _builderDraftOwnerRef.current || !showExportPreview
+      || exportPreviewRef.current?.contentDocument !== doc || !doc?.body
+      || doc.__alloBuilderCaptureToken !== capture.token || typeof html !== 'string' || !html.trim()) return false;
+    if (owner.source === 'history') window.__alloBuilderEditedPack = {
+      html, at: Date.now(), source: 'history', historySignature: owner.historySignature, resourceIds: owner.resourceIds,
+    };
+    return true;
   };
   const getBuilderGuidedDeliveryContext = () => {
     if (!guidedMode || exportPreviewSource !== 'history' || !Array.isArray(builderResourceIds)) return null;
@@ -41220,7 +41266,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         generateFullPackHTML, getExportableHistory: getBuilderExportableHistory, getSkippedResources: getBuilderSkippedResources,
         sourceTopic, studentResponses, exportConfig, history: getBuilderHistory(),
         callTTS, selectedVoice,
-        setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides: () => handleExportSlides({ history: getBuilderHistory() })
+        setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides: (options = {}) => handleExportSlides({ ...options, history: getBuilderHistory() })
       });
     }
     addToast && addToast(t('toasts.export_tools_still_loading_try'), 'error');
@@ -50685,7 +50731,7 @@ ${_alloActivityContext(activity)}
         </div>
       )}
       {showDirectionsComposer && (
-        <DirectionsComposerView ArrowRight={ArrowRight} ClipboardList={ClipboardList} Sparkles={Sparkles} X={X} _alloDirectionsGoalResources={_alloDirectionsGoalResources} _alloGoalOptionsForResource={_alloGoalOptionsForResource} _alloStationStyle={_alloStationStyle} _mbDirectionsChoiceDraftChoices={_mbDirectionsChoiceDraftChoices} _mbDirectionsChoicePreviewItems={_mbDirectionsChoicePreviewItems} _mbDirectionsChoiceReady={_mbDirectionsChoiceReady} _mbDirectionsChoiceStaleCount={_mbDirectionsChoiceStaleCount} addDirectionsToPack={addDirectionsToPack} deriveDirectionsDraft={deriveDirectionsDraft} directionsDeriving={directionsDeriving} generateUUID={generateUUID} mbDirectionsDraft={mbDirectionsDraft} directionsGoalEditorState={directionsGoalEditorState} setMbDirectionsDraft={setMbDirectionsDraft} setShowDirectionsChoicePreview={setShowDirectionsChoicePreview} setShowDirectionsComposer={setShowDirectionsComposer} showDirectionsChoicePreview={showDirectionsChoicePreview} t={t} />
+        <DirectionsComposerView ArrowRight={ArrowRight} ClipboardList={ClipboardList} Sparkles={Sparkles} X={X} _alloDirectionsGoalResources={_alloDirectionsGoalResources} _alloGoalOptionsForResource={_alloGoalOptionsForResource} _alloStationStyle={_alloStationStyle} _mbDirectionsChoiceDraftChoices={_mbDirectionsChoiceDraftChoices} _mbDirectionsChoicePreviewItems={_mbDirectionsChoicePreviewItems} _mbDirectionsChoiceReady={_mbDirectionsChoiceReady} _mbDirectionsChoiceStaleCount={_mbDirectionsChoiceStaleCount} addDirectionsToPack={addDirectionsToPack} deriveDirectionsDraft={deriveDirectionsDraft} directionsDeriving={directionsDeriving} generateUUID={generateUUID} mbDirectionsDraft={mbDirectionsDraft} directionsPreviewHtml={directionsPreviewHtml} directionsGoalEditorState={directionsGoalEditorState} setMbDirectionsDraft={setMbDirectionsDraft} setShowDirectionsChoicePreview={setShowDirectionsChoicePreview} setShowDirectionsComposer={setShowDirectionsComposer} showDirectionsChoicePreview={showDirectionsChoicePreview} t={t} />
       )}
       {homeworkShelf && Array.isArray(homeworkShelf.resources) && homeworkShelf.resources.length > 0 && !mbLive && !mbStudent && !activeSessionCode && !isTeacherMode && (
         <div role="region" aria-label={t('takehome.banner_label') || 'Saved homework'} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[390] w-full max-w-md px-4">
@@ -51339,6 +51385,7 @@ ${_alloActivityContext(activity)}
     addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
     adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty,
     adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
+    adventureTypingPaceEnabled, adventureFluencyEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, adventureAutoRead, setAdventureAutoRead, stopPlayback,
     aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
     appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengeFamily,
     appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
@@ -51718,12 +51765,12 @@ ${_alloActivityContext(activity)}
                             );
                         })()}
                     {generatedContent && (activeView === 'math') && (
-                        <span role="button" tabIndex={0}
+                        <button type="button"
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
-                            className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
-                            aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}>
+                            className="group min-h-11 flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
+                            aria-label={(t('sidebar.open_stem_lab_explore_aria') && t('sidebar.open_stem_lab_explore_aria') !== 'sidebar.open_stem_lab_explore_aria' ? t('sidebar.open_stem_lab_explore_aria') : 'Open STEAM Lab Explore')}>
                             🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
-                        </span>
+                        </button>
                     )}
                     </div>
                 )}
@@ -52347,7 +52394,7 @@ ${_alloActivityContext(activity)}
                         signals: _alloObjectiveSignals,
                         selectedChoiceRef: directionsChoiceSelection[generatedContent.id] || '',
                         showQuestMap,
-                        parseMarkdownToHTML,
+                        parseMarkdownToHTML: _alloParsePreviewMarkdown,
                         t,
                     });
                     const resolveDirectionsId = (value) => {
@@ -52673,6 +52720,7 @@ ${_alloActivityContext(activity)}
                 )}
                 {activeView === 'adventure' && window.AlloModules && window.AlloModules.AdventureView && React.createElement(window.AlloModules.AdventureView, {
                     adventureState, t, globalPoints, soundEnabled, activeView,
+                    isAdventureCloudEnabled, setIsAdventureCloudEnabled, safeSetItem, setStudentProjectSettings,
                     setAdventureState, currentUiLanguage, translationMode, resolveTranslationPolicy, isSocialStoryMode, socialStoryFocus, setIsSocialStoryMode, setSocialStoryFocus, factionResourceMode, setFactionResourceMode,
                     prewarmAdventureAudio, handleAdventureHint,
                     showLedger, isProcessing, adventureImageSize, adventureAutoRead,
@@ -52975,7 +53023,8 @@ ${_alloActivityContext(activity)}
                 )}
                 {/* ── DBQ Interactive View ── */}
                 {activeView === 'dbq' && generatedContent?.data && window.AlloModules && window.AlloModules.DbqView && React.createElement(window.AlloModules.DbqView, {
-                    generatedContent, studentResponses, handleStudentInput, callGemini, cleanJson,
+                    generatedContent, studentResponses, handleStudentInput, callGemini: studentAiFeaturesHidden ? null : callGemini, cleanJson,
+                    feedbackScopeKey: JSON.stringify([selectedProfileId || '', isTeacherMode, appId || '', activeSessionCode || '', studentNickname || '']),
                     addToast, handleScoreUpdate, gradeLevel, t, isTeacherMode, callTTS, selectedVoice
                 })}
                 {activeView === 'persona' && (
@@ -54972,6 +55021,7 @@ ${_alloActivityContext(activity)}
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, theme, toggleA11yInspect, updateExportPreview,
           exportPreviewSource, builderWorkspaceMode, setBuilderWorkspaceMode,
+          builderDraftOwner: _builderDraftOwnerRef.current, onBuilderDraftCapture: _captureBuilderDraft,
           onAdvancedReviewSessionChange: (nextSession) => { _builderReviewSessionRef.current = nextSession || null; },
           onExportSuccess: () => confirmBuilderGuidedDelivery(builderGuidedDeliveryContext),
           // Slides mode extra: route the same generated content into the studio

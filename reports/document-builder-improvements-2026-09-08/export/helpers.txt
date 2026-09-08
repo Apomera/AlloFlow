@@ -1,0 +1,115 @@
+// Shared conversion boundaries for Builder live-document exports.
+function _builderCleanMarkdownRoot(doc) {
+  if (!doc?.body) throw new Error('The editable preview is not ready.');
+  const root = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach(node => node.remove());
+  _builderStripEditorBreakMetadata(root);
+  return root;
+}
+function _builderMarkdownFromRoot(root, options = {}) {
+  const warnings = new Set();
+  const escaped = value => String(value || '').replace(/([\\`*_[\]])/g, '\\$1');
+  const fence = value => '`'.repeat(Math.max(3, ...((String(value).match(/`+/g) || []).map(run => run.length + 1))));
+  const link = (value, image) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (image && /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw.replace(/\s/g, '');
+    try {
+      const url = new URL(raw, options.baseURI || 'https://invalid.local/');
+      if (!['http:', 'https:', ...(image ? [] : ['mailto:', 'tel:'])].includes(url.protocol)) return '';
+      const target = raw.startsWith('#') ? raw : url.href;
+      return target.replace(/[<>\s]/g, ch => encodeURIComponent(ch));
+    } catch (_) { return ''; }
+  };
+  const mathBlocks = Array.from(root.querySelectorAll('math'));
+  const children = (node, depth) => Array.from(node.childNodes || []).map(child => render(child, depth)).join('');
+  const render = (node, depth = 0) => {
+    if (depth > 100) throw new Error('The document is too deeply nested to convert to Markdown.');
+    if (node.nodeType === 3) return escaped(node.nodeValue);
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    if (['script', 'style', 'head', 'template'].includes(tag)) return '';
+    if (tag === 'math') {
+      const xml = node.outerHTML, mark = fence(xml);
+      const spoken = options.spokenByBlock?.[mathBlocks.indexOf(node)];
+      return '\n\n' + (spoken ? '*Spoken: ' + escaped(String(spoken).trim()) + '*\n\n' : '') + mark + 'mathml\n' + xml + '\n' + mark + '\n\n';
+    }
+    if (tag === 'img') {
+      const alt = escaped(node.getAttribute('alt') || 'Image'), src = link(node.getAttribute('src'), true);
+      if (!src) { warnings.add('An image source could not be included; its description is retained. Use HTML for the complete document.'); return '[Image: ' + alt + ']'; }
+      return '![' + alt + '](<' + src + '>)';
+    }
+    if (tag === 'pre') { const value = node.textContent || '', mark = fence(value); return '\n\n' + mark + '\n' + value + '\n' + mark + '\n\n'; }
+    if (tag === 'code') { const value = node.textContent || '', mark = fence(value); return mark + ' ' + value + ' ' + mark; }
+    if (tag === 'table') {
+      if (node.querySelector('[colspan]:not([colspan="1"]),[rowspan]:not([rowspan="1"]),table,math,img')) {
+        warnings.add('Tables with merged cells, images, or math are retained as HTML. Check that your Markdown reader supports them.');
+        const copy = node.cloneNode(true);
+        copy.querySelectorAll('*').forEach(el => Array.from(el.attributes).forEach(attr => { if (/^on/i.test(attr.name) || attr.name === 'srcdoc') el.removeAttribute(attr.name); }));
+        copy.querySelectorAll('img').forEach(img => { const src = link(img.getAttribute('src'), true); if (src) img.setAttribute('src', src); else { warnings.add('An image source could not be included; its description is retained. Use HTML for the complete document.'); img.replaceWith(root.ownerDocument.createTextNode('[Image: ' + (img.getAttribute('alt') || 'Image') + ']')); } });
+        copy.querySelectorAll('a[href]').forEach(anchor => { const href = link(anchor.getAttribute('href'), false); if (href) anchor.setAttribute('href', href); else anchor.removeAttribute('href'); });
+        return '\n\n' + copy.outerHTML + '\n\n';
+      }
+      const rows = Array.from(node.rows || []).map(row => Array.from(row.cells).map(cell => children(cell, depth + 1).trim().replace(/\|/g, '\\|').replace(/\n+/g, '<br>')));
+      if (!rows.length) return '';
+      const width = Math.max(...rows.map(row => row.length));
+      const line = row => '| ' + Array.from({ length: width }, (_, index) => row[index] || '').join(' | ') + ' |';
+      const caption = node.caption ? escaped(node.caption.textContent) + '\n\n' : '';
+      return '\n\n' + caption + line(rows[0]) + '\n' + line(Array(width).fill('---')) + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+    }
+    if (tag === 'a') { const label = children(node, depth + 1), href = link(node.getAttribute('href'), false); return href ? '[' + label + '](<' + href + '>)' : label; }
+    if (tag === 'ul' || tag === 'ol') {
+      const start = Number(node.getAttribute('start')) || 1;
+      return '\n\n' + Array.from(node.children).filter(item => item.tagName === 'LI').map((item, index) => (tag === 'ol' ? (start + index) + '. ' : '- ') + children(item, depth + 1).trim().replace(/\n/g, '\n  ')).join('\n') + '\n\n';
+    }
+    const inner = children(node, depth + 1);
+    if (/^h[1-6]$/.test(tag)) return '\n\n' + '#'.repeat(Number(tag[1])) + ' ' + inner.trim() + '\n\n';
+    if (tag === 'strong' || tag === 'b') return '**' + inner + '**';
+    if (tag === 'em' || tag === 'i') return '*' + inner + '*';
+    if (tag === 'br') return '\n';
+    if (tag === 'hr') return '\n\n---\n\n';
+    if (tag === 'blockquote') return '\n\n' + inner.trim().replace(/^/gm, '> ') + '\n\n';
+    if (['p', 'div', 'section', 'article', 'figure', 'figcaption', 'main'].includes(tag)) return '\n\n' + inner.trim() + '\n\n';
+    return inner;
+  };
+  return { markdown: render(root).replace(/\n{3,}/g, '\n\n').trim(), warnings: [...warnings] };
+}
+async function _builderFetchExportImage(url, options = {}) {
+  const maxBytes = options.maxBytes || 8 * 1024 * 1024;
+  const timeoutMs = options.timeoutMs || 10000;
+  const fetchImage = options.fetchImpl || fetch;
+  const controller = new AbortController();
+  let reader, finished = false, timer;
+  const cancel = () => { controller.abort(); try { const pending = reader?.cancel(); if (pending?.catch) pending.catch(() => {}); } catch (_) {} };
+  const deadline = new Promise((_, reject) => { timer = setTimeout(() => { cancel(); reject(new Error('Image transfer timed out.')); }, timeoutMs); });
+  try {
+    return await Promise.race([deadline, (async () => {
+      const response = await fetchImage(url, { credentials: 'omit', signal: controller.signal });
+      if (!response.ok) throw new Error('Image request failed (' + response.status + ')');
+      const mediaType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase();
+      const extension = ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' })[mediaType];
+      if (!extension) throw new Error('Unsupported remote image type');
+      const declared = Number(response.headers.get('content-length'));
+      if (Number.isFinite(declared) && declared > maxBytes) throw new Error('Remote image exceeds the export size limit.');
+      if (!response.body?.getReader) throw new Error('This browser cannot read remote images with a bounded transfer.');
+      reader = response.body.getReader();
+      const chunks = []; let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!(value instanceof Uint8Array)) throw new Error('Invalid image response bytes.');
+        if (value.byteLength > maxBytes - size) throw new Error('Remote image exceeds the export size limit.');
+        size += value.byteLength; chunks.push(value);
+      }
+      const bytes = new Uint8Array(size); let offset = 0;
+      chunks.forEach(chunk => { bytes.set(chunk, offset); offset += chunk.byteLength; });
+      finished = true;
+      return { bytes, mediaType, extension };
+    })()]);
+  } finally {
+    clearTimeout(timer);
+    if (!finished) cancel();
+    try { reader?.releaseLock(); } catch (_) {}
+  }
+}
+

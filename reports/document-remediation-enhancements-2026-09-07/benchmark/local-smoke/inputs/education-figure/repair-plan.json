@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "Plant growth diagram",
+    "language": "en",
+    "source_page_count": 1,
+    "source_sha256": "9db850fc640829bf6a7704b0b1f518bb8b44b4d3d8b235c963bffa8bec2c8686",
+    "document_type": "handout"
+  },
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "Plant growth diagram A seed becomes a sprout with sunlight. Three stages show a seed, a sprout, and a leafy plant under sunlight. Growth from seed to plant"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Plant growth diagram",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "A seed becomes a sprout with sunlight.",
+      "source_page": 1
+    },
+    {
+      "type": "image",
+      "alt": "Three stages show a seed, a sprout, and a leafy plant under sunlight.",
+      "decorative": false,
+      "path": "plant.png",
+      "caption": "Growth from seed to plant",
+      "source_page": 1
+    }
+  ],
+  "review_notes": []
+}

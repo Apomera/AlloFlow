@@ -1,0 +1,26 @@
+      var liveBuilderCtx = React.useRef(ctx); liveBuilderCtx.current = ctx;
+      React.useEffect(function () {
+        var previousEngine=null, signature='', outline=null;
+        function clearOutline(){if(outline){if(outline.parent)outline.parent.remove(outline);outline.geometry.dispose();outline.material.dispose();outline=null;}}
+        function refresh(){
+          var eng=window[ENGINE_KEY];
+          if(eng!==previousEngine){clearOutline();signature='';previousEngine=eng;}
+          var selected=selectionMeasurement(eng);
+          if(!selected){clearOutline();if(signature){signature='';patchGeometryState(liveBuilderCtx.current,{builderPrintCheck:null});}return;}
+          var m=selected.measurement;
+          var next=m.blocks.map(function(p){var u=eng.blocks[keyFor(p)].userData;return keyFor(p)+':'+u.shape+':'+u.rotation+':'+u.blockType;}).sort().join('|');
+          if(next===signature)return;
+          signature=next;eng._builderSelection={blocks:m.blocks.slice()};
+          var check=null;
+          try{var bundle=buildGeometryWorldStl(eng,m.blocks);check={components:bundle.connectedComponents,triangles:bundle.triangleCount,nonManifoldEdges:bundle.topology.nonManifoldEdges,openEdges:bundle.topology.openEdges};}catch(error){check={error:error.message};}
+          if(window.THREE && eng.scene){
+            clearOutline();var box=new window.THREE.Box3();m.blocks.forEach(function(p){box.expandByObject(eng.blocks[keyFor(p)]);});
+            outline=new window.THREE.Box3Helper(box,check && (check.components>1 || check.nonManifoldEdges) ? 0xfbbf24 : 0x22d3ee);
+            outline.material.depthTest=false;outline.material.transparent=true;outline.material.opacity=0.85;outline.renderOrder=998;eng.scene.add(outline);
+          }
+          patchGeometryState(liveBuilderCtx.current,{measureResult:m,builderPrintCheck:check});
+        }
+        var timer=setInterval(refresh,250);refresh();
+        return function(){clearInterval(timer);clearOutline();};
+      },[]);
+

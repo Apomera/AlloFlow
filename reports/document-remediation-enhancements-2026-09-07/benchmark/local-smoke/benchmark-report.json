@@ -1,0 +1,1030 @@
+{
+  "schemaVersion": 1,
+  "benchmark": "document-remediation-quality-performance",
+  "corpusId": "mixed-education-v1",
+  "mode": "local",
+  "startedAt": "2026-09-08T04:10:17.994Z",
+  "completedAt": "2026-09-08T04:13:12.555Z",
+  "interruption": null,
+  "configuration": {
+    "mode": "local",
+    "trials": 2,
+    "timeoutMs": 30000,
+    "budgetMs": 240000
+  },
+  "versions": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "architecture": "arm64",
+    "gitCommit": "dcb39be6c9a9822a3aa9606bb3abdf4c9af74ba9",
+    "files": {
+      "agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py": "caa6804b43a94933493a1dbdd3cb958b2ee9f47fced59e3ee5fc91b1beb69900",
+      "agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs": "3234436d5c046ec62d4b019dd11c49e0f47aaf911741ec3d37174753896fdef6",
+      "desktop/mcp/alloflow-remediation-mcp-stdio.cjs": "9427256d9cba8265a2401102576b3a9d7d52a710a31d1bd3617e40c38f41b110",
+      "desktop/mcp/remediation_headless_driver.cjs": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61",
+      "desktop/mcp/remediation_verification.cjs": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2",
+      "doc_pipeline_source.jsx": "a0fe03b36123b0b5cbe6a1be4869ae768747a7169734b28c32a3bfe22acc7236",
+      "doc_pipeline_module.js": "a8375a40069b24ea484905b7015ac3902af98199f2031c77f93c015f98f78ccc",
+      "accessibility_evidence_module.js": "bdc31055e61b1ac89206a4abca8f72eec6861ded696a1345f46ce6c7277c42c2",
+      "dev-tools/benchmark_document_remediation.cjs": "d5d0f40e030a5c299370d1044bf7454cd611b413cfbb8db7caaa30fb7b2e25f2",
+      "dev-tools/remediation_benchmark_corpus.cjs": "58c5c272b1ee05c6bbfe0a868e9a6ce02e77d23f179b098b64cdd74e0e4e47fe"
+    },
+    "promptBundleSha256": "a0fe03b36123b0b5cbe6a1be4869ae768747a7169734b28c32a3bfe22acc7236",
+    "implementationSha256": "020025a058abb3e883b85df89bd60adfca5668e0fa8145f83d516ecfd1b95b47",
+    "modelConfiguration": {
+      "provider": "Gemini via local MCP",
+      "model": "gemini-3-flash-preview",
+      "fallbackModel": "gemini-2.5-flash-lite",
+      "note": "Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed."
+    }
+  },
+  "manifestSha256": "7b19e71f60bbdf2d4f203393b9853bcdd304e53e15f22cdc181007f755618387",
+  "cases": [
+    {
+      "id": "education-worksheet",
+      "documentKind": "worksheet",
+      "backend": "portable",
+      "calibrationCaseId": null
+    },
+    {
+      "id": "education-reading",
+      "documentKind": "reading",
+      "backend": "portable",
+      "calibrationCaseId": null
+    },
+    {
+      "id": "education-table",
+      "documentKind": "table",
+      "backend": "portable",
+      "calibrationCaseId": null
+    },
+    {
+      "id": "education-scan",
+      "documentKind": "scan",
+      "backend": "portable",
+      "calibrationCaseId": null
+    },
+    {
+      "id": "education-form",
+      "documentKind": "form",
+      "backend": "portable",
+      "calibrationCaseId": null
+    },
+    {
+      "id": "education-figure",
+      "documentKind": "figure",
+      "backend": "portable",
+      "calibrationCaseId": null
+    }
+  ],
+  "summary": {
+    "plannedTrials": 12,
+    "completedTrials": 12,
+    "passed": 10,
+    "failed": 2
+  },
+  "aggregates": [
+    {
+      "caseId": "education-figure",
+      "groupId": "education-figure:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 2,
+      "passed": 2,
+      "failed": 0,
+      "allTiming": {
+        "count": 2,
+        "medianMs": 3436.093,
+        "p95Ms": 4863.454,
+        "minMs": 2008.732,
+        "maxMs": 4863.454
+      },
+      "completedTiming": {
+        "count": 2,
+        "medianMs": 3436.093,
+        "p95Ms": 4863.454,
+        "minMs": 2008.732,
+        "maxMs": 4863.454
+      },
+      "readiness": {
+        "review-required": 2
+      },
+      "preservation": {
+        "passed-for-tested-scope": 2
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 2
+      }
+    },
+    {
+      "caseId": "education-form",
+      "groupId": "education-form:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 2,
+      "passed": 2,
+      "failed": 0,
+      "allTiming": {
+        "count": 2,
+        "medianMs": 1778.635,
+        "p95Ms": 2203.355,
+        "minMs": 1353.915,
+        "maxMs": 2203.355
+      },
+      "completedTiming": {
+        "count": 2,
+        "medianMs": 1778.635,
+        "p95Ms": 2203.355,
+        "minMs": 1353.915,
+        "maxMs": 2203.355
+      },
+      "readiness": {
+        "blocked": 2
+      },
+      "preservation": {
+        "unavailable": 2
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 2
+      }
+    },
+    {
+      "caseId": "education-reading",
+      "groupId": "education-reading:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 2,
+      "passed": 2,
+      "failed": 0,
+      "allTiming": {
+        "count": 2,
+        "medianMs": 12894.825,
+        "p95Ms": 24917.84,
+        "minMs": 871.81,
+        "maxMs": 24917.84
+      },
+      "completedTiming": {
+        "count": 2,
+        "medianMs": 12894.825,
+        "p95Ms": 24917.84,
+        "minMs": 871.81,
+        "maxMs": 24917.84
+      },
+      "readiness": {
+        "review-required": 2
+      },
+      "preservation": {
+        "passed-for-tested-scope": 2
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 2
+      }
+    },
+    {
+      "caseId": "education-scan",
+      "groupId": "education-scan:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 2,
+      "passed": 2,
+      "failed": 0,
+      "allTiming": {
+        "count": 2,
+        "medianMs": 6859.762,
+        "p95Ms": 10156.679,
+        "minMs": 3562.845,
+        "maxMs": 10156.679
+      },
+      "completedTiming": {
+        "count": 2,
+        "medianMs": 6859.762,
+        "p95Ms": 10156.679,
+        "minMs": 3562.845,
+        "maxMs": 10156.679
+      },
+      "readiness": {
+        "review-required": 2
+      },
+      "preservation": {
+        "passed-for-tested-scope": 2
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 2
+      }
+    },
+    {
+      "caseId": "education-table",
+      "groupId": "education-table:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 2,
+      "passed": 1,
+      "failed": 1,
+      "allTiming": {
+        "count": 2,
+        "medianMs": 19232.809,
+        "p95Ms": 37452.136,
+        "minMs": 1013.482,
+        "maxMs": 37452.136
+      },
+      "completedTiming": {
+        "count": 1,
+        "medianMs": 1013.482,
+        "p95Ms": 1013.482,
+        "minMs": 1013.482,
+        "maxMs": 1013.482
+      },
+      "readiness": {
+        "review-required": 1,
+        "unavailable": 1
+      },
+      "preservation": {
+        "passed-for-tested-scope": 1,
+        "unavailable": 1
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 2,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 2
+      }
+    },
+    {
+      "caseId": "education-worksheet",
+      "groupId": "education-worksheet:020025a058abb3e883b85df89bd60adfca5668e0fa8145f83d516ecfd1b95b47:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "020025a058abb3e883b85df89bd60adfca5668e0fa8145f83d516ecfd1b95b47",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 1,
+      "passed": 0,
+      "failed": 1,
+      "allTiming": {
+        "count": 1,
+        "medianMs": 3942.045,
+        "p95Ms": 3942.045,
+        "minMs": 3942.045,
+        "maxMs": 3942.045
+      },
+      "completedTiming": {
+        "count": 0,
+        "medianMs": null,
+        "p95Ms": null,
+        "minMs": null,
+        "maxMs": null
+      },
+      "readiness": {
+        "review-required": 1
+      },
+      "preservation": {
+        "passed-for-tested-scope": 1
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 1,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 1,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 1
+      }
+    },
+    {
+      "caseId": "education-worksheet",
+      "groupId": "education-worksheet:fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27:{\"model\":null,\"provider\":\"none\"}",
+      "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "trials": 1,
+      "passed": 1,
+      "failed": 0,
+      "allTiming": {
+        "count": 1,
+        "medianMs": 10783.667,
+        "p95Ms": 10783.667,
+        "minMs": 10783.667,
+        "maxMs": 10783.667
+      },
+      "completedTiming": {
+        "count": 1,
+        "medianMs": 10783.667,
+        "p95Ms": 10783.667,
+        "minMs": 10783.667,
+        "maxMs": 10783.667
+      },
+      "readiness": {
+        "review-required": 1
+      },
+      "preservation": {
+        "passed-for-tested-scope": 1
+      },
+      "calls": {
+        "total": 0,
+        "observedTrials": 1,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": 0,
+        "observedTrials": 1,
+        "missingTrials": 0
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 1
+      }
+    }
+  ],
+  "trials": [
+    {
+      "caseId": "education-worksheet",
+      "documentKind": "worksheet",
+      "backend": "portable",
+      "trial": 1,
+      "status": "version-drift",
+      "durationMs": 3942.045,
+      "exitCode": 0,
+      "passed": false,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "36e6e9b8e8a1f95b29762672410c209803272975bad3a934f62d07351eeadd95",
+          "bytes": 720
+        },
+        "plan": {
+          "sha256": "66042a800bb5c5424cc55297430d83dd6c81ed3a50c979c154b0c4c732869e21",
+          "bytes": 894
+        },
+        "fixtureDefinitionSha256": "139b28970d8d621f728ff162df995669c9f4a6c7f738a7cd87cfa76e424bab5c",
+        "implementationSha256": "020025a058abb3e883b85df89bd60adfca5668e0fa8145f83d516ecfd1b95b47",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "a0fe03b36123b0b5cbe6a1be4869ae768747a7169734b28c32a3bfe22acc7236",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-worksheet/trial-01/result.json",
+        "execution": "trials/education-worksheet/trial-01/execution.json",
+        "stdout": "trials/education-worksheet/trial-01/stdout.log",
+        "stderr": "trials/education-worksheet/trial-01/stderr.log",
+        "artifacts": "trials/education-worksheet/trial-01/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-reading",
+      "documentKind": "reading",
+      "backend": "portable",
+      "trial": 1,
+      "status": "completed",
+      "durationMs": 24917.84,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "c8a68f4feb2e9e5fe5bbd5e978bedbbf4ed7855080dfe4a20bcc541ea4cc8751",
+          "bytes": 1433
+        },
+        "plan": {
+          "sha256": "7aa9237c4fb1155721e97b14c7e2b11a5b2e5461cd4696d967bb0990dfae3359",
+          "bytes": 1883
+        },
+        "fixtureDefinitionSha256": "f1f4b57091ab6eba5c28e3dc0ee7b5fef8eeb427ed3818e0089e303687eca96d",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-reading/trial-01/result.json",
+        "execution": "trials/education-reading/trial-01/execution.json",
+        "stdout": "trials/education-reading/trial-01/stdout.log",
+        "stderr": "trials/education-reading/trial-01/stderr.log",
+        "artifacts": "trials/education-reading/trial-01/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-table",
+      "documentKind": "table",
+      "backend": "portable",
+      "trial": 1,
+      "status": "timeout",
+      "durationMs": 37452.136,
+      "exitCode": null,
+      "passed": false,
+      "quality": {
+        "readiness": "unavailable",
+        "preservation": "unavailable",
+        "checksPassed": false,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": null
+      },
+      "versions": {
+        "source": {
+          "sha256": "5e5d69b10511b30cd4178e219f96e052852c3f3b3bb4c4baf2ad146a70130ac4",
+          "bytes": 678
+        },
+        "plan": {
+          "sha256": "addf8f74de41ea4e0c2cdc96878eee173a4ca87571d2d7714f98003bc0c25b7c",
+          "bytes": 1017
+        },
+        "fixtureDefinitionSha256": "a7dfdd15c3f45106ec002a0888258c1a9628e9f269df5509f40bfc378f719fa3",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-table/trial-01/result.json",
+        "execution": "trials/education-table/trial-01/execution.json",
+        "stdout": "trials/education-table/trial-01/stdout.log",
+        "stderr": "trials/education-table/trial-01/stderr.log",
+        "artifacts": null
+      }
+    },
+    {
+      "caseId": "education-scan",
+      "documentKind": "scan",
+      "backend": "portable",
+      "trial": 1,
+      "status": "completed",
+      "durationMs": 10156.679,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "5bde4ec3ba643a60cae77e69edc1a66f5d1bad983e1c1934923331916b8c0d13",
+          "bytes": 549
+        },
+        "plan": {
+          "sha256": "44aec7ab37e9d7138fc0d7b2bb8a433a480cf03d536f05ea884973c988576ebb",
+          "bytes": 878
+        },
+        "fixtureDefinitionSha256": "758c06829026cfb602da2a49b7440c27f75811e7092657630f0b0a2f2f59c755",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-scan/trial-01/result.json",
+        "execution": "trials/education-scan/trial-01/execution.json",
+        "stdout": "trials/education-scan/trial-01/stdout.log",
+        "stderr": "trials/education-scan/trial-01/stderr.log",
+        "artifacts": "trials/education-scan/trial-01/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-form",
+      "documentKind": "form",
+      "backend": "portable",
+      "trial": 1,
+      "status": "completed",
+      "durationMs": 2203.355,
+      "exitCode": 3,
+      "passed": true,
+      "quality": {
+        "readiness": "blocked",
+        "preservation": "unavailable",
+        "checksPassed": false,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": null
+      },
+      "versions": {
+        "source": {
+          "sha256": "4d89a0df0a78174b48bae1f066d863dff3baaaaabc4c958eb6151093bb843af1",
+          "bytes": 619
+        },
+        "plan": {
+          "sha256": "ea2a733a7170ef24c3d3ab58080cf75a44daf3603b8a68cb8085e522e6486206",
+          "bytes": 697
+        },
+        "fixtureDefinitionSha256": "246e50e7749b9d288ab796edaf26d818b6135928a8dd284aa5573d39a6185875",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-form/trial-01/result.json",
+        "execution": "trials/education-form/trial-01/execution.json",
+        "stdout": "trials/education-form/trial-01/stdout.log",
+        "stderr": "trials/education-form/trial-01/stderr.log",
+        "artifacts": null
+      }
+    },
+    {
+      "caseId": "education-figure",
+      "documentKind": "figure",
+      "backend": "portable",
+      "trial": 1,
+      "status": "completed",
+      "durationMs": 4863.454,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "9db850fc640829bf6a7704b0b1f518bb8b44b4d3d8b235c963bffa8bec2c8686",
+          "bytes": 622
+        },
+        "plan": {
+          "sha256": "4501b7b547ec6ecf75eff73bf2cb3888f326488aee902664f6add1ec4a972f95",
+          "bytes": 1005
+        },
+        "fixtureDefinitionSha256": "1e58de0516b95ba62027d3f8c51f7357d73be61256e99ba558fb1dfee395b92e",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-figure/trial-01/result.json",
+        "execution": "trials/education-figure/trial-01/execution.json",
+        "stdout": "trials/education-figure/trial-01/stdout.log",
+        "stderr": "trials/education-figure/trial-01/stderr.log",
+        "artifacts": "trials/education-figure/trial-01/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-worksheet",
+      "documentKind": "worksheet",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 10783.667,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "36e6e9b8e8a1f95b29762672410c209803272975bad3a934f62d07351eeadd95",
+          "bytes": 720
+        },
+        "plan": {
+          "sha256": "66042a800bb5c5424cc55297430d83dd6c81ed3a50c979c154b0c4c732869e21",
+          "bytes": 894
+        },
+        "fixtureDefinitionSha256": "139b28970d8d621f728ff162df995669c9f4a6c7f738a7cd87cfa76e424bab5c",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-worksheet/trial-02/result.json",
+        "execution": "trials/education-worksheet/trial-02/execution.json",
+        "stdout": "trials/education-worksheet/trial-02/stdout.log",
+        "stderr": "trials/education-worksheet/trial-02/stderr.log",
+        "artifacts": "trials/education-worksheet/trial-02/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-reading",
+      "documentKind": "reading",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 871.81,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "c8a68f4feb2e9e5fe5bbd5e978bedbbf4ed7855080dfe4a20bcc541ea4cc8751",
+          "bytes": 1433
+        },
+        "plan": {
+          "sha256": "7aa9237c4fb1155721e97b14c7e2b11a5b2e5461cd4696d967bb0990dfae3359",
+          "bytes": 1883
+        },
+        "fixtureDefinitionSha256": "f1f4b57091ab6eba5c28e3dc0ee7b5fef8eeb427ed3818e0089e303687eca96d",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-reading/trial-02/result.json",
+        "execution": "trials/education-reading/trial-02/execution.json",
+        "stdout": "trials/education-reading/trial-02/stdout.log",
+        "stderr": "trials/education-reading/trial-02/stderr.log",
+        "artifacts": "trials/education-reading/trial-02/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-table",
+      "documentKind": "table",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 1013.482,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "5e5d69b10511b30cd4178e219f96e052852c3f3b3bb4c4baf2ad146a70130ac4",
+          "bytes": 678
+        },
+        "plan": {
+          "sha256": "addf8f74de41ea4e0c2cdc96878eee173a4ca87571d2d7714f98003bc0c25b7c",
+          "bytes": 1017
+        },
+        "fixtureDefinitionSha256": "a7dfdd15c3f45106ec002a0888258c1a9628e9f269df5509f40bfc378f719fa3",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-table/trial-02/result.json",
+        "execution": "trials/education-table/trial-02/execution.json",
+        "stdout": "trials/education-table/trial-02/stdout.log",
+        "stderr": "trials/education-table/trial-02/stderr.log",
+        "artifacts": "trials/education-table/trial-02/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-scan",
+      "documentKind": "scan",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 3562.845,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "5bde4ec3ba643a60cae77e69edc1a66f5d1bad983e1c1934923331916b8c0d13",
+          "bytes": 549
+        },
+        "plan": {
+          "sha256": "44aec7ab37e9d7138fc0d7b2bb8a433a480cf03d536f05ea884973c988576ebb",
+          "bytes": 878
+        },
+        "fixtureDefinitionSha256": "758c06829026cfb602da2a49b7440c27f75811e7092657630f0b0a2f2f59c755",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-scan/trial-02/result.json",
+        "execution": "trials/education-scan/trial-02/execution.json",
+        "stdout": "trials/education-scan/trial-02/stdout.log",
+        "stderr": "trials/education-scan/trial-02/stderr.log",
+        "artifacts": "trials/education-scan/trial-02/artifacts/"
+      }
+    },
+    {
+      "caseId": "education-form",
+      "documentKind": "form",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 1353.915,
+      "exitCode": 3,
+      "passed": true,
+      "quality": {
+        "readiness": "blocked",
+        "preservation": "unavailable",
+        "checksPassed": false,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": null
+      },
+      "versions": {
+        "source": {
+          "sha256": "4d89a0df0a78174b48bae1f066d863dff3baaaaabc4c958eb6151093bb843af1",
+          "bytes": 619
+        },
+        "plan": {
+          "sha256": "ea2a733a7170ef24c3d3ab58080cf75a44daf3603b8a68cb8085e522e6486206",
+          "bytes": 697
+        },
+        "fixtureDefinitionSha256": "246e50e7749b9d288ab796edaf26d818b6135928a8dd284aa5573d39a6185875",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-form/trial-02/result.json",
+        "execution": "trials/education-form/trial-02/execution.json",
+        "stdout": "trials/education-form/trial-02/stdout.log",
+        "stderr": "trials/education-form/trial-02/stderr.log",
+        "artifacts": null
+      }
+    },
+    {
+      "caseId": "education-figure",
+      "documentKind": "figure",
+      "backend": "portable",
+      "trial": 2,
+      "status": "completed",
+      "durationMs": 2008.732,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "review-required",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Portable plan-internal fidelity and static HTML checks; no independent source-PDF fidelity proof.",
+        "beforeScore": null,
+        "afterScore": null
+      },
+      "metrics": {
+        "calls": 0,
+        "retries": 0,
+        "rejections": null,
+        "planInternalTokenRecall": 1
+      },
+      "versions": {
+        "source": {
+          "sha256": "9db850fc640829bf6a7704b0b1f518bb8b44b4d3d8b235c963bffa8bec2c8686",
+          "bytes": 622
+        },
+        "plan": {
+          "sha256": "4501b7b547ec6ecf75eff73bf2cb3888f326488aee902664f6add1ec4a972f95",
+          "bytes": 1005
+        },
+        "fixtureDefinitionSha256": "1e58de0516b95ba62027d3f8c51f7357d73be61256e99ba558fb1dfee395b92e",
+        "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "implementationAfterSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+        "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+        "sourceDrift": false
+      },
+      "model": {
+        "provider": "none",
+        "model": null
+      },
+      "evidence": {
+        "result": "trials/education-figure/trial-02/result.json",
+        "execution": "trials/education-figure/trial-02/execution.json",
+        "stdout": "trials/education-figure/trial-02/stdout.log",
+        "stderr": "trials/education-figure/trial-02/stderr.log",
+        "artifacts": "trials/education-figure/trial-02/artifacts/"
+      }
+    }
+  ],
+  "limitations": [
+    "Trials are serial and cold-process; OS caches and load are not controlled.",
+    "Median is the middle value (mean of middle pair); p95 is nearest rank. Small samples are smoke evidence, not performance guarantees.",
+    "Failed and timeout durations remain in allTiming; completedTiming excludes transport failures and timeouts.",
+    "Absent model/retry/rejection metrics are null and counted as missing, never inferred as zero.",
+    "Portable token recall is plan-internal; scripted checks do not establish real-model quality. No independent human labels are supplied.",
+    "Configured model identifiers and prompt/source hashes are recorded; providers may revise a model behind the same identifier.",
+    "Raw local evidence and artifacts can contain document content. Live mode sends selected source documents through the existing configured provider."
+  ]
+}

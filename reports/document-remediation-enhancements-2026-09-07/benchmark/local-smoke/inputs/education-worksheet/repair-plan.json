@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "Water cycle observation worksheet",
+    "language": "en",
+    "source_page_count": 1,
+    "source_sha256": "36e6e9b8e8a1f95b29762672410c209803272975bad3a934f62d07351eeadd95",
+    "document_type": "handout"
+  },
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "Water cycle observation worksheet Observe a covered cup of warm water. Record droplets on the cover. Explain evaporation and condensation."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Water cycle observation worksheet",
+      "source_page": 1
+    },
+    {
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "Observe a covered cup of warm water.",
+        "Record droplets on the cover.",
+        "Explain evaporation and condensation."
+      ],
+      "source_page": 1
+    }
+  ],
+  "review_notes": []
+}

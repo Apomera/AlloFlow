@@ -1,0 +1,492 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Feel the Buzz — Sound and Vibration",
+    "author": "AlloFlow; AI-assisted draft, educator review pending",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "1st Grade",
+    "standards": "NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate)",
+    "createdAt": "2026-09-08T00:00:00.000Z",
+    "imageShotList": "allopacks/sound_vibration_grade1.IMAGES.md",
+    "contentSources": [
+      {
+        "title": "Official learning standard",
+        "url": "https://www.nextgenscience.org/dci-arrangement/1-ps4-waves-and-their-applications-technologies-information-transfer"
+      }
+    ],
+    "reviewStatus": "AI content and structural checks; educator review pending",
+    "imageStatus": "planned-not-generated"
+  },
+  "sourceTopic": "Feel the Buzz — Sound and Vibration",
+  "history": [
+    {
+      "id": "sv-directions",
+      "type": "directions",
+      "title": "Start Here",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "body": "Read **Feel the Buzz — Sound and Vibration** with a partner or use read-aloud. Explore **Key Words**, then play Matching and Memory. Use **Keep the Ideas Clear** as a reference. Try **Sort and Explain**, **Explain Your Thinking**, and **Check Your Understanding**. Use **Remember the Ideas** to build a memory cue. Read **Questions to Explore**, then complete **Try It with Evidence**.\n\nExplain an answer using a detail from the lesson. Images are planned for a later edition; every activity works with text now.",
+        "objectives": [
+          {
+            "id": "sv-goal-match",
+            "label": "Complete Matching",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "sv-glossary"
+          },
+          {
+            "id": "sv-goal-memory",
+            "label": "Complete Memory",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "sv-glossary"
+          },
+          {
+            "id": "sv-goal-evidence",
+            "label": "I explained an answer using lesson evidence",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "1st Grade • Start Here"
+    },
+    {
+      "id": "sv-reading",
+      "type": "simplified",
+      "title": "Feel the Buzz — Sound and Vibration",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": "## Feel the Buzz\n\nPut two fingers gently on your throat. Make a soft hum. Can you feel a buzz? Now stop. What changed?\n\nA **sound** starts when something moves back and forth. To **vibrate** means to move this way. You may see the move. You may feel it. Some moves are too small to see.\n\nTap a **drum** gently. Its top shakes. That shake can make a sound. Touch the top to stop the shake. Listen for a change.\n\nA **string** can shake too. A teacher can pluck one on a toy guitar. You can watch it move. When it stops, the sound fades.\n\nA **loud** sound is strong to your ears. A **quiet** sound is soft to your ears. Loud is not the same as high. A small bell may have a high sound but still be quiet.\n\nWe use our **ears** to hear. We can also watch and feel safe objects. Do not put things in your ears.\n\nWe **test** an idea with a careful try. Tap the same drum gently. Listen. Stop its top with your hand. Listen again. Try more than once.\n\nSound can make other things shake too. A teacher can show thin paper moving near a speaker. Keep the sound at a safe level. What did you see?",
+      "meta": "1st Grade • Feel the Buzz — Sound and Vibration"
+    },
+    {
+      "id": "sv-glossary",
+      "type": "glossary",
+      "title": "Key Words",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "term": "Sound",
+          "def": "Something we hear when a source shakes and the disturbance reaches us.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Vibrate",
+          "def": "Move back and forth.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Drum",
+          "def": "An instrument with a top that shakes when tapped.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "String",
+          "def": "A thin cord that can shake when plucked.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Loud",
+          "def": "Strong to our ears.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Quiet",
+          "def": "Soft to our ears.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Ears",
+          "def": "Body parts we use to hear.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Test",
+          "def": "A careful try to learn something.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "1st Grade • Key Words"
+    },
+    {
+      "id": "sv-anchor",
+      "type": "anchor-chart",
+      "title": "Keep the Ideas Clear",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "Feel the Buzz — Sound and Vibration",
+        "sections": [
+          {
+            "id": "sv-section-1",
+            "label": "A SHAKING SOURCE",
+            "bullets": [
+              "A drum top can shake",
+              "A plucked string can shake"
+            ],
+            "iconPrompt": "A drumhead beside a plucked string, no motion labels"
+          },
+          {
+            "id": "sv-section-2",
+            "label": "WATCH, FEEL, LISTEN",
+            "bullets": [
+              "Some shakes are too small to see",
+              "Touch your throat gently while you hum"
+            ],
+            "iconPrompt": "A child gently touching their throat while humming"
+          },
+          {
+            "id": "sv-section-3",
+            "label": "TRY AND COMPARE",
+            "bullets": [
+              "Tap gently, then stop the drum top",
+              "Listen before and after",
+              "Repeat the try"
+            ],
+            "iconPrompt": "Two scenes of a hand tapping then resting on a drum"
+          }
+        ]
+      },
+      "meta": "1st Grade • Keep the Ideas Clear"
+    },
+    {
+      "id": "sv-sort",
+      "type": "concept-sort",
+      "title": "Sort and Explain",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "sv-category-0",
+            "label": "A sound-making action",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "sv-category-1",
+            "label": "An action that stops the shake",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "sv-card-1",
+            "content": "Gently tap a drum",
+            "categoryId": "sv-category-0"
+          },
+          {
+            "id": "sv-card-2",
+            "content": "Pluck a guitar string",
+            "categoryId": "sv-category-0"
+          },
+          {
+            "id": "sv-card-3",
+            "content": "Hum with your voice",
+            "categoryId": "sv-category-0"
+          },
+          {
+            "id": "sv-card-4",
+            "content": "Rest a hand on a shaking drum top",
+            "categoryId": "sv-category-1"
+          },
+          {
+            "id": "sv-card-5",
+            "content": "Hold a plucked string still",
+            "categoryId": "sv-category-1"
+          },
+          {
+            "id": "sv-card-6",
+            "content": "Stop humming",
+            "categoryId": "sv-category-1"
+          }
+        ]
+      },
+      "meta": "1st Grade • Sort and Explain"
+    },
+    {
+      "id": "sv-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Thinking",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I notice ____. This matters because ____."
+          },
+          {
+            "text": "I compared ____ with ____. They differ because ____."
+          },
+          {
+            "text": "My evidence is ____. It supports ____."
+          },
+          {
+            "text": "At first I thought ____. Now I think ____ because ____."
+          }
+        ],
+        "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
+      },
+      "meta": "1st Grade • Explain Your Thinking"
+    },
+    {
+      "id": "sv-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does vibrate mean?",
+            "options": [
+              "Move back and forth",
+              "Stay in one place",
+              "Change to a new color",
+              "Grow into a new shape"
+            ],
+            "correctAnswer": "Move back and forth",
+            "conceptLabel": "shaking sources"
+          },
+          {
+            "type": "mcq",
+            "question": "What can make a drum sound?",
+            "options": [
+              "Its color looks bright",
+              "Its top starts to shake",
+              "Its side stays smooth",
+              "Its shape looks round"
+            ],
+            "correctAnswer": "Its top starts to shake",
+            "conceptLabel": "shaking sources"
+          },
+          {
+            "type": "mcq",
+            "question": "How can you feel a hum?",
+            "options": [
+              "Put a toy in your ear",
+              "Shout right at a friend",
+              "Touch your throat gently",
+              "Hold your breath tightly"
+            ],
+            "correctAnswer": "Touch your throat gently",
+            "conceptLabel": "observe safely"
+          },
+          {
+            "type": "mcq",
+            "question": "How should we try the drum test?",
+            "options": [
+              "Tap a new drum each time",
+              "Hit as hard as we can",
+              "Never listen after a tap",
+              "Use gentle taps and repeat"
+            ],
+            "correctAnswer": "Use gentle taps and repeat",
+            "conceptLabel": "observe safely"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is true about loud and high sounds?",
+            "options": [
+              "They are different features",
+              "They always mean the same",
+              "Both mean there is no shake",
+              "Both tell us what color it is"
+            ],
+            "correctAnswer": "They are different features",
+            "conceptLabel": "shaking sources"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "What changes when a hand stops the drum top?",
+            "expectedAnswer": "The shaking slows or stops, and the sound fades or stops. Describe what you actually heard and saw.",
+            "conceptLabel": "shaking sources"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "How could you check your idea again?",
+            "expectedAnswer": "Repeat gentle taps on the same drum and compare before and after touching the top.",
+            "conceptLabel": "observe safely"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which evidence or example helped you change your mind?"
+          },
+          {
+            "text": "What would you check next, and why?"
+          }
+        ]
+      },
+      "meta": "1st Grade • Check Your Understanding"
+    },
+    {
+      "id": "sv-memory",
+      "type": "memory-aid",
+      "title": "Remember the Ideas",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Ideas",
+        "instructions": "Study each cue. Make your own cue, then explain how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "A shaking drum top can make sound. Stopping the shake changes the sound. A gentle repeat helps us check what we noticed.",
+        "lessonRef": {
+          "resourceId": "sv-reading",
+          "title": "Feel the Buzz — Sound and Vibration"
+        },
+        "cards": [
+          {
+            "id": "sv-memory-0",
+            "target": "Remember: A SHAKING SOURCE",
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "A drum top can shake",
+              "A plucked string can shake",
+              "A shaking drum top can make sound."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Tap and shake. A drum top moves when we tap it. That move can make a sound.",
+            "mapping": "Think of the drum top as you say the cue. The top moves back and forth.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          },
+          {
+            "id": "sv-memory-1",
+            "target": "Remember: WATCH, FEEL, LISTEN",
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Some shakes are too small to see",
+              "Touch your throat gently while you hum",
+              "Stopping the shake changes the sound."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Watch and feel. Touch your throat as you hum. Stop and feel what changes.",
+            "mapping": "This cue helps us use more than our ears. We can feel a small shake too.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          }
+        ]
+      },
+      "meta": "1st Grade • Remember the Ideas"
+    },
+    {
+      "id": "sv-faq",
+      "type": "faq",
+      "title": "Questions to Explore",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "question": "Can I always see a shake?",
+          "answer": "No. Some moves are tiny or very fast. You may hear or feel them."
+        },
+        {
+          "question": "Are loud and high the same?",
+          "answer": "No. A sound can be high and quiet, or low and loud."
+        },
+        {
+          "question": "Must I hear to join the test?",
+          "answer": "No. Watch the drum top or feel a safe surface with help. Share what you notice."
+        },
+        {
+          "question": "Can sound make paper move?",
+          "answer": "Yes. A teacher can show this near a speaker. Use a safe sound level."
+        }
+      ],
+      "meta": "1st Grade • Questions to Explore"
+    },
+    {
+      "id": "sv-challenge",
+      "type": "applied-challenge",
+      "title": "Try It with Evidence",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Try It with Evidence",
+        "instructions": "Make a prediction or first answer. Use evidence to check it. Explain what you found.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Our class wants to show how a drum makes sound. We have a small drum and space for quiet turns.",
+          "role": "Class investigators",
+          "audience": "A classmate checking our reasoning",
+          "drivingQuestion": "What changes when we stop a tapped drum top from shaking?",
+          "seedDirection": "Tap gently. Listen and watch. Rest a hand on the top. Compare. Repeat twice.",
+          "lockedLessonFacts": [
+            "A shaking drum top can make sound.",
+            "Stopping the shake changes the sound.",
+            "A gentle repeat helps us check what we noticed."
+          ],
+          "openQuestions": [
+            "What will count as useful evidence?",
+            "What might our method miss?"
+          ],
+          "criteria": [
+            "Describe the method or model clearly",
+            "Use evidence to support your answer",
+            "Name a limit or a question to check next"
+          ],
+          "constraints": [
+            "Use teacher-approved materials or supplied examples",
+            "Keep a record of what you actually observe or calculate"
+          ],
+          "deliverable": "Draw the drum before and after touching its top. Tell what you heard, saw, or felt.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A classmate checks a related claim from this lesson.",
+            "move": "They use the lesson rule: A shaking drum top can make sound. They record an example, then check whether it supports the claim.",
+            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+          },
+          "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
+          "frameChoices": [
+            "Explain with a drawing and spoken words",
+            "Explain with a written record and evidence"
+          ],
+          "coachPrompts": [
+            "Which detail in your record supports your answer?"
+          ]
+        },
+        "coachHint": "Keep the claim and the evidence connected.",
+        "sourceExcerpt": "A shaking drum top can make sound. Stopping the shake changes the sound. A gentle repeat helps us check what we noticed.",
+        "lessonRef": {
+          "resourceId": "sv-reading",
+          "title": "Feel the Buzz — Sound and Vibration"
+        }
+      },
+      "meta": "1st Grade • Try It with Evidence"
+    }
+  ]
+}

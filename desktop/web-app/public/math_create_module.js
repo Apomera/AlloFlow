@@ -233,7 +233,13 @@
           className: "px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full"
         }, "\u23F1 Timed"), block.type === 'manipulative' && /*#__PURE__*/React.createElement("span", {
           className: "px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full"
-        }, "\uD83E\uDDF1 Hands-on")), /*#__PURE__*/React.createElement("input", {
+        }, "\uD83E\uDDF1 Hands-on")), block.type === 'manipulative' && React.createElement('select', {
+          value: block.manipulativeTool || '',
+          'aria-label': 'Block ' + (idx + 1) + ' manipulative',
+          className: 'w-full min-h-[44px] px-3 py-2 text-sm border border-slate-400 rounded-lg',
+          onChange: e => setAssessmentBlocks(assessmentBlocks.map((item, i) => i === idx ? { ...item, manipulativeTool: e.target.value } : item))
+        }, React.createElement('option', {value:''}, 'Choose the best manipulative'),
+          (window.AlloModules?.MathManipulativeGrader?.activityOptions || []).map(option => React.createElement('option', {key:option.id,value:option.id}, option.label))), /*#__PURE__*/React.createElement("input", {
           value: block.directive,
           onChange: e => {
             const nb = [...assessmentBlocks];

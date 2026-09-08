@@ -15,7 +15,7 @@ function isScaffoldParagraphComplete(text, responses) {
 
 function SentenceFramesView(props) {
   // State reads
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : () => '';
   const label = (key, fallback) => {
     const translated = typeof t === 'function' ? t(key) : '';
     return translated && translated !== key ? translated : fallback;
@@ -26,14 +26,14 @@ function SentenceFramesView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isScaffoldComplete = props.isScaffoldComplete;
   var isEditingScaffolds = props.isEditingScaffolds;
-  var gradingSession = props.gradingSession;
-  var studentResponses = props.studentResponses;
+  var gradingSession = props.gradingSession || { isOpen: false };
+  var studentResponses = props.studentResponses || {};
   var isIndependentMode = props.isIndependentMode;
   var isParentMode = props.isParentMode;
   var isGeneratingRubric = props.isGeneratingRubric;
   var rubricZoom = props.rubricZoom;
   var gradingResult = props.gradingResult;
-  var studentWorkInput = props.studentWorkInput;
+  var studentWorkInput = typeof props.studentWorkInput === 'string' ? props.studentWorkInput : '';
   var isGrading = props.isGrading;
   var leveledTextLanguage = props.leveledTextLanguage;
   // Setters
@@ -58,16 +58,22 @@ function SentenceFramesView(props) {
   // Components
   var DraftFeedbackInterface = props.DraftFeedbackInterface;
   var ErrorBoundary = props.ErrorBoundary;
+  const scaffoldData = generatedContent?.data;
+  const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
+  const isUsableItem = item => item && typeof item.text === 'string' && item.text.trim();
+  if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
+    return <div role="status" className="rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700">{label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.')}</div>;
+  }
   return (
                   <div className="space-y-6">
-                      <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
+                      <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4" data-help-key="scaffolds_goal_panel">
                         <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             {['saving', 'saved', 'error'].includes(studentWorkStatus) && (
                                 <div role="status" aria-live="polite" aria-atomic="true" className={`flex flex-wrap items-center gap-1.5 text-xs font-bold ${studentWorkStatus === 'error' ? 'text-red-700' : studentWorkStatus === 'saving' ? 'text-rose-700' : 'text-green-700'}`}>
                                     {studentWorkStatus === 'saving' ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.saving')}</>
                                       : studentWorkStatus === 'saved' ? <><CheckCircle2 size={12} aria-hidden="true" /> {t('status.saved')}</>
-                                      : <><span>{t('scaffolds.save_failed') || 'Your answers could not be saved on this device.'}</span>{typeof onRetrySave === 'function' && <button type="button" onClick={onRetrySave} className="rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600">{t('common.retry') || 'Try again'}</button>}</>}
+                                      : <><span>{label('scaffolds.save_failed', 'Your answers could not be saved on this device.')}</span>{typeof onRetrySave === 'function' && <button type="button" onClick={onRetrySave} className="min-h-11 rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600">{label('common.retry', 'Try again')}</button>}</>}
                                 </div>
                             )}
                             {!isTeacherMode && (
@@ -75,7 +81,7 @@ function SentenceFramesView(props) {
                                 <button
                                     onClick={handleResetScaffolds}
                                     data-help-key="scaffolds_reset"
-                                    className="flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm"
+                                    className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm"
                                     title={t('scaffolds.clear_all')}
                                     aria-label={t('scaffolds.clear_all')}
                                 >
@@ -84,7 +90,7 @@ function SentenceFramesView(props) {
                                 <button
                                     onClick={launchGradingSession}
                                     data-help-key="scaffolds_grading"
-                                    className={`flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`}
+                                    className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
                                     title={t('mastery.start_tooltip')}
                                     aria-label={t('mastery.start_tooltip')}
                                 >
@@ -97,7 +103,7 @@ function SentenceFramesView(props) {
                                 aria-label={t('common.toggle_edit_scaffolds')}
                                 onClick={handleToggleIsEditingScaffolds}
                                 data-help-key="scaffolds_edit_toggle"
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`}
+                                className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`}
                             >
                                 {isEditingScaffolds ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
                                 {isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')}
@@ -119,11 +125,11 @@ function SentenceFramesView(props) {
                     </ErrorBoundary>
                     ) : generatedContent?.data.mode === 'list' ? (
                         <div className="grid grid-cols-1 gap-4">
-                             {generatedContent?.data.items.map((item, idx) => (
+                             {usableItems.map((item, idx) => isUsableItem(item) ? (
                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
                                      <div className="flex items-start gap-3">
                                          <div className="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{idx + 1}</div>
-                                         <div className="w-full">
+                                         <div className="w-full min-w-0">
                                             {isEditingScaffolds ? (
                                                 <>
                                                     <textarea
@@ -146,7 +152,7 @@ function SentenceFramesView(props) {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} className="text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
+                                                    <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} dir="auto" className="text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
                                                     {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
                                                     <textarea
                                                         aria-label={`${label('scaffolds.student_response', 'Student response')} ${idx + 1}`}
@@ -165,10 +171,10 @@ function SentenceFramesView(props) {
                                          </div>
                                      </div>
                                  </div>
-                              ))}
+                              ) : null)}
                         </div>
                     ) : (
-                        <div className="bg-white p-8 rounded-xl border border-slate-400 shadow-sm" data-help-key="scaffolds_paragraph_frame">
+                        <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-400 shadow-sm" data-help-key="scaffolds_paragraph_frame">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">{t('scaffolds.paragraph_frame') || 'Paragraph Frame'}</h4>
                             {isEditingScaffolds ? (
                                 <textarea
@@ -187,14 +193,14 @@ function SentenceFramesView(props) {
                                             type="text"
                                             value={studentResponses[generatedContent.id]?.[responseKey] || ''}
                                             onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
-                                            className="inline-block border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors"
+                                            dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors"
                                             placeholder={part.replace(/[\[\]]/g, '')}
                                         /> :
                                         <span key={i}>{part}</span>
                                     ))}
                                 </div>
                             )}
-                            {(leveledTextLanguage !== 'English' || generatedContent?.data.text_en) && (
+                            {((isEditingScaffolds && leveledTextLanguage !== 'English') || generatedContent?.data.text_en) && (
                                 <div className="mt-8 pt-6 border-t border-slate-100">
                                     <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('common.english_translation')}</h4>
                                     {isEditingScaffolds ? (

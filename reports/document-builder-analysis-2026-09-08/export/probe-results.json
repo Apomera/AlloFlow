@@ -1,0 +1,92 @@
+{
+  "slides": {
+    "ok": true,
+    "builderClosed": true,
+    "containsLiveEdits": false,
+    "containsOldHistory": true,
+    "text": [
+      "Lesson",
+      "export.ppt_grade_level: 5 | export.ppt_generated: 9/8/2026",
+      "Selected resource",
+      [
+        {
+          "text": "HISTORY_OLD_VALUE: The answer is 10."
+        }
+      ]
+    ],
+    "toasts": [
+      [
+        "export_status.ppt_generating",
+        "info"
+      ],
+      [
+        "export_status.ppt_success",
+        "success"
+      ]
+    ]
+  },
+  "markdown": {
+    "callbackLine": 9053,
+    "sourceImagePreserved": false,
+    "imagePlaceholder": true,
+    "mathFencePresent": true,
+    "mathElementPreserved": false,
+    "output": "Media lesson# Lesson\n\nEquation: \n\n```mathml\nx=42\n```\n\n![Actual explanatory diagram](image)\n\n| Term and value |  |\n| --- | --- |\n| Alpha | 42 |"
+  },
+  "braille": {
+    "callbackLine": 9405,
+    "output": "\n,C\nA\nB\n\n#A\n#B\nA\nB\n\n,K\nE\nE\nP\n \nD\nE\nL\nE\nT\nE\nD\n \nN\nE\nW\n4\n",
+    "toasts": [
+      [
+        "Electronic Braille (BRF) downloaded",
+        "success"
+      ]
+    ],
+    "retainsDeletedText": true,
+    "nonemptyLines": [
+      ",C",
+      "A",
+      "B",
+      "#A",
+      "#B",
+      "A",
+      "B",
+      ",K",
+      "E",
+      "E",
+      "P",
+      " ",
+      "D",
+      "E",
+      "L",
+      "E",
+      "T",
+      "E",
+      "D",
+      " ",
+      "N",
+      "E",
+      "W",
+      "4"
+    ]
+  },
+  "epub": {
+    "callbackLine": 9266,
+    "bodyReadPending": true,
+    "exportBusyWhileBodyPending": true,
+    "activeDeadlinesWhileBodyPending": 0,
+    "timerEvents": [
+      {
+        "event": "scheduled",
+        "ms": 10000,
+        "id": 1
+      },
+      {
+        "event": "cleared",
+        "id": 1
+      }
+    ],
+    "finishedAfterBodyManuallyReleased": true
+  },
+  "scope": "Actual compiled export modules and actual source Markdown, Braille, and ePub callbacks; synthetic documents and controlled PPTX writer, no provider calls or destination-application claims."
+}

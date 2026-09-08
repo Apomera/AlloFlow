@@ -1,0 +1,10 @@
+{
+  "coachMalformedSafe": true,
+  "coachUsesComicSpeech": true,
+  "staleCoachRejected": true,
+  "comicPreviewPreservesWriting": true,
+  "comicDiscard": true,
+  "comicApplyUndo": true,
+  "staleComicApplyRejected": true,
+  "errors": []
+}

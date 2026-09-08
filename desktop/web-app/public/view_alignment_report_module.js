@@ -2534,7 +2534,7 @@ function computeAuditFreshness(generatedContent, history) {
   if (!comp || !Array.isArray(history)) return null;
   var generatedAt = comp.auditMetadata && comp.auditMetadata.generatedAt ? Date.parse(comp.auditMetadata.generatedAt) : NaN;
   if (isNaN(generatedAt)) generatedAt = generatedContent.timestamp ? Date.parse(generatedContent.timestamp) : NaN;
-  if (isNaN(generatedAt)) return null;
+  var unknownDate = isNaN(generatedAt);
   var included = {};
   var includedIds = comp.auditScope && Array.isArray(comp.auditScope.includedArtifactIds) ? comp.auditScope.includedArtifactIds : [];
   includedIds.forEach(function (id) {
@@ -2577,13 +2577,15 @@ function computeAuditFreshness(generatedContent, history) {
     removed: removed,
     modified: modified,
     unverified: unverified,
+    unknownDate: unknownDate,
     stale: added.length > 0 || removed > 0 || modified.length > 0
   };
 }
 function AuditFreshnessNotice(p) {
   var f = p.freshness;
-  if (!f || !f.stale && !f.unverified) return null;
+  if (!f || !f.stale && !f.unverified && !f.unknownDate) return null;
   var parts = [];
+  if (f.unknownDate) parts.push('This saved audit has no reliable generation date; re-run it to check whether new resources were added');
   if (f.modified?.length) parts.push(f.modified.length + ' audited resource(s) were edited (' + f.modified.slice(0, 4).join(', ') + ')');
   if (f.unverified) parts.push('This older audit has no content version for ' + f.unverified + ' resource(s); re-run it to check for edits');
   if (f.added.length > 0) parts.push(f.added.length + (f.added.length === 1 ? ' resource was' : ' resources were') + ' created after this audit ran (' + f.added.slice(0, 4).join(', ') + (f.added.length > 4 ? ', …' : '') + ')');
@@ -2593,7 +2595,7 @@ function AuditFreshnessNotice(p) {
     className: "p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-950 flex-1 min-w-[16rem] m-0"
-  }, /*#__PURE__*/React.createElement("strong", null, f.stale ? 'This audit may be out of date.' : 'Verify this older audit.'), " ", parts.join('; '), ". ", f.stale ? 'Findings and the score do not reflect those changes.' : 'Content versions were not stored with this report.'), typeof p.onRerunAudit === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("strong", null, f.stale ? 'This audit may be out of date.' : 'Verify this older audit.'), " ", parts.join('; '), ". ", f.stale ? 'Findings and the score do not reflect those changes.' : f.unverified ? 'Content versions were not stored with this report.' : 'Existing resource versions were checked where available.'), typeof p.onRerunAudit === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: p.onRerunAudit,
     disabled: !!p.isProcessing,

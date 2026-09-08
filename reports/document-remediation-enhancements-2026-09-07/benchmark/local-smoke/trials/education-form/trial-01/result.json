@@ -1,0 +1,5 @@
+{
+  "code": 3,
+  "error": "Repair plan validation failed:\n- Automatic rebuild is blocked for forms, signed records, and legal records.",
+  "ok": false
+}

@@ -1,0 +1,54 @@
+{
+  "tests": {
+    "success": true,
+    "passed": 710,
+    "failed": 0,
+    "report": "pass4-tests-final.json"
+  },
+  "browser": [
+    {
+      "directory": "pass4-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "torsion-ballista",
+        "torsion-onager",
+        "torsion-onager-zero",
+        "torsion-ballista-release",
+        "torsion-onager-release",
+        "torsion-ballista-field",
+        "torsion-onager-field"
+      ]
+    },
+    {
+      "directory": "pass4-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "torsion-ballista",
+        "torsion-onager",
+        "torsion-onager-zero",
+        "torsion-ballista-release",
+        "torsion-onager-release",
+        "torsion-ballista-field",
+        "torsion-onager-field"
+      ]
+    }
+  ],
+  "desktopMirrorIdentical": true,
+  "sourceSha256": "a55276f46605d758c1ebba8f29a175e38fa2769ed92265f748432cf975011fae"
+}

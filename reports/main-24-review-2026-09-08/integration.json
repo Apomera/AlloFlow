@@ -1,0 +1,380 @@
+{
+  "date": "2026-09-08",
+  "moduleCount": 16,
+  "moduleResults": [
+    {
+      "file": "view_analysis_module.js",
+      "source": "view_analysis_source.jsx",
+      "sha256": "53b8342f37a95fb5bf909a80e3e94069fd0f5494f6e3f1be234fc76245753c57",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_faq_module.js",
+      "source": "view_faq_source.jsx",
+      "sha256": "f81b5ec15d204a73c10dcd1b77e3c92004f099c9abd62507ad6caeda85baf006",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_image_module.js",
+      "source": "view_image_source.jsx",
+      "sha256": "fd5c10121dd912eae631d13056a3843c2cb0f0c5705ba880baafccf88494381f",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_outline_module.js",
+      "source": "view_outline_source.jsx",
+      "sha256": "00911d4beddc17a37a53b9a736c23fd40be1aa3fe584ee0330d210327910ecab",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "source": "view_simplified_source.jsx",
+      "sha256": "e7f6955f9f1f82c81d68f6508464f5ad7c01f47e224673094540e9da14f9df3f",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_word_sounds_preview_module.js",
+      "source": "view_word_sounds_preview_source.jsx",
+      "sha256": "c7db1f1a3676853ae34c0975a793f99329ec1970b02ace135eb56e302347a7fc",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "source": "note_taking_templates_source.jsx",
+      "sha256": "689d23ad8a2f063384bd976a953d634c8af173eb33e014ffb8ff0966e43dfad6",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "anchor_charts_module.js",
+      "source": "anchor_charts_source.jsx",
+      "sha256": "8254a377efc58ba510dd4e11638c6b7c8770228f3de167c6a38024b5b5986d5d",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "source": "applied_challenge_source.jsx",
+      "sha256": "a4c406f8bcb8e9332596222ac3c2f6f87cbf9fee73ad62c58883019da6403187",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_alignment_report_module.js",
+      "source": "view_alignment_report_source.jsx",
+      "sha256": "c9f628a7dca4d4ee6260b72a2fb9c08f750ab568412cd41fa238d75ff276a950",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_dbq_module.js",
+      "source": "view_dbq_source.jsx",
+      "sha256": "1e6c759c43df1643d106055d5de3b80ff971744890bac4aa37fa64113f046971",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_timeline_module.js",
+      "source": "view_timeline_source.jsx",
+      "sha256": "e2cd765c02dcd2ad6e40b871fc728df347b84d9287e36983155ae6e973a8192c",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_quiz_module.js",
+      "source": "view_quiz_source.jsx",
+      "sha256": "0878c7e48ee2ca3463acf039854a31f0514bfa73d1c372057dd7128f1ca4d16d",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_sentence_frames_module.js",
+      "source": "view_sentence_frames_source.jsx",
+      "sha256": "60ea23db14141c39edae9aaf3da4fc4a1086aea023b70564357d66bb6159d2d9",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_directions_result_module.js",
+      "source": "view_directions_result_source.jsx",
+      "sha256": "e248e012be2f9b73d352f018dc590ec386d60c97d65adde39eded87eb50d790a",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    },
+    {
+      "file": "view_guided_mode_banner_module.js",
+      "source": "view_guided_mode_banner_source.jsx",
+      "sha256": "c3a06009d7b7b2d32c803b1d81151fa44a1285aed0e91d8a8a0953f93bb2f8da",
+      "mirrorMatches": true,
+      "syntaxPassed": true
+    }
+  ],
+  "hostResults": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntaxPassed": true,
+      "pins": [
+        {
+          "module": "view_analysis_module.js",
+          "count": 1,
+          "version": "53b8342f"
+        },
+        {
+          "module": "view_faq_module.js",
+          "count": 1,
+          "version": "f81b5ec1"
+        },
+        {
+          "module": "view_image_module.js",
+          "count": 1,
+          "version": "fd5c1012"
+        },
+        {
+          "module": "view_outline_module.js",
+          "count": 1,
+          "version": "00911d4b"
+        },
+        {
+          "module": "view_simplified_module.js",
+          "count": 2,
+          "version": "e7f6955f"
+        },
+        {
+          "module": "view_word_sounds_preview_module.js",
+          "count": 1,
+          "version": "c7db1f1a"
+        },
+        {
+          "module": "note_taking_templates_module.js",
+          "count": 1,
+          "version": "689d23ad"
+        },
+        {
+          "module": "anchor_charts_module.js",
+          "count": 1,
+          "version": "8254a377"
+        },
+        {
+          "module": "applied_challenge_module.js",
+          "count": 1,
+          "version": "a4c406f8"
+        },
+        {
+          "module": "view_alignment_report_module.js",
+          "count": 1,
+          "version": "c9f628a7"
+        },
+        {
+          "module": "view_dbq_module.js",
+          "count": 1,
+          "version": "1e6c759c"
+        },
+        {
+          "module": "view_timeline_module.js",
+          "count": 1,
+          "version": "e2cd765c"
+        },
+        {
+          "module": "view_quiz_module.js",
+          "count": 1,
+          "version": "0878c7e4"
+        },
+        {
+          "module": "view_sentence_frames_module.js",
+          "count": 1,
+          "version": "60ea23db"
+        },
+        {
+          "module": "view_directions_result_module.js",
+          "count": 1,
+          "version": "e248e012"
+        },
+        {
+          "module": "view_guided_mode_banner_module.js",
+          "count": 1,
+          "version": "c3a06009"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntaxPassed": true,
+      "pins": [
+        {
+          "module": "view_analysis_module.js",
+          "count": 1,
+          "version": "53b8342f"
+        },
+        {
+          "module": "view_faq_module.js",
+          "count": 1,
+          "version": "f81b5ec1"
+        },
+        {
+          "module": "view_image_module.js",
+          "count": 1,
+          "version": "fd5c1012"
+        },
+        {
+          "module": "view_outline_module.js",
+          "count": 1,
+          "version": "00911d4b"
+        },
+        {
+          "module": "view_simplified_module.js",
+          "count": 2,
+          "version": "e7f6955f"
+        },
+        {
+          "module": "view_word_sounds_preview_module.js",
+          "count": 1,
+          "version": "c7db1f1a"
+        },
+        {
+          "module": "note_taking_templates_module.js",
+          "count": 1,
+          "version": "689d23ad"
+        },
+        {
+          "module": "anchor_charts_module.js",
+          "count": 1,
+          "version": "8254a377"
+        },
+        {
+          "module": "applied_challenge_module.js",
+          "count": 1,
+          "version": "a4c406f8"
+        },
+        {
+          "module": "view_alignment_report_module.js",
+          "count": 1,
+          "version": "c9f628a7"
+        },
+        {
+          "module": "view_dbq_module.js",
+          "count": 1,
+          "version": "1e6c759c"
+        },
+        {
+          "module": "view_timeline_module.js",
+          "count": 1,
+          "version": "e2cd765c"
+        },
+        {
+          "module": "view_quiz_module.js",
+          "count": 1,
+          "version": "0878c7e4"
+        },
+        {
+          "module": "view_sentence_frames_module.js",
+          "count": 1,
+          "version": "60ea23db"
+        },
+        {
+          "module": "view_directions_result_module.js",
+          "count": 1,
+          "version": "e248e012"
+        },
+        {
+          "module": "view_guided_mode_banner_module.js",
+          "count": 1,
+          "version": "c3a06009"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntaxPassed": true,
+      "pins": [
+        {
+          "module": "view_analysis_module.js",
+          "count": 1,
+          "version": "53b8342f"
+        },
+        {
+          "module": "view_faq_module.js",
+          "count": 1,
+          "version": "f81b5ec1"
+        },
+        {
+          "module": "view_image_module.js",
+          "count": 1,
+          "version": "fd5c1012"
+        },
+        {
+          "module": "view_outline_module.js",
+          "count": 1,
+          "version": "00911d4b"
+        },
+        {
+          "module": "view_simplified_module.js",
+          "count": 2,
+          "version": "e7f6955f"
+        },
+        {
+          "module": "view_word_sounds_preview_module.js",
+          "count": 1,
+          "version": "c7db1f1a"
+        },
+        {
+          "module": "note_taking_templates_module.js",
+          "count": 1,
+          "version": "689d23ad"
+        },
+        {
+          "module": "anchor_charts_module.js",
+          "count": 1,
+          "version": "8254a377"
+        },
+        {
+          "module": "applied_challenge_module.js",
+          "count": 1,
+          "version": "a4c406f8"
+        },
+        {
+          "module": "view_alignment_report_module.js",
+          "count": 1,
+          "version": "c9f628a7"
+        },
+        {
+          "module": "view_dbq_module.js",
+          "count": 1,
+          "version": "1e6c759c"
+        },
+        {
+          "module": "view_timeline_module.js",
+          "count": 1,
+          "version": "e2cd765c"
+        },
+        {
+          "module": "view_quiz_module.js",
+          "count": 1,
+          "version": "0878c7e4"
+        },
+        {
+          "module": "view_sentence_frames_module.js",
+          "count": 1,
+          "version": "60ea23db"
+        },
+        {
+          "module": "view_directions_result_module.js",
+          "count": 1,
+          "version": "e248e012"
+        },
+        {
+          "module": "view_guided_mode_banner_module.js",
+          "count": 1,
+          "version": "c3a06009"
+        }
+      ]
+    }
+  ],
+  "catalogMirrorMatches": true,
+  "catalogParsePassed": true
+}

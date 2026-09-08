@@ -1,0 +1,249 @@
+{
+  "scope": "Current local tools in a minimal host; no printer or deployed app connected",
+  "errors": [],
+  "checks": {
+    "meshCases": [
+      {
+        "name": "cube",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 1
+        },
+        "measured": 1,
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 684,
+          "triangleCount": 12,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 125,
+          "enclosedVolumeMm3": 125,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      {
+        "name": "cube-side-slab",
+        "worldDimensions": {
+          "L": 2,
+          "W": 1,
+          "H": 1
+        },
+        "measured": 2,
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 1,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": null,
+          "volumeAdvisory": "Volume is not reported as enclosed because boundary, topology, or winding findings remain.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "NON_MANIFOLD_EDGES",
+              "severity": "WARNING",
+              "message": "1 edge(s) are shared by more than two triangles and require mesh or slicer review."
+            }
+          ]
+        }
+      },
+      {
+        "name": "cube-top-slab",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 2
+        },
+        "measured": 2,
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1084,
+          "triangleCount": 20,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 7.5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": 187.5,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      {
+        "name": "slab-gap-cube",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 2
+        },
+        "measured": 2,
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 2,
+          "connectedComponents": 2,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 10,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": 187.5,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "MULTIPLE_SHELLS",
+              "severity": "WARNING",
+              "message": "2 separate mesh/shell component(s) require staff review."
+            }
+          ]
+        }
+      },
+      {
+        "name": "asymmetric-2x3x4",
+        "worldDimensions": {
+          "L": 2,
+          "W": 3,
+          "H": 4
+        },
+        "measured": 24,
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 5284,
+          "triangleCount": 104,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 20,
+            "height": 15
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 3000,
+          "enclosedVolumeMm3": 3000,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      }
+    ],
+    "keyboard": {
+      "before": 626,
+      "afterInsert": 626,
+      "afterUndo": 625
+    },
+    "measuredText": "🧱\nSANDBOX MODE\nFree Build Studio\n▶\n\nBuild freely, then aim the crosshair at one connected creation to measure it or continue in Print Lab.\n\nMATERIAL\n🪨 Stone\nSHAPE / ROTATION\n⬜ Cube - 0°\n0\nPLACED\n24\nSELECTED\n2×3×4\nBOUNDS\nPRINT LAB BLOCK ENVELOPE\n10 × 15 × 20 mm\n\nFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.\n\nMeasured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.\n\nPrints solid at 24 cubic units = 3,000 mm³ at 5 mm per block (24 cubes).\n\n📏 Measure aimed build\n💾 Save editable world\n📂 Open editable world\n🖨️ Send selected build to Print Lab\n📘 Choose guided lesson\n✨ Start a fresh sandbox\n\nPrint Lab starts at 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+    "phone": {
+      "dock": {
+        "x": 7,
+        "y": 108,
+        "width": 376,
+        "height": 388.234375
+      },
+      "world": {
+        "x": 6,
+        "y": 54,
+        "width": 378,
+        "height": 784
+      },
+      "centerElement": "gwe-print-ready-basis",
+      "centerInsideDock": true,
+      "overflow": false
+    }
+  },
+  "failure": "locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Collapse Free Build Studio' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"gwe-collapse\" aria-expanded=\"true\" aria-label=\"Collapse Free Build Studio\">▶</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>V = 2 × 3 × 4 = 24</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div>V = 2 × 3 × 4 = 24</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>L=2 W=3 H=4</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  14 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div>V = 2 × 3 × 4 = 24</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div>V = 2 × 3 × 4 = 24</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div>L=2 W=3 H=4</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div>L=2 W=3 H=4</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>V = 2 × 3 × 4 = 24</div> from <div role=\"region\" class=\"gw-measure-card\" aria-label=\"Measurement inspector\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\geometry-world-deep-dive-2026-09-08\\audit.cjs:63:70"
+}

@@ -9,6 +9,7 @@
  */
 const babel = require('@babel/core');
 const fs = require('fs');
+function writeAtomic(path, content) { const temporary = path + '.build-tmp'; fs.writeFileSync(temporary, content); fs.renameSync(temporary, path); }
 
 const source = fs.readFileSync('view_dbq_source.jsx', 'utf-8');
 
@@ -50,6 +51,6 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_dbq_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_dbq_module.js', moduleSrc);
+writeAtomic('view_dbq_module.js', moduleSrc);
+writeAtomic('desktop/web-app/public/view_dbq_module.js', moduleSrc);
 console.log('Wrote view_dbq_module.js (' + moduleSrc.length + ' bytes)');

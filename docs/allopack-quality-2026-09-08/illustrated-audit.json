@@ -1,0 +1,76 @@
+[
+  {
+    "pack": "forces_motion_grade3",
+    "grade": "3rd Grade",
+    "fk": 4.9,
+    "words": 398,
+    "wps": 10.8,
+    "quizPos": "1/1/2/1",
+    "types": 14,
+    "uniqueTypes": 11,
+    "flags": [
+      "no imageShotList companion"
+    ]
+  },
+  {
+    "pack": "materials_grade2",
+    "grade": "2nd Grade",
+    "fk": 3.3,
+    "words": 276,
+    "wps": 7.9,
+    "quizPos": "1/1/2/1",
+    "types": 13,
+    "uniqueTypes": 10,
+    "flags": [
+      "no imageShotList companion"
+    ]
+  },
+  {
+    "pack": "plant_needs_grade3",
+    "grade": "3rd Grade",
+    "fk": 4.9,
+    "words": 301,
+    "wps": 8.9,
+    "quizPos": "1/1/2/1",
+    "types": 14,
+    "uniqueTypes": 11,
+    "flags": [
+      "no imageShotList companion"
+    ]
+  },
+  {
+    "pack": "states_of_matter_grade4",
+    "grade": "4th-5th Grade",
+    "fk": 6.8,
+    "words": 331,
+    "wps": 11.4,
+    "quizPos": "1/1/1/2",
+    "types": 14,
+    "uniqueTypes": 11,
+    "flags": [
+      "no imageShotList companion"
+    ]
+  },
+  {
+    "pack": "water_cycle_grade6",
+    "grade": "6th Grade",
+    "fk": 6.9,
+    "words": 383,
+    "wps": 14.7,
+    "quizPos": "2/1/1/1",
+    "types": 12,
+    "uniqueTypes": 9,
+    "flags": []
+  },
+  {
+    "pack": "weather_vs_climate_grade5",
+    "grade": "5th-6th Grade",
+    "fk": 7.3,
+    "words": 341,
+    "wps": 14.8,
+    "quizPos": "1/2/1/1",
+    "types": 15,
+    "uniqueTypes": 12,
+    "flags": []
+  }
+]

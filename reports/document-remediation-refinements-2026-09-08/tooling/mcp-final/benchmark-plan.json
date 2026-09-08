@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "mode": "local",
+  "startedAt": "2026-09-08T10:36:07.723Z",
+  "configuration": {
+    "mode": "local",
+    "trials": 1,
+    "timeoutMs": 180000,
+    "budgetMs": 210000
+  },
+  "corpus": {
+    "schemaVersion": 1,
+    "corpusId": "mixed-education-v1",
+    "manifestSha256": "7b19e71f60bbdf2d4f203393b9853bcdd304e53e15f22cdc181007f755618387",
+    "cases": [
+      {
+        "id": "scripted-pipeline",
+        "documentKind": "integration-fixture",
+        "backend": "mcp-selftest",
+        "fixture": null,
+        "sourcePath": null,
+        "planPath": null,
+        "calibrationCaseId": null,
+        "expected": {
+          "exitCode": 0,
+          "checksPassed": true
+        },
+        "options": {}
+      }
+    ]
+  },
+  "versions": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "architecture": "arm64",
+    "gitCommit": "423c8af6d14ee1e11b51a0683393dab2d542a835",
+    "files": {
+      "agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py": "caa6804b43a94933493a1dbdd3cb958b2ee9f47fced59e3ee5fc91b1beb69900",
+      "agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs": "3234436d5c046ec62d4b019dd11c49e0f47aaf911741ec3d37174753896fdef6",
+      "desktop/mcp/alloflow-remediation-mcp-stdio.cjs": "9427256d9cba8265a2401102576b3a9d7d52a710a31d1bd3617e40c38f41b110",
+      "desktop/mcp/remediation_headless_driver.cjs": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61",
+      "desktop/mcp/remediation_verification.cjs": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2",
+      "doc_pipeline_source.jsx": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+      "doc_pipeline_module.js": "a611e6299e7589c1597604c1d403f5e3d3e218409a832a8d688c5cc5e8ac0496",
+      "view_pdf_audit_source.jsx": "64ee948449cd5feac6d33342dc3c6f3c543dff119ded1e5d3da32ee43aace807",
+      "view_pdf_audit_module.js": "b3e499c57dc57e2423b572ded5fcee3474f5d79394f1da38362d3a501d3dc87a",
+      "accessibility_evidence_module.js": "bdc31055e61b1ac89206a4abca8f72eec6861ded696a1345f46ce6c7277c42c2",
+      "dev-tools/benchmark_document_remediation.cjs": "29636e957b932a0f3f0b09b24ef77a8c35bf2e95890edf6e618e4ed8bc9ebd99",
+      "dev-tools/remediation_benchmark_corpus.cjs": "58c5c272b1ee05c6bbfe0a868e9a6ce02e77d23f179b098b64cdd74e0e4e47fe"
+    },
+    "promptBundleSha256": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+    "implementationSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+    "modelConfiguration": {
+      "provider": "Gemini via local MCP",
+      "model": "gemini-3-flash-preview",
+      "fallbackModel": "gemini-2.5-flash-lite",
+      "note": "Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed."
+    }
+  }
+}

@@ -20,14 +20,14 @@ console.log('[PureHelpers] 7 helpers registered');
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+writeReaderBuildFile(OUTPUT, outputCode, 'utf-8');
 try {
   if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-  fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+  writeReaderBuildFile(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) { console.warn('Sync failed:', e.message); }
 
 try {
-  execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' });
+  new (require('vm').Script)(outputCode, { filename: OUTPUT });
 } catch (e) {
   console.error('[PureHelpers] Syntax check failed:');
   console.error((e.stderr && e.stderr.toString()) || e.message);
@@ -35,3 +35,14 @@ try {
 }
 
 console.log('[PureHelpers] Built ' + OUTPUT + ' (' + outputCode.split('\n').length + ' lines)');
+
+function writeReaderBuildFile(file, contents, encoding) {
+  const path = require('path');
+  const root = path.resolve(__dirname);
+  const target = path.resolve(file);
+  if (!target.startsWith(root + path.sep)) throw new Error('Build target outside workspace');
+  if (fs.existsSync(target) && fs.readFileSync(target, 'utf8') === contents) return;
+  const temporary = target + '.reader-build-' + process.pid + '.tmp';
+  try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, target); }
+  finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "batch import preserves file order and continues after invalid project",
+    "visible single and batch import failures",
+    "selecting current take retains playhead",
+    "rename saves and Escape cancels with focus restored",
+    "preview speed",
+    "trim preview endpoint and stop control",
+    "take switching clears trim preview",
+    "Home/End timeline navigation",
+    "stable timeline and map DOM during playback",
+    "keyboard focus during playback",
+    "mobile fit at 390px",
+    "renamed draft and trims survive reload",
+    "no page errors"
+  ],
+  "errors": []
+}

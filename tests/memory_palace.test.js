@@ -105,7 +105,7 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('new THREE.Box3()');
     expect(source).toContain('ref.mat.displacementMap');
     expect(source).toContain('if (palace.route[curIdx] === id) stopTargets(curIdx);');
-    expect(source).toContain('var _focusLight = null, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {};');
+    expect(source).toContain('var _focusLight = null, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {}, _roomCanopies = {};');
     expect(source).toContain('new THREE.LineBasicMaterial');
     expect(source).toContain('function _setRoomOutlineMode()');
     expect(source).toContain('outline.opacity = active ? (overview ? 0.68 : 0.32)');
@@ -130,7 +130,7 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('progressFill.style.width =');
     expect(source).toContain('focusCard = null, focusCardKicker');
     expect(source).toContain('function _setFocusCardState()');
-    expect(source).toContain('var show = !recall && !overview && !freeMode && !state.xrActive && !routeVisible && !helpVisible && !!l');
+    expect(source).toContain('var show = !recall && !overview && !freeMode && !state.xrActive && !routeVisible && !helpVisible && !buildMode && !!l');
     expect(source).toContain("memory_palace.focus_picture");
     expect(source).toContain('holder.appendChild(focusCard);');
     expect(source).toContain('focusCard = null;');
@@ -146,7 +146,7 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('var journeyGroups = {}');
     expect(source).toContain("button.setAttribute('data-journey-index', String(stop.index))");
     expect(source).toContain('journeyMapStops.push({ index: stop.index');
-    expect(source).toContain("var show = !!overview && !routeVisible && !helpVisible && !recall && journeyMapStops.length > 0");
+    expect(source).toContain("var show = !!overview && !routeVisible && !helpVisible && !recall && !buildMode && journeyMapStops.length > 0");
     expect(source).toContain("journeyMap.hidden = !show");
     expect(source).toContain('journeyMap = null;');
     expect(source).toContain('var frameMeshes = [], frameRefs = {}, _emptyBeacons = []');
@@ -195,10 +195,9 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(source).toContain('freeNavText.textContent = roomLabel +');
     expect(source).toContain('var freeNavCue = null, freeNavLive = null, freeNavText = null, freeReturnBtn = null');
     expect(source).toContain('headingGlyph =');
-    expect(source).toContain('freeReturnBtn.onclick = function () { goTo(curIdx); }');
+    expect(source).toContain('freeReturnBtn.onclick = function () { goTo(curIdx); renderer.domElement.focus(); }');
     expect(source).toContain("freeReturnBtn.setAttribute('aria-label', _tr(t, 'memory_palace.free_return'");
     expect(source).toContain('stopRing: stopRing');
-    expect(source).toContain('var activeLight = _focusLight');
     expect(source).toContain('_focusLight.position.set(focusRoom.center.x');
     expect(source).toContain('var roomLinks = [], roomLinkSeen = {}');
     expect(source).toContain('roomLinks: roomLinks');
@@ -645,7 +644,7 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('base / 16');
     expect(source).toContain("appRoot.classList.contains('theme-contrast')");
     expect(source).toContain("ctx.font = '800 ' + font");
-    expect(source).toContain("type.contrast ? '#fff200' : '#ffffff'");
+    expect(source).toContain("type.contrast ? '#fff200' : (plaque ? '#182b3d' : '#ffffff')");
     expect(source).toContain('window.devicePixelRatio');
     expect(source).toContain('function _refreshFrameLabels()');
     expect(source).toContain('new window.MutationObserver(_queueCaptionRefresh)');
@@ -669,12 +668,12 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('tex.anisotropy = Math.max(1, Number(anisotropy) || 1)');
     expect(source).toContain('depthTest: !occlusionSafe');
     expect(source).toContain('sp.renderOrder = occlusionSafe ? 24 : 12');
-    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy)");
+    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls ? 'plaque' : undefined)");
     expect(source).toContain('function _setFrameCaptionOcclusionState(force)');
     expect(source).toContain('ref.locus.roomIdx === _captionOverlayRoomIdx');
     expect(source).toContain('label.material.depthTest = !overlay');
     expect(source).toContain('_setFrameCaptionOcclusionState(false);');
-    expect(source).toContain('makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy)');
+    expect(source).toContain("makeLabelSprite(THREE, text, ref.baseColor, 24, overlay, _textureAnisotropy, theme.walls ? 'plaque' : undefined)");
   });
   it('provides a clickable status map and a responsive frame callout', () => {
     const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');

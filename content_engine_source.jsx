@@ -673,6 +673,7 @@ var createContentEngine = function(deps) {
   var isSystemAudioActiveRef = { current: false };
   var currentAudioRef = { current: null };
   var _phonicsReqId = 0;
+  var _definitionReqId = 0;
   _bindState = function() {
     var s = _s();
     inputText = s.inputText; gradeLevel = s.gradeLevel;
@@ -2057,7 +2058,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           standards
       };
   };
-  const handleTextMouseUp = () => {
+  const handleTextMouseUp = (event) => {
       const selection = window.getSelection();
       if (!selection || selection.toString().trim().length === 0) {
           return;
@@ -2069,7 +2070,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           setSelectionMenu({
               x: rect.left + (rect.width / 2),
               y: rect.top,
-              text: text
+              text: text,
+              language: event?.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage
           });
       }
   };
@@ -2281,7 +2283,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   // Authoritative dictionary (Wiktionary via dictionaryapi.dev, offline-cached) shown
   // BESIDE the AI's grade-leveled definition — triangulation + a non-AI knowledge source.
   // Fallback-safe: on any miss/failure the Define popup keeps its AI-only behaviour.
-  const attachDictionary = (word) => {
+  const attachDictionary = (word, requestId = _definitionReqId) => {
       (async () => {
           try {
               if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
@@ -2289,26 +2291,29 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               }
               if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
               const entry = await window.AlloDictionary.lookup(word);
-              if (entry) setDefinitionData(prev => (prev && prev.word === word ? { ...prev, dictionary: entry } : prev));
+              if (entry) setDefinitionData(prev => (requestId === _definitionReqId && prev && prev.word === word ? { ...prev, dictionary: entry } : prev));
           } catch (_e) {}
       })();
   };
   const handleWordClick = async (rawWord, e) => {
       if (interactionMode !== 'define') return;
       e.stopPropagation();
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-      if (!word || word.length < 2) return;
-      const x = e.clientX;
-      const y = e.clientY;
+      const word = String(rawWord || "").replace(/[^\p{L}\p{M}\p{N}’'\s-]/gu, "").trim();
+      if (!word) return;
+      const requestId = ++_definitionReqId;
+      const rect = e.currentTarget?.getBoundingClientRect?.();
+      const x = e.clientX || rect?.left || 0;
+      const y = e.clientY || rect?.bottom || 0;
+      const wordLanguage = e.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage || 'English';
       setDefinitionData({
           word,
           text: null,
           x,
           y
       });
-      attachDictionary(word);
+      if (wordLanguage === 'English') attachDictionary(word, requestId);
       try {
-          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const outputLang = wordLanguage === 'All Selected Languages' ? 'English' : wordLanguage;
           const prompt = `
             Define the word "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
@@ -2321,12 +2326,10 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
-          setDefinitionData(prev => ({
-              ...prev,
-              text: result
-          }));
+          setDefinitionData(prev => requestId === _definitionReqId && prev && prev.word === word ? { ...prev, text: result } : prev);
       } catch (err) {
           warnLog("Unhandled error:", err);
+          if (requestId !== _definitionReqId) return;
           setDefinitionData(null);
           addToast(t('toasts.definition_failed'), "error");
       } finally {
@@ -2337,7 +2340,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       // Han, Hiragana/Katakana, Hangul, Devanagari, etc.) survive the character scrub.
       // Previously the regex was /[^a-zA-ZÀ-ÿ0-9-\s]/g which kept only Latin + Latin-Extended-A,
       // so a click on any non-Latin word produced an empty string and silently did nothing.
-      const word = rawWord.replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
+      const word = String(rawWord || "").replace(/[^\p{L}\p{M}\p{N}’'\s-]/gu, "").trim();
       if (!word) return;
       if (e) e.stopPropagation();
       const reqId = ++_phonicsReqId;
@@ -2345,14 +2348,15 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           word,
           data: null,
           isLoading: true,
-          x: e ? e.clientX : 0,
-          y: e ? e.clientY : 0
+          x: e ? (e.clientX || e.currentTarget?.getBoundingClientRect?.().left || 0) : 0,
+          y: e ? (e.clientY || e.currentTarget?.getBoundingClientRect?.().bottom || 0) : 0
       });
       // Resolve the active content language. "All Selected Languages" is a UI pseudo-value
       // that means "generate in every selected language"; for phonics of a specific word,
       // fall back to English as the analysis language in that ambiguous case.
-      const _phLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages')
-          ? leveledTextLanguage : 'English';
+      const selectedWordLanguage = e?.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage;
+      const _phLang = (selectedWordLanguage && selectedWordLanguage !== 'All Selected Languages')
+          ? selectedWordLanguage : 'English';
       // Authoritative pronunciation alongside the AI phonics: real recording (dict.audio)
       // + authoritative IPA (dict.phonetic) as a quiet third source. English-only, fallback-safe.
       if (_phLang === 'English') {
@@ -2521,8 +2525,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       setCustomReviseInstruction('');
       window.getSelection().removeAllRanges();
   };
-  const closeDefinition = () => setDefinitionData(null);
+  const closeDefinition = () => { ++_definitionReqId; setDefinitionData(null); };
   const closePhonics = () => {
+      ++_phonicsReqId;
       if (phonicsData?.audioUrl) {
           URL.revokeObjectURL(phonicsData.audioUrl);
       }
@@ -2532,6 +2537,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   const handleDefineSelection = async () => {
       if (!selectionMenu || !selectionMenu.text) return;
       const word = selectionMenu.text.trim();
+      const requestId = ++_definitionReqId;
+      const selectionLanguage = selectionMenu.language || generatedContent?.config?.language || leveledTextLanguage || 'English';
       const x = selectionMenu.x;
       const y = selectionMenu.y;
       setDefinitionData({
@@ -2541,9 +2548,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           y
       });
       setSelectionMenu(null);
-      attachDictionary(word);
+      if (selectionLanguage === 'English') attachDictionary(word, requestId);
       try {
-          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const outputLang = selectionLanguage === 'All Selected Languages' ? 'English' : selectionLanguage;
           const prompt = `
             Define the word or phrase "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
@@ -2556,12 +2563,10 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
-          setDefinitionData(prev => ({
-              ...prev,
-              text: result
-          }));
+          setDefinitionData(prev => requestId === _definitionReqId && prev && prev.word === word ? { ...prev, text: result } : prev);
       } catch (err) {
           warnLog("Unhandled error:", err);
+          if (requestId !== _definitionReqId) return;
           setDefinitionData(null);
           addToast(t('toasts.definition_failed'), "error");
       } finally {

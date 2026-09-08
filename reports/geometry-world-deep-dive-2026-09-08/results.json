@@ -1,0 +1,481 @@
+{
+  "scope": "Current local tools in a minimal host; no printer or deployed app connected",
+  "errors": [],
+  "checks": {
+    "meshCases": [
+      {
+        "name": "cube",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 1
+        },
+        "measured": 1,
+        "fitAt10mm": {
+          "sourceFormat": "STL",
+          "byteSize": 684,
+          "triangleCount": 12,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 10,
+            "height": 10
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 1000,
+          "enclosedVolumeMm3": 1000,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=10mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        },
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 684,
+          "triangleCount": 12,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 125,
+          "enclosedVolumeMm3": 125,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      {
+        "name": "cube-side-slab",
+        "worldDimensions": {
+          "L": 2,
+          "W": 1,
+          "H": 1
+        },
+        "measured": 2,
+        "fitAt10mm": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 20,
+            "depth": 10,
+            "height": 10
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 1,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 1500,
+          "enclosedVolumeMm3": null,
+          "volumeAdvisory": "Volume is not reported as enclosed because boundary, topology, or winding findings remain.",
+          "unitDeclaration": "file-unit=10mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "NON_MANIFOLD_EDGES",
+              "severity": "WARNING",
+              "message": "1 edge(s) are shared by more than two triangles and require mesh or slicer review."
+            }
+          ]
+        },
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 1,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": null,
+          "volumeAdvisory": "Volume is not reported as enclosed because boundary, topology, or winding findings remain.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "NON_MANIFOLD_EDGES",
+              "severity": "WARNING",
+              "message": "1 edge(s) are shared by more than two triangles and require mesh or slicer review."
+            }
+          ]
+        }
+      },
+      {
+        "name": "cube-top-slab",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 2
+        },
+        "measured": 2,
+        "fitAt10mm": {
+          "sourceFormat": "STL",
+          "byteSize": 1084,
+          "triangleCount": 20,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 15,
+            "height": 10
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 1500,
+          "enclosedVolumeMm3": 1500,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=10mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        },
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1084,
+          "triangleCount": 20,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 7.5,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": 187.5,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      {
+        "name": "slab-gap-cube",
+        "worldDimensions": {
+          "L": 1,
+          "W": 1,
+          "H": 2
+        },
+        "measured": 2,
+        "fitAt10mm": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 2,
+          "connectedComponents": 2,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 20,
+            "height": 10
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 1500,
+          "enclosedVolumeMm3": 1500,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=10mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "MULTIPLE_SHELLS",
+              "severity": "WARNING",
+              "message": "2 separate mesh/shell component(s) require staff review."
+            }
+          ]
+        },
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 1284,
+          "triangleCount": 24,
+          "meshCount": 2,
+          "connectedComponents": 2,
+          "dimensionsMm": {
+            "width": 5,
+            "depth": 10,
+            "height": 5
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 187.5,
+          "enclosedVolumeMm3": 187.5,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "WARN",
+          "issues": [
+            {
+              "code": "MULTIPLE_SHELLS",
+              "severity": "WARNING",
+              "message": "2 separate mesh/shell component(s) require staff review."
+            }
+          ]
+        }
+      },
+      {
+        "name": "asymmetric-2x3x4",
+        "worldDimensions": {
+          "L": 2,
+          "W": 3,
+          "H": 4
+        },
+        "measured": 24,
+        "fitAt10mm": {
+          "sourceFormat": "STL",
+          "byteSize": 5284,
+          "triangleCount": 104,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 20,
+            "depth": 40,
+            "height": 30
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 24000,
+          "enclosedVolumeMm3": 24000,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=10mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        },
+        "report": {
+          "sourceFormat": "STL",
+          "byteSize": 5284,
+          "triangleCount": 104,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 10,
+            "depth": 20,
+            "height": 15
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 3000,
+          "enclosedVolumeMm3": 3000,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=5mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 50,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        }
+      }
+    ],
+    "keyboard": {
+      "before": 626,
+      "afterUndo": 626,
+      "afterBuild": 627
+    },
+    "measuredText": "🧱\nSANDBOX MODE\nFree Build Studio\n▶\n\nBuild freely, then aim the crosshair at one connected creation to measure it or continue in Print Lab.\n\nMATERIAL\n🪨 Stone\nSHAPE / ROTATION\n⬜ Cube - 0°\n0\nPLACED\n24\nSELECTED\n2×3×4\nBOUNDS\nPRINT LAB BLOCK ENVELOPE\n10 × 15 × 20 mm\n\nFits the 220 × 220 × 250 mm printer profile at 5 mm per block. Advisory preflight is still required.\n\nMeasured from whole blocks against Print Lab’s default printer profile. Set a school printer in Print Lab to check against the real bed.\n\nPrints solid at 24 cubic units = 3,000 mm³ at 5 mm per block (24 cubes).\n\n📏 Measure aimed build\n💾 Save editable world\n📂 Open editable world\n🖨️ Send selected build to Print Lab\n📘 Choose guided lesson\n✨ Start a fresh sandbox\n\nPrint Lab starts at 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.",
+    "phone": {
+      "dock": {
+        "x": 7,
+        "y": 108,
+        "width": 376,
+        "height": 388.234375
+      },
+      "world": {
+        "x": 6,
+        "y": 54,
+        "width": 378,
+        "height": 784
+      },
+      "centerElement": "gwe-print-ready-basis",
+      "centerInsideDock": true,
+      "overflow": false,
+      "collapseTap": false,
+      "collapseTapError": "locator.click: Timeout 1500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Collapse Free Build Studio' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"gwe-collapse\" aria-expanded=\"true\" aria-label=\"Collapse Free Build Studio\">▶</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n"
+    },
+    "handoffToasts": [
+      {
+        "message": "Free Build Sandbox opened. Aim at the ground and place blocks to begin.",
+        "kind": "success"
+      },
+      {
+        "message": "🎉 Your first block! Keep building!",
+        "kind": "success"
+      },
+      {
+        "message": "↩️ Undo",
+        "kind": "info"
+      },
+      {
+        "message": "Measured 24 connected student blocks.",
+        "kind": "success"
+      },
+      {
+        "message": "📏 Achievement: First Measurement — Measured your first structure",
+        "kind": "success"
+      },
+      {
+        "message": "🧱 Achievement: Builder — Placed 10 blocks",
+        "kind": "success"
+      },
+      {
+        "message": "Selected build prepared locally. Opening Print Lab.",
+        "kind": "success"
+      }
+    ],
+    "printDesign": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n24\nSHAPED PIECES\n0\nSTL TRIANGLES\n104\nBLOCK ENVELOPE\n2 × 3 × 4 blocks\n\nCURRENT PHYSICAL SIZE\n\n10 × 15 × 20 mm\n\nExact STL mesh envelope at 5 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nDesign with primitives\n\nBuild directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.\n\n+ box\n+ sphere\n+ cylinder\n+ cone\n+ torus\n+ lathe\n+ extrude\n\nNo primitive recipe yet. Add a shape, import a file, or use an optional AI starting point.\n\nOptional AI modeling assistant\n\nDescribe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.\n\nObject to create\nCreate editable recipe\nChange to the current model\nRefine current recipe\nA small turtle with a broad flat base and short thick legs\nA simple rocket trophy attached to a wide circular base\nA chunky flower token with rounded petals on a flat backing\n\nAI is not configured in this session. All manual design and import features remain available.\n\nImport locally\n\nAccepted: primitive recipe JSON, self-contained GLB, or STL. Maximum 5 MB. The file is inspected in this browser and is not uploaded by Print Lab.\n\nChoose RECIPE / GLB / STL\n\nLoaded locally: geometry-world-selected-build.stl. The downloaded handoff substitutes a generic file name and a content hash.\n\n3D preview\n\nDrag to orbit. Use the controls below for a keyboard path.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 10 × 15 × 20 mm (width × depth × height).\n\nWithin the current printer envelope with 5 mm planning clearance. Compared with 220 × 220 × 250 mm. This is a planning buffer only; preflight and staff review are still required.\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+    "preflightText": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\nSchool printer profile\n\nUse the receiving printer’s actual build area. These values are not machine settings.\n\nBed width (mm)\nBed depth (mm)\nBuild height (mm)\nPlanning clearance (mm)\nNozzle diameter (mm)\n\nPlanning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.\n\nGeometry World scale fits this profile\n\nModel envelope: 10 × 15 × 20 mm. Printer profile: 220 × 220 × 250 mm.\n\nIncludes the preferred 5 mm planning clearance. Profile changes update this check immediately; slicer and staff review remain required.\n\nRun advisory preflight\nAnalyze & Repair\n\nSTL repair only welds near-identical vertices and removes degenerate triangles. It does not fill holes, boolean-union shells, remesh, test wall thickness, or certify safety.\n\nCreate conservative repair candidate\nPreflight report\nPASS\nWIDTH\n10 mm\nDEPTH\n20 mm\nHEIGHT\n15 mm\nTRIANGLES\n104\n\nNo blocking condition was found by these limited checks.\n\nAdvisory, not certification. Print Lab does not prove wall thickness, self-intersection repair, support success, material suitability, or machine safety. A trained staff member must inspect the sliced result before accepting a request.\nPreflight completed without a blocking geometry error. Staff and slicer review are still required.\nSelected build prepared locally. Opening Print Lab.",
+    "roundTripButtons": [
+      "Reset to 5 mm / block",
+      "Revise in Geometry World",
+      "Download editable block source",
+      "+ box",
+      "+ sphere",
+      "+ cylinder",
+      "+ cone",
+      "+ torus",
+      "+ lathe",
+      "+ extrude",
+      "Create editable recipe",
+      "Refine current recipe",
+      "A small turtle with a broad flat base and short thick legs",
+      "A simple rocket trophy attached to a wide circular base",
+      "A chunky flower token with rounded petals on a flat backing",
+      "",
+      "↶",
+      "↷",
+      "+",
+      "−",
+      "Reset",
+      "Draft2.5 mm / block",
+      "Default5 mm / block",
+      "Large10 mm / block",
+      "Continue to Preflight"
+    ]
+  }
+}

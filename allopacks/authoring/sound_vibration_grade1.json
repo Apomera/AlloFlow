@@ -1,0 +1,208 @@
+{
+  "slug": "sound_vibration_grade1",
+  "prefix": "sv",
+  "grade": "1st Grade",
+  "title": "Feel the Buzz — Sound and Vibration",
+  "standard": "NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate)",
+  "source": "https://www.nextgenscience.org/dci-arrangement/1-ps4-waves-and-their-applications-technologies-information-transfer",
+  "reading": "## Feel the Buzz\n\nPut two fingers gently on your throat. Make a soft hum. Can you feel a buzz? Now stop. What changed?\n\nA **sound** starts when something moves back and forth. To **vibrate** means to move this way. You may see the move. You may feel it. Some moves are too small to see.\n\nTap a **drum** gently. Its top shakes. That shake can make a sound. Touch the top to stop the shake. Listen for a change.\n\nA **string** can shake too. A teacher can pluck one on a toy guitar. You can watch it move. When it stops, the sound fades.\n\nA **loud** sound is strong to your ears. A **quiet** sound is soft to your ears. Loud is not the same as high. A small bell may have a high sound but still be quiet.\n\nWe use our **ears** to hear. We can also watch and feel safe objects. Do not put things in your ears.\n\nWe **test** an idea with a careful try. Tap the same drum gently. Listen. Stop its top with your hand. Listen again. Try more than once.\n\nSound can make other things shake too. A teacher can show thin paper moving near a speaker. Keep the sound at a safe level. What did you see?",
+  "terms": [
+    [
+      "Sound",
+      "Something we hear when a source shakes and the disturbance reaches us."
+    ],
+    [
+      "Vibrate",
+      "Move back and forth."
+    ],
+    [
+      "Drum",
+      "An instrument with a top that shakes when tapped."
+    ],
+    [
+      "String",
+      "A thin cord that can shake when plucked."
+    ],
+    [
+      "Loud",
+      "Strong to our ears."
+    ],
+    [
+      "Quiet",
+      "Soft to our ears."
+    ],
+    [
+      "Ears",
+      "Body parts we use to hear."
+    ],
+    [
+      "Test",
+      "A careful try to learn something."
+    ]
+  ],
+  "anchors": [
+    [
+      "A SHAKING SOURCE",
+      [
+        "A drum top can shake",
+        "A plucked string can shake"
+      ],
+      "A drumhead beside a plucked string, no motion labels"
+    ],
+    [
+      "WATCH, FEEL, LISTEN",
+      [
+        "Some shakes are too small to see",
+        "Touch your throat gently while you hum"
+      ],
+      "A child gently touching their throat while humming"
+    ],
+    [
+      "TRY AND COMPARE",
+      [
+        "Tap gently, then stop the drum top",
+        "Listen before and after",
+        "Repeat the try"
+      ],
+      "Two scenes of a hand tapping then resting on a drum"
+    ]
+  ],
+  "cats": [
+    "A sound-making action",
+    "An action that stops the shake"
+  ],
+  "sort": [
+    [
+      "Gently tap a drum",
+      0
+    ],
+    [
+      "Pluck a guitar string",
+      0
+    ],
+    [
+      "Hum with your voice",
+      0
+    ],
+    [
+      "Rest a hand on a shaking drum top",
+      1
+    ],
+    [
+      "Hold a plucked string still",
+      1
+    ],
+    [
+      "Stop humming",
+      1
+    ]
+  ],
+  "quiz": [
+    [
+      "What does vibrate mean?",
+      [
+        "Move back and forth",
+        "Stay in one place",
+        "Change to a new color",
+        "Grow into a new shape"
+      ],
+      0,
+      "shaking sources"
+    ],
+    [
+      "What can make a drum sound?",
+      [
+        "Its color looks bright",
+        "Its top starts to shake",
+        "Its side stays smooth",
+        "Its shape looks round"
+      ],
+      1,
+      "shaking sources"
+    ],
+    [
+      "How can you feel a hum?",
+      [
+        "Put a toy in your ear",
+        "Shout right at a friend",
+        "Touch your throat gently",
+        "Hold your breath tightly"
+      ],
+      2,
+      "observe safely"
+    ],
+    [
+      "How should we try the drum test?",
+      [
+        "Tap a new drum each time",
+        "Hit as hard as we can",
+        "Never listen after a tap",
+        "Use gentle taps and repeat"
+      ],
+      3,
+      "observe safely"
+    ],
+    [
+      "Which is true about loud and high sounds?",
+      [
+        "They are different features",
+        "They always mean the same",
+        "Both mean there is no shake",
+        "Both tell us what color it is"
+      ],
+      0,
+      "shaking sources"
+    ]
+  ],
+  "short": [
+    [
+      "What changes when a hand stops the drum top?",
+      "The shaking slows or stops, and the sound fades or stops. Describe what you actually heard and saw.",
+      "shaking sources"
+    ],
+    [
+      "How could you check your idea again?",
+      "Repeat gentle taps on the same drum and compare before and after touching the top.",
+      "observe safely"
+    ]
+  ],
+  "faq": [
+    [
+      "Can I always see a shake?",
+      "No. Some moves are tiny or very fast. You may hear or feel them."
+    ],
+    [
+      "Are loud and high the same?",
+      "No. A sound can be high and quiet, or low and loud."
+    ],
+    [
+      "Must I hear to join the test?",
+      "No. Watch the drum top or feel a safe surface with help. Share what you notice."
+    ],
+    [
+      "Can sound make paper move?",
+      "Yes. A teacher can show this near a speaker. Use a safe sound level."
+    ]
+  ],
+  "challenge": [
+    "Our class wants to show how a drum makes sound. We have a small drum and space for quiet turns.",
+    "What changes when we stop a tapped drum top from shaking?",
+    "Tap gently. Listen and watch. Rest a hand on the top. Compare. Repeat twice.",
+    "Draw the drum before and after touching its top. Tell what you heard, saw, or felt."
+  ],
+  "facts": [
+    "A shaking drum top can make sound.",
+    "Stopping the shake changes the sound.",
+    "A gentle repeat helps us check what we noticed."
+  ],
+  "memoryText": [
+    [
+      "Tap and shake. A drum top moves when we tap it. That move can make a sound.",
+      "Think of the drum top as you say the cue. The top moves back and forth."
+    ],
+    [
+      "Watch and feel. Touch your throat as you hum. Stop and feel what changes.",
+      "This cue helps us use more than our ears. We can feel a small shake too."
+    ]
+  ]
+}

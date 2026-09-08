@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "date": "2026-09-08",
+  "sourceSha256": "1ce872b8cccce90fd67d543c4e2c37c2f6b06c8823eac88f09e089d1ee1bcad3",
+  "automated": {
+    "testsPassed": 309,
+    "testFiles": 21,
+    "testsFailed": 0,
+    "newSpmCases": 17,
+    "evidence": "verified-tests.json"
+  },
+  "browser": {
+    "views": 11,
+    "axeViolations": 0,
+    "documentWidthOverflow": false,
+    "evidence": "browser-results.json",
+    "manualScale": 1.6,
+    "phoneWidth": 390
+  },
+  "packagedCopiesMatch": {
+    "educator_evaluation_module.js": true,
+    "educator_evaluation_standalone.js": true,
+    "educator-evaluation-manual.html": true,
+    "school-rewards-manual.html": true,
+    "educator-evaluation-manual-assets/22-spm-workflow.jpg": true
+  },
+  "generatedPortal": "current",
+  "scope": "Local app, generated portal, fictional workflows, and manuals; no district deployment or real account/message/Drive changes."
+}

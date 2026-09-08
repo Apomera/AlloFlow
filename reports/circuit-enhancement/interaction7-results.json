@@ -1,0 +1,23 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "all materials",
+    "eight parallel branches",
+    "selected close-up",
+    "camera preserves physics",
+    "reset restores wide view",
+    "top view",
+    "phone layout",
+    "label toggle",
+    "empty close-up disabled",
+    "pointer camera control",
+    "keyboard part selection",
+    "camera excluded from undo",
+    "static geometry reuse",
+    "electrical updates refresh scene",
+    "hidden schematic unmounted",
+    "direct-scene accessibility",
+    "selection remains consistent after removal"
+  ]
+}

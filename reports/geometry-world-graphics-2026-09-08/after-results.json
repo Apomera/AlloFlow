@@ -1,0 +1,215 @@
+{
+  "errors": [],
+  "graphics": {
+    "blocks": 751,
+    "drawCalls": 1,
+    "triangles": 1,
+    "geometries": 2529,
+    "textures": 27,
+    "profile": {
+      "preference": "detail",
+      "tier": "detail",
+      "reason": "Manual graphics-quality selection.",
+      "label": "Detailed",
+      "maxPixelRatio": 2,
+      "shadows": true,
+      "postFx": true,
+      "ambientMotion": true
+    },
+    "surfaceNormals": 116,
+    "wedges": [
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      },
+      {
+        "hasUv": true,
+        "volume": 0.5
+      }
+    ],
+    "programErrors": []
+  },
+  "battery": {
+    "profile": {
+      "preference": "saver",
+      "tier": "saver",
+      "reason": "Manual graphics-quality selection.",
+      "label": "Battery saver",
+      "maxPixelRatio": 1,
+      "shadows": false,
+      "postFx": false,
+      "ambientMotion": false
+    },
+    "surfaceNormals": 0,
+    "errors": []
+  },
+  "passed": true
+}

@@ -1,0 +1,110 @@
+{
+ "format": "allostudio",
+ "version": 1,
+ "title": "Untitled",
+ "_baseTitle": "Untitled",
+ "_baseCanvas": {
+  "preset": "letter-portrait",
+  "w": 816,
+  "h": 1056
+ },
+ "createdAt": 1788867187468,
+ "canvas": {
+  "preset": "letter-portrait",
+  "w": 816,
+  "h": 1056,
+  "background": {
+   "fill": "#ffffff"
+  }
+ },
+ "objects": [
+  {
+   "type": "text",
+   "role": "heading1",
+   "frame": {
+    "x": 60,
+    "y": 60,
+    "w": 400,
+    "h": 70,
+    "rotation": 0
+   },
+   "z": 10,
+   "runs": [
+    {
+     "text": "A title typed on mobile",
+     "style": {
+      "size": 44,
+      "color": "#111827",
+      "bold": true,
+      "align": "left"
+     }
+    }
+   ],
+   "id": "o2"
+  }
+ ],
+ "pageCount": 1,
+ "ledger": {
+  "version": 1,
+  "ops": [
+   {
+    "type": "doc.template",
+    "template": "blank",
+    "seq": 1,
+    "ts": 1788867187468,
+    "actor": "user"
+   },
+   {
+    "type": "object.add",
+    "object": {
+     "type": "text",
+     "role": "heading1",
+     "frame": {
+      "x": 60,
+      "y": 60,
+      "w": 400,
+      "h": 70,
+      "rotation": 0
+     },
+     "z": 10,
+     "runs": [
+      {
+       "text": "New heading",
+       "style": {
+        "size": 44,
+        "color": "#111827",
+        "bold": true,
+        "align": "left"
+       }
+      }
+     ],
+     "id": "o2"
+    },
+    "seq": 2,
+    "ts": 1788867201676,
+    "actor": "user"
+   },
+   {
+    "type": "object.update",
+    "target": "o2",
+    "patch": {
+     "runs": [
+      {
+       "text": "A title typed on mobile",
+       "style": {
+        "size": 44,
+        "color": "#111827",
+        "bold": true,
+        "align": "left"
+       }
+      }
+     ]
+    },
+    "seq": 3,
+    "ts": 1788867202602,
+    "actor": "user"
+   }
+  ],
+  "checkpoints": []
+ }
+}

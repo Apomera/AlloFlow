@@ -1861,6 +1861,7 @@
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
     gradePresentationResponse: gradePresentationResponse,
+    presentationQuestionIsGameScorable: presentationQuestionIsGameScorable,
     aggregatePresentationResponses: aggregatePresentationResponses,
     isUnscoredPollQuestion: isUnscoredPollQuestion,
     normalizeItemType: normalizeItemType,

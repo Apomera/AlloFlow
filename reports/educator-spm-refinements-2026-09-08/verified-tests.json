@@ -1,0 +1,114 @@
+{
+  "status": "passed",
+  "method": "Latest completed result per requested test file; startup-affected files and the corrected field-scope assertion were rerun. Original reports are retained.",
+  "testFiles": 21,
+  "testsPassed": 309,
+  "testsFailed": 0,
+  "files": [
+    {
+      "file": "educator_evaluation_browser_e2e.test.js",
+      "testsPassed": 14,
+      "report": "retry-tests.json"
+    },
+    {
+      "file": "educator_evaluation_copy_integrity.test.js",
+      "testsPassed": 5,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_core.test.js",
+      "testsPassed": 52,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_finalized_cycle_ux.test.js",
+      "testsPassed": 3,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_keyboard_targets.test.js",
+      "testsPassed": 3,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_live_bridge.test.js",
+      "testsPassed": 1,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_manual.test.js",
+      "testsPassed": 32,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_manual_2026_09.test.js",
+      "testsPassed": 3,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_mount_smoke.test.js",
+      "testsPassed": 36,
+      "report": "retry-tests.json"
+    },
+    {
+      "file": "educator_evaluation_pending_commit_gate.test.js",
+      "testsPassed": 15,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_portal_render.test.js",
+      "testsPassed": 13,
+      "report": "retry-tests.json"
+    },
+    {
+      "file": "educator_evaluation_review_workflows.test.js",
+      "testsPassed": 5,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_saved_edit_recovery.test.js",
+      "testsPassed": 13,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_secondary_recovery.test.js",
+      "testsPassed": 7,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_spm_navigation.test.js",
+      "testsPassed": 17,
+      "report": "retry-tests.json"
+    },
+    {
+      "file": "educator_evaluation_submission_readiness.test.js",
+      "testsPassed": 21,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_theme.test.js",
+      "testsPassed": 5,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_workflow_aids.test.js",
+      "testsPassed": 5,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_workflow_recovery.test.js",
+      "testsPassed": 26,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "educator_evaluation_worklist_navigation.test.js",
+      "testsPassed": 23,
+      "report": "final-tests.json"
+    },
+    {
+      "file": "school_rewards_manual.test.js",
+      "testsPassed": 10,
+      "report": "final-tests.json"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "sourceSha256": "8ccdfaadc85ffa1faa2967fb243afa6b54856feb0861cd979b6a4e7aa5f1a537",
+  "desktopMirrorIdentical": true,
+  "browser": [
+    {
+      "directory": "pass3-bays",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "01-machines-lever",
+        "02-machines-pulley",
+        "02b-machines-wheel-axle",
+        "03-machines-screw",
+        "03b-machines-wedge",
+        "04-machines-k2",
+        "05-build-trebuchet",
+        "06-build-ballista",
+        "07-build-onager",
+        "08-range-fresh",
+        "08b-range-odd-stone",
+        "08c-range-running",
+        "09-siege-fresh",
+        "10-siege-gatehouse",
+        "11b-field-castle",
+        "11c-field-machine",
+        "08d-range-strobe",
+        "motion-ramp",
+        "motion-wedge",
+        "field-castle",
+        "field-night",
+        "field-camp",
+        "field-engine"
+      ]
+    },
+    {
+      "directory": "pass3-field-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "11b-field-castle",
+        "11c-field-machine",
+        "field-castle",
+        "field-night",
+        "field-camp",
+        "field-engine"
+      ]
+    },
+    {
+      "directory": "pass3-contrast",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "11b-field-castle",
+        "11c-field-machine",
+        "field-castle",
+        "field-night",
+        "field-camp",
+        "field-engine"
+      ]
+    },
+    {
+      "directory": "pass3-contrast-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "11b-field-castle",
+        "field-castle"
+      ]
+    },
+    {
+      "directory": "pass3-siege-final",
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "09-siege-fresh",
+        "10-siege-gatehouse"
+      ]
+    }
+  ],
+  "testReport": "pass3-tests.json",
+  "tests": {
+    "passed": 703,
+    "failed": 0,
+    "success": true
+  }
+}

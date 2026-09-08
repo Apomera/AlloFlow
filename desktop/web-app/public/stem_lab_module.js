@@ -305,6 +305,9 @@
         //   buildScene — (THREE, api) => { meshes: {id: Group}, picks: [Mesh], anchor: Mesh }
         //   home       — { yaw, pitch, dist, target? } default camera
         makeBayViewer: function (cfg) {
+          // Whole-vehicle bays can inspect upward; existing callers keep the above-floor orbit.
+          var minPitch = typeof cfg.minPitch === 'number' && isFinite(cfg.minPitch)
+            ? Math.max(-1.35, Math.min(0.12, cfg.minPitch)) : 0.12;
           var S = null;                 // live scene state, null when detached
           var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
           var status = 'idle';          // idle | loading | ready | failed
@@ -927,7 +930,7 @@
                 var dx = ev.clientX - S.lastX, dy = ev.clientY - S.lastY;
                 S.moved += Math.abs(dx) + Math.abs(dy);
                 S.yaw -= dx * 0.008;
-                S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dy * 0.006));
+                S.pitch = Math.max(minPitch, Math.min(1.35, S.pitch + dy * 0.006));
                 S.lastX = ev.clientX; S.lastY = ev.clientY;
               } else {
                 ndc(ev);
@@ -1222,7 +1225,7 @@
             nudge: function (dYaw, dPitch) {
               if (!S) return;
               S.yaw += dYaw;
-              S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dPitch));
+              S.pitch = Math.max(minPitch, Math.min(1.35, S.pitch + dPitch));
             },
             // Zoom was wheel-only, which left keyboard, touch and switch users with
             // no way to get closer. Same clamp as the wheel handler.

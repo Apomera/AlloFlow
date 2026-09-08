@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "source video bytes intact",
+    "README stays readable",
+    "music and clip bytes intact",
+    "trim and zoom roundtrip",
+    "caption and export choice roundtrip",
+    "correct saved-shelf draft",
+    "recovered imported draft",
+    "actual rendered export bundle bytes",
+    "no reapplied source trim zoom or music in rendered bundle",
+    "legacy archive-layout recovery and repaired resave",
+    "empty media rejected without substituting README text",
+    "legacy bundles open",
+    "unsupported editor state warns without blocking video",
+    "mobile fit"
+  ],
+  "errors": [],
+  "sourceSha256": "875aacdf7708bb819a8cd7fd1d2eca7d25080dabdb14fc043b152dac3c352d41",
+  "mirrorsMatch": true
+}

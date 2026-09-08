@@ -1,0 +1,45 @@
+{
+  "pass": true,
+  "drawCalls": 4,
+  "triangles": 3856,
+  "disposedGeometry": 12,
+  "disposedMaterial": 12,
+  "results": [
+    {
+      "ground": {
+        "xMin": -4,
+        "xMax": 24,
+        "zMin": -4,
+        "zMax": 24,
+        "y": 0
+      },
+      "triangles": 3856,
+      "minimumClearance": 29.99999903774998,
+      "hash": "3a230f7a448b58ca9e06f9ba5b13f33aad395887cf94ff98cbec67e6e02f3df7"
+    },
+    {
+      "ground": {
+        "xMin": 100,
+        "xMax": 1000,
+        "zMin": -100,
+        "zMax": -95,
+        "y": 12
+      },
+      "triangles": 3856,
+      "minimumClearance": 29.99994092988011,
+      "hash": "c8cbfcba3416bc458d68c6f7aac79f35072e99b26471e2ea58b150929eefde77"
+    },
+    {
+      "ground": {
+        "xMin": -4,
+        "xMax": 24,
+        "zMin": -4,
+        "zMax": 24,
+        "y": 0
+      },
+      "triangles": 3856,
+      "minimumClearance": 29.99999903774998,
+      "hash": "3a230f7a448b58ca9e06f9ba5b13f33aad395887cf94ff98cbec67e6e02f3df7"
+    }
+  ]
+}

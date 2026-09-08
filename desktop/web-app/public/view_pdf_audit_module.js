@@ -23,6 +23,312 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Sparkles = _lazyIcon('Sparkles');
 var Wrench = _lazyIcon('Wrench');
 var X = _lazyIcon('X');
+(function (root, factory) {
+  'use strict';
+  var api = factory(root);
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.RemediationReview = api; }
+})(typeof window !== 'undefined' ? window : globalThis, function (root) {
+  'use strict';
+  var MAX_RECORDS = 100, MAX_REFERENCES = 700;
+  var reasons = {
+    'no-original': 'The suggestion had no usable source for comparison and was rejected.',
+    'empty-output': 'The suggestion was empty; the original content was retained.',
+    'no-doc-markers': 'The suggestion did not contain a complete document; the original was retained.',
+    'size-shrink': 'The suggestion removed too much document structure; the original was retained.',
+    'text-shrink': 'The suggestion omitted too much text; the original was retained.',
+    'size-growth-unexpected': 'The suggestion added too much document structure; the original was retained.',
+    'text-growth-unexpected': 'The suggestion added too much text; the original was retained.',
+    'table-cell-transposition': 'Table values changed position; the original table content was retained.',
+    'image-reference-uncheckable': 'The image references could not be verified; the original images were retained.',
+    'image-reference-changed': 'Image identity or order changed; the original images were retained.',
+    'invalid-json-wrapper': 'The suggestion could not be read as HTML; the original was retained.',
+    'content-not-preserved': 'The suggestion did not preserve the document; the original was retained.'
+  };
+  function count(value) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 1000000) : 0; }
+  function records(value) {
+    if (!Array.isArray(value)) return [];
+    return value.slice(0, MAX_RECORDS).filter(function (r) {
+      return r && typeof r === 'object' && !Array.isArray(r) && typeof r.chunkId === 'string'
+        && /^(?:all|[0-9]{1,8}(?:\.[0-9]{1,8})?)$/.test(r.chunkId)
+        && ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'].includes(r.phase)
+        && Object.prototype.hasOwnProperty.call(reasons, r.reason);
+    }).map(function (r) {
+      var item = { chunkId: r.chunkId, phase: r.phase, reason: r.reason };
+      if (Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
+      return item;
+    });
+  }
+  function evidence(value) {
+    var list = records(value && value.candidateRejections);
+    return { candidateRejectionCount: Math.max(count(value && value.candidateRejectionCount), list.length), candidateRejections: list };
+  }
+  // Each pass callback carries a delta once. Metadata never changes readiness or HTML.
+  function mergeEvidence(previous, delta) {
+    var a = evidence(previous), b = evidence(delta);
+    return { candidateRejectionCount: Math.min(1000000, a.candidateRejectionCount + b.candidateRejectionCount), candidateRejections: a.candidateRejections.concat(b.candidateRejections).slice(0, MAX_RECORDS) };
+  }
+  function acknowledgments(value) {
+    var result = {};
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
+    Object.keys(value).slice(0, MAX_RECORDS).forEach(function (key) {
+      if (/^preservation\|/.test(key) && key.length <= 180 && Number.isSafeInteger(value[key]) && value[key] > 0) result[key] = value[key];
+    });
+    return result;
+  }
+  function reviewItems(value, reviewed) {
+    return records(value && value.candidateRejections).map(function (r, index) {
+      var key = ['preservation', index, r.pass, r.chunkId, r.phase, r.reason].join('|');
+      return Object.assign({}, r, { key: key, reviewed: !!(reviewed && reviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
+        referenceKind: /table/i.test(r.reason) ? 'table' : /image|asset|placeholder/i.test(r.reason) ? 'figure' : null });
+    });
+  }
+  function text(value) { return String(value || '').normalize('NFKC').replace(/\s+/g, ' ').trim(); }
+  function documentFor(html, options) {
+    var Parser = (options && options.DOMParser) || (root && root.DOMParser);
+    if (!Parser) throw new Error('Document references need an HTML parser.');
+    return new Parser().parseFromString(String(html || ''), 'text/html');
+  }
+  async function hash(value, options) {
+    if (options && typeof options.digest === 'function') return options.digest(String(value));
+    var subtle = root && root.crypto && root.crypto.subtle;
+    if (!subtle) throw new Error('Document references need SHA-256 support.');
+    var Encoder = root.TextEncoder || globalThis.TextEncoder;
+    var bytes = await subtle.digest('SHA-256', new Encoder().encode(String(value)));
+    return Array.from(new Uint8Array(bytes)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function ownedRows(table) { return Array.from(table.querySelectorAll('tr')).filter(function (row) { return row.closest('table') === table; }); }
+  // This sidecar identifies source elements. It is not accessibility or fidelity proof.
+  // No IDs/attributes are injected into the document being verified.
+  async function inventory(doc, options) {
+    var refs = [], tables = Array.from(doc.querySelectorAll('table')).slice(0, 100), images = Array.from(doc.querySelectorAll('img')).slice(0, 200);
+    for (var ti = 0; ti < tables.length && refs.length < MAX_REFERENCES; ti++) {
+      var table = tables[ti], rows = ownedRows(table), cellData = [];
+      rows.forEach(function (row, ri) {
+        Array.from(row.children).filter(function (cell) { return /^(TD|TH)$/.test(cell.tagName); }).forEach(function (cell, ci) {
+          cellData.push({ node: cell, row: ri, column: ci, value: text(cell.textContent), rowSpan: cell.rowSpan || 1, colSpan: cell.colSpan || 1 });
+        });
+      });
+      var fingerprint = await hash(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })), options);
+      var caption = Array.from(table.children).find(function (child) { return child.tagName === 'CAPTION'; });
+      refs.push({ kind: 'table', table: ti, fingerprint: fingerprint, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
+      for (var ci = 0; ci < cellData.length && refs.length < MAX_REFERENCES; ci++) {
+        var cell = cellData[ci];
+        refs.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFingerprint: fingerprint,
+          fingerprint: await hash(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan]), options),
+          label: 'Table ' + (ti + 1) + ', row ' + (cell.row + 1) + ', cell ' + (cell.column + 1), node: cell.node });
+      }
+    }
+    for (var ii = 0; ii < images.length && refs.length < MAX_REFERENCES; ii++) {
+      var img = images[ii];
+      refs.push({ kind: 'figure', index: ii, fingerprint: await hash(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || '']), options),
+        label: 'Image ' + (ii + 1) + (img.getAttribute('alt') ? ': ' + text(img.getAttribute('alt')).slice(0, 120) : ''), node: img });
+    }
+    var signature = await hash(JSON.stringify([text(doc.body && doc.body.textContent), refs.map(function (ref) { return [ref.kind, ref.fingerprint]; })]), options);
+    return { refs: refs, signature: signature, truncated: refs.length >= MAX_REFERENCES || doc.querySelectorAll('table').length > tables.length || doc.querySelectorAll('img').length > images.length };
+  }
+  async function createSourceModel(html, options) {
+    try {
+      var doc = documentFor(html, options), inv = await inventory(doc, options), sourceDigest = await hash(String(html || ''), options);
+      return { version: 1, sourceDigest: sourceDigest, signature: inv.signature, truncated: inv.truncated,
+        references: inv.refs.map(function (ref, index) {
+          var result = Object.assign({}, ref, { id: 'src-' + sourceDigest.slice(0, 16) + '-' + (index + 1) });
+          delete result.node;
+          return result;
+        }) };
+    } catch (_) { return null; }
+  }
+  function normalizeSourceModel(value) {
+    if (!value || value.version !== 1 || !/^[a-f0-9]{64}$/.test(value.sourceDigest || '') || !/^[a-f0-9]{64}$/.test(value.signature || '') || !Array.isArray(value.references)) return null;
+    var ids = new Set(), refs = [];
+    for (var raw of value.references.slice(0, MAX_REFERENCES)) {
+      if (!raw || !['table', 'cell', 'figure'].includes(raw.kind) || !new RegExp('^src-' + value.sourceDigest.slice(0, 16) + '-[1-9][0-9]{0,3}$').test(raw.id || '') || ids.has(raw.id) || !/^[a-f0-9]{64}$/.test(raw.fingerprint || '')) return null;
+      var ref = { id: raw.id, kind: raw.kind, fingerprint: raw.fingerprint, label: String(raw.label || '').slice(0, 160) };
+      var keys = raw.kind === 'figure' ? ['index'] : raw.kind === 'cell' ? ['table', 'row', 'column'] : ['table'];
+      for (var key of keys) { if (!Number.isSafeInteger(raw[key]) || raw[key] < 0 || raw[key] > 100000) return null; ref[key] = raw[key]; }
+      if (raw.kind === 'cell') { if (!/^[a-f0-9]{64}$/.test(raw.tableFingerprint || '')) return null; ref.tableFingerprint = raw.tableFingerprint; }
+      ids.add(ref.id); refs.push(ref);
+    }
+    return { version: 1, sourceDigest: value.sourceDigest, signature: value.signature, truncated: value.truncated === true || value.references.length >= MAX_REFERENCES, references: refs };
+  }
+  async function resolveSourceReference(doc, model, id, options) {
+    model = normalizeSourceModel(model);
+    var ref = model && model.references.find(function (item) { return item.id === id; });
+    if (!ref || !doc) return { status: 'unavailable', node: null };
+    // An incomplete sidecar or current inventory cannot establish uniqueness: an
+    // unseen duplicate may be the surviving element. Never infer identity from a cap.
+    if (model.truncated) return { status: 'unavailable', node: null, reason: 'reference-inventory-truncated' };
+    var inv;
+    try { inv = await inventory(doc, options); } catch (_) { return { status: 'unavailable', node: null }; }
+    if (inv.truncated) return { status: 'unavailable', node: null, reason: 'reference-inventory-truncated' };
+    var sameIdentity = function (item) {
+      return item.kind === ref.kind && item.fingerprint === ref.fingerprint
+        && (ref.kind !== 'cell' || (item.tableFingerprint === ref.tableFingerprint && item.row === ref.row && item.column === ref.column));
+    };
+    var sourceCandidates = model.references.filter(sameIdentity);
+    var candidates = inv.refs.filter(sameIdentity);
+    if (!candidates.length) return { status: 'changed', node: null };
+    // Both sides must identify a unique element. Matching the remaining target
+    // alone maps two old IDs onto one survivor after a duplicate is removed.
+    // Document signatures and positions do not prove which identical duplicate
+    // survived or moved, even if unchanged text makes the signatures equal.
+    if (sourceCandidates.length !== 1 || candidates.length !== 1) return { status: 'ambiguous', node: null };
+    return { status: 'matched', node: candidates[0].node, reference: ref };
+  }
+  return { reasons: reasons, acknowledgments: acknowledgments, evidence: evidence, mergeEvidence: mergeEvidence, reviewItems: reviewItems,
+    createSourceModel: createSourceModel, normalizeSourceModel: normalizeSourceModel, resolveSourceReference: resolveSourceReference };
+});
+
+const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbench }) => {
+  const api = window.AlloModules && window.AlloModules.RemediationReview;
+  const [expanded, setExpanded] = React.useState(false);
+  const [model, setModel] = React.useState(() => api && api.normalizeSourceModel(result && result.sourceStructure));
+  const [selected, setSelected] = React.useState("");
+  const [message, setMessage] = React.useState("");
+  const frame = React.useRef(null);
+  const inspectButton = React.useRef(null);
+  const operation = React.useRef(0);
+  const focusCleanup = React.useRef(null);
+  const returnPreviewFocus = React.useRef(false);
+  const [busy, setBusy] = React.useState(false);
+  const generation = React.useRef(0);
+  const html = String(result && result.accessibleHtml || "");
+  React.useLayoutEffect(() => {
+    const restorePreviewFocus = returnPreviewFocus.current;
+    returnPreviewFocus.current = false;
+    if (restorePreviewFocus && inspectButton.current && (document.activeElement === document.body || document.activeElement === frame.current)) inspectButton.current.focus();
+    generation.current += 1;
+    operation.current += 1;
+    setBusy(false);
+    setModel(api && api.normalizeSourceModel(result && result.sourceStructure));
+    setSelected("");
+    setMessage("");
+    setExpanded(false);
+    return () => {
+      returnPreviewFocus.current = !!(frame.current && document.activeElement === frame.current);
+      generation.current += 1;
+      operation.current += 1;
+      if (focusCleanup.current) focusCleanup.current();
+    };
+  }, [html]);
+  if (!api || !result || !html) return null;
+  const evidence = api.evidence(result);
+  const items = api.reviewItems(result, result.preservationAcknowledgments);
+  const pending = items.filter((item) => !item.reviewed).length;
+  const openStructure = async () => {
+    const token = captureToken(), run = generation.current, request = ++operation.current;
+    const current = () => run === generation.current && request === operation.current;
+    setBusy(true);
+    try {
+      let next = model;
+      if (!next) {
+        setMessage("Preparing document references\u2026");
+        next = await api.createSourceModel(html);
+        if (!current()) return;
+        if (!next) {
+          setMessage("Document references are unavailable in this browser.");
+          return;
+        }
+        if (!commitMetadata(token, (prev) => ({ ...prev, sourceStructure: next }))) {
+          setMessage("The document changed. Open its references again.");
+          return;
+        }
+        setModel(next);
+      }
+      setExpanded(true);
+      setMessage("Choose a table, cell, or image to inspect.");
+    } catch (_) {
+      if (current()) setMessage("Document references could not be prepared. Try again.");
+    } finally {
+      if (current()) setBusy(false);
+    }
+  };
+  const cancelNavigation = () => {
+    operation.current += 1;
+    setBusy(false);
+    if (focusCleanup.current) focusCleanup.current();
+  };
+  const focusReference = async (event) => {
+    const run = generation.current, request = ++operation.current, preview = frame.current;
+    const trigger = event.currentTarget;
+    const current = () => run === generation.current && request === operation.current && preview === frame.current;
+    setBusy(true);
+    setMessage("Locating the selected element\u2026");
+    try {
+      const doc = preview && preview.contentDocument;
+      const found = await api.resolveSourceReference(doc, model, selected);
+      if (!current()) return;
+      if (!doc || preview.contentDocument !== doc) {
+        setMessage("The preview changed. Try locating the element again.");
+        return;
+      }
+      if (found.reason === "reference-inventory-truncated") {
+        setMessage("This reference index is incomplete. Inspect the document manually.");
+        return;
+      }
+      if (found.status !== "matched" || !found.node || !found.node.isConnected || found.node.ownerDocument !== doc) {
+        setMessage(found.status === "ambiguous" ? "This reference has multiple possible matches. Inspect the document manually." : "This reference cannot be matched safely to the current document. Inspect the document manually.");
+        return;
+      }
+      if (document.activeElement !== trigger) {
+        setMessage("The element is ready. Choose Locate in preview to move focus.");
+        return;
+      }
+      if (focusCleanup.current) focusCleanup.current();
+      const node = found.node, previous = node.getAttribute("tabindex");
+      const styles = ["outline", "outline-offset"].map((name) => [name, node.style.getPropertyValue(name), node.style.getPropertyPriority(name)]);
+      const restore = () => {
+        node.removeEventListener("blur", restore);
+        if (previous === null) node.removeAttribute("tabindex");
+        else node.setAttribute("tabindex", previous);
+        styles.forEach(([name, value, priority]) => {
+          if (value) node.style.setProperty(name, value, priority);
+          else node.style.removeProperty(name);
+        });
+        if (focusCleanup.current === restore) focusCleanup.current = null;
+      };
+      focusCleanup.current = restore;
+      node.setAttribute("tabindex", "-1");
+      node.style.setProperty("outline", "3px solid #1d4ed8", "important");
+      node.style.setProperty("outline-offset", "2px", "important");
+      node.addEventListener("blur", restore, { once: true });
+      node.scrollIntoView({ block: "center" });
+      node.focus();
+      if (doc.activeElement !== node) {
+        restore();
+        setMessage("The element was located, but could not receive keyboard focus.");
+        return;
+      }
+      setMessage("Located " + found.reference.label + ".");
+    } catch (_) {
+      if (current()) setMessage("The reference could not be located. Try again.");
+    } finally {
+      if (current()) setBusy(false);
+    }
+  };
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": "Preservation review", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold" }, "Preservation review"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1" }, evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : "Inspect stable references for tables, cells, and images.", " Acknowledging an item does not resolve accessibility findings or change verification."), items.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-semibold" }, "Review rejected suggestions (", items.length, ")"), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 space-y-2" }, items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.key, className: "rounded border border-amber-200 bg-white p-2 text-xs" }, /* @__PURE__ */ React.createElement("p", null, item.description), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-slate-600" }, item.pass ? `Pass ${item.pass} \xB7 ` : "", item.chunkId === "all" ? "Whole document" : `Section ${item.chunkId}`, " \xB7 ", item.phase), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", "aria-pressed": item.reviewed, onClick: () => {
+    const token = captureToken();
+    commitMetadata(token, (prev) => {
+      const acknowledgments = { ...prev.preservationAcknowledgments || {} };
+      if (acknowledgments[item.key]) delete acknowledgments[item.key];
+      else acknowledgments[item.key] = Date.now();
+      return { ...prev, preservationAcknowledgments: acknowledgments };
+    });
+  } }, item.reviewed ? "Acknowledged \u2014 undo" : "Acknowledge"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "rounded border px-2 py-1", onClick: () => onWorkbench(`Review accessibility issues in ${item.chunkId === "all" ? "the document" : "section " + item.chunkId}. A previous suggestion was rejected: ${item.description} Preserve the source wording, table values, and image identity.`) }, "Prepare Workbench review")))))), evidence.candidateRejectionCount > items.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, "Showing ", items.length, " of ", evidence.candidateRejectionCount, " rejection records. Additional details were not retained."), /* @__PURE__ */ React.createElement("button", { ref: inspectButton, type: "button", "aria-disabled": busy, className: "mt-2 rounded border border-amber-500 px-2 py-1 text-xs", onClick: () => {
+    if (!busy) openStructure();
+  } }, "Inspect document references"), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs mt-1" }, message), expanded && model && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs mb-2" }, "References describe the document when this index was created. Rejection records identify a section, not an exact affected cell or image. Changed or ambiguous elements cannot be located automatically."), /* @__PURE__ */ React.createElement("label", { className: "text-xs" }, "Document element ", /* @__PURE__ */ React.createElement("select", { value: selected, onChange: (event) => {
+    cancelNavigation();
+    setSelected(event.target.value);
+    setMessage("");
+  }, className: "border rounded max-w-full p-1" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose an element"), model.references.map((ref) => /* @__PURE__ */ React.createElement("option", { key: ref.id, value: ref.id }, ref.label)))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ml-2 rounded border px-2 py-1 text-xs", disabled: !selected || model.truncated, "aria-disabled": busy || !selected || model.truncated, onClick: (event) => {
+    if (!busy) focusReference(event);
+  } }, "Locate in preview"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ml-2 rounded border px-2 py-1 text-xs", onClick: () => {
+    cancelNavigation();
+    setExpanded(false);
+    setMessage("Reference preview closed.");
+    if (inspectButton.current) inspectButton.current.focus();
+  } }, "Close reference preview"), model.truncated && /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, "This reference index is incomplete. Automatic location is unavailable; inspect the preview manually."), !model.references.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, "No tables, cells, or images were found."), /* @__PURE__ */ React.createElement("iframe", { ref: frame, title: "Document preservation review preview", sandbox: "allow-same-origin", srcDoc: html, className: "mt-2 w-full h-80 border bg-white" })));
+};
 const _alloUseFocusTrap = typeof window !== "undefined" && window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
 };
 function buildPdfPipelineTourSteps(kind, translate) {
@@ -2951,6 +3257,21 @@ const DOC_MODES = {
 async function _buildAccessibleOfficeExport({ html, title, format }) {
   if (!html || typeof html !== "string") throw new Error("No document content is available.");
   const safeTitle = String(title || "AlloFlow Document").replace(/[\\/:*?"<>|]+/g, "-").trim().substring(0, 100) || "AlloFlow Document";
+  if (format === "pptx") {
+    const P = await _ensurePptxLib();
+    if (!P) throw new Error("The PowerPoint library could not load. Check the connection and try again.");
+    const spec = _htmlToDocxSpec(html);
+    if (title) spec.title = String(title);
+    const deck = _docxSpecToSlides(spec);
+    if (!deck.slides.length) throw new Error("The document has no content that can be exported to slides.");
+    const blob2 = await _buildPptxBlobFromSlides(deck, P);
+    return {
+      blob: blob2,
+      fileName: safeTitle + ".pptx",
+      counts: deck.counts,
+      message: "PowerPoint prepared from the current document. Review slide layout and image descriptions before sharing."
+    };
+  }
   if (format === "docx") {
     const d = await _ensureDocxLib();
     if (!d) throw new Error("The Word export library could not load. Check the connection and try again.");
@@ -9623,6 +9944,8 @@ Return ONLY JSON:
             autoFixPasses: project.autoFixPasses || 0,
             // Collaboration provenance (2026-08-23): who-did-what survives the file.
             humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120) })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
@@ -11200,7 +11523,14 @@ Return ONLY JSON:
         setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));
         setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...prev.reviewedFindings || {}, [_k]: _at } } : prev);
       }, className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.done_title") || "Mark as reviewed \u2014 I checked this myself. Recorded in the audit report as a human attestation.", "aria-label": (t("pdf_audit.review_queue.done_aria") || "Mark reviewed") + ": " + f.id }, "\u2713"))))));
-    })(), pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300" }, (() => {
+    })(), pdfFixResult && pdfFixResult.accessibleHtml && /* @__PURE__ */ React.createElement(_PdfPreservationReview, { key: pdfDocumentEpoch, result: pdfFixResult, captureToken: _captureAsyncHtmlToken, commitMetadata: _commitAsyncHtmlIfCurrent, onWorkbench: (command) => {
+      setExpertCommandInput(command);
+      const section = document.getElementById("allo-sec-workbench");
+      if (section) {
+        section.open = true;
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } }), pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300" }, (() => {
       const _v = _docPipeline && typeof _docPipeline.distributionVerdict === "function" ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _remediationInFlight }) : null;
       if (!_v) return null;
       const _sty = _v.inProgress ? "bg-indigo-50 border-indigo-400 text-indigo-900" : _v.level === "ready" ? "bg-emerald-100 border-emerald-500 text-emerald-900" : _v.level === "caution" ? "bg-amber-50 border-amber-400 text-amber-900" : "bg-rose-50 border-rose-400 text-rose-900";
@@ -13090,7 +13420,7 @@ Return ONLY JSON:
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: _jsonVerification.afterScoreVerified, verificationState: _jsonVerification.verificationState, verificationReasons: _jsonVerification.reasons, verificationHtmlBinding: _jsonVerification.verificationHtmlBinding, afterScoreBasis: _jsonVerification.afterScoreVerified ? "min(content,automated) \u2014 weakest-layer governing score, NOT an average" : "unverified (" + _jsonVerification.verificationState + "): " + (_jsonVerification.reasons || []).join(" "), integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _jsonVerification.coverage, requiresManualReview: _jsonVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null, htmlFoundations: _foundationMatrix, fileName: pendingPdfFile?.name, date: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow", standard: "WCAG 2.2 AA", engines: (() => {
         const _p = pdfAuditResult && (pdfAuditResult.auditorCount || pdfAuditResult.scores && pdfAuditResult.scores.length);
         return ["AI (Gemini" + (_p ? ", " + _p + "-pass self-consistency" : "") + ")"].concat(pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === "number" ? ["axe-core (Deque WCAG 2.2 AA)"] : []).concat(pdfFixResult.secondEngineAudit ? ["IBM Equal Access (WCAG 2.2 AA)"] : []);
-      })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null };
+      })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null, preservationReview: { ...window.AlloModules.RemediationReview.evidence(pdfFixResult), acknowledgments: window.AlloModules.RemediationReview.acknowledgments(pdfFixResult.preservationAcknowledgments) } };
       const blob = new Blob([JSON.stringify(full, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -13448,6 +13778,8 @@ Return ONLY JSON:
             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
             autoFixPasses: project.autoFixPasses || 0,
             humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120) })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
@@ -13820,6 +14152,8 @@ Return ONLY JSON:
       const cmd = expertCommandInput.trim();
       const _commitToken = _captureAsyncHtmlToken();
       const _commandSourceHtml = String(_commitToken && _commitToken.html || "");
+      let _commandEvidence = { candidateRejectionCount: 0, candidateRejections: [] };
+      const _reviewApi = window.AlloModules && window.AlloModules.RemediationReview;
       setExpertCommandInput("");
       setIsAgentRunning(true);
       console.info("[ExpertWorkbench] start command=" + JSON.stringify(cmd));
@@ -13829,11 +14163,15 @@ Return ONLY JSON:
         const result = await processExpertCommand(cmd, _commandSourceHtml, {
           onProgress: () => {
           },
+          onPassEvidence: (delta) => {
+            if (_reviewApi) _commandEvidence = _reviewApi.mergeEvidence(_commandEvidence, delta);
+          },
           onActivity: (entry) => {
             console.info("[ExpertWorkbench] activity type=" + entry.type + " text=" + entry.text);
             setAgentActivityLog((prev) => [...prev, entry]);
           }
         });
+        if (_reviewApi && result && Number.isSafeInteger(result.candidateRejectionCount)) _commandEvidence = _reviewApi.evidence(result);
         if (result && result.html && result.html !== _commandSourceHtml) {
           const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
           const _cmdDiff = { before: _stripT(_commandSourceHtml), after: _stripT(result.html), label: cmd };
@@ -13847,7 +14185,7 @@ Return ONLY JSON:
               return;
             }
           }
-          if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+          if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, ..._reviewApi ? _reviewApi.mergeEvidence(prev, _commandEvidence) : {}, accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
             setAgentActivityLog((prev) => [...prev, { text: "? Stale result discarded ? document changed", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
             addToast(t("toasts.workbench_stale") || "The document changed while Workbench was running ? its stale result was discarded.", "info");
             setIsAgentRunning(false);
@@ -13862,11 +14200,13 @@ Return ONLY JSON:
             addToast(t("toasts.command_applied"), "success");
           }
         } else {
+          if (_reviewApi && _commandEvidence.candidateRejectionCount) _commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, ..._reviewApi.mergeEvidence(prev, _commandEvidence) }));
           console.warn("[ExpertWorkbench] noop command=" + JSON.stringify(cmd) + " \u2014 no HTML changes");
           setAgentActivityLog((prev) => [...prev, { text: "\u2139 No changes applied", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           addToast(t("toasts.changes_applied"), "info");
         }
       } catch (err) {
+        if (_reviewApi && _commandEvidence.candidateRejectionCount) _commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, ..._reviewApi.mergeEvidence(prev, _commandEvidence) }));
         console.error("[ExpertWorkbench] error command=" + JSON.stringify(cmd), err);
         setAgentActivityLog((prev) => [...prev, { text: "\u274C " + (err && (err.message || err)), type: "error", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
         addToast(t("toasts.workbench_failed") + (err && (err.message || err) || "unknown error"), "error");
@@ -18684,6 +19024,7 @@ Return ONLY JSON:
   );
 }
 window.AlloModules = window.AlloModules || {};
+window.AlloModules.PdfPreservationReview = _PdfPreservationReview;
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.PdfAuditVerificationEngineList = (typeof _PdfAuditVerificationEngineList !== 'undefined') ? _PdfAuditVerificationEngineList : null;
 window.AlloModules.PdfHtmlFoundationMatrix = (typeof _PdfHtmlFoundationMatrix !== 'undefined') ? _PdfHtmlFoundationMatrix : null;

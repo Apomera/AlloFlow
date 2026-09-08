@@ -1,0 +1,57 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "overflow": {
+    "viewport": 390,
+    "document": 390,
+    "offenders": [
+      {
+        "tag": "P",
+        "class": "circuit-help"
+      },
+      {
+        "tag": "P",
+        "class": ""
+      }
+    ]
+  },
+  "current": 0.014583302951452186,
+  "checks": [
+    "starter",
+    "3d camera preserves physics",
+    "prediction baseline",
+    "comparison notebook",
+    "undo",
+    "redo",
+    "LED reversal",
+    "mobile views",
+    "evidence download",
+    "motion pause",
+    "view unmount cleanup",
+    "controlled-variable feedback",
+    "duplicate prevention",
+    "stale feedback invalidation",
+    "3D component editor",
+    "RC charge and discharge",
+    "RC accessibility",
+    "all component materials",
+    "label toggle",
+    "low-angle and top views",
+    "guided predictions and model results",
+    "guided evidence export",
+    "saved evidence after edits and undo",
+    "zero-voltage supply",
+    "learning panel accessibility",
+    "control and schematic ordering",
+    "new-part selection",
+    "eight-part capacity and undo",
+    "deliberate numeric edits and undo",
+    "invalid values and Escape",
+    "halve and double controls",
+    "design download and import preview",
+    "design import undo",
+    "malformed and oversized files",
+    "design preview dismissal",
+    "file and inspector accessibility"
+  ]
+}

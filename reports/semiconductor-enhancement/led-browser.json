@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "checks": [
+    "fixed-scale current response",
+    "zero current",
+    "invisible radiation",
+    "phosphor and RGB spectra",
+    "RGB presets and sliders",
+    "independent drive settings",
+    "saved zero and mixed evidence",
+    "concept feedback",
+    "ten accessibility variants",
+    "mobile layout",
+    "connected band-gap lesson"
+  ],
+  "errors": []
+}

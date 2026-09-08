@@ -140,7 +140,7 @@ const splitTextToSentences = (text, deps) => {
   try { if (window._DEBUG_PURE_HELPERS) console.log("[PureHelpers] splitTextToSentences fired"); } catch(_) {}
       if (!text) return [];
       const linkMap = [];
-      let protectedText = _protectSentenceSplitLinks(text, linkMap);
+      let protectedText = _protectSentenceSplitLinks(String(text).replace(/\r\n?/g, '\n'), linkMap);
       const latexMap = [];
       protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g, (match) => {
           latexMap.push(match);
@@ -163,6 +163,17 @@ const splitTextToSentences = (text, deps) => {
           // causing karaoke TTS to over-split + stall between roundtrips.
           protectedText = protectedText.replace(new RegExp(`(\\b${h})\\.(\\s)`, 'g'), `$1{{DOT}}$2`);
       });
+      // Mark structural lines before collapsing blank lines. A following plain
+      // line starts a new block after headings, quotes, or an unindented list.
+      // Indented list continuation lines remain in their original sentence.
+      protectedText = protectedText.split('\n').map((line, index, lines) => {
+        const structural = /^[ \t]*(?:#{1,6}[ \t]+|>[ \t]?|[-+*][ \t]+|\d+[.)][ \t]+)/.test(line);
+        const previous = index ? lines[index - 1] : '';
+        const afterStandalone = /^[ \t]*(?:#{1,6}[ \t]+|>[ \t]?)/.test(previous);
+        const afterList = /^[ \t]*(?:[-+*]|\d+[.)])[ \t]+/.test(previous) && /^\S/.test(line);
+        const protectedNumber = line.replace(/^([ \t]*\d+)\.([ \t]+)/, '$1{{DOT}}$2');
+        return (structural || afterStandalone || afterList ? '|' : '') + protectedNumber;
+      }).join('\n');
       // Structural boundaries (2026-07-16): a heading line is its own unit.
       // "## Title\nBody..." used to merge the title into the first body
       // sentence (the reader then painted that whole sentence as a header,
@@ -175,6 +186,7 @@ const splitTextToSentences = (text, deps) => {
       protectedText = protectedText
         .replace(/(^|\n)([ \t]*#{1,6}[ \t][^\n]*[^\s|])[ \t]*(?=\n|$)/g, "$1$2|")
         .replace(/\n[ \t]*\n\s*/g, "|");
+      protectedText = protectedText.replace(/([。！？؟۔।॥]+["'”’」』）)]*)[ \t]*/g, '$1|');
       const sentenceUnits = protectedText
         .replace(/([.!?]+["']?)(\s+|$)/g, "$1|")
         .split("|")

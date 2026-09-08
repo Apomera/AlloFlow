@@ -1,153 +1,247 @@
 {
-  "status": "generation-planned",
+  "status": "complete-native-resource-images",
+  "completedAt": "2026-09-08",
   "assets": [
     {
       "id": "resource-kick",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A sneaker touching a soccer ball during a kick on grass."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A sneaker touching a soccer ball during a kick on grass.",
+      "file": "resource-kick.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-carpet",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A blue ball rolling across a thick carpet, a short fading motion trail behind it."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A blue ball rolling across a thick carpet, a short fading motion trail behind it.",
+      "file": "resource-carpet.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-pencil",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. One wooden pencil falling above a floor, a faint earlier position higher up."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. One wooden pencil falling above a floor, a faint earlier position higher up.",
+      "file": "resource-pencil.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-bike",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Helmeted child riding a bicycle around a curved park path, visibly steering into the curve."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Helmeted child riding a bicycle around a curved park path, visibly steering into the curve.",
+      "file": "resource-bike.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-wagon",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An empty red wagon parked on a flat path, no person or motion lines."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An empty red wagon parked on a flat path, no person or motion lines.",
+      "file": "resource-wagon.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-sled",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Child wearing a helmet riding a sled down a snowy gentle slope, motion trail uphill behind."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Child wearing a helmet riding a sled down a snowy gentle slope, motion trail uphill behind.",
+      "file": "resource-sled.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-puck",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A black hockey puck on level ice, three equally spaced faint earlier positions on a straight horizontal path."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A black hockey puck on level ice, three equally spaced faint earlier positions on a straight horizontal path.",
+      "file": "resource-puck.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-raincoat",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A yellow raincoat hanging on a plain hook, water beads on its outer surface."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A yellow raincoat hanging on a plain hook, water beads on its outer surface.",
+      "file": "resource-raincoat.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-boots",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A pair of blue rubber rain boots in a shallow puddle."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A pair of blue rubber rain boots in a shallow puddle.",
+      "file": "resource-boots.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-umbrella",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An open red umbrella shedding raindrops, no person."
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An open red umbrella shedding raindrops, no person.",
+      "file": "resource-umbrella.png",
+      "status": "visual-review-passed"
+    },
+    {
+      "id": "resource-ice",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. One clear ice cube with flat square faces resting on a small plate.",
+      "file": "resource-ice.png",
+      "status": "visual-review-passed"
+    },
+    {
+      "id": "resource-pencilstill",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. One plain wooden pencil lying still on a pale table.",
+      "file": "resource-pencilstill.png",
+      "status": "visual-review-passed"
+    },
+    {
+      "id": "resource-room",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. A simple empty classroom interior with a window, desk and chair. Clear empty air between objects, no colored gases, smoke, particles, symbols or arrows.",
+      "file": "resource-room.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-towel",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A folded white bath towel with visible terry loops."
+      "prompt": "Use case: scientific-educational. Create a single square classroom concept-sort card illustration for a Grade 2 materials lesson: one thick cotton bath towel, loosely folded with one edge draping naturally, clearly showing soft terry loops and absorbent fabric texture. Simple friendly realistic educational illustration, clean pale background, centered object, generous margins, readable at thumbnail size. No people or other objects. Show only the towel, no diagrams or symbols claiming experimental results. Absolutely no text, letters, numerals, labels, captions, category names, answer marks, logos, or watermark. This artwork is for the native card 'A bath towel'; that label will be added separately by the app.",
+      "file": "resource-towel.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-sponge",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A yellow kitchen sponge taking in a small water spill on a countertop."
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. A single yellow porous kitchen sponge with a green scrub layer, resting partly on a small clear water spill on a clean countertop. Do not add arrows or show an invented before-and-after result. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "file": "resource-sponge.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-napkin",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A folded plain white paper napkin next to a small damp patch."
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. One folded plain white paper napkin, thin paper edges and subtle embossed texture clearly visible, on a pale warm tabletop. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "file": "resource-napkin.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-brickwall",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A small sturdy red brick wall, no hands or extra objects."
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. A small sturdy section of red brick wall with staggered courses and gray mortar joints, no hands or extra objects. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "file": "resource-brickwall.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-hammer",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A metal hammer head attached to a wooden handle, lying safely on a table."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A claw hammer lying safely on a pale tabletop, large steel metal head clearly prominent and attached to a plain wooden handle. No hands, nails or action. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-hammer.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-step",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A single broad gray concrete step at a doorway."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. One broad gray concrete step at a simple closed doorway, concrete grain visible, centered close view. No people, signs or other objects. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-step.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-music",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A child playing a small drum with two sticks, no musical notation or symbols."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A child seated comfortably playing a small hand drum with two drumsticks, each stick held naturally. Simple warm classroom illustration. No musical notation or sound symbols; the app supplies the word Music. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-music.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-blanket",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A folded cozy blue blanket with soft fabric folds."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A folded cozy blue knitted blanket with soft fabric folds and a fringed edge. One object alone. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-blanket.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-toys",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A toy teddy bear and colorful toy blocks on the floor, blocks completely blank."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A toy teddy bear beside colorful plain wooden toy blocks on the floor. All block faces blank, no letters or numbers. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-toys.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-name",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A child pointing toward a small potted plant while holding a blank plant tag; no lettering anywhere."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A child pointing toward a small healthy potted plant while holding a completely blank plant name tag in the other hand. The label will be provided in the app as 'A name'; do not write anything on the tag. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-name.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-milk",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A clear glass filled with white milk on a table."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. One clear drinking glass filled with white milk on a plain light table. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-milk.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-honey",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Golden honey flowing slowly from a wooden dipper into an open plain jar."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. Golden honey forming a continuous thick strand from a wooden honey dipper into an open plain glass jar. The honey visibly flows; no bees or labels. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-honey.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-sand",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A bucket holding dry sand with distinct small grains and a little pile spilled beside it."
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. A small bucket holding dry sand with a little pile spilled beside it. Close view with visibly distinct small angular grains. No water or liquid. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-sand.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-butter",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A shallow pan holding a pool of golden melted butter, no solid butter and no flame."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. A shallow dark frying pan holding a smooth pool of golden melted butter. All butter liquid, no solid butter chunks and no flame. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-butter.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-snow",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Snowflakes falling over a mountain landscape with snow-covered slopes."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. Snowflakes falling across a mountain landscape with snow-covered slopes and a few distant evergreen trees. A gentle snowy day, not a disaster. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-snow.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-hail",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Small white hailstones bouncing off the roof of a parked car during a shower."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. Small round white hailstones falling and bouncing off the blue roof of a parked car during a shower. Close view of the roof, small brief bounce trails, no broken glass or people. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-hail.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-soup",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A bowl of hot soup on a table. Air above it looks clear and empty; do not draw steam, mist, smoke, arrows or visible vapor."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A bowl of hot vegetable soup on a pale table. The air above it must look clear and empty: water vapor is invisible. Do NOT draw steam, mist, smoke, vapor wisps or arrows. Warm colors can suggest a freshly served meal. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-soup.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-fog",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A field with low morning fog softening the outlines of distant trees."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A grassy field in early morning, low white fog partly hiding distant trees and softening their outlines. No clouds coming out of the ground as jets. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-fog.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-hurricane",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A satellite-style view of a spiral hurricane over blue ocean, no map lines, borders, labels or symbols."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A scientifically plausible satellite-style overhead illustration of a Northern Hemisphere spiral hurricane over blue ocean, a small central eye and counterclockwise curved cloud bands. Illustrative rather than an actual satellite record. No land borders or map lines. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-hurricane.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-sahara",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A dry Sahara-style desert with broad sand dunes and rocky ground, no rain or people."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A dry Sahara-style desert landscape with broad golden sand dunes and some rocky ground, clear sky, no rain, people or camels. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-sahara.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-rain",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A person carrying an open umbrella in afternoon rain on a sidewalk."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A person carrying an open blue umbrella on a sidewalk in afternoon rain. Visible raindrops and shallow puddles, ordinary safe rain, no flooding. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-rain.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-wind",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Trees bent in gusty wind, fallen leaves blowing across a path."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. Trees bending in gusty wind beside a path, autumn leaves visibly blowing in the same direction, no people or damage. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-wind.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-seaice",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Two side-by-side schematic Arctic ocean views from overhead, the left has more white sea ice and the right less, same coastline, no text, numbers, dates or charts."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. An overhead view of flat white sea-ice floes floating in dark blue Arctic ocean, with channels of open water between them. This is a generic educational illustration, not a measured historical record. Single scene, no comparison map, no dates or graph. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-seaice.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-snowyday",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A person in winter clothing standing outdoors in falling snow beside a house."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A person wearing a winter coat and hat standing outdoors beside a modest house as snow falls. Ordinary snowy weather, no thermometer; the app supplies the temperature. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-snowyday.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-snowywinters",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Three separate horizontal scenes of the same New England-style forest and house with winter snow, slightly different snowfall in each scene."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A single square image divided into three horizontal illustration panels showing the same New England-style house and evergreen forest in snowy winter conditions, with slightly different snow cover in each. Keep the house and viewpoint consistent. These are illustrative winter scenes, not measured data. No calendars, dates or charts. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-snowywinters.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-hotyears",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Three separate horizontal scenes of the same town in summer, with increasing dry vegetation and heat shimmer. Illustrative observations only, no thermometers or numbers."
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A town street in bright summer sunshine, leafy trees, people resting in shade, a subtle heat shimmer over sunlit pavement. One ordinary summer scene. This image provides context for a written card about long-term summer temperatures; it must NOT pretend to be a measured record. No graphs, thermometers, timelines, drought damage or before-and-after comparisons. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "file": "resource-hotyears.png",
+      "status": "visual-review-passed"
     },
     {
       "id": "resource-rainycities",
-      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Two side-by-side landscapes: rainy green coastal city at left, dry desert city with cacti at right. No landmarks, labels or maps."
+      "prompt": "Use case: scientific-educational. Regenerate a precise text-free square classroom illustration for a card comparing Seattle and Phoenix rainy-day frequency. Two equal side-by-side panels. LEFT: rainy Seattle-like Pacific Northwest city near a gray inland bay, dark evergreen conifers, temperate deciduous trees, modest brick and gray buildings, overcast rainy sky. ABSOLUTELY NO PALM TREES, NO TROPICAL PLANTS, NO TROPICAL ISLAND. RIGHT: dry Phoenix-like Sonoran Desert city with low tan buildings, saguaros, dry rocky mountains and blue sky. Images are generic regional context, not actual photos or data; do not depict a statistical quantity. Clear realistic educational illustration, readable as a thumbnail. No text, numbers, labels, captions, symbols, graphs, logos, borders with words, or watermark.",
+      "file": "resource-rainycities.png",
+      "status": "visual-review-passed"
     }
-  ]
+  ],
+  "pending": []
 }

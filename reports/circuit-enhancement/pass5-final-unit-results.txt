@@ -1,0 +1,332 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > opens a named modal alert dialog with safe initial focus and background isolation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > contains focus, cancels on Escape, and restores the invoking control
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > requires explicit confirmation before clearing and announces completion
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > confirms removal from a substantial circuit and restores focus nearby
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > removes native confirmation APIs and preserves deploy parity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_model.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > solves the voltage divider with KVL and conserved power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > sums parallel branch currents, including measurement loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > uses exact zero for an open switch and a steady-state capacitor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > keeps a parallel resistor energized when another branch is open
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not invent a voltage split across multiple blocking components
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > models LED forward drop, polarity, turn-on and power balance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > does not let a resistor on a separate branch protect an LED
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > identifies meter faults and preserves nearly ideal series measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > handles empty, unpowered and malformed state without non-finite readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > shared circuit DC physics > conserves power across a grid of series and parallel networks
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit bench learning and view contract > renders a named 3D view with an equivalent numeric inspector
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···········stdout | tests/circuit_model.test.js > circuit bench learning and view contract > offers prediction, reversible edits, and progressive explanations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > explains the LED knee instead of claiming an Ohmic straight line
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_model.test.js > circuit response presentation > renders every supported component in either representation without invalid values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_files.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > round-trips electrical behavior without exporting notebook or tool state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > preserves every supported component setting and a 0 V source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > allows empty designs and exactly eight valid parts
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid voltage settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid voltage settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid voltage settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid mode settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid components settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects invalid components settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 3
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 4
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 6
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects malformed component 7
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > discards extra state and regenerates IDs rather than restoring file objects
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Portable circuit designs > rejects wrong formats, malformed JSON, and oversized content
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_files.test.js > Power reading precision > distinguishes meter loading from exactly zero transferred power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····················stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all eight SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_form_labels_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > names the AI tutor question field independently of its placeholder
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > associates visible labels with both Ohm inquiry text areas
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > retains accessible names on every other form control
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_panels_smoke.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_panels_smoke.test.js > circuit builder analysis-panel smoke > empty circuit renders the placeholder without throwing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_panels_smoke.test.js > circuit builder analysis-panel smoke > series circuit renders all three analysis panels
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_panels_smoke.test.js > circuit builder analysis-panel smoke > parallel circuit renders the panels and a valid power split
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_panels_smoke.test.js > circuit builder analysis-panel smoke > drift velocity + current-ladder survive extreme values (24V, tiny R)
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_meter_safety.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_meter_safety.test.js > Circuit Lab meter topology and safety coach > treats an ammeter in parallel as a short-circuit path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_meter_safety.test.js > Circuit Lab meter topology and safety coach > treats a voltmeter in series as a nearly open circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_meter_safety.test.js > Circuit Lab meter topology and safety coach > recognizes an ammeter in series as correct
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_meter_safety.test.js > Circuit Lab meter topology and safety coach > recognizes a voltmeter in parallel as correct
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_learning.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_learning.test.js > Guided circuit investigations > retains wrong predictions for feedback and rejects invalid choices
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > isolates saved evidence from later edits and from the lesson templates
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_learning.test.js > Guided circuit investigations > explains an inactive source without calling it a broken loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > distinguishes series blockers and tiny meter current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > does not describe an open parallel branch as a globally broken circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > prioritizes low-resistance and LED overcurrent paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > keeps parts and supply controls before the schematic and its inspector
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_time_lab.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > starts uncharged with V/R current and zero stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > reaches the analytical one-time-constant solution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_time_lab.test.js > RC transient time lab > discharges from full with reverse current and decreasing energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > approaches equilibrium at five time constants without pretending to reach it
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > separates resistance and capacitance effects
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > enforces the supported topology instead of inventing mixed-network transients
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > keeps an unpowered capacitor response at zero
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > RC transient time lab > renders named time controls with exact numeric alternatives
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_time_lab.test.js > controlled circuit comparisons > ignores regenerated IDs and unused stored fields
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > controlled circuit comparisons > recognizes one changed parameter and identifies its value
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > controlled circuit comparisons > warns when multiple independent variables changed
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_time_lab.test.js > controlled circuit comparisons > aligns middle removals instead of misidentifying subsequent components
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_table_semantics_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+····stdout | tests/circuit_canvas_loop.test.js
+[PureHelpers] 7 helpers registered
+
+·
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 4 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_canvas_alternative_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_workspace_tabs_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/circuit_reduced_motion_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  11 passed (11)
+      Tests  82 passed (82)
+     Errors  4 errors
+   Start at  07:05:36
+   Duration  416.01s (transform 1.61s, setup 4.11s, import 2.32s, tests 13.15s, environment 115.72s)
+

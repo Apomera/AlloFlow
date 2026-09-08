@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "checks": [
+    "camera precedes readout",
+    "keyboard next navigation",
+    "close-up follows selection",
+    "pins and comparison cards synchronized",
+    "disabled boundaries",
+    "previous navigation",
+    "view preferences and electrical history preserved",
+    "small voltage displayed",
+    "390px layout",
+    "selection clamped after removal",
+    "empty navigation hidden"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "command": "git diff --check -- [affected files]",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "warning: in the working copy of 'tests/guided_mode_banner_completion.test.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'view_image_source.jsx', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'view_outline_source.jsx', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'view_timeline_source.jsx', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'view_word_sounds_preview_source.jsx', CRLF will be replaced by LF the next time Git touches it\n"
+}

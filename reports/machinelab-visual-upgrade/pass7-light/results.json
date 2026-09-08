@@ -1,0 +1,19 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "ruler-neutral",
+    "ruler-landed",
+    "ruler-drift",
+    "ruler-negative",
+    "ruler-short",
+    "ruler-flight"
+  ]
+}

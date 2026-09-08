@@ -1,0 +1,50 @@
+{
+  "results": [
+    {
+      "name": "FaqView",
+      "width": 1280,
+      "bodyWidth": 1280
+    },
+    {
+      "name": "WordSoundsPreviewView",
+      "width": 1280,
+      "bodyWidth": 1280
+    },
+    {
+      "name": "SimplifiedView",
+      "width": 1280,
+      "bodyWidth": 1280
+    },
+    {
+      "name": "FaqView",
+      "width": 390,
+      "bodyWidth": 390
+    },
+    {
+      "name": "WordSoundsPreviewView",
+      "width": 390,
+      "bodyWidth": 390
+    },
+    {
+      "name": "SimplifiedView",
+      "width": 390,
+      "bodyWidth": 390
+    },
+    {
+      "name": "FaqView",
+      "width": 320,
+      "bodyWidth": 320
+    },
+    {
+      "name": "WordSoundsPreviewView",
+      "width": 320,
+      "bodyWidth": 320
+    },
+    {
+      "name": "SimplifiedView",
+      "width": 320,
+      "bodyWidth": 320
+    }
+  ],
+  "errors": []
+}

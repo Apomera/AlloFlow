@@ -1,4 +1,1 @@
-{
-  "_README": "See README.md. Add one entry per scored PDF. Required per entry: expertScore (0-100) + alloflowAiScore + alloflowAxeScore. The calibration harness activates once >=3 entries have all three.",
-  "entries": []
-}
+{"schemaVersion":2,"description":"Human observation corpus. Empty until actual artifacts and reviewer findings are imported. Synthetic cases live in synthetic_cases.json.","entries":[]}

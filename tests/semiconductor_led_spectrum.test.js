@@ -1,0 +1,29 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {loadTool,renderTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let c;beforeAll(()=>{resetStemLab();loadTool('stem_lab/stem_tool_semiconductor.js','semiconductor');c=window.__SemiconductorCore;});
+const single=(key='red-gan',current=20)=>c.led({ledMaterial:key,ledCurrent:current});
+describe('LED spectra distinguish emission from perceived color',()=>{
+it('preserves zero current as an actual off state',()=>{const m=single('blue',0);expect(m.current).toBe(0);expect(m.active).toBe(false);expect(m.preview).toBe('#020617');for(let n=350;n<=1000;n++)expect(c.ledSpectrum(m,n)).toBe(0);});
+it('normalizes missing and malformed settings without losing valid zeros',()=>{expect(c.led({}).current).toBe(20);expect(single('missing',NaN).key).toBe('red-gan');expect(single('blue',-3).current).toBe(0);expect(single('blue',90).current).toBe(50);expect(Number.isFinite(single('blue',Infinity).current)).toBe(true);});
+it('treats inherited property names as invalid saved emitter keys',()=>{for(const key of ['constructor','toString','__proto__'])expect(single(key).key).toBe('red-gan');});
+it('computes photon energy from the emission center',()=>{expect(single('red-gaas').energy*660).toBeCloseTo(1239.841984,9);expect(single('blue').energy).toBeGreaterThan(single('red-gaas').energy);});
+it('scales spectral output without shifting its center or width',()=>{const a=single('green',20),b=single('green',40);expect(a.components[0].nm).toBe(b.components[0].nm);expect(a.components[0].sigma).toBe(b.components[0].sigma);for(const nm of [500,525,550])expect(c.ledSpectrum(b,nm)).toBeCloseTo(2*c.ledSpectrum(a,nm),12);});
+it('has its single-emitter maximum at the stated center',()=>{for(const key of Object.keys(c.ledEmitters).filter(k=>k!=='white')){const m=single(key),n=m.mat.nm;expect(c.ledSpectrum(m,n)).toBeCloseTo(1,12);expect(c.ledSpectrum(m,n-5)).toBeLessThan(1);expect(c.ledSpectrum(m,n+5)).toBeLessThan(1);}});
+it('shows IR and UV emission without claiming a visible preview',()=>{for(const key of ['infrared','uv']){const m=single(key);expect(m.active).toBe(true);expect(m.visible).toBe(false);expect(m.preview).toBe('#020617');expect(c.ledSpectrum(m,m.mat.nm)).toBeGreaterThan(0);}});
+it('includes every representative emission center within chart bounds',()=>{for(const key of Object.keys(c.ledEmitters))for(const p of single(key).components){expect(p.nm).toBeGreaterThanOrEqual(350);expect(p.nm).toBeLessThanOrEqual(1000);}});
+it('models phosphor white as a pump and broad longer-wavelength band',()=>{const m=single('white');expect(m.energy).toBeNull();expect(m.components).toHaveLength(2);expect(m.components[1].nm).toBeGreaterThan(m.components[0].nm);expect(m.components[1].sigma).toBeGreaterThan(m.components[0].sigma);expect(c.ledSpectrum(m,650)).toBeGreaterThan(.1);});
+it('turns off both white-light components at zero drive',()=>{expect(single('white',0).components.every(p=>p.weight===0)).toBe(true);});
+it('retains separate bands when red and green appear yellow',()=>{const m=c.led({ledMixMode:true,ledMixR:255,ledMixG:255,ledMixB:0});expect(m.components.filter(p=>p.weight>0).map(p=>p.nm)).toEqual([630,525]);expect(m.energy).toBeNull();expect(c.ledSpectrum(m,580)).toBeLessThan(c.ledSpectrum(m,525));expect(c.ledSpectrum(m,580)).toBeLessThan(c.ledSpectrum(m,630));});
+it('adds channel spectra linearly',()=>{const mix=(r,g,b)=>c.led({ledMixMode:true,ledMixR:r,ledMixG:g,ledMixB:b});for(const nm of [470,500,525,580,630])expect(c.ledSpectrum(mix(100,80,200),nm)).toBeCloseTo(c.ledSpectrum(mix(100,0,0),nm)+c.ledSpectrum(mix(0,80,0),nm)+c.ledSpectrum(mix(0,0,200),nm),12);});
+it('makes all-zero RGB dark even when single-LED current is nonzero',()=>{const m=c.led({ledMixMode:true,ledMixR:0,ledMixG:0,ledMixB:0,ledCurrent:50});expect(m.active).toBe(false);expect(c.ledSpectrum(m,525)).toBe(0);});
+it('keeps RGB settings independent of single-LED drive',()=>{const a=c.led({ledMixMode:true,ledMixR:255,ledCurrent:0}),b=c.led({ledMixMode:true,ledMixR:255,ledCurrent:50});expect(a.components).toEqual(b.components);expect(a.active).toBe(true);});
+it('bounds RGB codes and rejects nonfinite sample wavelengths',()=>{const m=c.led({ledMixMode:true,ledMixR:-8,ledMixG:300,ledMixB:NaN});expect(m.rgb).toEqual([0,255,0]);expect(c.ledSpectrum(m,NaN)).toBe(0);});
+});
+describe('LED learning and accessibility',()=>{
+it('labels the default emitter as selected',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'ledspec'}});expect(h).toContain('aria-label="GaAsP (Red) LED" aria-pressed="true"');});
+it('provides zero-current controls and retains guided observation at zero',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'ledspec',guidedSetupSubtool:'ledspec',ledCurrent:0}});expect(h).toContain('Off · no emission');expect(h).toContain('semiconductor-guided-observation');expect(h).toContain('No emission');});
+it('describes white light without assigning a single band gap',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'ledspec',ledMaterial:'white'}});expect(h).toContain('White has no single photon energy or band gap.');expect(h).toContain('Blue pump');expect(h).toContain('Phosphor band');});
+it('records mixed spectra and exposes the misconception check',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'ledspec',guidedSetupSubtool:'ledspec',ledMixMode:true,ledMixR:255,ledMixG:255,ledMixB:0}});expect(h).toContain('RGB 255, 255, 0');expect(h).toContain('Multiple photon energies');expect(h).toContain('They keep their separate emission bands');});
+it('distinguishes invisible radiation from no emission in the accessible chart',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'ledspec',ledMaterial:'infrared'}});expect(h).toContain('Outside the approximate visible range');expect(h).toContain('940 nm');expect(h).not.toContain('Off · no emission');});
+});
+

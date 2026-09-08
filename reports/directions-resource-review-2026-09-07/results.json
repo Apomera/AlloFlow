@@ -1,0 +1,39 @@
+{
+  "parserComparison": {
+    "preview": "<ol start=\"1\" style=\"margin: 5px 0; padding-left: 20px; list-style-type: decimal;\"><li style=\"margin-bottom: 5px;\">Read <strong>the passage</strong>.</li><li style=\"margin-bottom: 5px;\">Answer the questions.</li></ol>",
+    "loadedDocumentParser": "<p style=\"margin-bottom: 10px;\">1. Read <strong>the passage</strong>.</p><p style=\"margin-bottom: 10px;\">2. Answer the questions.</p>"
+  },
+  "limits": {
+    "savedResources": 13,
+    "visibleResources": 12,
+    "omittedResource": "r12",
+    "nextStation": "",
+    "savedGoals": 25,
+    "visibleGoals": 24,
+    "finalInstructionVisible": false
+  },
+  "composerMobile": {
+    "viewportHeight": 844,
+    "dialogTop": -86,
+    "dialogBottom": 930,
+    "saveButtonTop": 841,
+    "saveButtonBottom": 875,
+    "dialogOverflowY": "visible",
+    "overlayOverflowY": "visible",
+    "overlayPosition": "fixed"
+  },
+  "questMap": {
+    "viewBoxWidth": 340,
+    "goalRightEdges": [
+      104,
+      196,
+      288,
+      380
+    ],
+    "svgOverflow": "hidden"
+  },
+  "export": {
+    "stringData": "",
+    "structuredData": ""
+  }
+}

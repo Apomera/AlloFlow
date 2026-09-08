@@ -1,0 +1,145 @@
+{
+  "liveBase10": {
+    "visibleStore": {
+      "ones": 1,
+      "tens": 0,
+      "hundreds": 0,
+      "thousands": 0
+    },
+    "checker": {
+      "correct": false,
+      "supported": true,
+      "reason": "mismatch",
+      "tool": "base10"
+    }
+  },
+  "migratedStores": [
+    {
+      "tool": "coordinate",
+      "result": {
+        "correct": false,
+        "supported": true,
+        "reason": "mismatch",
+        "tool": "coordinate"
+      }
+    },
+    {
+      "tool": "fractions",
+      "result": {
+        "correct": false,
+        "supported": true,
+        "reason": "mismatch",
+        "tool": "fractions"
+      }
+    },
+    {
+      "tool": "numberline",
+      "result": {
+        "correct": false,
+        "supported": true,
+        "reason": "mismatch",
+        "tool": "numberline"
+      }
+    },
+    {
+      "tool": "volume",
+      "result": {
+        "correct": false,
+        "supported": true,
+        "reason": "mismatch",
+        "tool": "volume"
+      }
+    }
+  ],
+  "supportVisibility": {
+    "teacher": 1,
+    "student": 0
+  },
+  "decimalPointMismatch": {
+    "correct": true,
+    "supported": true,
+    "reason": "match",
+    "tool": "dataPlot"
+  },
+  "ignoredThousands": {
+    "correct": true,
+    "supported": true,
+    "reason": "match",
+    "tool": "base10"
+  },
+  "ignoredEquation": {
+    "correct": true,
+    "supported": true,
+    "reason": "match",
+    "tool": "chemBalance"
+  },
+  "invalidDomains": [
+    {
+      "tool": "volume",
+      "target": {
+        "dims": {
+          "l": -3,
+          "w": 2,
+          "h": 2
+        }
+      },
+      "evaluation": {
+        "correct": false,
+        "supported": true,
+        "reason": "invalid-actual",
+        "tool": "volume"
+      }
+    },
+    {
+      "tool": "protractor",
+      "target": {
+        "angle": -30
+      },
+      "evaluation": {
+        "correct": false,
+        "supported": true,
+        "reason": "invalid-actual",
+        "tool": "protractor"
+      }
+    },
+    {
+      "tool": "funcGrapher",
+      "target": {
+        "type": "does-not-exist",
+        "a": 1,
+        "b": 0,
+        "c": 0
+      },
+      "evaluation": {
+        "correct": false,
+        "supported": true,
+        "reason": "invalid-actual",
+        "tool": "funcGrapher"
+      }
+    }
+  ],
+  "inlineModels": {
+    "twelveOnes": {
+      "label": "0 hundreds, 0 tens, 12 ones = 12.",
+      "drawnBlocks": 9
+    },
+    "fiveQuarters": "4 of 4 equal parts shaded (4/4).",
+    "reflexAngle": "An angle of 180 degrees between a horizontal ray and a second ray."
+  },
+  "builderHandsOn": {
+    "status": "ready",
+    "hasTarget": false,
+    "promptRequestsTarget": false
+  },
+  "geoboard": {
+    "label": "Fraction circle model",
+    "openSegmentPerimeter": "Perimeter (units)3.00"
+  },
+  "fractionBarsScoringGuard": {
+    "score": {
+      "correct": 1,
+      "total": 1
+    },
+    "canCheckAgain": false
+  }
+}

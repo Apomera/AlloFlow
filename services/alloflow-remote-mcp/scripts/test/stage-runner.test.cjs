@@ -6,6 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const test = require('node:test');
+const os = require('node:os');
+const { atomicWriteFile } = require('../atomic-file.cjs');
 
 const serviceRoot = path.resolve(__dirname, '..', '..');
 const repoRoot = path.resolve(serviceRoot, '..', '..');
@@ -85,4 +87,38 @@ test('runner context check traverses nested files and performs no writes', () =>
     () => normalizeVendorAssetBytes({ path: 'axe.min.js', normalization: 'lf' }, Buffer.from('runtime bytes')),
     /explicitly identified text asset/u,
   );
+});
+
+for (const failure of ['write', 'rename']) test('generated contract preserves prior bytes after ' + failure + ' failure', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-stage-contract-'));
+  const filename = path.join(directory, 'contract.ts');
+  const prior = 'export const contract = { revision: 1 };';
+  fs.writeFileSync(filename, prior);
+  const io = { ...fs };
+  if (failure === 'write') io.writeFileSync = (temporary, bytes, options) => {
+    fs.writeFileSync(temporary, 'partial', options);
+    throw Object.assign(new Error('Injected disk full'), { code: 'ENOSPC' });
+  };
+  else io.renameSync = () => { throw Object.assign(new Error('Injected rename failure'), { code: 'EACCES' }); };
+  try {
+    assert.throws(() => atomicWriteFile(filename, 'complete replacement', io), /Injected/);
+    assert.equal(fs.readFileSync(filename, 'utf8'), prior);
+    assert.deepEqual(fs.readdirSync(directory), ['contract.ts']);
+  } finally { fs.unlinkSync(filename); fs.rmdirSync(directory); }
+});
+
+test('generated contract avoids opening the previous destination for writing', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-stage-contract-'));
+  const filename = path.join(directory, 'contract.ts');
+  fs.writeFileSync(filename, 'previous contract');
+  const io = { ...fs, writeFileSync(temporary, bytes, options) {
+    assert.notEqual(temporary, filename, 'direct destination writes can fail or truncate existing history');
+    assert.equal(fs.readFileSync(filename, 'utf8'), 'previous contract');
+    fs.writeFileSync(temporary, bytes, options);
+  } };
+  try {
+    atomicWriteFile(filename, 'complete replacement', io);
+    assert.equal(fs.readFileSync(filename, 'utf8'), 'complete replacement');
+    assert.deepEqual(fs.readdirSync(directory), ['contract.ts']);
+  } finally { fs.unlinkSync(filename); fs.rmdirSync(directory); }
 });

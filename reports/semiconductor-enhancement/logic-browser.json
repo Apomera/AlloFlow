@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "checks": [
+    "every truth-table row",
+    "NAND trace agreement",
+    "complementary CMOS paths",
+    "per-experiment checklist",
+    "half-adder sum and carry",
+    "saved binary evidence",
+    "concept feedback",
+    "eight WCAG variants",
+    "mobile overflow",
+    "guided reset preserves other checklists",
+    "connected transistor lesson"
+  ],
+  "errors": []
+}

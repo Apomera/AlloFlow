@@ -1,0 +1,204 @@
+{
+  "errors": [],
+  "placed": {
+    "count": 2,
+    "undo": 2
+  },
+  "collapsed": [
+    {
+      "label": "Jump",
+      "x": 322,
+      "y": 388,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Place block",
+      "x": 322,
+      "y": 452,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Break block",
+      "x": 322,
+      "y": 516,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Measure structure",
+      "x": 322,
+      "y": 580,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Talk to nearby character",
+      "x": 322,
+      "y": 644,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Undo last block action",
+      "x": 322,
+      "y": 708,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Expand Free Build Studio",
+      "x": 178,
+      "y": 641,
+      "w": 44,
+      "h": 44,
+      "reachable": true,
+      "blocking": "gwe-collapse"
+    }
+  ],
+  "measured": [
+    {
+      "label": "Jump",
+      "x": 322,
+      "y": 388,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Place block",
+      "x": 322,
+      "y": 452,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Break block",
+      "x": 322,
+      "y": 516,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Measure structure",
+      "x": 322,
+      "y": 580,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Talk to nearby character",
+      "x": 322,
+      "y": 644,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Undo last block action",
+      "x": 322,
+      "y": 708,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Expand Free Build Studio",
+      "x": 178,
+      "y": 648,
+      "w": 44,
+      "h": 44,
+      "reachable": true,
+      "blocking": "gwe-collapse"
+    }
+  ],
+  "undone": 1,
+  "final": [
+    {
+      "label": "Jump",
+      "x": 322,
+      "y": 388,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Place block",
+      "x": 322,
+      "y": 452,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Break block",
+      "x": 322,
+      "y": 516,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Measure structure",
+      "x": 322,
+      "y": 580,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Talk to nearby character",
+      "x": 322,
+      "y": 644,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Undo last block action",
+      "x": 322,
+      "y": 708,
+      "w": 56,
+      "h": 56,
+      "reachable": true,
+      "blocking": "gw-focusable"
+    },
+    {
+      "label": "Expand Free Build Studio",
+      "x": 178,
+      "y": 641,
+      "w": 44,
+      "h": 44,
+      "reachable": true,
+      "blocking": "gwe-collapse"
+    }
+  ],
+  "passed": true
+}

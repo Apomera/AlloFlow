@@ -4,6 +4,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { atomicWriteFile } = require('./atomic-file.cjs');
 const {
   assertRegularSourceFile,
   isInside,
@@ -290,7 +291,7 @@ try {
 
   fs.rmSync(destination, { recursive: true, force: true });
   fs.renameSync(temporary, destination);
-  fs.writeFileSync(releaseContractPath, releaseContractText(manifest), { encoding: 'utf8', mode: 0o600 });
+  atomicWriteFile(releaseContractPath, releaseContractText(manifest));
 } catch (error) {
   fs.rmSync(temporary, { recursive: true, force: true });
   throw error;

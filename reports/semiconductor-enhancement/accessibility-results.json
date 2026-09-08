@@ -1,0 +1,18 @@
+[
+  {
+    "workspace": "doping",
+    "violations": []
+  },
+  {
+    "workspace": "pnjunction",
+    "violations": []
+  },
+  {
+    "workspace": "bandgap",
+    "violations": []
+  },
+  {
+    "workspace": "dopeHunt",
+    "violations": []
+  }
+]

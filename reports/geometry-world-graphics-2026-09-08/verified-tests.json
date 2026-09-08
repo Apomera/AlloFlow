@@ -1,0 +1,73 @@
+{
+  "method": "Most recent result per test file across the main run and focused reruns.",
+  "rawRuns": [
+    "final-tests.json",
+    "final-lifecycle-tests.json",
+    "showcase-guard-tests.json"
+  ],
+  "files": 10,
+  "passed": 251,
+  "success": true,
+  "suites": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_block_fidelity.test.js",
+      "source": "final-tests.json",
+      "passed": 31,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_display_controls.test.js",
+      "source": "final-tests.json",
+      "passed": 14,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_engine_lifecycle.test.js",
+      "source": "final-lifecycle-tests.json",
+      "passed": 8,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_keyboard_access.test.js",
+      "source": "showcase-guard-tests.json",
+      "passed": 61,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_material_graphics.test.js",
+      "source": "final-tests.json",
+      "passed": 3,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_printlab_bridge.test.js",
+      "source": "final-tests.json",
+      "passed": 28,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_print_workflow.test.js",
+      "source": "final-tests.json",
+      "passed": 12,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_stl_export.test.js",
+      "source": "final-tests.json",
+      "passed": 22,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/print_lab_tool.test.js",
+      "source": "final-tests.json",
+      "passed": 16,
+      "status": "passed"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/geometry_world_visual_pipeline.test.js",
+      "source": "showcase-guard-tests.json",
+      "passed": 56,
+      "status": "passed"
+    }
+  ]
+}

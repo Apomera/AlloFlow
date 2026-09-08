@@ -64,6 +64,8 @@ pack.allopack.author='AlloFlow; illustrated edition prepared with AI-generated a
 pack.allopack.title='Weather vs. Climate — Illustrated Edition';
 pack.allopack.illustrations={version:1,imageCount:24,provider:'Built-in image generation',review:'AI visual review completed; educator review pending',textPolicy:'Text-free artwork with native editable labels, captions, and image-specific alt text'};
 pack.allopack.contentSources=[{title:'NOAA: Weather vs. Climate',url:'https://www.ncei.noaa.gov/news/weather-vs-climate'}];
+require('./refine_illustrated_quality.cjs')(pack,'weather_vs_climate_grade5');
+require('./backfill_allopack_resource_images.cjs')(pack,'weather_vs_climate_grade5');
 const serialized=JSON.stringify(pack,null,2)+'\n';
 if(serialized.length>2000000)throw Error('Pack exceeds portable artifact limit: '+serialized.length);
 fs.mkdirSync(path.join(root,'allopacks/illustrated'),{recursive:true});

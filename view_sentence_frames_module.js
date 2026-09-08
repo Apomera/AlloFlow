@@ -48,7 +48,7 @@ function isScaffoldParagraphComplete(text, responses) {
 }
 function SentenceFramesView(props) {
   // State reads
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : () => '';
   const label = (key, fallback) => {
     const translated = typeof t === 'function' ? t(key) : '';
     return translated && translated !== key ? translated : fallback;
@@ -59,14 +59,16 @@ function SentenceFramesView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isScaffoldComplete = props.isScaffoldComplete;
   var isEditingScaffolds = props.isEditingScaffolds;
-  var gradingSession = props.gradingSession;
-  var studentResponses = props.studentResponses;
+  var gradingSession = props.gradingSession || {
+    isOpen: false
+  };
+  var studentResponses = props.studentResponses || {};
   var isIndependentMode = props.isIndependentMode;
   var isParentMode = props.isParentMode;
   var isGeneratingRubric = props.isGeneratingRubric;
   var rubricZoom = props.rubricZoom;
   var gradingResult = props.gradingResult;
-  var studentWorkInput = props.studentWorkInput;
+  var studentWorkInput = typeof props.studentWorkInput === 'string' ? props.studentWorkInput : '';
   var isGrading = props.isGrading;
   var leveledTextLanguage = props.leveledTextLanguage;
   // Setters
@@ -91,15 +93,24 @@ function SentenceFramesView(props) {
   // Components
   var DraftFeedbackInterface = props.DraftFeedbackInterface;
   var ErrorBoundary = props.ErrorBoundary;
+  const scaffoldData = generatedContent?.data;
+  const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
+  const isUsableItem = item => item && typeof item.text === 'string' && item.text.trim();
+  if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      className: "rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700"
+    }, label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.'));
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4",
+    className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4",
     "data-help-key": "scaffolds_goal_panel"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-800 flex-grow"
   }, /*#__PURE__*/React.createElement("strong", null, t('about.action_title')), " ", t('about.action_desc')), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
+    className: "flex flex-wrap items-center gap-3"
   }, ['saving', 'saved', 'error'].includes(studentWorkStatus) && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -112,14 +123,14 @@ function SentenceFramesView(props) {
   }), " ", t('status.saving')) : studentWorkStatus === 'saved' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('status.saved')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, t('scaffolds.save_failed') || 'Your answers could not be saved on this device.'), typeof onRetrySave === 'function' && /*#__PURE__*/React.createElement("button", {
+  }), " ", t('status.saved')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, label('scaffolds.save_failed', 'Your answers could not be saved on this device.')), typeof onRetrySave === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onRetrySave,
-    className: "rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600"
-  }, t('common.retry') || 'Try again'))), !isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    className: "min-h-11 rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600"
+  }, label('common.retry', 'Try again')))), !isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     onClick: handleResetScaffolds,
     "data-help-key": "scaffolds_reset",
-    className: "flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm",
+    className: "min-h-11 flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm",
     title: t('scaffolds.clear_all'),
     "aria-label": t('scaffolds.clear_all')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
@@ -127,7 +138,7 @@ function SentenceFramesView(props) {
   }), " ", t('common.reset')), /*#__PURE__*/React.createElement("button", {
     onClick: launchGradingSession,
     "data-help-key": "scaffolds_grading",
-    className: `flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`,
+    className: `min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`,
     title: t('mastery.start_tooltip'),
     "aria-label": t('mastery.start_tooltip')
   }, /*#__PURE__*/React.createElement(Sparkles, {
@@ -136,7 +147,7 @@ function SentenceFramesView(props) {
     "aria-label": t('common.toggle_edit_scaffolds'),
     onClick: handleToggleIsEditingScaffolds,
     "data-help-key": "scaffolds_edit_toggle",
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`
+    className: `min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`
   }, isEditingScaffolds ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
@@ -160,7 +171,7 @@ function SentenceFramesView(props) {
     }))
   })) : generatedContent?.data.mode === 'list' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-4"
-  }, generatedContent?.data.items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
+  }, usableItems.map((item, idx) => isUsableItem(item) ? /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors",
     "data-help-key": "scaffolds_item"
@@ -169,7 +180,7 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1"
   }, idx + 1), /*#__PURE__*/React.createElement("div", {
-    className: "w-full"
+    className: "w-full min-w-0"
   }, isEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`,
     value: item.text,
@@ -185,7 +196,8 @@ function SentenceFramesView(props) {
     placeholder: t('common.placeholder_translation')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     id: `scaffold-prompt-${generatedContent.id}-${idx}`,
-    className: "text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1"
+    dir: "auto",
+    className: "text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1"
   }, item.text), leveledTextLanguage !== 'English' && item.text_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic px-2"
   }, item.text_en), /*#__PURE__*/React.createElement("textarea", {
@@ -201,8 +213,8 @@ function SentenceFramesView(props) {
     className: "mt-3 border-b border-slate-100 border-dashed w-full"
   }), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 border-b border-slate-100 border-dashed w-full"
-  })))))) : /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-8 rounded-xl border border-slate-400 shadow-sm",
+  })))) : null)) : /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-4 sm:p-8 rounded-xl border border-slate-400 shadow-sm",
     "data-help-key": "scaffolds_paragraph_frame"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4"
@@ -223,11 +235,12 @@ function SentenceFramesView(props) {
     type: "text",
     value: studentResponses[generatedContent.id]?.[responseKey] || '',
     onChange: e => handleStudentInput(generatedContent.id, responseKey, e.target.value),
-    className: "inline-block border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors",
+    dir: "auto",
+    className: "placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors",
     placeholder: part.replace(/[\[\]]/g, '')
   }) : /*#__PURE__*/React.createElement("span", {
     key: i
-  }, part))), (leveledTextLanguage !== 'English' || generatedContent?.data.text_en) && /*#__PURE__*/React.createElement("div", {
+  }, part))), (isEditingScaffolds && leveledTextLanguage !== 'English' || generatedContent?.data.text_en) && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-6 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"

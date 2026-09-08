@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "hidden recovery banners",
+    "specialist workflow disclosure",
+    "decimal trim typing",
+    "empty states",
+    "source-dependent camera controls",
+    "recording before advanced tools",
+    "real WebM import",
+    "per-take trims",
+    "bounded trim input",
+    "trim at playhead and reset",
+    "draft recovery after reload",
+    "narration and visual workflow visibility",
+    "prepare and download actual video",
+    "mobile overflow",
+    "no page errors"
+  ],
+  "errors": []
+}

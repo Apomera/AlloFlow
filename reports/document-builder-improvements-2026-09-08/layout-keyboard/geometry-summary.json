@@ -1,0 +1,92 @@
+[
+  {
+    "mode": "standard",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "frame": {
+      "x": 35.203125,
+      "y": 262,
+      "width": 697.59375,
+      "height": 612.796875,
+      "right": 732.796875,
+      "bottom": 874.796875
+    },
+    "visibleHeight": 612.796875,
+    "documentWidth": 768,
+    "artifactDirectory": "final-browser-artifacts\\document_builder_responsiv-09fde-editing-surface-at-768x1024-chromium"
+  },
+  {
+    "mode": "standard",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "frame": {
+      "x": 340,
+      "y": 266,
+      "width": 1048,
+      "height": 515.5,
+      "right": 1388,
+      "bottom": 781.5
+    },
+    "visibleHeight": 515.5,
+    "documentWidth": 1440,
+    "artifactDirectory": "final-browser-artifacts\\document_builder_responsiv-4c6fe-editing-surface-at-1440x900-chromium"
+  },
+  {
+    "mode": "focus",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "frame": {
+      "x": 16,
+      "y": 392,
+      "width": 358,
+      "height": 320,
+      "right": 374,
+      "bottom": 712
+    },
+    "visibleHeight": 320,
+    "documentWidth": 390,
+    "artifactDirectory": "final-browser-artifacts\\document_builder_responsiv-92361-nd-returns-to-standard-view-chromium"
+  },
+  {
+    "mode": "standard",
+    "viewport": {
+      "width": 1024,
+      "height": 768
+    },
+    "frame": {
+      "x": 329.59375,
+      "y": 360.5,
+      "width": 652.796875,
+      "height": 234.09375,
+      "right": 982.390625,
+      "bottom": 594.59375
+    },
+    "visibleHeight": 234.09375,
+    "documentWidth": 1024,
+    "artifactDirectory": "final-browser-artifacts\\document_builder_responsiv-b4ccb-editing-surface-at-1024x768-chromium"
+  },
+  {
+    "mode": "standard",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "frame": {
+      "x": 32,
+      "y": 408,
+      "width": 326,
+      "height": 320,
+      "right": 358,
+      "bottom": 728
+    },
+    "visibleHeight": 320,
+    "documentWidth": 390,
+    "artifactDirectory": "final-browser-artifacts\\document_builder_responsiv-f099b--editing-surface-at-390x844-chromium"
+  }
+]

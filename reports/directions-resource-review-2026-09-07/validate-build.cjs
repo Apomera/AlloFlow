@@ -1,0 +1,14 @@
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
+const root=process.cwd();const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+require('@babel/parser').parse(read('desktop/web-app/src/App.jsx'),{sourceType:'module',plugins:['jsx']});
+const source=read('doc_pipeline_source.jsx');
+const expected='(function(){"use strict";\nif(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}\n'+source.trim()+'\n})();\n';
+for(const file of ['doc_pipeline_module.js','desktop/web-app/public/doc_pipeline_module.js','desktop/web-app/src/doc_pipeline_module_public_copy.js']) assert.ok(read(file)===expected,file);
+new (require('vm').Script)(expected);
+const result=require(path.join(root,'_build_view_directions_result_module.js')).buildDirectionsResultModule(read('view_directions_result_source.jsx'));
+for(const file of ['view_directions_result_module.js','desktop/web-app/public/view_directions_result_module.js'])assert.ok(read(file)===result,file);
+require(path.join(root,'_build_view_directions_composer_module.js')).build({writeFile:(file,value)=>assert.ok(fs.readFileSync(file,'utf8')===value,file)});
+const shared=read('directions_markdown_source.js').trim();
+for(const file of ['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx','doc_pipeline_source.jsx'])assert.ok(read(file).includes(shared),file);
+const summary={appSyntax:true,documentSyntax:true,documentBuildParity:true,directionsViewBuildParity:true,composerBuildParity:true,sharedFormatterParity:true};
+fs.writeFileSync(path.join(root,'reports/directions-resource-review-2026-09-07/after/build-checks.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));

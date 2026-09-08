@@ -1,0 +1,14 @@
+const fs=require('node:fs');
+let s=fs.readFileSync('reports/geometry-world-graphics-2026-09-08/verify-controls-views-pass.cjs','utf8');
+s=s.replace('controls-views-', 'touch-landscape-');
+s=s.replace("path.join(out,'controls-views-results.json')", "path.join(out,'touch-landscape-results.json')");
+const start=s.indexOf('  await pose([8,2.5,0.5]');
+const end=s.indexOf('  for(const size of ',start);
+s=s.slice(0,start)+`  const baseline=initial;
+  await page.evaluate(()=>Object.defineProperty(navigator,'userAgent',{value:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1',configurable:true}));
+`+s.slice(end);
+s=s.replace('[{width:1440,height:900},{width:390,height:844},{width:320,height:700},{width:844,height:390,landscape:true}]','[{width:844,height:390,landscape:true}]');
+const motionStart=s.indexOf('    const beforeMotion=await signature()');
+const motionEnd=s.indexOf('    await pose([10,8,13]',motionStart);
+s=s.slice(0,motionStart)+s.slice(motionEnd);
+eval(s);

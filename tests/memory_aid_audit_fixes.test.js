@@ -198,7 +198,10 @@ describe('C · memory-aid is registered in every host table', () => {
     expect(a).toContain("'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge',\n          'dbq', 'faq', 'outline', 'image',");
     expect(a).toContain("case 'memory-aid':\n        case 'applied-challenge':\n            return 'thinking-cap';");
     // The expand-all label threshold has to keep pace with the list length.
-    expect(a).toContain('allEditorsExpanded: expandedTools.length >= 18,');
+    expect(src('view_sidebar_panels_source.jsx')).toContain('allEditorsExpanded: expandedTools.length >= 18,');
+    const sidebarProps = a.slice(a.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"'), a.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"') + 14000);
+    expect(sidebarProps).toMatch(/\bexpandedTools\b/);
+    expect(sidebarProps).toMatch(/\bhandleToggleAllTools\b/);
   });
 
   it('the AlloBot blueprint freeze pins the memory-aid settings it is handed', () => {

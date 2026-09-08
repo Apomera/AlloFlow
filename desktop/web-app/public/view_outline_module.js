@@ -116,7 +116,7 @@
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 h-full"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex justify-between items-start gap-4"
+    className: "bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-orange-800"
   }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.", /*#__PURE__*/React.createElement("div", {
@@ -130,7 +130,7 @@
   }, /*#__PURE__*/React.createElement(CheckCircle, {
     size: 10
   }), " ", standardsInput))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
+    className: "flex flex-wrap gap-2"
   }, isTeacherMode && (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       if (generatedContent?.data?.structureType === 'Venn Diagram') {
@@ -145,7 +145,7 @@
         setIsInteractiveMap(!isInteractiveMap);
       }
     },
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 animate-[pulse_3s_ease-in-out_infinite]'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`,
     title: isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('outline.tooltip_interactive')
   }, isInteractiveMap || isInteractiveVenn || isVennPlaying ? /*#__PURE__*/React.createElement(Layout, {
     size: 14
@@ -220,7 +220,7 @@
     className: "flex flex-wrap justify-center gap-3 mb-8 w-full"
   }, generatedContent?.data.branches && generatedContent?.data.branches.map((branch, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
-    className: "bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in zoom-in duration-300 flex items-center gap-2 group",
+    className: "bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in motion-reduce:animate-none zoom-in duration-300 flex items-center gap-2 group",
     style: {
       animationDelay: `${idx * 50}ms`
     }
@@ -232,7 +232,7 @@
   }, /*#__PURE__*/React.createElement(X, {
     size: 12
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 animate-in zoom-in duration-300 delay-100"
+    className: "flex items-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 delay-100"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_map_add_input'),
     type: "text",

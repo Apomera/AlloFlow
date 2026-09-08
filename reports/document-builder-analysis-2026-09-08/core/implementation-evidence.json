@@ -1,0 +1,110 @@
+{
+  "tests": {
+    "passed": 58,
+    "failed": 0,
+    "total": 58,
+    "files": [
+      {
+        "file": "builder_export_recovery.test.js",
+        "passed": 13,
+        "failed": 0
+      },
+      {
+        "file": "document_builder_draft_codec.test.js",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "file": "document_builder_draft_protection.test.js",
+        "passed": 37,
+        "failed": 0
+      },
+      {
+        "file": "document_builder_project_persistence.test.js",
+        "passed": 5,
+        "failed": 0
+      }
+    ]
+  },
+  "sourceSha256": "10057b1aad796784a6ce9e26130d4ab4a8e6f3935d9c3bf4601885c6dff098ca",
+  "viewDeclarations": [
+    {
+      "name": "_builderCompareDocumentVersions",
+      "line": 3286,
+      "endLine": 3310
+    },
+    {
+      "name": "_builderRestoreVersionBlock",
+      "line": 3312,
+      "endLine": 3359
+    },
+    {
+      "name": "_builderDraftContext",
+      "line": 3360,
+      "endLine": 3371
+    },
+    {
+      "name": "_builderDraftIdentity",
+      "line": 3372,
+      "endLine": 3379
+    },
+    {
+      "name": "_builderCreateDraftCapture",
+      "line": 3380,
+      "endLine": 3397
+    },
+    {
+      "name": "_normalizeBuilderLocalDraft",
+      "line": 3399,
+      "endLine": 3416
+    },
+    {
+      "name": "readLocalDraftStore",
+      "line": 7561,
+      "endLine": 7569
+    },
+    {
+      "name": "persistLocalDraft",
+      "line": 7571,
+      "endLine": 7587
+    },
+    {
+      "name": "captureBuilderDraftDocument",
+      "line": 7589,
+      "endLine": 7609
+    },
+    {
+      "name": "restoreDraftHtml",
+      "line": 7709,
+      "endLine": 7737
+    },
+    {
+      "name": "restoreVersionSnapshot",
+      "line": 7743,
+      "endLine": 7751
+    },
+    {
+      "name": "restoreVersionComparisonBlock",
+      "line": 7770,
+      "endLine": 7787
+    }
+  ],
+  "hostDeclarations": [
+    {
+      "name": "_syncBuilderEditsToRemediation",
+      "line": 38788
+    },
+    {
+      "name": "setShowExportPreviewWrapped",
+      "line": 38838
+    },
+    {
+      "name": "_builderDraftOwnerRef",
+      "line": 38873
+    },
+    {
+      "name": "_captureBuilderDraft",
+      "line": 38882
+    }
+  ]
+}

@@ -26,7 +26,7 @@ async function mountProfiles(page: any, locked = false, teacher = true) {
   await page.evaluate(({ locked, teacher }) => {
     const w = window as any, R = w.React;
     function Fixture() {
-      const [state, setState] = R.useState({ isLoading: locked, currentScene: null, enableAutoClimax: false });
+      const [state, setState] = R.useState({ isLoading: locked, currentScene: null, enableAutoClimax: false, systemResources: [{ name: 'Budget', quantity: 900, unit: 'credits' }] });
       const [settings, setSettings] = R.useState({ adventureInputMode: 'choice', adventureDifficulty: 'Normal', adventureFreeResponseEnabled: false, adventureChanceMode: true, isAdventureStoryMode: false, isSocialStoryMode: false, enableFactionResources: false, factionResourceMode: 'manual' });
       const props: any = { ...settings, adventureState: state, setAdventureState: setState, isTeacherMode: teacher, t: (key: string) => key };
       for (const key of Object.keys(settings)) props['set' + key[0].toUpperCase() + key.slice(1)] = (value: any) => setSettings((prev: any) => ({ ...prev, [key]: value }));
@@ -45,12 +45,12 @@ test('learning profiles are editable and accessible on phone and desktop', async
   await expect(page.getByRole('button', { name: /Guided Story/ })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: /Guided Story/ })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByLabel('Episode length')).toHaveValue('6');
+  await expect(page.getByLabel('Episode length')).toHaveValue('12');
   await expect(page.getByLabel('Choices per decision')).toHaveValue('3');
   for (const [name, mode, turns, choices, free, social] of [
-    ['Evidence Debate', 'debate', 6, 3, true, false],
-    ['Systems Challenge', 'system', 12, 4, false, false],
-    ['Social Practice', 'choice', 6, 4, false, true]
+    ['Evidence Debate', 'debate', 12, 3, true, false],
+    ['Systems Challenge', 'system', 20, 4, false, false],
+    ['Social Practice', 'choice', 12, 4, false, true]
   ]) {
     await page.getByRole('button', { name: new RegExp(String(name)) }).click();
     expect(await page.evaluate(() => (window as any).__settings)).toMatchObject({
@@ -64,7 +64,8 @@ test('learning profiles are editable and accessible on phone and desktop', async
   await page.getByLabel('Episode length').selectOption('open');
   await page.getByLabel('Choices per decision').selectOption('2');
   expect(await page.evaluate(() => (window as any).__settings.state)).toMatchObject({ episodeTurnLimit: null, choiceCount: 2, enableAutoClimax: true });
-  await expect(page.getByRole('button', { pressed: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { pressed: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: /Social Practice/ })).toContainText('Customized');
   await page.setViewportSize({ width: 1200, height: 900 }); await check(page);
   await page.screenshot({ path: info.outputPath('settings-desktop.png'), fullPage: true });
 });
@@ -103,3 +104,12 @@ for (const mode of ['debate', 'system']) {
     await page.setViewportSize({ width: 1200, height: 900 }); await check(page);
   });
 }
+
+
+test('reapplying Systems Challenge preserves manually authored resources', async ({ page }) => {
+  await load(page); await mountProfiles(page);
+  await page.getByRole('button', { name: /Systems Challenge/ }).click();
+  expect(await page.evaluate(() => (window as any).__settings)).toMatchObject({
+    factionResourceMode: 'manual', state: { episodeTurnLimit: 20, systemResources: [{ name: 'Budget', quantity: 900, unit: 'credits' }] }
+  });
+});

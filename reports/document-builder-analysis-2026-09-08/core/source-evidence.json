@@ -1,0 +1,206 @@
+{
+  "generatedAt": "2026-09-08T11:28:18.864Z",
+  "astParser": "@babel/parser",
+  "files": [
+    {
+      "file": "view_export_preview_source.jsx",
+      "sha256": "7d35226d07a583fd57f03707d4f865eb0c3ed32b06b7ae5509fc546d310f9551"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "21ee653640a92bea17a7e6dc101e9d622854b9f8e36b098d9b401ff3e8e76713"
+    }
+  ],
+  "extractions": [
+    {
+      "file": "view_export_preview_source.jsx",
+      "sourceRange": {
+        "startOffset": 218966,
+        "endOffsetExclusive": 219696,
+        "startLine": 3849,
+        "endLine": 3854
+      },
+      "sha256": "22c65d5f1ca9cbb4ef40c330fa5e6e22996d85e8a69900228ac46d727f66d7d2",
+      "astDeclarations": [
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "draftDocumentTitle"
+          ],
+          "startLine": 3849,
+          "endLine": 3849
+        },
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "draftIdentitySeed"
+          ],
+          "startLine": 3850,
+          "endLine": 3852
+        },
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "draftStorageKey"
+          ],
+          "startLine": 3853,
+          "endLine": 3853
+        }
+      ]
+    },
+    {
+      "file": "view_export_preview_source.jsx",
+      "sourceRange": {
+        "startOffset": 797963,
+        "endOffsetExclusive": 798786,
+        "startLine": 10908,
+        "endLine": 10920
+      },
+      "sha256": "19ae04ee2d3399a890681fe45317fd7b03af02cb47f4eae5ac0b01c1cf238989",
+      "astDeclarations": [
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "_captureEdits"
+          ],
+          "startLine": 10908,
+          "endLine": 10920
+        }
+      ]
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sourceRange": {
+        "startOffset": 2141100,
+        "endOffsetExclusive": 2144667,
+        "startLine": 38788,
+        "endLine": 38834
+      },
+      "sha256": "1e9d12b235baaa27b71e0b5ee2fdcf8cd027d1dfe0c0e12925abe9f2c8f64d50",
+      "astDeclarations": [
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "_syncBuilderEditsToRemediation"
+          ],
+          "startLine": 38788,
+          "endLine": 38834
+        }
+      ]
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sourceRange": {
+        "startOffset": 2156895,
+        "endOffsetExclusive": 2157534,
+        "startLine": 39040,
+        "endLine": 39050
+      },
+      "sha256": "c74db10b3c7492e7bcd04a22345733494bfeeef04267ce4f2566f6653cd83ea2",
+      "astDeclarations": [
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "_getBuilderDraftForProject"
+          ],
+          "startLine": 39040,
+          "endLine": 39050
+        }
+      ]
+    },
+    {
+      "file": "view_export_preview_source.jsx",
+      "sourceRange": {
+        "startOffset": 171427,
+        "endOffsetExclusive": 180132,
+        "startLine": 3160,
+        "endLine": 3332
+      },
+      "sha256": "3a5893a47bf744fa22963e0d7c5c66410b50bfd096bca267da37c26385f28cca",
+      "astDeclarations": [
+        {
+          "type": "VariableDeclaration",
+          "names": [
+            "_BUILDER_COMPARABLE_BLOCK_SELECTOR"
+          ],
+          "startLine": 3160,
+          "endLine": 3160
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderPrepareComparableDocument"
+          ],
+          "startLine": 3162,
+          "endLine": 3179
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderComparableBlockElements"
+          ],
+          "startLine": 3181,
+          "endLine": 3186
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderComparableDocument"
+          ],
+          "startLine": 3188,
+          "endLine": 3205
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderCompareBlockSequences"
+          ],
+          "startLine": 3207,
+          "endLine": 3278
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderCompareDocumentVersions"
+          ],
+          "startLine": 3280,
+          "endLine": 3301
+        },
+        {
+          "type": "FunctionDeclaration",
+          "names": [
+            "_builderRestoreVersionBlock"
+          ],
+          "startLine": 3303,
+          "endLine": 3332
+        }
+      ]
+    }
+  ],
+  "resourceToggleProbe": {
+    "excludedFromBulkKeys": [
+      "includeMemoryAid",
+      "includeAppliedChallenge"
+    ],
+    "checkedAfterDeselectAll": [
+      {
+        "key": "includeMemoryAid",
+        "checked": true
+      },
+      {
+        "key": "includeAppliedChallenge",
+        "checked": true
+      }
+    ],
+    "checkedAfterSelectAllWhenPreviouslyOff": [
+      {
+        "key": "includeMemoryAid",
+        "checked": false
+      },
+      {
+        "key": "includeAppliedChallenge",
+        "checked": false
+      }
+    ]
+  }
+}

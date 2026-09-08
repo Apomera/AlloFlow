@@ -71,7 +71,7 @@ const fail = (msg) => { errors++; console.log('  ✗ ' + msg); };
 // ── Collect every emitted gameType ─────────────────────────────────────────────
 const emitterCorpus = EMITTER_SOURCES.map(read).join('\n');
 const emitted = new Set(
-  [...emitterCorpus.matchAll(/onGameComplete\(\s*['"`]([a-zA-Z0-9]+)/g)].map((m) => m[1])
+  [...emitterCorpus.matchAll(/\bonGameComplete\s*(?:\?\.)?\s*\(\s*['"`]([a-zA-Z0-9]+)/g)].map((m) => m[1])
     // MultiZoneSortGame / _MultiBucketSortGame receive their type as a gameKey
     // prop and emit it internally, so the literal never appears in a call.
     .concat([...read('games_source.jsx').matchAll(/gameKey=["']([a-zA-Z0-9]+)["']/g)].map((m) => m[1]))

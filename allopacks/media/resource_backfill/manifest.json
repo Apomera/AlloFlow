@@ -1,0 +1,385 @@
+{
+  "status": "complete-native-resource-images",
+  "assets": [
+    {
+      "id": "resource-kick",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A sneaker touching a soccer ball during a kick on grass.",
+      "alt": "A blue sneaker touches a soccer ball on grass.",
+      "file": "resource-kick.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-4c426ee2-535b-4da6-a01e-deada036cc17.png"
+    },
+    {
+      "id": "resource-carpet",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A blue ball rolling across a thick carpet, a short fading motion trail behind it.",
+      "alt": "A blue ball rests against carpet fibers, with paler earlier positions trailing to its left.",
+      "file": "resource-carpet.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-ee24f45c-be6c-43f0-ba80-10320fa6bb83.png"
+    },
+    {
+      "id": "resource-pencil",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. One wooden pencil falling above a floor, a faint earlier position higher up.",
+      "alt": "A pencil is above a wooden floor, with a paler earlier position higher up and short downward motion trails.",
+      "file": "resource-pencil.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-00178fa9-60c0-42d1-b20c-9ecca2a8c2de.png"
+    },
+    {
+      "id": "resource-bike",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Helmeted child riding a bicycle around a curved park path, visibly steering into the curve.",
+      "alt": "A helmeted child leans a bicycle into a turn on a curved park path.",
+      "file": "resource-bike.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-784d6bda-e852-4391-a1da-f0242176372c.png"
+    },
+    {
+      "id": "resource-wagon",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An empty red wagon parked on a flat path, no person or motion lines.",
+      "alt": "An empty red wagon stands on a level dirt path.",
+      "file": "resource-wagon.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-dc1bd71d-d80e-487f-b983-f002d041a37d.png"
+    },
+    {
+      "id": "resource-sled",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. Child wearing a helmet riding a sled down a snowy gentle slope, motion trail uphill behind.",
+      "alt": "A helmeted child rides a red sled downhill, with tracks extending up the snowy slope behind.",
+      "file": "resource-sled.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-90b8a4ac-bdac-4d6e-a71f-88e4dd1d631c.png"
+    },
+    {
+      "id": "resource-puck",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A black hockey puck on level ice, three equally spaced faint earlier positions on a straight horizontal path.",
+      "alt": "Four evenly spaced positions of a hockey puck run in a straight row across ice; the first three are pale.",
+      "file": "resource-puck.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-ceeed346-d3b0-462b-9ddf-33ea6ae5dd0d.png"
+    },
+    {
+      "id": "resource-raincoat",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A yellow raincoat hanging on a plain hook, water beads on its outer surface.",
+      "alt": "A yellow raincoat hangs from a hook, with beads of water on its outer surface.",
+      "file": "resource-raincoat.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-c223e366-07db-499b-b294-8b94a1bf65ed.png"
+    },
+    {
+      "id": "resource-boots",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. A pair of blue rubber rain boots in a shallow puddle.",
+      "alt": "Two blue rain boots stand in a shallow puddle.",
+      "file": "resource-boots.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-335d074e-8833-46cb-8073-d008765a28bd.png"
+    },
+    {
+      "id": "resource-umbrella",
+      "prompt": "Scientific educational illustration, square composition, friendly clean painterly style, pale background, clear uncluttered objects. No text, letters, numbers, labels, logos, watermark, category clues or arrows. An open red umbrella shedding raindrops, no person.",
+      "alt": "An open red umbrella has water beads on its canopy and drops falling from its edges.",
+      "file": "resource-umbrella.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-5e0dc3d2-8e63-49ae-ad76-525e8ee86bb7.png"
+    },
+    {
+      "id": "resource-ice",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. One clear ice cube with flat square faces resting on a small plate.",
+      "alt": "A clear ice cube with square faces sits on a small plate.",
+      "file": "resource-ice.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-a44fa80d-e6e5-4d66-a983-2d9d491d9340.png"
+    },
+    {
+      "id": "resource-pencilstill",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. One plain wooden pencil lying still on a pale table.",
+      "alt": "A plain wooden pencil lies diagonally on a pale table.",
+      "file": "resource-pencilstill.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-c6729e31-3395-4c9b-896f-05afc0060aa8.png"
+    },
+    {
+      "id": "resource-room",
+      "prompt": "Square friendly educational painterly illustration, pale colors, no text, letters, numbers, labels, logos or watermarks. A simple empty classroom interior with a window, desk and chair. Clear empty air between objects, no colored gases, smoke, particles, symbols or arrows.",
+      "alt": "An empty classroom has a desk, chair, window, and blank board, with clear space between the objects.",
+      "file": "resource-room.png",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-7be0f655-1f45-453a-bd87-c1fc7619d24b.png"
+    },
+    {
+      "id": "resource-towel",
+      "prompt": "Use case: scientific-educational. Create a single square classroom concept-sort card illustration for a Grade 2 materials lesson: one thick cotton bath towel, loosely folded with one edge draping naturally, clearly showing soft terry loops and absorbent fabric texture. Simple friendly realistic educational illustration, clean pale background, centered object, generous margins, readable at thumbnail size. No people or other objects. Show only the towel, no diagrams or symbols claiming experimental results. Absolutely no text, letters, numerals, labels, captions, category names, answer marks, logos, or watermark. This artwork is for the native card 'A bath towel'; that label will be added separately by the app.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e0644226-d79a-4310-86ee-9acd938f3cce.png",
+      "alt": "A folded blue bath towel has thick terry loops and one edge draped forward.",
+      "file": "resource-towel.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-sponge",
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. A single yellow porous kitchen sponge with a green scrub layer, resting partly on a small clear water spill on a clean countertop. Do not add arrows or show an invented before-and-after result. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-eeb7db0f-2518-496c-90f6-bddb94c2fe9f.png",
+      "alt": "A yellow kitchen sponge with a green scrub layer rests in a small puddle on a countertop.",
+      "file": "resource-sponge.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-napkin",
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. One folded plain white paper napkin, thin paper edges and subtle embossed texture clearly visible, on a pale warm tabletop. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-61a7479e-2ec2-4df1-8b0d-fa1d9d44cb0c.png",
+      "alt": "A folded white paper napkin with a dotted embossed border lies on a light wooden table.",
+      "file": "resource-napkin.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-brickwall",
+      "prompt": "Use case: scientific-educational. Single square Grade 2 classroom sorting-card image. Friendly clean realistic illustration, pale uncluttered background, centered subject, readable thumbnail. A small sturdy section of red brick wall with staggered courses and gray mortar joints, no hands or extra objects. Absolutely no text, letters, numerals, labels, category clues, answer marks, logos, or watermarks. Native app supplies the label.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-fc4c4149-9324-41c1-83bb-c1ef5fcedad4.png",
+      "alt": "A short red brick wall has four staggered rows joined by gray mortar.",
+      "file": "resource-brickwall.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-hammer",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A claw hammer lying safely on a pale tabletop, large steel metal head clearly prominent and attached to a plain wooden handle. No hands, nails or action. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-5b7d36f0-8314-43cb-a1ed-7351265e6639.png",
+      "alt": "A steel claw hammer with a plain wooden handle rests on a pale tabletop.",
+      "file": "resource-hammer.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-step",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. One broad gray concrete step at a simple closed doorway, concrete grain visible, centered close view. No people, signs or other objects. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-cb235276-f099-4a99-867c-57622c3bb3ac.png",
+      "alt": "A broad gray concrete step sits below a closed blue-gray door.",
+      "file": "resource-step.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-music",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A child seated comfortably playing a small hand drum with two drumsticks, each stick held naturally. Simple warm classroom illustration. No musical notation or sound symbols; the app supplies the word Music. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-c24bf8da-9394-44b0-85e7-0a4ed39590f3.png",
+      "alt": "A smiling child holds two wooden mallets over a small red drum on their lap.",
+      "file": "resource-music.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-blanket",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A folded cozy blue knitted blanket with soft fabric folds and a fringed edge. One object alone. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-37e7d10a-b4f5-4651-ae05-d1d800f6b2c7.png",
+      "alt": "A folded blue knitted blanket has thick stitches and a fringed edge.",
+      "file": "resource-blanket.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-toys",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A toy teddy bear beside colorful plain wooden toy blocks on the floor. All block faces blank, no letters or numbers. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-a5eeb2b7-ba91-490a-9455-0695ebaa5f85.png",
+      "alt": "A teddy bear with a red bow sits beside six plain wooden blocks in different colors.",
+      "file": "resource-toys.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-name",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean painterly realism, pale uncluttered background, clear subject readable at thumbnail size. A child pointing toward a small healthy potted plant while holding a completely blank plant name tag in the other hand. The label will be provided in the app as 'A name'; do not write anything on the tag. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-eb4ee352-0b67-4503-ae6c-c758382d7042.png",
+      "alt": "A child holds a blank plant tag and points toward the leaves of a potted plant.",
+      "file": "resource-name.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-milk",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. One clear drinking glass filled with white milk on a plain light table. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3224ee2c-9812-4fc7-8240-891786eba6b4.png",
+      "alt": "A clear drinking glass holds white milk on a light wooden table.",
+      "file": "resource-milk.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-honey",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. Golden honey forming a continuous thick strand from a wooden honey dipper into an open plain glass jar. The honey visibly flows; no bees or labels. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-31cc698e-4517-4b44-ab70-3b41499f9c33.png",
+      "alt": "Golden honey flows in a thick strand from a wooden dipper into an open glass jar.",
+      "file": "resource-honey.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-sand",
+      "prompt": "Use case: scientific-educational. One square elementary classroom concept-sort illustration. Friendly clean realistic educational illustration, pale uncluttered background, clear subject readable at thumbnail size. A small bucket holding dry sand with a little pile spilled beside it. Close view with visibly distinct small angular grains. No water or liquid. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-bc857c74-85d2-482f-a6c3-01b9cc3f8c15.png",
+      "alt": "A blue bucket holds coarse sand, with a small pile of distinct grains beside it.",
+      "file": "resource-sand.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-butter",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. A shallow dark frying pan holding a smooth pool of golden melted butter. All butter liquid, no solid butter chunks and no flame. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-12707be1-e166-4884-841b-d9250ad95898.png",
+      "alt": "A dark frying pan contains a shallow pool of golden melted butter.",
+      "file": "resource-butter.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-snow",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. Snowflakes falling across a mountain landscape with snow-covered slopes and a few distant evergreen trees. A gentle snowy day, not a disaster. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-775a2568-0678-4240-913c-3e9cb831955b.png",
+      "alt": "Snow falls over white mountain slopes and snow-covered evergreen trees.",
+      "file": "resource-snow.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-hail",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration. Friendly clean realistic educational illustration, uncluttered composition, clear subject readable at thumbnail size. Small round white hailstones falling and bouncing off the blue roof of a parked car during a shower. Close view of the roof, small brief bounce trails, no broken glass or people. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-a626d998-3d47-49fb-888d-69e9dd1db406.png",
+      "alt": "White hailstones fall and bounce above a wet blue car roof, with small splashes.",
+      "file": "resource-hail.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-soup",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A bowl of hot vegetable soup on a pale table. The air above it must look clear and empty: water vapor is invisible. Do NOT draw steam, mist, smoke, vapor wisps or arrows. Warm colors can suggest a freshly served meal. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-4e9385a3-8ef8-4144-9872-5ab61afb4217.png",
+      "alt": "A bowl of vegetable soup sits on a table; the air above it is clear with no visible steam.",
+      "file": "resource-soup.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-fog",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A grassy field in early morning, low white fog partly hiding distant trees and softening their outlines. No clouds coming out of the ground as jets. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0f29baec-faf3-4091-874c-23467842abd8.png",
+      "alt": "Low fog hangs over a grassy field and partly hides trees beneath a low sun.",
+      "file": "resource-fog.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-hurricane",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A scientifically plausible satellite-style overhead illustration of a Northern Hemisphere spiral hurricane over blue ocean, a small central eye and counterclockwise curved cloud bands. Illustrative rather than an actual satellite record. No land borders or map lines. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-c5d83a8d-aa2f-482d-a53c-dc898641fa55.png",
+      "alt": "An overhead illustration shows spiral white hurricane clouds around a small eye over blue ocean.",
+      "file": "resource-hurricane.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen",
+      "reviewNote": "Illustrative context only, not a measured record or evidence of a particular date, temperature, forecast, or climate trend. Native card text carries the full claim."
+    },
+    {
+      "id": "resource-sahara",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A dry Sahara-style desert landscape with broad golden sand dunes and some rocky ground, clear sky, no rain, people or camels. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0eb4923b-9351-47d6-bc64-2a8f3095a744.png",
+      "alt": "Golden sand dunes rise beyond dry rocky ground beneath a clear blue sky.",
+      "file": "resource-sahara.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-rain",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A person carrying an open blue umbrella on a sidewalk in afternoon rain. Visible raindrops and shallow puddles, ordinary safe rain, no flooding. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-0def73db-7cff-4ca2-93d9-d041e9a1f9da.png",
+      "alt": "A person walks along a wet sidewalk under a blue umbrella as rain falls.",
+      "file": "resource-rain.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-wind",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. Trees bending in gusty wind beside a path, autumn leaves visibly blowing in the same direction, no people or damage. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-e3b32a22-a191-4e46-9faa-b9c132e24f5c.png",
+      "alt": "Trees bend to the right beside a lakeside path as orange leaves blow through the air.",
+      "file": "resource-wind.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-seaice",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. An overhead view of flat white sea-ice floes floating in dark blue Arctic ocean, with channels of open water between them. This is a generic educational illustration, not a measured historical record. Single scene, no comparison map, no dates or graph. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-75eed1b8-faa0-43bb-8a6b-ff739784dd60.png",
+      "alt": "Flat white sea-ice floes float in dark blue ocean, separated by channels of open water.",
+      "file": "resource-seaice.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen",
+      "reviewNote": "Illustrative context only, not a measured record or evidence of a particular date, temperature, forecast, or climate trend. Native card text carries the full claim."
+    },
+    {
+      "id": "resource-snowyday",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A person wearing a winter coat and hat standing outdoors beside a modest house as snow falls. Ordinary snowy weather, no thermometer; the app supplies the temperature. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-ec1f8b80-14db-4152-ae06-5c8019c0234a.png",
+      "alt": "A person in a winter coat, scarf, and knitted hat stands beside a house in falling snow.",
+      "file": "resource-snowyday.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen"
+    },
+    {
+      "id": "resource-snowywinters",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A single square image divided into three horizontal illustration panels showing the same New England-style house and evergreen forest in snowy winter conditions, with slightly different snow cover in each. Keep the house and viewpoint consistent. These are illustrative winter scenes, not measured data. No calendars, dates or charts. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3a6aa415-2531-4fa1-a7f2-698493605076.png",
+      "alt": "Three panels show the same white house and evergreen trees with different amounts of snow cover.",
+      "file": "resource-snowywinters.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen",
+      "reviewNote": "Illustrative context only, not a measured record or evidence of a particular date, temperature, forecast, or climate trend. Native card text carries the full claim."
+    },
+    {
+      "id": "resource-hotyears",
+      "prompt": "Use case: scientific-educational. One square classroom concept-sort illustration, clean realistic educational style, uncluttered composition, readable at thumbnail size. A town street in bright summer sunshine, leafy trees, people resting in shade, a subtle heat shimmer over sunlit pavement. One ordinary summer scene. This image provides context for a written card about long-term summer temperatures; it must NOT pretend to be a measured record. No graphs, thermometers, timelines, drought damage or before-and-after comparisons. No text, letters, numerals, labels, category clues, answer marks, logos or watermarks.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-3d33bd08-9a21-44c9-baec-7d7803aa8cd7.png",
+      "alt": "People rest in shade beside a sunny tree-lined town street with shimmering pavement.",
+      "file": "resource-hotyears.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen",
+      "reviewNote": "Illustrative context only, not a measured record or evidence of a particular date, temperature, forecast, or climate trend. Native card text carries the full claim."
+    },
+    {
+      "id": "resource-rainycities",
+      "prompt": "Use case: scientific-educational. Regenerate a precise text-free square classroom illustration for a card comparing Seattle and Phoenix rainy-day frequency. Two equal side-by-side panels. LEFT: rainy Seattle-like Pacific Northwest city near a gray inland bay, dark evergreen conifers, temperate deciduous trees, modest brick and gray buildings, overcast rainy sky. ABSOLUTELY NO PALM TREES, NO TROPICAL PLANTS, NO TROPICAL ISLAND. RIGHT: dry Phoenix-like Sonoran Desert city with low tan buildings, saguaros, dry rocky mountains and blue sky. Images are generic regional context, not actual photos or data; do not depict a statistical quantity. Clear realistic educational illustration, readable as a thumbnail. No text, numbers, labels, captions, symbols, graphs, logos, borders with words, or watermark.",
+      "sourcePath": "C:/Users/cabba/.codex/generated_images/01a06e02-e93c-7460-80f1-531f5f777e60/exec-ec3ebebb-a26c-4ed0-95a4-8fb848d76630.png",
+      "alt": "Two illustrated views show a rainy city beside a bay and evergreen trees, and a sunny desert city with saguaros and rocky mountains.",
+      "file": "resource-rainycities.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-09-08",
+      "generator": "built-in image_gen",
+      "reviewNote": "Illustrative context only, not a measured record or evidence of a particular date, temperature, forecast, or climate trend. Native card text carries the full claim."
+    }
+  ],
+  "pending": []
+}

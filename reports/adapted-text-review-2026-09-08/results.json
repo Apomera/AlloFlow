@@ -1,0 +1,50 @@
+{
+  "scope": "Isolated current-source React server renders; production inline formatter and sentence splitter; table renderer is a sentinel stub, not a visual browser test.",
+  "structure": {
+    "headings": 0,
+    "lists": 0,
+    "bold": 0
+  },
+  "tables": {
+    "stackedRetainsSentinel": true,
+    "sideBySideRetainsSentinel": false
+  },
+  "stackedSentenceControls": [
+    {
+      "text": "First source. ",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "text": "First translation. ",
+      "role": null,
+      "tabindex": null
+    }
+  ],
+  "stackedGlossaryControls": [
+    {
+      "text": "First",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "text": "source.",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "text": "First",
+      "role": null,
+      "tabindex": null
+    },
+    {
+      "text": "translation.",
+      "role": null,
+      "tabindex": null
+    }
+  ],
+  "chinese": {
+    "sentenceUnits": 1,
+    "definitionControls": 1
+  }
+}

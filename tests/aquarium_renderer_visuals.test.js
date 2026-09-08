@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const realThree = require('../vendor/three-r128/three.min.js');
 const source = fs.readFileSync(path.resolve('stem_lab/stem_tool_aquarium.js'), 'utf8');
-const start = source.indexOf('  function createAquariumHabitatScene(canvas, initialOptions) {');
+const start = source.indexOf('  function getAquariumPlantVisualProfile(id) {');
 const end = source.indexOf('  function AquariumHabitat3DViewport(props) {', start);
 const sceneSource = source.slice(start, end);
 const cleanups = [];
@@ -37,7 +37,7 @@ function harness(initial = {}, preference = false) {
     cancelAnimationFrame: id => frames.delete(id),
     AquariumEcosystemCore: { getPlantHabitatPosition: (_, index) => ({ x: -3 + index * 2, y: 0.15, z: -1 }) }
   };
-  const create = vm.runInNewContext('(' + sceneSource.trim() + ')', context);
+  const create = vm.runInNewContext(sceneSource + '; createAquariumHabitatScene', context);
   let options = { fish: [], plants: [], layout: [], catalog: [], overlay: 'none', ...initial };
   const engine = create(canvas, options);
   const flush = (ms = 40) => { now += ms; const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn(now)); };
@@ -150,7 +150,13 @@ describe('Aquarium visual scene lifecycle', () => {
     h.event('pointerdown', point); h.event('pointermove', { ...point, clientX: point.clientX + 30 }); h.event('pointerup', point);
     expect(onSelectFish).toHaveBeenCalledTimes(1);
     let blade; h.root('plants').children[0].traverse(node => { if (!blade && node.isMesh && node.userData.plantId) blade = node; });
-    const plantPoint = h.point(blade);
+    // A clump's bounding-box center can be empty space between thin culms.
+    // Click the center of one actual indexed triangle on its foliage instead.
+    const positions = blade.geometry.attributes.position, order = blade.geometry.index;
+    const surfacePoint = new realThree.Vector3();
+    for (let i = 0; i < 3; i++) surfacePoint.add(new realThree.Vector3().fromBufferAttribute(positions, order ? order.getX(i) : i));
+    const projected = blade.localToWorld(surfacePoint.multiplyScalar(1 / 3)).project(h.renderer.camera);
+    const plantPoint = { clientX: (projected.x + 1) * 380, clientY: (1 - projected.y) * 210 };
     h.event('pointerdown', plantPoint); h.event('pointerup', plantPoint);
     expect(onSelectPlant).toHaveBeenCalledWith('grass');
   });
@@ -294,7 +300,7 @@ describe('Aquarium visual scene lifecycle', () => {
     expect(groups[4].position.equals(positions[4])).toBe(true);
     expect(h.root('residents').children).toHaveLength(fish.length);
     h.update({paused:true,fish:fish.map(item=>({...item,locomotion:undefined}))});h.flush();
-    expect(groups.map(group=>group.userData.locomotion)).toEqual(['crawl','swim','sessile','crawl','sessile']);
+    expect(groups.map(group=>group.userData.locomotion)).toEqual(['crawl','swim','crawl','crawl','sessile']);
   });
 
   it('uses supplied room-light output without inventing a fixture or changing legacy defaults', () => {

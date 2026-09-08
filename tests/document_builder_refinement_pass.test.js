@@ -250,7 +250,8 @@ describe('Document Builder refinement pass', () => {
   });
 
   it('offers local draft recovery and active long-document navigation', () => {
-    expect(view).toContain('alloflow-builder-draft-v1:');
+    expect(view).toContain('alloflow-builder-draft-v3:');
+    expect(view).toContain('candidate.sourceIdentity !== identity');
     expect(view).toContain('Local draft available');
     expect(view).toContain('Saved on this device');
     expect(view).toContain('aria-current={activeHeadingIndex === heading.index ? \'location\' : undefined}');

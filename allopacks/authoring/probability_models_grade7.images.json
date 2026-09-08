@@ -1,0 +1,131 @@
+{
+  "slug": "probability_models_grade7",
+  "status": "planned",
+  "assets": [
+    {
+      "id": "prb-term-1",
+      "target": "prb-glossary.data[0].image",
+      "prompt": "Show Outcome using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-2",
+      "target": "prb-glossary.data[1].image",
+      "prompt": "Show Event using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-3",
+      "target": "prb-glossary.data[2].image",
+      "prompt": "Show Trial using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-4",
+      "target": "prb-glossary.data[3].image",
+      "prompt": "Show Probability using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-5",
+      "target": "prb-glossary.data[4].image",
+      "prompt": "Show Model using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-6",
+      "target": "prb-glossary.data[5].image",
+      "prompt": "Show Random using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-7",
+      "target": "prb-glossary.data[6].image",
+      "prompt": "Show Replacement using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-term-8",
+      "target": "prb-glossary.data[7].image",
+      "prompt": "Show Frequency using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "prb-anchor-1",
+      "target": "prb-anchor.data.sections[0].iconUrl",
+      "prompt": "Exactly three blue counters and one red counter beside an opaque bag"
+    },
+    {
+      "id": "prb-anchor-2",
+      "target": "prb-anchor.data.sections[1].iconUrl",
+      "prompt": "Hand returning a counter to an opaque bag"
+    },
+    {
+      "id": "prb-anchor-3",
+      "target": "prb-anchor.data.sections[2].iconUrl",
+      "prompt": "Repeated counter draws recorded as pictures without implying a fixed sequence"
+    },
+    {
+      "id": "prb-sort-1",
+      "target": "prb-sort.data.items[0].image",
+      "prompt": "Illustrate this exact card: Draw a green counter from a bag containing only red and blue. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-sort-2",
+      "target": "prb-sort.data.items[1].image",
+      "prompt": "Illustrate this exact card: Draw a yellow counter from a bag containing only red and blue. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-sort-3",
+      "target": "prb-sort.data.items[2].image",
+      "prompt": "Illustrate this exact card: Draw red from a bag containing three blue and one red. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-sort-4",
+      "target": "prb-sort.data.items[3].image",
+      "prompt": "Illustrate this exact card: Draw blue from a bag containing three blue and one red. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-sort-5",
+      "target": "prb-sort.data.items[4].image",
+      "prompt": "Illustrate this exact card: Draw either red or blue from a bag containing only those colors. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-sort-6",
+      "target": "prb-sort.data.items[5].image",
+      "prompt": "Illustrate this exact card: Draw red from a bag in which every counter is red. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "prb-lesson-1",
+      "target": "future native image resource panel 1",
+      "prompt": "Exactly three blue counters and one red counter beside an opaque bag"
+    },
+    {
+      "id": "prb-lesson-2",
+      "target": "future native image resource panel 2",
+      "prompt": "Hand returning a counter to an opaque bag"
+    },
+    {
+      "id": "prb-lesson-3",
+      "target": "future native image resource panel 3",
+      "prompt": "Repeated counter draws recorded as pictures without implying a fixed sequence"
+    },
+    {
+      "id": "prb-lesson-4",
+      "target": "future native image resource panel 4",
+      "prompt": "Illustrate a correct example: Probability is between zero and one."
+    },
+    {
+      "id": "prb-lesson-5",
+      "target": "future native image resource panel 5",
+      "prompt": "Compare two cases from the reading without adding claims."
+    },
+    {
+      "id": "prb-lesson-6",
+      "target": "future native image resource panel 6",
+      "prompt": "Show the materials or examples for this task: Our class has an opaque bag with three blue and one red counter of the same size and shape. We want to compare a model with trial results."
+    },
+    {
+      "id": "prb-lesson-7",
+      "target": "future native image resource panel 7",
+      "prompt": "Show a learner recording evidence for: How closely do repeated draws with replacement match the model probability of red?"
+    },
+    {
+      "id": "prb-lesson-8",
+      "target": "future native image resource panel 8",
+      "prompt": "Show the limits of the model discussed in the reading."
+    }
+  ]
+}

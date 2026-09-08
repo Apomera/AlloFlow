@@ -253,7 +253,10 @@
     if (type === 'rating') value = value === '' || value == null ? '' : Number(value);
     else value = String(value == null ? '' : value).slice(0, LIVE_POLL_DRAFT_MAX_CHARS);
     if (type === 'rating' && value !== '' && !Number.isFinite(value)) return null;
-    return { pollId: pollId, type: type, value: value, savedAt: Math.max(0, Number(source.savedAt) || 0) };
+    const draft = { pollId: pollId, type: type, value: value, savedAt: Math.max(0, Number(source.savedAt) || 0) };
+    if (source.attempt != null) draft.attempt = clampInt(source.attempt, 1, 1, 2);
+    if (source.editing === true) draft.editing = true;
+    return draft;
   };
   const readLivePollDraft = (sessionCode, userUid, pollId, storage) => {
     const key = livePollDraftStorageKey(sessionCode, userUid, pollId);
@@ -264,16 +267,16 @@
       return raw ? normalizeLivePollDraft(JSON.parse(raw), pollId) : null;
     } catch (err) { return null; }
   };
-  const writeLivePollDraft = (sessionCode, userUid, poll, value, storage) => {
+  const writeLivePollDraft = (sessionCode, userUid, poll, value, storage, meta) => {
     const key = livePollDraftStorageKey(sessionCode, userUid, poll && poll.id);
     if (!key || !poll) return false;
-    const draft = normalizeLivePollDraft({ pollId: poll.id, type: poll.type, value: value, savedAt: Date.now() }, poll.id);
+    const draft = normalizeLivePollDraft({ pollId: poll.id, type: poll.type, value: value, savedAt: Date.now(), attempt: meta && meta.attempt, editing: meta && meta.editing }, poll.id);
     if (!draft) return false;
     try {
       const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
       if (!target) return false;
       const hasValue = draft.type === 'rating' ? draft.value !== '' : !!String(draft.value || '');
-      if (!hasValue) target.removeItem(key);
+      if (!hasValue && !draft.editing) target.removeItem(key);
       else target.setItem(key, JSON.stringify(draft));
       return true;
     } catch (err) { return false; }
@@ -2114,6 +2117,18 @@
   // in the teacher's local state. Application data is never written to
   // Firestore.
   // ──────────────────────────────────────────────────────────────────────
+  const normalizeResponseRequestId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,96}$/.test(value) ? value : '';
+  const normalizeResponseReceipt = value => {
+    if (!value || typeof value !== 'object' || !normalizeResponseRequestId(value.requestId) || typeof value.pollId !== 'string' || !value.pollId || value.pollId.length > 180) return null;
+    if (value.status !== 'accepted' && value.status !== 'rejected') return null;
+    const packet = { pollId: value.pollId, requestId: value.requestId, status: value.status, attempt: clampInt(value.attempt, 1, 1, 2), withdrawn: value.withdrawn === true };
+    if (packet.status === 'accepted') {
+      if (typeof value.response !== 'string' && (typeof value.response !== 'number' || !Number.isFinite(value.response))) return null;
+      packet.response = typeof value.response === 'string' ? value.response.slice(0, LIVE_POLL_DRAFT_MAX_CHARS) : value.response;
+    } else packet.reason = ['paused', 'closed', 'invalid', 'unavailable'].includes(value.reason) ? value.reason : 'unavailable';
+    return packet;
+  };
+
   class PollingHost {
     constructor(config) {
       this.sessionCode = config.sessionCode;
@@ -2136,6 +2151,9 @@
       this.peers = new Map();
       this.collectionUnsub = null;
       this.activePoll = null;
+      this.confirmResponses = config.confirmResponses === true;
+      this.responseReceipts = new Map();
+      this.deliveredFeedback = new Map();
       this.activeAudienceUids = null;
       this.activePollResults = null;
       this.activePeerShowcase = null;
@@ -2164,6 +2182,8 @@
         return uid == null ? '' : String(uid);
       }).filter(Boolean));
       const allowed = this._allowedUids;
+      for (const uid of this.responseReceipts.keys()) if (!allowed.has(uid)) this.responseReceipts.delete(uid);
+      for (const uid of this.deliveredFeedback.keys()) if (!allowed.has(uid)) this.deliveredFeedback.delete(uid);
       if (this.activeAudienceUids) {
         this.activeAudienceUids = new Set(Array.from(this.activeAudienceUids).filter(function (uid) {
           return allowed.has(uid);
@@ -2229,6 +2249,47 @@
       } catch (err) {
         return false;
       }
+    }
+
+    _sendResponseReceipt(uid, packet, type = 'responseReceipt') {
+      const peer = this.peers.get(uid);
+      if (!peer || !peer.dc || peer.dc.readyState !== 'open') return false;
+      try { peer.dc.send(JSON.stringify({ type, payload: packet })); return true; } catch (_) { return false; }
+    }
+
+    _receiveResponse(uid, codename, payload) {
+      const requestId = normalizeResponseRequestId(payload && payload.requestId);
+      if (!this.confirmResponses || !requestId) {
+        if (this._acceptsResponse(uid, codename, payload)) this.onResponse(uid, codename, payload);
+        return;
+      }
+      if (!this._isUidAllowed(uid)) return;
+      const previous = this.responseReceipts.get(uid);
+      // A retry of an accepted response must confirm the original outcome,
+      // including when the teacher paused collection after receiving it.
+      if (previous && previous.pollId === payload.pollId && previous.requestId === requestId && this._isUidInActiveAudience(uid)) {
+        this._sendResponseReceipt(uid, previous); return;
+      }
+      const reject = reason => this._sendResponseReceipt(uid, { pollId: payload.pollId, requestId, status: 'rejected', reason });
+      const poll = this.activePoll;
+      if (!poll || poll.id !== payload.pollId || !this._isUidInActiveAudience(uid)) { reject('closed'); return; }
+      if (this.activePollResults && this.activePollResults.pollId === poll.id) { reject('closed'); return; }
+      if (poll.submissionsLocked === true) { reject('paused'); return; }
+      const response = payload.response;
+      let valid = false;
+      if (payload.withdrawn === true) valid = poll.type === 'wordcloud';
+      else if (poll.type === 'rating') valid = typeof response === 'number' && getRatingValues(normalizeRatingScale(poll)).includes(response);
+      else if (poll.type === 'mcq') valid = typeof response === 'string' && (poll.options || []).includes(response);
+      else valid = typeof response === 'string' && response.length <= (isFeedbackPoll(poll) ? FEEDBACK_RESPONSE_MAX_LENGTH : LIVE_POLL_DRAFT_MAX_CHARS) && !!response.trim() && (poll.type !== 'wordcloud' || !!normalizeWordCloudTerm(response));
+      if (!valid) { reject('invalid'); return; }
+      if (!previous && this.responseReceipts.size >= 500) { reject('unavailable'); return; }
+      const accepted = { pollId: poll.id, requestId, status: 'accepted', response: payload.withdrawn === true ? '' : response, attempt: clampInt(payload.attempt, 1, 1, 2), withdrawn: payload.withdrawn === true };
+      try {
+        if (this.onResponse(uid, codename, Object.assign({}, payload, { response: accepted.response })) === false) { reject('unavailable'); return; }
+        this.responseReceipts.set(uid, accepted);
+        this.deliveredFeedback.delete(uid);
+        this._sendResponseReceipt(uid, accepted);
+      } catch (_) { reject('unavailable'); }
     }
 
     async start() {
@@ -2298,7 +2359,13 @@
           if (this.activePoll && this._isUidInActiveAudience(uid)) {
             try {
               if (this.activePollResults && this.activePollResults.pollId === this.activePoll.id) dc.send(JSON.stringify({ type: 'pollResults', payload: this.activePollResults }));
-              else dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll }));
+              else {
+                dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll }));
+                const receipt = this.responseReceipts.get(uid);
+                if (receipt && receipt.pollId === this.activePoll.id) this._sendResponseReceipt(uid, receipt, 'responseState');
+                const feedback = this.deliveredFeedback.get(uid);
+                if (feedback && feedback.pollId === this.activePoll.id) dc.send(JSON.stringify({ type: 'feedback', payload: feedback }));
+              }
             } catch (err) {}
           } else {
             try { dc.send(JSON.stringify({ type: 'closePoll', payload: {} })); } catch (err) {}
@@ -2318,15 +2385,15 @@
           // Q&A is session-wide, so reconnect sync is independent of the
           // currently active poll or peer-showcase audience.
           this._sendSessionQaStateToPeer(uid);
+          const checkIn = this.pendingCheckIns.get(String(uid));
+          if (checkIn && this._isUidInSupportActivity(uid, checkIn.activityId)) { try { dc.send(JSON.stringify({ type: 'checkIn', payload: checkIn })); } catch (_) {} }
         };
         dc.onmessage = (msg) => {
           try {
             if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) return;
             const parsed = JSON.parse(msg.data);
             if (parsed && parsed.type === 'response' && parsed.payload) {
-              if (this._acceptsResponse(uid, codename, parsed.payload)) {
-                this.onResponse(uid, codename, parsed.payload);
-              }
+              this._receiveResponse(uid, codename, parsed.payload);
             } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
                 const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing' || parsed.payload.status === 'withdrawn'
@@ -2397,6 +2464,8 @@
     broadcastPoll(poll, audienceUids) {
       if (!poll || !poll.id) return;
       if (this.activePeerShowcase) this.closePeerShowcase(this.activePeerShowcase.roundId);
+      if (!this.activePoll || this.activePoll.id !== poll.id) { this.responseReceipts.clear(); this.deliveredFeedback.clear(); }
+      if (this.confirmResponses) poll = Object.assign({}, poll, { responseReceipts: 1 });
       this.activePoll = poll;
       this.activeAudienceUids = Array.isArray(audienceUids) ? new Set(audienceUids) : null;
       this.activePollResults = null;
@@ -2421,6 +2490,7 @@
         }
       });
       if (this.activePoll && this.activePoll.id === idToClose) {
+        this.responseReceipts.clear(); this.deliveredFeedback.clear();
         this.activePoll = null;
         this.activeAudienceUids = null;
         this.activePollResults = null;
@@ -2625,6 +2695,7 @@
       if (!peer || !peer.dc || peer.dc.readyState !== 'open' || !safePacket) return false;
       try {
         peer.dc.send(JSON.stringify({ type: 'feedback', payload: safePacket }));
+        if (this.confirmResponses) this.deliveredFeedback.set(uid, safePacket);
         return true;
       } catch (err) {
         return false;
@@ -2706,6 +2777,7 @@
       this.activePeerShowcase = null;
       this.peerShowcaseAudienceUids = null;
       this.sessionQaState = createSessionQaState();
+      this.responseReceipts.clear(); this.deliveredFeedback.clear();
       const teardown = () => {
         const uids = Array.from(this.peers.keys());
         uids.forEach((uid) => this._cleanupPeer(uid));
@@ -2735,6 +2807,8 @@
       this.codename = (typeof config.codename === 'string' && config.codename.slice(0, 64)) || 'Guest';
       this.onPoll = config.onPoll || (() => {});
       this.onPollClose = config.onPollClose || (() => {});
+      this.onResponseReceipt = config.onResponseReceipt || (() => {});
+      this.onResponseState = config.onResponseState || (() => {});
       this.onPollResults = config.onPollResults || (() => {});
       this.onPeerShowcase = config.onPeerShowcase || (() => {});
       this.onPeerVoteResults = config.onPeerVoteResults || (() => {});
@@ -2794,6 +2868,10 @@
           const parsed = JSON.parse(msg.data);
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
+          else if (parsed && (parsed.type === 'responseReceipt' || parsed.type === 'responseState')) {
+            const receipt = normalizeResponseReceipt(parsed.payload);
+            if (receipt) (parsed.type === 'responseState' ? this.onResponseState : this.onResponseReceipt)(receipt);
+          }
           else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
           else if (parsed && parsed.type === 'peerShowcase') {
             const round = sanitizePeerShowcaseRound(parsed.payload, '');
@@ -2833,7 +2911,11 @@
             if (this.pc === pc) fb.deleteDoc(signalingRef).catch(() => {});
           }, 750);
         } else if (pc.connectionState === 'failed') {
+          this._connected = false;
           this.onFailed();
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
+          const wasConnected = this._connected; this._connected = false;
+          if (wasConnected) this.onDisconnected();
         }
       };
 
@@ -2855,6 +2937,7 @@
         return;
       }
 
+      if (this.pc !== pc) return;
       this.signalingUnsub = fb.onSnapshot(signalingRef, (snap) => {
         if (this.pc !== pc) return;
         const data = (snap && snap.data && snap.data()) || null;
@@ -2889,6 +2972,7 @@
       };
       if (meta && meta.attempt != null) payload.attempt = clampInt(meta.attempt, 1, 1, 2);
       if (meta && meta.withdrawn === true) payload.withdrawn = true;
+      if (meta && normalizeResponseRequestId(meta.requestId)) payload.requestId = meta.requestId;
       try {
         this.dc.send(JSON.stringify({ type: 'response', payload: payload }));
         return true;
@@ -3259,18 +3343,19 @@
                   onClick: function () { props.onGenerate(participant.uid); },
                   disabled: busy,
                   style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #7c3aed', background: 'white', color: '#5b21b6', fontWeight: 800, fontSize: '0.7rem', cursor: busy ? 'default' : 'pointer' }
-                }, busy ? tr('Generating…') : (feedback.draft ? tr('Regenerate feedback') : tr('Generate feedback'))),
+                }, busy ? tr('Generating…') : (feedback.generatedAt ? tr('Regenerate feedback') : tr('Generate feedback'))),
                 feedback.status === 'sent' ? ce('span', { style: { color: '#047857', fontSize: '0.68rem', fontWeight: 800 } }, tr('Sent privately')) :
                   feedback.status === 'error' ? ce('span', { style: { color: '#b91c1c', fontSize: '0.68rem', fontWeight: 700 } }, tr('Generation failed — try again')) : null
               ),
-              feedback.draft != null ? ce('textarea', {
-                value: feedback.draft,
+              ce('textarea', {
+                value: feedback.draft || '',
+                placeholder: tr('Write feedback, or generate a draft to review'),
                 maxLength: FEEDBACK_TEXT_MAX_LENGTH,
                 onChange: function (event) { props.onDraftChange(participant.uid, event.target.value); },
                 'aria-label': tr('Feedback for') + ' ' + participant.codename,
                 rows: 3,
                 style: { width: '100%', boxSizing: 'border-box', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontSize: '0.76rem', marginBottom: 5 }
-              }) : null,
+              }),
               feedback.draft ? ce('button', {
                 onClick: function () { props.onSendFeedback(participant.uid); },
                 style: { padding: '0.35rem 0.6rem', borderRadius: 6, border: 'none', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }
@@ -3703,6 +3788,7 @@
       const host = new PollingHost({
         sessionCode: sessionCode,
         enableSessionQa: sessionQaOptIn,
+        confirmResponses: true,
         onSessionQaStateChange: function (nextState) {
           if (!isCurrentTransport()) return;
           setSessionQaState(nextState);
@@ -3712,7 +3798,7 @@
           setGuests(function (prev) { return upsertLiveGuest(prev, uid, codename); });
         },
         onResponse: function (uid, codename, payload) {
-          if (!isCurrentTransport()) return;
+          if (!isCurrentTransport()) return false;
           if (payload.withdrawn === true) {
             setResponses(function (prev) {
               const next = Object.assign({}, prev);
@@ -5913,6 +5999,11 @@
     const identity = sessionCode + ":" + userUid;
     const pollOwnerRef = R.useRef(identity);
     const latestPollIdRef = R.useRef(null);
+    const activePollPacketRef = R.useRef(null);
+    const pendingResponseRef = R.useRef(null);
+    const receiptTimerRef = R.useRef(null);
+    const [deliveryState, setDeliveryState] = R.useState('idle');
+    const [retryExhausted, setRetryExhausted] = R.useState(false);
     const [activePoll, setActivePoll] = R.useState(null);
     const [pollMinimized, setPollMinimized] = R.useState(false);
     const [submitted, setSubmitted] = R.useState(false);
@@ -5956,6 +6047,8 @@
     R.useEffect(function () {
       if (enabled && pollOwnerRef.current === identity) return;
       pollOwnerRef.current = null; latestPollIdRef.current = null; studentPollIdRef.current = null;
+      activePollPacketRef.current = null; pendingResponseRef.current = null; setDeliveryState('idle'); setRetryExhausted(false);
+      if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
       setActivePoll(null); setSharedResults(null); setPeerShowcase(null); setPeerVoteResults(null);
       setResponseValue(''); setSubmittedResponse(''); setSubmitted(false); setStudentFeedback(null);
       setTeacherCheckIn(null); setHelpRequested(false); helpRequestedRef.current = false; helpActivityIdRef.current = '';
@@ -5963,8 +6056,79 @@
       statusSentRef.current = ''; retryCountRef.current = 0;
     }, [identity, enabled]);
 
+    const retryConnection = R.useCallback(function () {
+      if (!enabled) return;
+      if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
+      retryCountRef.current = 0; setRetryExhausted(false);
+      setConnectionState(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'connecting');
+      setJoinNonce(function (n) { return n + 1; });
+    }, [enabled]);
+
     R.useEffect(function () {
       if (!enabled) return undefined;
+      const offline = function () { setConnectionState('offline'); setJoinNonce(function (n) { return n + 1; }); };
+      window.addEventListener('online', retryConnection);
+      window.addEventListener('offline', offline);
+      return function () { window.removeEventListener('online', retryConnection); window.removeEventListener('offline', offline); };
+    }, [enabled, retryConnection]);
+    R.useEffect(function () { return function () {
+      if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
+    }; }, [identity, enabled]);
+
+    const receiveConfirmation = function (packet, restored) {
+      const poll = activePollPacketRef.current;
+      if (!poll || poll.responseReceipts !== 1 || packet.pollId !== poll.id) return;
+      const pending = pendingResponseRef.current;
+      if (pending && packet.requestId !== pending.requestId) return;
+      if (!pending && !restored) return;
+      if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
+      pendingResponseRef.current = null;
+      if (packet.status === 'rejected') {
+        setDeliveryState('idle');
+        setSubmitNotice(packet.reason === 'paused' ? tr('The teacher paused submissions before this response arrived. Your draft is still here; submit when collection resumes.') : packet.reason === 'closed' ? tr('This activity is no longer accepting responses. Your draft has not been confirmed.') : packet.reason === 'invalid' ? tr('This response was not accepted. Check your answer and try again.') : tr('The teacher could not confirm this response. Your draft is still here; try again.'));
+        return;
+      }
+      const draft = readLivePollDraft(sessionCode, userUid, poll.id);
+      const keepDraft = !pending && restored && draft && (draft.editing || draft.value !== packet.response || (draft.attempt || 1) > packet.attempt);
+      setSubmittedResponse(packet.withdrawn ? '' : packet.response);
+      if (keepDraft) {
+        setDeliveryState('idle'); setSubmitted(false);
+        setCurrentAttempt(Math.max(draft.attempt || 1, packet.attempt));
+        setSubmitNotice(tr('Your teacher has your earlier response. Your newer draft is still here.'));
+        return;
+      }
+      clearLivePollDraft(sessionCode, userUid, poll.id);
+      setCurrentAttempt(packet.attempt);
+      setDeliveryState(packet.withdrawn ? 'idle' : 'confirmed');
+      setSubmitted(!packet.withdrawn);
+      setResponseValue(packet.withdrawn ? '' : packet.response);
+      setSubmitNotice(packet.withdrawn ? tr('Your teacher confirmed that your term was withdrawn.') : null);
+      if (!packet.withdrawn && !isFeedbackPoll(poll) && poll.afterSubmitMode !== 'wait') setPollMinimized(true);
+      if (helpRequestedRef.current && guestRef.current && guestRef.current.sendHelpRequest(helpActivityIdRef.current || poll.id, false)) {
+        setHelpRequested(false); helpRequestedRef.current = false; helpActivityIdRef.current = '';
+      }
+    };
+
+    const sendConfirmedResponse = function (poll, response, attempt, withdrawn, existing) {
+      const request = existing || { pollId: poll.id, response: response, attempt: attempt, withdrawn: withdrawn === true, requestId: 'response-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12) };
+      pendingResponseRef.current = request;
+      if (!existing && isFeedbackPoll(poll) && !withdrawn) setStudentFeedback(null);
+      setDeliveryState('pending'); setSubmitNotice(null);
+      if (receiptTimerRef.current) clearTimeout(receiptTimerRef.current);
+      receiptTimerRef.current = setTimeout(function () {
+        receiptTimerRef.current = null;
+        if (pendingResponseRef.current === request) setDeliveryState('unconfirmed');
+      }, 8000);
+      const sent = guestRef.current && guestRef.current.sendResponse(request.pollId, request.response, { requestId: request.requestId, attempt: request.attempt, withdrawn: request.withdrawn });
+      if (!sent && pendingResponseRef.current === request) {
+        clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null;
+        setDeliveryState('unconfirmed'); setConnectionState('reconnecting');
+      }
+    };
+
+    R.useEffect(function () {
+      if (!enabled) return undefined;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) { setConnectionState('offline'); return undefined; }
       let disposed = false;
       // A fresh hostOpenedAt means the teacher (re)opened the panel: reset the
       // retry budget so dormant guests wake up and dial again.
@@ -5979,7 +6143,9 @@
       const MAX_AUTO_REJOINS = 8;
       const scheduleRejoin = function () {
         if (disposed) return;
-        if (retryCountRef.current >= MAX_AUTO_REJOINS) return;
+        if (retryTimerRef.current) return;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) { setConnectionState('offline'); return; }
+        if (retryCountRef.current >= MAX_AUTO_REJOINS) { setRetryExhausted(true); setConnectionState('failed'); return; }
         const delay = REJOIN_DELAYS_MS[Math.min(retryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
         retryCountRef.current += 1;
         if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
@@ -5988,19 +6154,21 @@
           setJoinNonce(function (n) { return n + 1; });
         }, delay);
       };
-      setConnectionState(function (prev) { return prev === 'connected' ? prev : 'connecting'; });
+      setConnectionState(retryCountRef.current ? 'reconnecting' : 'connecting');
       const guest = new PollingGuest({
         sessionCode: sessionCode,
         userUid: userUid,
         codename: codename,
         onPoll: function (p) {
           if (disposed || !p || !p.id) return;
-          pollOwnerRef.current = identity; latestPollIdRef.current = p.id;
+          pollOwnerRef.current = identity; latestPollIdRef.current = p.id; activePollPacketRef.current = p;
           const samePoll = !!(p && studentPollIdRef.current === p.id);
           studentPollIdRef.current = p && p.id;
           setActivePoll(p);
           setSharedResults(null);
           if (!samePoll) {
+            pendingResponseRef.current = null; setDeliveryState('idle');
+            if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
             const savedDraft = p ? readLivePollDraft(sessionCode, userUid, p.id) : null;
             setPeerShowcase(null);
             setPeerVoteSelection('');
@@ -6014,18 +6182,22 @@
             setHelpRequested(false);
             helpRequestedRef.current = false;
             helpActivityIdRef.current = '';
-            setCurrentAttempt(1);
+            setCurrentAttempt(savedDraft && savedDraft.attempt || 1);
             statusSentRef.current = '';
             setPollMinimized(false);
             setSubmitNotice(savedDraft && savedDraft.type === p.type ? tr('Draft restored from this browser.') : null);
           }
           if (samePoll) setSubmitNotice(p && p.type === 'wordcloud' && p.submissionsLocked ? tr('The teacher paused new terms while reviewing the word cloud. Your draft is still saved.') : null);
         },
+        onResponseReceipt: function (packet) { if (!disposed) receiveConfirmation(packet, false); },
+        onResponseState: function (packet) { if (!disposed) receiveConfirmation(packet, true); },
         onPollClose: function (payload) {
           if (disposed) return;
           setActivePoll(function (current) {
             if (!shouldApplyPollClose(current, payload)) return current;
             if (current) clearLivePollDraft(sessionCode, userUid, current.id);
+            activePollPacketRef.current = null; pendingResponseRef.current = null; setDeliveryState('idle');
+            if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
             setSubmitted(false);
             setResponseValue('');
             setSubmittedResponse('');
@@ -6047,6 +6219,8 @@
         },
         onPollResults: function (summary) {
           if (disposed || !summary || (latestPollIdRef.current && summary.pollId !== latestPollIdRef.current)) return;
+          activePollPacketRef.current = null; pendingResponseRef.current = null; setDeliveryState('idle');
+          if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
           clearLivePollDraft(sessionCode, userUid, (summary && summary.pollId) || studentPollIdRef.current);
           setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
           setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
@@ -6101,8 +6275,9 @@
           if (disposed) return;
           setActivePoll(function (current) {
             if (current && current.id === packet.pollId && isFeedbackPoll(current)) {
+              const draft = readLivePollDraft(sessionCode, userUid, current.id);
               setStudentFeedback(packet);
-              setSubmitted(true);
+              if (!draft || (draft.attempt || 1) <= packet.attempt) setSubmitted(true);
             }
             return current;
           });
@@ -6120,6 +6295,8 @@
           // any active poll so the student is never left answering into a dead
           // channel; keep already-shared results readable. Rejoin quietly in
           // the background so we reconnect if the teacher reopens the panel.
+          activePollPacketRef.current = null; pendingResponseRef.current = null; setDeliveryState('idle');
+          if (receiptTimerRef.current) { clearTimeout(receiptTimerRef.current); receiptTimerRef.current = null; }
           setActivePoll(null);
           setPollMinimized(false);
           setSubmitted(false);
@@ -6146,7 +6323,8 @@
         },
         onConnected: function () {
           if (disposed) return;
-          retryCountRef.current = 0;
+          retryCountRef.current = 0; setRetryExhausted(false);
+          if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
           setConnectionState('connected');
           setSubmitNotice(null);
           if (helpRequestedRef.current && helpActivityIdRef.current) guest.sendHelpRequest(helpActivityIdRef.current, true);
@@ -6183,8 +6361,8 @@
 
     R.useEffect(function () {
       if (!activePoll || submitted || pollOwnerRef.current !== identity) return;
-      writeLivePollDraft(sessionCode, userUid, activePoll, responseValue);
-    }, [sessionCode, userUid, activePoll, responseValue, submitted]);
+      writeLivePollDraft(sessionCode, userUid, activePoll, responseValue, undefined, { attempt: currentAttempt, editing: submittedResponse !== '' });
+    }, [sessionCode, userUid, activePoll, responseValue, submitted, currentAttempt, submittedResponse]);
 
     R.useEffect(function () {
       if (!activePoll || !isFeedbackPoll(activePoll) || submitted) return;
@@ -6469,14 +6647,38 @@
         ce('p', { style: { margin: '0.35rem 0 0', fontSize: '0.67rem', lineHeight: 1.45 } }, tr('Your teacher can see your session name or codename, connection, assigned activity, content-free progress counts, and help signals. Submitted poll responses are visible for review. Your screen, other tabs, and unsent drafts are not shared.'))
       );
     };
+    const renderConnectionRecovery = function () {
+      if (connectionState === 'connected') return null;
+      return ce('div', { style: { marginTop: 7, padding: '0.55rem', border: '1px solid #fcd34d', borderRadius: 8, background: '#fffbeb' } },
+        ce('p', { role: 'status', style: { margin: 0, fontSize: '0.74rem', color: '#78350f', lineHeight: 1.4 } }, connectionState === 'offline' ? tr('You are offline. Your draft stays here. Reconnection will resume when your network returns.') : retryExhausted ? tr('Automatic reconnect attempts have stopped. Check your connection, then retry.') : tr('Connecting to your teacher. Your draft stays in this browser.')),
+        connectionState !== 'offline' ? ce('button', { type: 'button', onClick: retryConnection, disabled: connectionState === 'connecting', style: { minHeight: 44, width: '100%', marginTop: 6, border: '1px solid #b45309', borderRadius: 6, background: 'white', color: '#92400e', fontWeight: 800, opacity: connectionState === 'connecting' ? 0.6 : 1 } }, tr('Retry connection')) : null
+      );
+    };
+    const confirmationPending = deliveryState === 'pending' || deliveryState === 'unconfirmed';
+    const renderResponseDelivery = function () {
+      if (!confirmationPending) return null;
+      return ce('section', { 'aria-label': tr('Response delivery'), style: { margin: '0.65rem 0', padding: '0.65rem', border: '1px solid #fcd34d', borderRadius: 8, background: '#fffbeb', color: '#78350f' } },
+        ce('p', { role: 'status', style: { margin: 0, fontSize: '0.8rem', fontWeight: 800, lineHeight: 1.4 } }, deliveryState === 'pending' ? tr('Waiting for your teacher to confirm receipt…') : tr('Receipt not confirmed. Your response is still here. Retry to check delivery without counting it twice.')),
+        deliveryState === 'unconfirmed' ? ce('button', { type: 'button', disabled: connectionState !== 'connected', onClick: function () { const request = pendingResponseRef.current; if (request && activePoll) sendConfirmedResponse(activePoll, request.response, request.attempt, request.withdrawn, request); }, style: { minHeight: 44, width: '100%', marginTop: 7, border: '1px solid #b45309', borderRadius: 6, background: '#b45309', color: 'white', fontWeight: 800 } }, tr('Retry response')) : null,
+        deliveryState === 'unconfirmed' ? ce('button', { type: 'button', onClick: function () {
+          const request = pendingResponseRef.current;
+          if (!request) return;
+          try { exportResponseForFallback(request.pollId, request.response, codename); setSubmitNotice(tr('Response downloaded, not sent. Your teacher has not confirmed receipt.')); }
+          catch (_) { setSubmitNotice(tr('The response could not be downloaded. Your draft is still here; try again.')); }
+        }, style: { minHeight: 44, width: '100%', marginTop: 7, border: '1px solid #94a3b8', borderRadius: 6, background: 'white', color: '#334155', fontWeight: 800 } }, tr('Download unconfirmed response')) : null
+      );
+    };
+
     const renderLiveSupportTray = function () {
       const qaAvailable = !!(sessionQaOptIn && sessionQaState && sessionQaState.enabled);
-      const connectionLabel = connectionState === 'connected' ? tr('Connected') : connectionState === 'failed' ? tr('Direct connection unavailable') : connectionState === 'reconnecting' ? tr('Reconnecting') : tr('Connecting');
+      const connectionLabel = connectionState === 'offline' ? tr('Offline') : connectionState === 'connected' ? tr('Connected') : connectionState === 'failed' ? tr('Direct connection unavailable') : connectionState === 'reconnecting' ? tr('Reconnecting') : tr('Connecting');
       if (!supportTrayExpanded) return ce('aside', { 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(420px, calc(100vw - 1.5rem))', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 999, background: 'rgba(255,255,255,0.98)', boxShadow: '0 10px 28px rgba(15,23,42,0.22)' } },
         ce('span', { role: 'status', 'aria-label': connectionLabel, title: guestTransportLabel + ' - ' + connectionLabel, style: { width: 10, height: 10, flex: '0 0 10px', borderRadius: 999, background: connectionState === 'connected' ? '#16a34a' : connectionState === 'failed' ? '#dc2626' : '#f59e0b' } }),
-        ce('strong', { style: { color: '#312e81', fontSize: '0.72rem' } }, activePoll ? (activePoll.submissionsLocked ? tr('Teacher reviewing') : submitted ? tr('Response sent') : tr('Activity ready')) : tr('Live session')),
+        connectionState !== 'connected' ? ce('span', { style: { color: '#92400e', fontSize: '0.72rem', fontWeight: 850 } }, connectionLabel) : null,
+        ce('strong', { style: { color: '#312e81', fontSize: '0.72rem' } }, activePoll ? (activePoll.submissionsLocked ? tr('Teacher reviewing') : confirmationPending ? tr('Awaiting confirmation') : submitted ? tr(deliveryState === 'confirmed' ? 'Received by teacher' : 'Response sent') : tr('Activity ready')) : tr('Live session')),
         ce('span', { title: tr('Your teacher sees activity and progress signals, not your screen.'), style: { color: '#475569', fontSize: '0.61rem', fontWeight: 800 } }, tr('Activity visible · screen private')),
         helpRequested ? ce('span', { style: { padding: '0.15rem 0.35rem', borderRadius: 999, background: '#fee2e2', color: '#991b1b', fontSize: '0.61rem', fontWeight: 900 } }, tr('Help requested')) : null,
+        connectionState !== 'connected' && connectionState !== 'offline' ? ce('button', { type: 'button', disabled: connectionState === 'connecting', onClick: retryConnection, style: { minHeight: 44, border: '1px solid #b45309', borderRadius: 999, color: '#92400e', background: 'white', padding: '0.3rem 0.6rem', fontWeight: 800 } }, tr('Retry connection')) : null,
         activePoll ? ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 40, marginLeft: 'auto', padding: '0.3rem 0.55rem', border: '1px solid #2563eb', borderRadius: 999, background: 'white', color: '#1d4ed8', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, tr('Open activity')) : null,
         ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(true); }, 'aria-expanded': false, style: { minWidth: 40, minHeight: 40, marginLeft: activePoll ? 0 : 'auto', border: '1px solid #7c3aed', borderRadius: 999, background: '#f5f3ff', color: '#6d28d9', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, teacherCheckInForCurrentSupport ? tr('Check in') : tr('Support'))
       );
@@ -6488,8 +6690,9 @@
           ),
           ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(false); }, 'aria-expanded': true, 'aria-label': tr('Collapse live session support'), style: { minWidth: 40, minHeight: 40, border: '1px solid #c4b5fd', borderRadius: 999, background: 'white', color: '#6d28d9', fontWeight: 900, cursor: 'pointer' } }, tr('Collapse'))
         ),
+        renderConnectionRecovery(), renderResponseDelivery(),
         activePoll ? ce('section', { style: { marginTop: 7, padding: '0.55rem', border: '1px solid #bfdbfe', borderRadius: 7, background: '#eff6ff' } },
-          ce('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '0.73rem' } }, activePoll.submissionsLocked ? tr('Teacher is reviewing') : submitted ? tr('Response sent') : tr('Activity in progress')),
+          ce('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '0.73rem' } }, activePoll.submissionsLocked ? tr('Teacher is reviewing') : confirmationPending ? tr('Awaiting confirmation') : submitted ? tr(deliveryState === 'confirmed' ? 'Received by teacher' : 'Response sent') : tr('Activity in progress')),
           ce('span', { style: { display: 'block', marginTop: 2, color: '#475569', fontSize: '0.68rem', lineHeight: 1.35, overflowWrap: 'anywhere' } }, activePoll.prompt),
           !submitted ? ce('span', { style: { display: 'block', marginTop: 3, color: '#1d4ed8', fontSize: '0.64rem', fontWeight: 800 } }, tr('Your draft is saved only in this browser session.')) : null,
           ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 44, width: '100%', marginTop: 6, padding: '0.4rem 0.6rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: '#1d4ed8', fontWeight: 900, cursor: 'pointer' } }, submitted ? tr('Return to activity') : tr('Continue activity'))
@@ -6512,7 +6715,7 @@
     };
 
     const pollDialogVisible = !!(enabled && activePoll && !pollMinimized && !peerVoteResults && !peerShowcase && !sharedResults && !sessionQaViewOpen);
-    useLivePollingDialogFocus(pollDialogRef, pollDialogVisible, function () {}, null);
+    useLivePollingDialogFocus(pollDialogRef, pollDialogVisible, function () { setPollMinimized(true); }, null);
     useLivePollingDialogFocus(resultsDialogRef, !!(enabled && (peerVoteResults || (!peerShowcase && sharedResults))), function () { setPeerVoteResults(null); setSharedResults(null); }, null);
     if (!enabled) return null;
     if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
@@ -6530,11 +6733,11 @@
       : activePoll.type === 'wordcloud'
         ? !!normalizeWordCloudTerm(responseValue)
         : !!String(responseValue || '').trim();
-    const submissionTransportReady = connectionState === 'connected' || connectionState === 'failed';
-    const canSubmit = !submitted && activePoll.submissionsLocked !== true && !!guestRef.current && hasResponse && submissionTransportReady;
+    const submissionTransportReady = connectionState === 'connected' || connectionState === 'failed' || connectionState === 'offline';
+    const canSubmit = !submitted && !confirmationPending && activePoll.submissionsLocked !== true && (!!guestRef.current || connectionState === 'offline' || connectionState === 'failed') && hasResponse && submissionTransportReady;
     const submitButtonLabel = activePoll.submissionsLocked
       ? tr('Teacher is reviewing - submissions paused')
-      : connectionState === 'failed'
+      : connectionState === 'failed' || connectionState === 'offline'
       ? tr('Download response for teacher')
       : connectionState === 'reconnecting'
         ? tr('Reconnecting - keep editing')
@@ -6555,7 +6758,13 @@
         if (feedbackConfig.enabled || activePoll.afterSubmitMode === 'wait') setSubmitted(true);
         else { setSubmitted(false); setResponseValue(''); setActivePoll(null); setPollMinimized(false); studentPollIdRef.current = null; }
       };
-      const sent = guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
+      if (activePoll.responseReceipts === 1 && connectionState === 'connected') {
+        if (pendingResponseRef.current) return;
+        writeLivePollDraft(sessionCode, userUid, activePoll, responseValue, undefined, { attempt: currentAttempt });
+        sendConfirmedResponse(activePoll, payload, currentAttempt, false);
+        return;
+      }
+      const sent = connectionState === 'connected' && guestRef.current && guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
       if (sent) {
         clearLivePollDraft(sessionCode, userUid, activePoll.id);
         setSubmittedResponse(payload);
@@ -6572,10 +6781,10 @@
         setSubmitNotice(null);
         finishSubmitted();
       }
-      else if (connectionState === 'failed') {
+      else if (connectionState === 'failed' || connectionState === 'offline') {
         try {
           exportResponseForFallback(activePoll.id, payload, codename);
-          writeLivePollDraft(sessionCode, userUid, activePoll, responseValue);
+          writeLivePollDraft(sessionCode, userUid, activePoll, responseValue, undefined, { attempt: currentAttempt, editing: submittedResponse !== '' });
           setSubmitNotice(tr('Response downloaded, not sent. Give the file to your teacher or reconnect and submit here. Your draft is still available.'));
         } catch (error) {
           setSubmitNotice(tr('The response could not be downloaded. Your draft is still here; try again.'));
@@ -6601,8 +6810,9 @@
         ),
         ce('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 0.75rem', padding: '0.42rem 0.55rem', borderRadius: 7, background: connectionState === 'connected' ? '#f0fdf4' : connectionState === 'failed' ? '#fef2f2' : '#fff7ed', border: '1px solid ' + (connectionState === 'connected' ? '#bbf7d0' : connectionState === 'failed' ? '#fecaca' : '#fed7aa'), color: connectionState === 'connected' ? '#166534' : connectionState === 'failed' ? '#991b1b' : '#9a3412', fontSize: '0.72rem', fontWeight: 800 } },
           ce('span', { 'aria-hidden': 'true' }, connectionState === 'connected' ? '●' : connectionState === 'failed' ? '!' : '↻'),
-          connectionState === 'connected' ? tr('Connected - response ready to send') : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
+          connectionState === 'offline' ? tr('Offline - your draft stays here') : connectionState === 'connected' ? (confirmationPending ? tr('Connected - awaiting confirmation') : submitted ? tr(deliveryState === 'confirmed' ? 'Connected - received by teacher' : 'Connected - response sent') : tr('Connected - response ready to send')) : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
         ),
+        renderConnectionRecovery(), renderResponseDelivery(),
         renderStudentPrivacyNotice(),
         activePoll.submissionsLocked ? ce('div', { role: 'status', 'aria-live': 'polite', style: { margin: '0 0 0.75rem', padding: '0.6rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fffbeb', color: '#78350f', fontSize: '0.74rem', fontWeight: 800, lineHeight: 1.4 } }, tr('The teacher paused new submissions while reviewing. Your draft stays in this browser, and you can submit if collecting resumes.')) : null,
         teacherCheckInForCurrentSupport ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { margin: '0 0 0.8rem', padding: '0.7rem', border: '2px solid #7c3aed', borderRadius: 9, background: '#f5f3ff', color: '#4c1d95' } },
@@ -6618,14 +6828,14 @@
           feedbackConfig.criteria
         ) : null,
         submitted ? (feedbackConfig.enabled ? ce('div', { style: { padding: '0.75rem', background: studentFeedback ? '#eef2ff' : '#dcfce7', color: studentFeedback ? '#312e81' : '#166534', borderRadius: 8 } },
-          ce('div', { style: { fontWeight: 800 } }, studentFeedback ? tr('Your teacher reviewed your response') : (currentAttempt > 1 ? tr('Revision sent. Waiting for teacher feedback.') : tr('Response sent. Waiting for teacher feedback.'))),
+          ce('div', { style: { fontWeight: 800 } }, studentFeedback ? tr('Your teacher reviewed your response') : (currentAttempt > 1 ? tr(deliveryState === 'confirmed' ? 'Revision received by teacher. Waiting for feedback.' : 'Revision sent. Waiting for teacher feedback.') : tr(deliveryState === 'confirmed' ? 'Response received by teacher. Waiting for feedback.' : 'Response sent. Waiting for teacher feedback.'))),
           studentFeedback ? ce('div', { style: { marginTop: 7, padding: '0.6rem', background: 'white', border: '1px solid #c7d2fe', borderRadius: 7, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '0.86rem', lineHeight: 1.45 } }, studentFeedback.text) : null,
           studentFeedback && studentFeedback.allowRevision && currentAttempt < feedbackConfig.maxAttempts ? ce('button', {
             onClick: function () {
               const nextAttempt = Math.min(feedbackConfig.maxAttempts, currentAttempt + 1);
               setCurrentAttempt(nextAttempt);
               setResponseValue(submittedResponse);
-              setSubmitted(false);
+              setSubmitted(false); setDeliveryState('idle');
               setStudentFeedback(null);
               statusSentRef.current = '';
               if (guestRef.current) guestRef.current.sendResponseStatus(activePoll.id, 'editing', nextAttempt);
@@ -6633,14 +6843,14 @@
             style: { marginTop: 8, padding: '0.55rem 0.9rem', borderRadius: 6, border: 'none', background: '#4f46e5', color: 'white', cursor: 'pointer', fontWeight: 800, width: '100%' }
           }, tr('Revise using this feedback')) : studentFeedback ? ce('p', { style: { margin: '0.55rem 0 0 0', fontSize: '0.75rem', fontWeight: 700 } }, tr('Feedback cycle complete.')) : null
         ) : ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 8, fontWeight: 600 } },
-          ce('div', null, tr('Response sent. Waiting for the teacher to close this poll.')),
+          ce('div', null, tr(deliveryState === 'confirmed' ? 'Response received by teacher. Waiting for the next activity.' : 'Response sent. Waiting for the teacher to close this poll.')),
           activePoll.type === 'wordcloud' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, marginTop: 8 } },
             ce('button', {
               type: 'button',
-              disabled: activePoll.submissionsLocked === true,
+              disabled: activePoll.submissionsLocked === true || confirmationPending,
               onClick: function () {
                 setResponseValue(submittedResponse);
-                setSubmitted(false);
+                setSubmitted(false); setDeliveryState('idle');
                 statusSentRef.current = '';
                 if (guestRef.current) guestRef.current.sendResponseStatus(activePoll.id, 'editing', currentAttempt);
               },
@@ -6648,8 +6858,12 @@
             }, tr('Revise term')),
             ce('button', {
               type: 'button',
-              disabled: activePoll.submissionsLocked === true,
+              disabled: activePoll.submissionsLocked === true || confirmationPending,
               onClick: function () {
+                if (activePoll.responseReceipts === 1 && connectionState === 'connected') {
+                  if (!pendingResponseRef.current) sendConfirmedResponse(activePoll, '', currentAttempt, true);
+                  return;
+                }
                 if (!guestRef.current || !guestRef.current.sendResponse(activePoll.id, '', { withdrawn: true })) {
                   setSubmitNotice(tr('Reconnect to withdraw your term.'));
                   return;
@@ -6670,7 +6884,7 @@
             ratingValues.map(function (n) {
               const selected = responseValue !== '' && Number(responseValue) === n;
               const label = ratingScale.labels[String(n)];
-              return ce('button', { key: n, type: 'button', 'aria-pressed': selected, disabled: activePoll.submissionsLocked === true, onClick: function () { setResponseValue(n); }, style: { minWidth: 54, minHeight: 52, borderRadius: 14, border: '2px solid ' + (selected ? '#1e3a8a' : '#cbd5e1'), background: selected ? '#1e3a8a' : 'white', color: selected ? 'white' : '#0f172a', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0.55rem' } },
+              return ce('button', { key: n, type: 'button', 'aria-pressed': selected, disabled: activePoll.submissionsLocked === true || confirmationPending, onClick: function () { setResponseValue(n); }, style: { minWidth: 54, minHeight: 52, borderRadius: 14, border: '2px solid ' + (selected ? '#1e3a8a' : '#cbd5e1'), background: selected ? '#1e3a8a' : 'white', color: selected ? 'white' : '#0f172a', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0.55rem' } },
                 ce('span', { style: { display: 'block' } }, n),
                 label ? ce('span', { style: { display: 'block', fontSize: '0.62rem', fontWeight: 600, marginTop: 2, maxWidth: 80, lineHeight: 1.15 } }, label) : null
               );
@@ -6678,15 +6892,15 @@
           ) :
           activePoll.type === 'mcq' ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, margin: '0.5rem 0 1rem 0' } },
             (activePoll.options || []).map(function (opt, i) {
-              return ce('button', { key: i, type: 'button', 'aria-pressed': responseValue === opt, disabled: activePoll.submissionsLocked === true, onClick: function () { setResponseValue(opt); }, style: { textAlign: 'left', padding: '0.6rem 0.9rem', borderRadius: 8, border: '2px solid ' + (responseValue === opt ? '#1e3a8a' : '#cbd5e1'), background: responseValue === opt ? '#eef2ff' : 'white', cursor: 'pointer', fontWeight: 500 } }, opt);
+              return ce('button', { key: i, type: 'button', 'aria-pressed': responseValue === opt, disabled: activePoll.submissionsLocked === true || confirmationPending, onClick: function () { setResponseValue(opt); }, style: { textAlign: 'left', padding: '0.6rem 0.9rem', borderRadius: 8, border: '2px solid ' + (responseValue === opt ? '#1e3a8a' : '#cbd5e1'), background: responseValue === opt ? '#eef2ff' : 'white', cursor: 'pointer', fontWeight: 500 } }, opt);
             })
           ) :
           activePoll.type === 'wordcloud' ? ce('div', { style: { margin: '0.5rem 0 1rem 0' } },
-            ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, disabled: activePoll.submissionsLocked === true, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: activePoll.submissionsLocked ? tr('Teacher review in progress') : tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', background: activePoll.submissionsLocked ? '#f8fafc' : 'white' } }),
+            ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, disabled: activePoll.submissionsLocked === true || confirmationPending, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: activePoll.submissionsLocked ? tr('Teacher review in progress') : tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', background: activePoll.submissionsLocked ? '#f8fafc' : 'white' } }),
             ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
           ) :
-          ce('textarea', { value: responseValue, disabled: activePoll.submissionsLocked === true, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
-        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
+          ce('textarea', { value: responseValue, disabled: activePoll.submissionsLocked === true || confirmationPending, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : LIVE_POLL_DRAFT_MAX_CHARS, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
+        submitted || confirmationPending ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' || connectionState === 'offline' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
         ce('button', {
           type: 'button',
           onClick: toggleHelpRequest,

@@ -83,6 +83,17 @@ describe('Document Builder Advanced Review integration', () => {
     expect(host).toContain("if (exportPreviewSource === 'history' && !_builderDraftRestoreRef.current)");
     expect(host).toContain("draft.source === 'history'");
     expect(host).toContain("source: 'history', historySignature: _getBuilderHistorySignature()");
-    expect(view).toContain("exportPreviewSource || 'generated'");
+    expect(view).toContain('_builderDraftContext({ source: exportPreviewSource, mode: exportPreviewMode,');
+    const buildContext = new Function(
+      sourceBlock(view, 'function _builderDraftContext(', 'async function _builderDraftIdentity(')
+      + ';return _builderDraftContext;',
+    )();
+    const history = [{ id: 'lesson', content: 'Generated author reading' }];
+    const authorContext = buildContext({ source: 'history', mode: 'print', history, resourceIds: ['lesson'] });
+    const reviewContext = buildContext({ source: 'remediation', mode: 'print', history, documentDigest: 'sha256:reviewed-document' });
+    expect(JSON.parse(authorContext)).toMatchObject({ version: 3, source: 'history', resourceIds: ['lesson'], document: history });
+    expect(JSON.parse(reviewContext)).toMatchObject({ version: 3, source: 'remediation', resourceIds: null, document: 'sha256:reviewed-document' });
+    expect(reviewContext).not.toBe(authorContext);
+    expect(buildContext({ source: 'remediation', mode: 'print', history })).toBeNull();
   });
 });

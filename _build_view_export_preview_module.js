@@ -19,7 +19,7 @@ const TMP = path.join(ROOT, '_tmp_view_export_preview_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewExportPreview] Source not found'); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
-fs.writeFileSync(TMP, '/* global React */\n' + source, 'utf-8');
+writeBuildFile(TMP, '/* global React */\n' + source, 'utf-8');
 
 console.log('[ViewExportPreview] Compiling with esbuild...');
 try {
@@ -63,10 +63,10 @@ console.log('[CDN] ViewExportPreviewModule loaded — ExportPreviewView register
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+writeBuildFile(OUTPUT, outputCode, 'utf-8');
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    writeBuildFile(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) { console.warn('[ViewExportPreview] sync failed:', e.message); }
 
 try { execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' }); }
@@ -75,3 +75,9 @@ catch (e) { console.error('[ViewExportPreview] Syntax check failed:', (e.stderr 
 const lineCount = outputCode.split('\n').length;
 console.log('[ViewExportPreview] Built ' + OUTPUT + ' (' + lineCount + ' lines)');
 console.log('[ViewExportPreview] Synced to ' + DEPLOY_OUT);
+
+function writeBuildFile(file, contents, encoding) {
+    const temporary = file + ".build-" + process.pid + ".tmp";
+    try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, file); }
+    finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+}

@@ -1,0 +1,361 @@
+{
+  "checks": [
+    "Search, empty states, owner/due filters, stable completion totals, clear-filter focus, exact formal-record navigation",
+    "Educator-owned returned plan remains actionable alongside evaluator-owned formal work",
+    "Updated manual figures mirrored; image decoding, section anchors, keyboard code scrolling, reading controls, desktop/mobile and 160% text with dark-theme layouts verified"
+  ],
+  "views": {
+    "evaluator-worklist-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-brand > div:nth-child(2) > p"
+            ],
+            [
+              ".ae-role > button:nth-child(2)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".ae-span-5 > .ae-donut-wrap > .ae-donut[role=\"img\"] > .ae-donut-center > strong"
+            ],
+            [
+              ".ae-span-5 > .ae-donut-wrap > .ae-donut[role=\"img\"] > .ae-donut-center > span"
+            ],
+            [
+              ".ae-span-7 > .ae-donut-wrap > .ae-donut[role=\"img\"] > .ae-donut-center > strong"
+            ],
+            [
+              ".ae-span-7 > .ae-donut-wrap > .ae-donut[role=\"img\"] > .ae-donut-center > span"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 1180,
+      "viewport": 1180
+    },
+    "educator-own-next-step": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-brand > div:nth-child(2) > p"
+            ],
+            [
+              ".ae-role > button:nth-child(1)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 1180,
+      "viewport": 1180
+    },
+    "evaluator-worklist-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-role > button:nth-child(2)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "evaluator-worklist-dark": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-role > button:nth-child(2)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "evaluator-worklist-contrast": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "educator-evaluation-manual.html-desktop": {
+      "violations": [],
+      "incomplete": [],
+      "scrollWidth": 1180,
+      "viewport": 1180
+    },
+    "educator-evaluation-manual.html-mobile": {
+      "violations": [],
+      "incomplete": [],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "educator-evaluation-manual.html-large-dark-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "pre > code"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "school-rewards-manual.html-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 1180,
+      "viewport": 1180
+    },
+    "school-rewards-manual.html-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    },
+    "school-rewards-manual.html-large-dark-mobile": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "scrollWidth": 390,
+      "viewport": 390
+    }
+  },
+  "images": {
+    "educator-evaluation-manual-assets/02-overview.jpg": 131510,
+    "educator-evaluation-manual-assets/20-worklist.jpg": 126362,
+    "educator-evaluation-manual-assets/21-educator-next-step.jpg": 139341,
+    "school-rewards-manual-assets/13-store-browse.jpg": 183289,
+    "school-rewards-manual-assets/05-student-overview.jpg": 140409,
+    "school-rewards-manual-assets/14-cashier-review.jpg": 49887
+  },
+  "errors": [],
+  "ok": true
+}

@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "write protection",
+    "address isolation",
+    "volatile power loss",
+    "DRAM refresh and information loss",
+    "nonvolatile retention",
+    "FeRAM mechanism",
+    "flash erase block",
+    "independent banks",
+    "oxidation controls and zero duration",
+    "mask continuity",
+    "dose/energy/anneal controls",
+    "visited-stage completion",
+    "numerical notebook evidence",
+    "concept feedback",
+    "desktop/mobile overflow",
+    "nine WCAG variants"
+  ],
+  "errors": []
+}

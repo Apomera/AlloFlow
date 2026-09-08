@@ -199,7 +199,7 @@ describe('Semiconductor Lab runtime UI regressions', () => {
     expect(source).toContain('window.devicePixelRatio');
     expect(source).toContain('cx.setTransform(pixelWidth / logicalWidth');
     expect(source).toContain('new ResizeObserver(function()');
-    expect(source).toContain("canvasEl.style.maxWidth = '1024px'");
+    expect(source).toContain("canvasEl.style.maxWidth = '760px'");
     expect(source).toContain("canvasEl.style.minWidth = '0'");
     expect(source).toContain('Math.min(3, window.devicePixelRatio || 1)');
     expect(source.match(/\}, \[tab, subtool,/g)).toHaveLength(13);
@@ -249,25 +249,25 @@ describe('Semiconductor Lab runtime UI regressions', () => {
       semiconductor: { mode: 'challenge', challengeActive: true, challengeIdx: 0 }
     });
     const led = renderTool('semiconductor', {
-      semiconductor: { mode: 'explore', subtool: 'ledspec', ledMaterial: 'green-gan', ledCurrent: 20 }
+      semiconductor: { mode: 'explore', subtool: 'ledspec', ledMaterial: 'green', ledCurrent: 20 }
     });
     const wafer = renderTool('semiconductor', {
       semiconductor: { mode: 'explore', subtool: 'waferfab', fabStage: 0 }
     });
     const finalWafer = renderTool('semiconductor', {
-      semiconductor: { mode: 'explore', subtool: 'waferfab', fabStage: 7 }
+      semiconductor: { mode: 'explore', subtool: 'waferfab', fabStage: 7, fabVisited:[0,1,2,3,4,5,6,7] }
     });
 
     expect(source).not.toContain('a11yClick(function() {})');
     expect(challenge).toContain('aria-pressed=\"false\"');
     expect(challenge).toContain('min-h-11');
     expect(led).toContain('aria-label=\"InGaN (Green) LED\"');
-    expect(source).toContain('color: canvasInkFor(m.color)');
+    expect(led).toContain('aria-label="InGaN (Green) LED" aria-pressed="true"');
     expect(wafer).toContain('aria-current=\"step\"');
     expect(wafer).toContain('disabled=\"\"');
-    expect(finalWafer).toContain('Finish wafer ✓');
+    expect(finalWafer).toContain('Finish walkthrough ✓');
     expect(finalWafer).not.toContain('disabled=\"\"');
-    expect(source).toContain("announceToSR('Wafer fabrication complete')");
+    expect(source).toContain("announceToSR('Wafer fabrication walkthrough complete')");
     expect(source).toContain("cx.strokeStyle = '#64748B'; cx.lineWidth = 1");
   });
 });

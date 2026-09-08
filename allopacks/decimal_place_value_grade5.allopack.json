@@ -1,0 +1,501 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Same Digits, Different Values — Decimals",
+    "author": "AlloFlow; AI-assisted draft, educator review pending",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th Grade",
+    "standards": "CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning)",
+    "createdAt": "2026-09-08T00:00:00.000Z",
+    "imageShotList": "allopacks/decimal_place_value_grade5.IMAGES.md",
+    "contentSources": [
+      {
+        "title": "Official learning standard",
+        "url": "https://www.thecorestandards.org/Math/Content/5/NBT/"
+      }
+    ],
+    "reviewStatus": "AI content and structural checks; educator review pending",
+    "imageStatus": "planned-not-generated"
+  },
+  "sourceTopic": "Same Digits, Different Values — Decimals",
+  "history": [
+    {
+      "id": "dpv-directions",
+      "type": "directions",
+      "title": "Start Here",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "body": "Read **Same Digits, Different Values — Decimals** with a partner or use read-aloud. Explore **Key Words**, then play Matching and Memory. Use **Keep the Ideas Clear** as a reference. Try **Sort and Explain**, **Explain Your Thinking**, and **Check Your Understanding**. Use **Remember the Ideas** to build a memory cue. Read **Questions to Explore**, then complete **Try It with Evidence**.\n\nExplain an answer using a detail from the lesson. Images are planned for a later edition; every activity works with text now.",
+        "objectives": [
+          {
+            "id": "dpv-goal-match",
+            "label": "Complete Matching",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "dpv-glossary"
+          },
+          {
+            "id": "dpv-goal-memory",
+            "label": "Complete Memory",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "dpv-glossary"
+          },
+          {
+            "id": "dpv-goal-evidence",
+            "label": "I explained an answer using lesson evidence",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "5th Grade • Start Here"
+    },
+    {
+      "id": "dpv-reading",
+      "type": "simplified",
+      "title": "Same Digits, Different Values — Decimals",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": "## Same Digits, Different Values\n\nTwo ribbons measure 0.6 meter and 0.45 meter. Which is longer? The number 45 is greater than 6, but that does not settle this question. We must compare the same units.\n\nA **decimal** uses place value to show whole amounts and parts of one. Each **digit** has a value based on its place. The **point** separates the ones place from the tenths place. It is a marker, not a command to ignore units.\n\nSplit one meter into ten equal parts. Each part is a **tenth**. Split a tenth into ten equal parts. Each smaller part is a **hundredth**. Split a hundredth into ten equal parts. Each new part is a **thousandth**. Moving one place right makes the unit one tenth as large.\n\nThe ribbon that is 0.6 meter long is six tenths of a meter. We can also name it as sixty hundredths: 0.60 meter. Now compare 60 hundredths with 45 hundredths. The first ribbon is longer.\n\n**Equivalent** decimals name the same value. Adding a zero at the right end of a decimal's fractional part does not change its value. For example, 2.5 and 2.500 are equal. But inserting a zero between other digits can change the value. The numbers 2.05 and 2.5 are not equal.\n\nTo **compare** two decimals, start with the greatest place and work right. Compare ones, then tenths, then hundredths, as needed. The first unequal place decides which number is greater. With 3.407 and 3.47, the ones and tenths match. Write 3.47 as 3.470. Zero hundredths are fewer than seven hundredths, so 3.407 is less.\n\nA **unit** tells what an amount measures. Use the same unit and the same whole in a drawing. Six tenths of a small ribbon need not be longer than half of a much larger ribbon. A model is useful only when we know what counts as one.\n\nExplain your answer with a place-value name, an equivalent decimal, or a carefully scaled model. Counting written digits is not a comparison rule.",
+      "meta": "5th Grade • Same Digits, Different Values — Decimals"
+    },
+    {
+      "id": "dpv-glossary",
+      "type": "glossary",
+      "title": "Key Words",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "term": "Decimal",
+          "def": "A number written with base-ten places, including places for parts of one.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Digit",
+          "def": "One symbol from zero through nine used to write a number.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Point",
+          "def": "The mark separating ones from tenths in decimal notation.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Tenth",
+          "def": "One of ten equal parts of a whole.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Hundredth",
+          "def": "One of one hundred equal parts of a whole.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Thousandth",
+          "def": "One of one thousand equal parts of a whole.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Equivalent",
+          "def": "Equal in value even when written in different ways.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Compare",
+          "def": "Decide whether amounts are equal or which is greater.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Unit",
+          "def": "The amount or measure used as a reference.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "5th Grade • Key Words"
+    },
+    {
+      "id": "dpv-anchor",
+      "type": "anchor-chart",
+      "title": "Keep the Ideas Clear",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "Same Digits, Different Values — Decimals",
+        "sections": [
+          {
+            "id": "dpv-section-1",
+            "label": "NAME THE PLACE",
+            "bullets": [
+              "One tenth is ten hundredths",
+              "One hundredth is ten thousandths"
+            ],
+            "iconPrompt": "Equal whole bars partitioned into tenths and hundredths; exact divisions required"
+          },
+          {
+            "id": "dpv-section-2",
+            "label": "COMPARE LIKE UNITS",
+            "bullets": [
+              "Keep the whole and unit the same",
+              "Compare from greatest place to least"
+            ],
+            "iconPrompt": "Two equal whole bars with six tenths and forty-five hundredths shaded"
+          },
+          {
+            "id": "dpv-section-3",
+            "label": "ZERO WITH CARE",
+            "bullets": [
+              "0.6 equals 0.60",
+              "0.06 does not equal 0.6"
+            ],
+            "iconPrompt": "Equal whole grids showing six tenths and six hundredths"
+          }
+        ]
+      },
+      "meta": "5th Grade • Keep the Ideas Clear"
+    },
+    {
+      "id": "dpv-sort",
+      "type": "concept-sort",
+      "title": "Sort and Explain",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "dpv-category-0",
+            "label": "Equal to 0.5",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "dpv-category-1",
+            "label": "Less than 0.5",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "dpv-category-2",
+            "label": "Greater than 0.5",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "dpv-card-1",
+            "content": "0.50",
+            "categoryId": "dpv-category-0"
+          },
+          {
+            "id": "dpv-card-2",
+            "content": "0.500",
+            "categoryId": "dpv-category-0"
+          },
+          {
+            "id": "dpv-card-3",
+            "content": "0.05",
+            "categoryId": "dpv-category-1"
+          },
+          {
+            "id": "dpv-card-4",
+            "content": "0.499",
+            "categoryId": "dpv-category-1"
+          },
+          {
+            "id": "dpv-card-5",
+            "content": "0.51",
+            "categoryId": "dpv-category-2"
+          },
+          {
+            "id": "dpv-card-6",
+            "content": "0.605",
+            "categoryId": "dpv-category-2"
+          }
+        ]
+      },
+      "meta": "5th Grade • Sort and Explain"
+    },
+    {
+      "id": "dpv-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Thinking",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I notice ____. This matters because ____."
+          },
+          {
+            "text": "I compared ____ with ____. They differ because ____."
+          },
+          {
+            "text": "My evidence is ____. It supports ____."
+          },
+          {
+            "text": "At first I thought ____. Now I think ____ because ____."
+          }
+        ],
+        "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
+      },
+      "meta": "5th Grade • Explain Your Thinking"
+    },
+    {
+      "id": "dpv-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which decimal equals 0.6?",
+            "options": [
+              "0.06",
+              "0.006",
+              "6.00",
+              "0.60"
+            ],
+            "correctAnswer": "0.60",
+            "conceptLabel": "equivalent values"
+          },
+          {
+            "type": "mcq",
+            "question": "Which comparison is true?",
+            "options": [
+              "0.6 > 0.45",
+              "0.6 < 0.45",
+              "0.6 = 0.45",
+              "0.06 = 0.45"
+            ],
+            "correctAnswer": "0.6 > 0.45",
+            "conceptLabel": "compare places"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the value of 7 in 2.073?",
+            "options": [
+              "Seven tenths",
+              "Seven hundredths",
+              "Seven thousandths",
+              "Seven whole units"
+            ],
+            "correctAnswer": "Seven hundredths",
+            "conceptLabel": "compare places"
+          },
+          {
+            "type": "mcq",
+            "question": "Which decimal equals 3.47?",
+            "options": [
+              "3.047",
+              "3.407",
+              "3.470",
+              "34.70"
+            ],
+            "correctAnswer": "3.470",
+            "conceptLabel": "equivalent values"
+          },
+          {
+            "type": "mcq",
+            "question": "What must match in two fraction-of-a-whole drawings?",
+            "options": [
+              "The colors of the outlines",
+              "The number of drawn digits",
+              "The names of the students",
+              "The size of the whole unit"
+            ],
+            "correctAnswer": "The size of the whole unit",
+            "conceptLabel": "compare places"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why 0.52 is greater than 0.507.",
+            "expectedAnswer": "Write 0.52 as 0.520. The tenths match, but two hundredths exceed zero hundredths, so 0.520 is greater than 0.507.",
+            "conceptLabel": "compare places"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Why does 4.20 equal 4.2 while 4.02 does not?",
+            "expectedAnswer": "Twenty hundredths equal two tenths. In 4.02 there are zero tenths and two hundredths, so it is a different value.",
+            "conceptLabel": "equivalent values"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which evidence or example helped you change your mind?"
+          },
+          {
+            "text": "What would you check next, and why?"
+          }
+        ]
+      },
+      "meta": "5th Grade • Check Your Understanding"
+    },
+    {
+      "id": "dpv-memory",
+      "type": "memory-aid",
+      "title": "Remember the Ideas",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Ideas",
+        "instructions": "Study each cue. Make your own cue, then explain how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Each place to the right has a unit one tenth as large. Trailing zeros in the fractional part do not change value. Compare numbers using the same unit and whole.",
+        "lessonRef": {
+          "resourceId": "dpv-reading",
+          "title": "Same Digits, Different Values — Decimals"
+        },
+        "cards": [
+          {
+            "id": "dpv-memory-0",
+            "target": "Remember: NAME THE PLACE",
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "One tenth is ten hundredths",
+              "One hundredth is ten thousandths",
+              "Each place to the right has a unit one tenth as large."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Say this cue: NAME THE PLACE. Then explain: One tenth is ten hundredths.",
+            "mapping": "The cue connects the key idea to a specific example: Each place to the right has a unit one tenth as large.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          },
+          {
+            "id": "dpv-memory-1",
+            "target": "Remember: COMPARE LIKE UNITS",
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Keep the whole and unit the same",
+              "Compare from greatest place to least",
+              "Trailing zeros in the fractional part do not change value."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Picture this: Keep the whole and unit the same. Compare from greatest place to least. Use the picture to explain the idea.",
+            "mapping": "The cue connects the key idea to a specific example: Trailing zeros in the fractional part do not change value.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          }
+        ]
+      },
+      "meta": "5th Grade • Remember the Ideas"
+    },
+    {
+      "id": "dpv-faq",
+      "type": "faq",
+      "title": "Questions to Explore",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "question": "Does a longer decimal always have greater value?",
+          "answer": "No. The values of its places matter. For example, 0.9 is greater than 0.125."
+        },
+        {
+          "question": "Can I add a zero anywhere?",
+          "answer": "No. A zero at the far right of the fractional part preserves value. Inserting one elsewhere may change the places."
+        },
+        {
+          "question": "Is 0.500 three times as much as 0.5?",
+          "answer": "No. Both name one half. More written digits do not multiply the amount."
+        },
+        {
+          "question": "Why keep the same whole in a model?",
+          "answer": "The parts get their size from the whole. Comparing different wholes can hide which numerical value is greater."
+        }
+      ],
+      "meta": "5th Grade • Questions to Explore"
+    },
+    {
+      "id": "dpv-challenge",
+      "type": "applied-challenge",
+      "title": "Try It with Evidence",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Try It with Evidence",
+        "instructions": "Make a prediction or first answer. Use evidence to check it. Explain what you found.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "A craft team has ribbon lengths of 0.6 m, 0.45 m, 0.605 m, and 0.56 m. It needs an order from shortest to longest.",
+          "role": "Class investigators",
+          "audience": "A classmate checking our reasoning",
+          "drivingQuestion": "How can we order the ribbons and prove the order using place value?",
+          "seedDirection": "Write equivalent decimals to thousandths. Compare like places. Check with a model that uses the same whole meter.",
+          "lockedLessonFacts": [
+            "Each place to the right has a unit one tenth as large.",
+            "Trailing zeros in the fractional part do not change value.",
+            "Compare numbers using the same unit and whole."
+          ],
+          "openQuestions": [
+            "What will count as useful evidence?",
+            "What might our method miss?"
+          ],
+          "criteria": [
+            "Describe the method or model clearly",
+            "Use evidence to support your answer",
+            "Name a limit or a question to check next"
+          ],
+          "constraints": [
+            "Use teacher-approved materials or supplied examples",
+            "Keep a record of what you actually observe or calculate"
+          ],
+          "deliverable": "Give the order, explain two neighboring comparisons, and correct the claim that more decimal digits always means longer.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A classmate checks a related claim from this lesson.",
+            "move": "They use the lesson rule: Each place to the right has a unit one tenth as large. They record an example, then check whether it supports the claim.",
+            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+          },
+          "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
+          "frameChoices": [
+            "Explain with a drawing and spoken words",
+            "Explain with a written record and evidence"
+          ],
+          "coachPrompts": [
+            "Which detail in your record supports your answer?"
+          ]
+        },
+        "coachHint": "Keep the claim and the evidence connected.",
+        "sourceExcerpt": "Each place to the right has a unit one tenth as large. Trailing zeros in the fractional part do not change value. Compare numbers using the same unit and whole.",
+        "lessonRef": {
+          "resourceId": "dpv-reading",
+          "title": "Same Digits, Different Values — Decimals"
+        }
+      },
+      "meta": "5th Grade • Try It with Evidence"
+    }
+  ]
+}

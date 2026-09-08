@@ -1,0 +1,15 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "09-siege-fresh",
+    "10-siege-gatehouse"
+  ]
+}

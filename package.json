@@ -202,7 +202,8 @@
     "verify:sel-a11y": "node dev-tools/check_sel_a11y.cjs",
     "verify:sel-wcag": "node dev-tools/check_sel_hub_wcag.cjs",
     "demo:school-store": "node dev-tools/build_print_review_css.cjs && node dev-tools/school_rewards_admin_demo.mjs",
-    "verify:school-rewards": "vitest run tests/school_rewards tests/admin_hub_rewards_card.test.js tests/allohaven_classroom_reward_bridge.test.js tests/print_lab_tool.test.js tests/geometry_world_printlab_bridge.test.js --maxWorkers=1 --testTimeout=60000"
+    "verify:school-rewards": "vitest run tests/school_rewards tests/admin_hub_rewards_card.test.js tests/allohaven_classroom_reward_bridge.test.js tests/print_lab_tool.test.js tests/geometry_world_printlab_bridge.test.js --maxWorkers=1 --testTimeout=60000",
+    "build:directions": "node dev-tools/build_directions.cjs"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.32.0",

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "caption bounds in downloaded VTT",
+    "Unicode video filename",
+    "prepared-file identity",
+    "transcript after switching takes",
+    "mobile overflow",
+    "no page errors"
+  ]
+}

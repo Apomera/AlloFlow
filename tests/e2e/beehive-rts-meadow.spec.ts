@@ -205,3 +205,109 @@ test('expands the larger map, inspects individual patches, and restores keyboard
   const axe=await page.evaluate(async()=>{const w=window as any;const r=await w.axe.run('[data-rts-patch-explorer]',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>n.target)}));});
   expect(axe).toEqual([]);
 });
+
+test('guides a shared-patch investigation with frozen evidence and notebook export', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await mount(page);
+  const bay = page.locator('[data-beehive-3d-bay="queen"]'), study = bay.locator('[data-rts-map-investigation]');
+  const queen = await page.evaluate(() => JSON.stringify((window as any).__toolData.beehive.queen));
+  await bay.locator('canvas').evaluate((c: any) => { c.__studyCanvas = true; });
+  await expect(study.getByRole('button', { name: 'Start investigation', exact: true })).toHaveAttribute('aria-expanded', 'false');
+  await study.getByRole('button', { name: 'Start investigation', exact: true }).click();
+  await study.getByRole('combobox', { name: 'Study patch', exact: true }).selectOption('patch_c');
+  await study.getByRole('radio', { name: 'I am not sure yet.', exact: true }).check();
+  await expect(study.getByRole('button', { name: 'Record your route', exact: true })).toBeDisabled();
+  for (const [colony, show] of [['home', 'Show your route'], ['neighbor', 'Show neighbor route']]) {
+    await study.getByRole('button', { name: show, exact: true }).click();
+    await expect(bay.getByRole('combobox', { name: 'Inspect a flower patch', exact: true })).toHaveValue('patch_c');
+    await expect.poll(() => page.evaluate(() => (window as any).__rtsScene.getObjectByName('forage-routes').children.filter((o: any) => o.visible).map((o: any) => o.userData))).toEqual([{ colony: colony === 'home' ? 0 : 1, patch: 2 }]);
+    await expect(bay.getByRole('button', { name: 'Record this route', exact: true })).toBeEnabled();
+    await bay.getByRole('button', { name: 'Record this route', exact: true }).click();
+    await expect(study.locator('[data-study-route="' + colony + '"]')).toHaveAttribute('data-recorded', 'true');
+    await bay.getByRole('button', { name: 'Open investigation', exact: false }).click();
+    await expect(study.locator('#bee-rts-study-panel')).toBeFocused();
+  }
+  await expect(study.getByRole('combobox', { name: 'Study patch', exact: true })).toHaveCount(0);
+  await study.getByRole('radio', { name: 'The routes prove both colonies collect equal amounts of food.', exact: true }).check();
+  await expect(study.locator('.bee-map-study-feedback')).toContainText('no visit counts or nectar measurements');
+  await study.getByRole('radio', { name: 'The selection ring proves a defended territory.', exact: true }).check();
+  await expect(study.locator('.bee-map-study-feedback')).toContainText('ring marks your selection');
+  await study.getByRole('radio', { name: 'The diagram shows both colonies reaching one patch.', exact: true }).check();
+  await expect(study.locator('.bee-map-study-feedback')).toContainText('investigation complete');
+  await study.getByRole('textbox', { name: 'My note or next field question (optional)', exact: true }).fill('How often does each colony visit these flowers?');
+  await study.getByRole('button', { name: 'Save to Science Notebook', exact: true }).click();
+  await expect(study.getByRole('button', { name: 'Saved to Science Notebook', exact: true })).toBeDisabled();
+  const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as any).__toolData.beehive.notebook.sharedMap)));
+  expect(saved.text).toContain('not field observations'); expect(saved.text).toContain('How often does each colony visit');
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.beehive.queen))).toBe(queen);
+  await expect(bay.locator('canvas')).toHaveJSProperty('__studyCanvas', true);
+  const violations = await page.evaluate(async () => {
+    const r = await (window as any).axe.run(document.querySelector('[data-rts-map-investigation]'), { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21aa','wcag22aa'] } });
+    return r.violations.map((v: any) => ({ id:v.id, nodes:v.nodes.map((n:any)=>n.failureSummary) }));
+  });
+  expect(violations).toEqual([]);
+  await study.screenshot({ path: 'scratch/beehive-rts/map-investigation-complete.png' });
+  await bay.getByRole('button', { name: 'Whole landscape', exact: true }).click();
+  await bay.getByRole('button', { name: 'Step one cycle', exact: true }).click();
+  expect(await page.evaluate(() => (window as any).__toolData.beehive.queenMapStudy.captures)).toEqual(saved.study.captures);
+  await study.getByRole('button', { name: 'Hide investigation', exact: true }).click();
+  await study.getByRole('button', { name: 'Continue investigation', exact: true }).click();
+  await expect(study.getByRole('textbox')).toHaveValue('How often does each colony visit these flowers?');
+  // Existing portfolio export must include the saved map record, even after clearing the working study.
+  await study.getByRole('button', { name: 'Clear investigation', exact: true }).click();
+  expect(await page.evaluate(() => (window as any).__toolData.beehive.notebook.sharedMap)).toEqual(saved);
+  await page.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t: string) => { (window as any).__studyPortfolio = t; } } }); });
+  await bay.getByRole('button', { name: 'Expand map', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await study.getByRole('button', { name: 'Open Science Notebook', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(false);
+  await expect(page.locator('#beehive-notebook-summary')).toBeFocused();
+  const entry = page.locator('[data-map-study-notebook-record]');
+  await entry.getByText('Read the saved map investigation', { exact: true }).click();
+  await expect(entry).toContainText(saved.text);
+  await page.locator('[data-beehive-copy-notebook]').click();
+  expect(await page.evaluate(() => (window as any).__studyPortfolio)).toContain(saved.text);
+  expect(errors).toEqual([]);
+});
+
+test('prevents recording hidden or mismatched routes and preserves the study across remounts', async ({ page }) => {
+  await mount(page, { day: 95 });
+  const bay = page.locator('[data-beehive-3d-bay="queen"]'), study = bay.locator('[data-rts-map-investigation]');
+  await study.getByRole('button', { name: 'Start investigation', exact: true }).click();
+  await study.getByRole('radio', { name: 'Both colonies can reach the same patch.', exact: true }).check();
+  await study.getByRole('button', { name: 'Show your route', exact: true }).click();
+  await expect(bay.getByRole('button', { name: 'Record this route', exact: true })).toBeDisabled();
+  await expect(bay.locator('.bee-rts-study-shortcut')).toContainText('winter calendar hides routes');
+  await page.evaluate(() => { const w=window as any; w.__ctx.updateMulti('beehive', { queen: { ...w.__toolData.beehive.queen, day: 120 } }); });
+  await bay.getByRole('checkbox', { name: 'Forager routes', exact: true }).uncheck();
+  await expect(bay.getByRole('button', { name: 'Record this route', exact: true })).toBeDisabled();
+  await bay.getByRole('checkbox', { name: 'Forager routes', exact: true }).check();
+  await bay.getByRole('combobox', { name: 'Inspect a flower patch', exact: true }).selectOption('patch_a');
+  await expect(bay.getByRole('button', { name: 'Record this route', exact: true })).toBeDisabled();
+  await study.getByRole('button', { name: 'Show your route', exact: true }).click();
+  await bay.getByRole('button', { name: 'Record this route', exact: true }).click();
+  const persisted = await page.evaluate(() => JSON.parse(JSON.stringify((window as any).__toolData)));
+  await page.reload();
+  await page.evaluate(data => { const w=window as any; w.__mount(data); Object.assign(document.getElementById('wrap')!.style, {width:'100%',height:'auto',display:'block'}); }, persisted);
+  await expect(study.locator('[data-study-route="home"]')).toHaveAttribute('data-recorded', 'true');
+  await expect(study.locator('[data-study-route="home"]')).toContainText('cycle 120');
+  await expect(study.locator('[data-study-route="neighbor"]')).toHaveAttribute('data-recorded', 'false');
+  await expect(study).toContainText('Your prediction is kept');
+});
+
+test('keeps the map investigation readable by keyboard at 320px in both themes', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 }); await mount(page);
+  const study = page.locator('[data-rts-map-investigation]');
+  await study.getByRole('button', { name: 'Start investigation', exact: true }).focus(); await page.keyboard.press('Space');
+  await study.getByRole('radio', { name: 'I am not sure yet.', exact: true }).focus(); await page.keyboard.press('Space');
+  for (const dark of [false, true]) {
+    await page.evaluate(dark => { (window as any).__ctx.isDark=dark; (window as any).__rerender(); }, dark);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    const violations = await page.evaluate(async () => {
+      const r = await (window as any).axe.run(document.querySelector('[data-rts-map-investigation]'), { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21aa','wcag22aa'] } });
+      return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>n.failureSummary)}));
+    });
+    expect(violations).toEqual([]);
+    await study.screenshot({ path: 'scratch/beehive-rts/map-investigation-mobile-' + (dark ? 'dark' : 'light') + '.png' });
+  }
+});

@@ -1,0 +1,136 @@
+{
+  "checks": [
+    "3D reading lens follows additions; large 2D replaces the small fallback, supports close-ups, raises flask levels, distinguishes cumulative volume/refills, shows empty burettes, and uses the dark-titrant reference.",
+    "The enlarged diagram retains finite drop/bloom cues and respects both lab and system reduced-motion settings.",
+    "WebGL context loss exposes the new diagram with working additions and no duplicate legacy flask."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "width": 1200,
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "3D bench",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "3D bench",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "3D bench",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "2D diagram",
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "2D diagram",
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "2D diagram",
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

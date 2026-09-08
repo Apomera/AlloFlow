@@ -42,7 +42,7 @@ function directionsResultTranslation(t, key, fallback, params, maxLength) {
   if (typeof t === 'function') {
     try {
       const translated = t(key, params);
-      if (translated) return directionsResultText(translated, fallback, maxLength);
+      if (translated && translated !== key) return directionsResultText(translated, fallback, maxLength);
     } catch (_) {}
   }
   return fallback;
@@ -156,10 +156,10 @@ function DirectionsResultView({
   };
   const text = (key, fallback, maxLength, params) => directionsResultTranslation(t, translationKeys[key] || key, fallback, params, maxLength);
 
-  // Defensive limits mirror the host contract. They protect rendering without
-  // turning this view into a second source of filtering or policy decisions.
-  const stations = (Array.isArray(stationViews) ? stationViews : []).filter(station => station && typeof station === 'object' && station.id).slice(0, 12).map(station => ({
-    id: String(station.id).slice(0, 120),
+  // Keep the complete host-provided assignment; validate display records without
+  // silently removing stations or goals.
+  const stations = (Array.isArray(stationViews) ? stationViews : []).filter(station => station && typeof station === 'object' && station.id).map(station => ({
+    id: String(station.id).slice(0, 200),
     title: directionsResultText(station.title, '', 140),
     typeLabel: directionsResultText(station.typeLabel, 'Resource', 80),
     icon: directionsResultText(station.icon, '📄', 8),
@@ -168,33 +168,33 @@ function DirectionsResultView({
     stroke: directionsResultColor(station.stroke, '#64748b'),
     visited: station.visited === true
   }));
-  const goals = (Array.isArray(goalViews) ? goalViews : []).filter(goal => goal && typeof goal === 'object' && goal.id).slice(0, 24).map(goal => ({
-    id: String(goal.id).slice(0, 120),
-    label: directionsResultText(goal.label, 'Goal', 240),
+  const goals = (Array.isArray(goalViews) ? goalViews : []).filter(goal => goal && typeof goal === 'object' && goal.id).map(goal => ({
+    id: String(goal.id).slice(0, 200),
+    label: directionsResultText(goal.label, 'Goal', Infinity),
     kind: directionsResultText(goal.kind, '', 24),
     done: goal.done === true,
     progressText: directionsResultText(goal.progressText, '', 80),
-    resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 120) : ''
+    resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 200) : ''
   }));
   const recommendation = recommendationView && typeof recommendationView === 'object' ? recommendationView : {};
-  const nextId = typeof recommendation.nextId === 'string' ? recommendation.nextId.slice(0, 120) : '';
+  const nextId = typeof recommendation.nextId === 'string' ? recommendation.nextId.slice(0, 200) : '';
   const nextStation = stations.find(station => station.id === nextId) || null;
-  const alternateIds = (Array.isArray(recommendation.alternateIds) ? recommendation.alternateIds : []).filter(id => typeof id === 'string').map(id => id.slice(0, 120)).slice(0, 2);
+  const alternateIds = (Array.isArray(recommendation.alternateIds) ? recommendation.alternateIds : []).filter(id => typeof id === 'string').map(id => id.slice(0, 200)).slice(0, 2);
   const alternateStations = alternateIds.map(id => stations.find(station => station.id === id)).filter(Boolean);
   const nextGoalLabel = directionsResultText(recommendation.nextGoalLabel, '', 240);
   const choiceValue = choiceBoardView && typeof choiceBoardView === 'object' ? choiceBoardView : null;
   const choiceItems = choiceValue ? (Array.isArray(choiceValue.items) ? choiceValue.items : []).filter(item => item && typeof item === 'object' && item.resourceId).slice(0, 6).map(item => ({
-    resourceId: String(item.resourceId).slice(0, 120),
+    resourceId: String(item.resourceId).slice(0, 200),
     label: directionsResultText(item.label, 'Activity', 120),
     description: directionsResultText(item.description, '', 240),
     icon: directionsResultText(item.icon, '', 8),
     typeIcon: directionsResultText(item.typeIcon, '•', 8),
     typeLabel: directionsResultText(item.typeLabel, 'Resource', 80)
   })) : [];
-  const selectedRef = choiceValue && typeof choiceValue.selectedRef === 'string' ? choiceValue.selectedRef.slice(0, 120) : '';
+  const selectedRef = choiceValue && typeof choiceValue.selectedRef === 'string' ? choiceValue.selectedRef.slice(0, 200) : '';
   const selectedChoice = choiceItems.find(item => item.resourceId === selectedRef) || null;
   const missingChoiceCount = choiceValue ? Math.max(0, Math.min(6, Number(choiceValue.missingCount) || 0)) : 0;
-  const choiceBoard = choiceValue && choiceItems.length >= 2 ? {
+  const choiceBoard = choiceValue && choiceItems.length >= 1 ? {
     title: directionsResultText(choiceValue.title, 'Choose an activity', 120),
     prompt: directionsResultText(choiceValue.prompt, 'Pick one activity to work on first.', 240),
     items: choiceItems
@@ -202,7 +202,7 @@ function DirectionsResultView({
   const visitedCount = stations.filter(station => station.visited).length;
   const doneCount = goals.filter(goal => goal.done).length;
   const showMap = showQuestMap === true;
-  const mapWidth = Math.max(340, 100 + stations.length * 88);
+  const mapWidth = Math.max(340, 100 + stations.length * 88, goals.length ? 120 + (goals.length - 1) * 92 : 0);
   const nodeX = index => 100 + index * 88;
   const nodeY = index => 50 + index % 2 * 26;
   const goalX = index => 70 + index * 92;
@@ -228,11 +228,11 @@ function DirectionsResultView({
     type: "button",
     onClick: onToggleMap,
     "aria-pressed": showMap,
-    className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0"
+    className: "min-h-11 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0"
   }, "\uD83D\uDDFA\uFE0F ", showMap ? text('mapHide', 'Hide map') : text('mapShow', 'Quest map'))), showMap && stations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 overflow-x-auto rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-amber-50/40 p-2"
   }, /*#__PURE__*/React.createElement("svg", {
-    role: "img",
+    role: "group",
     "aria-label": mapAriaLabel,
     viewBox: '0 0 ' + mapWidth + ' ' + (goals.length ? 178 : 118),
     style: {
@@ -304,11 +304,21 @@ function DirectionsResultView({
     };
     return /*#__PURE__*/React.createElement("g", {
       key: station.id,
+      role: "button",
+      tabIndex: 0,
+      className: "focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700",
+      "aria-label": (station.title || station.typeLabel) + (station.visited ? ", " + text('mapVisitedSr', 'already visited') : ""),
       onClick: () => travelTo(station),
+      onKeyDown: event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          travelTo(station);
+        }
+      },
       style: {
         cursor: 'pointer'
       }
-    }, isNext && /*#__PURE__*/React.createElement("circle", {
+    }, /*#__PURE__*/React.createElement("title", null, station.title || station.typeLabel), isNext && /*#__PURE__*/React.createElement("circle", {
       cx: x,
       cy: y,
       r: "20",
@@ -365,7 +375,7 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => travelTo(nextStation),
-    className: "flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow-sm transition-all"
+    className: "min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-sm shadow-sm transition-all"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, nextStation.icon), /*#__PURE__*/React.createElement("span", null, text('mapNextLabel', 'Go here next') + ': ' + (nextStation.title || nextStation.typeLabel).slice(0, 40)), /*#__PURE__*/React.createElement(ArrowRight, {
@@ -379,12 +389,12 @@ function DirectionsResultView({
     type: "button",
     key: 'alt' + station.id,
     onClick: () => travelTo(station),
-    className: "flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all"
+    className: "min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, station.icon), /*#__PURE__*/React.createElement("span", null, text('mapAlsoReady', 'or') + ' ' + (station.title || station.typeLabel).slice(0, 26))))) : /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-emerald-700"
-  }, text('mapAllVisited', '🎉 You have been to every station on this map.')), /*#__PURE__*/React.createElement("details", {
+  }, visitedCount === stations.length ? text('mapAllVisited', '🎉 You have been to every station on this map.') : text('directions.map_choose_station', 'Choose a station from the map or the list below to continue.')), /*#__PURE__*/React.createElement("details", {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "text-[11px] text-indigo-700 font-bold cursor-pointer"
@@ -395,13 +405,13 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => travelTo(station),
-    className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')
+    className: 'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, station.icon), /*#__PURE__*/React.createElement("span", null, (station.title || station.typeLabel).slice(0, 30)), /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
   }, ' — ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')))))))), trustedBodyHtml && /*#__PURE__*/React.createElement("div", {
-    className: "prose prose-sm max-w-none text-slate-700 mb-4",
+    className: "prose prose-sm max-w-none text-slate-700 mb-4 break-words",
     dangerouslySetInnerHTML: {
       __html: typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(trustedBodyHtml) : ''
     }
@@ -414,7 +424,7 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-start gap-2 mb-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 min-w-[220px]"
+    className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("h2", {
     id: "directions-choice-board-title",
     className: "text-base font-black text-indigo-900"
@@ -422,10 +432,10 @@ function DirectionsResultView({
     className: "text-xs text-slate-600 mt-1"
   }, choiceBoard.prompt)), /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200"
-  }, choiceBoard.items.length, " ", text('choices', 'choices'))), selectedChoice && /*#__PURE__*/React.createElement("p", {
+  }, choiceBoard.items.length, " ", choiceBoard.items.length === 1 ? text('directions.choice', 'choice') : text('choices', 'choices'))), selectedChoice && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900"
-  }, text('selectedPrefix', 'Selected') + ': ' + selectedChoice.label + '. ' + text('selectedSuffix', 'You can choose another activity below.')), /*#__PURE__*/React.createElement("div", {
+  }, text('selectedPrefix', 'Selected') + ': ' + selectedChoice.label + '. ' + (choiceBoard.items.length > 1 ? text('selectedSuffix', 'You can choose another activity below.') : text('directions.single_choice_selected', 'You can return to this activity at any time.'))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, choiceBoard.items.map(item => /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -433,7 +443,7 @@ function DirectionsResultView({
     onClick: () => onChoose(item.resourceId),
     "aria-label": text('chooseActivity', 'Choose activity') + ': ' + item.label,
     "aria-pressed": selectedRef === item.resourceId,
-    className: 'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')
+    className: 'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all motion-safe:hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     className: "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm"
@@ -453,7 +463,7 @@ function DirectionsResultView({
     "aria-hidden": "true"
   })))))), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[10px] text-slate-500"
-  }, text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300))), goals.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, choiceBoard.items.length > 1 ? text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300) : text('directions.single_choice_hint', 'Open the remaining activity, or ask your teacher for an updated board.', 300))), goals.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-amber-100 pt-3",
     role: "group",
     "aria-label": text('yourGoals', 'Your goals')
@@ -488,7 +498,7 @@ function DirectionsResultView({
     className: "text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0",
     "aria-hidden": "true"
   }, "\u2713")))), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-400 mt-3"
+    className: "text-xs text-slate-600 mt-3"
   }, text('signalsNote', 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.', 500)))));
 }
 

@@ -8,7 +8,10 @@
     "1_earn_throughout_the_trimester_1rrc6n3": "1. Earn throughout the trimester",
     "1_has_passed_its_end_time_so_checkout_is_closed_until_an_a_rm5dn0": "{1} has passed its end time, so checkout is closed until an administrator changes the window.",
     "1_is_set_to_open_but_shopping_has_not_started_yet_checkout_tdlgn3": "{1} is set to Open, but shopping has not started yet. Checkout opens {2}.",
+    "1_of_2_points_available_1ix16e7": "{1} of {2} points available",
+    "1_of_2_rewards_shown_5qhwyo": "{1} of {2} rewards shown",
     "1_of_the_spreadsheet_is_used_2_cells_of_3_largest_4_5_sett_330w33": "{1}% of the spreadsheet is used ({2} cells of {3}). Largest: {4}. {5} settled request records are older than {6} days and can be trimmed. The ledger and audit trail are never trimmed.",
+    "1_points_reserved_for_print_requests_wtwl6p": "{1} points reserved for print requests",
     "1_recorded_2_not_recorded_3_1c0arov": "{1} recorded; {2} not recorded: {3}",
     "1_roster_entries_imported_28oxh9": "{1} roster entries imported.",
     "2_receive_balance_emails_17hagnp": "2. Receive balance emails",
@@ -101,6 +104,7 @@
     "balance_email_schedule_saved_d10crb": "Balance email schedule saved.",
     "balance_emails_7b56hc": "Balance emails",
     "balances_1jzpjl4": "Balances",
+    "browse_rewards_choose_a_saving_goal_and_visit_the_cashier__8nlp5u": "Browse rewards, choose a saving goal, and visit the cashier when shopping is open.",
     "built_in_help_1uennws": "Built-in help",
     "bulk_csv_import_d63f6i": "Bulk CSV import",
     "cancel_adjustment_at10vm": "Cancel adjustment",
@@ -171,6 +175,7 @@
     "choose_undo_in_the_notice_within_fifteen_minutes_after_tha_10b38i8": "Choose Undo in the notice within fifteen minutes. After that, ask an administrator to record a correction from Progress & activity.",
     "choose_verify_or_reject_jee8d9": "Choose verify or reject.",
     "clear_1aeugy": "Clear",
+    "clear_filters_a043pl": "Clear filters",
     "client_checks_are_advisory_verify_the_asset_hash_units_sli_1ds71l1": "Client checks are advisory. Verify the asset hash, units, slicer preview, material, safety, and printer settings before quoting. Queue buttons update records only; this portal never sends commands to a printer.",
     "close_help_1tnzw3i": "Close help",
     "close_the_shopping_window_before_closing_the_year_so_no_ch_mgh9eb": "Close the shopping window before closing the year, so no checkout is in progress.",
@@ -210,12 +215,15 @@
     "describe_what_the_student_did_to_earn_these_points_lyxx7e": "Describe what the student did to earn these points.",
     "describe_what_the_students_did_to_earn_these_points_seglgb": "Describe what the students did to earn these points.",
     "description_sjj37t": "Description",
+    "discover_your_next_reward_1wbdidx": "Discover your next reward",
     "display_name_lnzwr0": "Display name",
     "district_aggregate_summary_1x83bvs": "District aggregate summary",
     "done_1u4dagh": "Done:",
     "download_a_blank_template_1qfa816": "Download a blank template",
     "download_an_aggregate_csv_of_orders_refunded_points_outsta_1drjiu0": "Download an aggregate CSV of orders, refunded points, outstanding balances, finite inventory, and audit-chain status. Student names and emails are excluded.",
+    "download_model_for_review_zckbch": "Download model for review",
     "download_reconciliation_csv_1gff7ue": "Download reconciliation CSV",
+    "download_the_exact_model_for_local_inspection_then_verify__72sv59": "Download the exact model for local inspection, then verify its hash, scale, and slicer preview. Downloads are limited to authorized staff; students never receive Drive links.",
     "download_this_student_s_full_record_1dn6rg2": "Download this student’s full record",
     "downloaded_the_exact_uploaded_model_inspect_its_scale_and__hzvcsd": "Downloaded the exact uploaded model. Inspect its scale and slicer preview before verifying it.",
     "draft_12xppws": "DRAFT",
@@ -246,6 +254,7 @@
     "explain_why_the_request_cannot_be_accepted_sj0coh": "Explain why the request cannot be accepted.",
     "explain_why_this_guardian_connection_is_being_disabled_vmecv4": "Explain why this guardian connection is being disabled.",
     "explain_why_this_guardian_digest_mapping_is_being_disabled_d3akmu": "Explain why this guardian digest mapping is being disabled.",
+    "find_store_rewards_166u4pv": "Find store rewards",
     "finding_a_student_1dreuy4": "Finding a student.",
     "finite_154865i": "Finite",
     "finite_inventory_limit_1uqp41d": "Finite inventory limit",
@@ -294,6 +303,7 @@
     "import_roster_csv_58wafz": "Import roster CSV",
     "importing_1_students_18cawj5": "Importing {1} students…",
     "in_alloflow_s_3d_print_lab_run_preflight_and_download_a_pr_eehlmc": "In AlloFlow's 3D Print Lab, run preflight and download a privacy-minimized",
+    "in_stock_only_nf4x2m": "In stock only",
     "initial_setup_must_be_run_by_the_deployment_owner_vddxhr": "Initial setup must be run by the deployment owner.",
     "inventory_adjustment_1n9o7li": "Inventory adjustment",
     "inventory_adjustment_cancelled_no_stock_was_changed_wf7pmb": "Inventory adjustment cancelled. No stock was changed.",
@@ -344,6 +354,7 @@
     "my_print_lab_points_15s670y": "My Print Lab points",
     "my_print_requests_13hmdea": "My print requests",
     "my_registered_models_1je24dp": "My registered models",
+    "name_a_to_z_1j84mrm": "Name: A to Z",
     "name_grade_or_homeroom_hfy3g0": "Name, grade, or homeroom",
     "name_the_new_academic_year_for_example_2027_28_zitmh4": "Name the new academic year, for example 2027-28.",
     "name_your_private_remix_b9mehv": "Name your private remix:",
@@ -414,7 +425,9 @@
     "point_quote_sent_to_the_student_1p8h0k": "Point quote sent to the student.",
     "points_1b5hejq": "Points",
     "points_explanation_and_growth_progress_recorded_10oeow6": "Points, explanation, and growth progress recorded.",
+    "points_high_to_low_3l5pbv": "Points: high to low",
     "points_in_circulation_1v4e1zi": "Points in circulation",
+    "points_low_to_high_1h5det": "Points: low to high",
     "points_recorded_for_1_6srnp0": "Points recorded for {1}.",
     "practice_with_fictional_data_sgyufz": "Practice with fictional data",
     "preflight_decision_must_be_approved_or_override_1jmyrhe": "Preflight decision must be approved or override.",
@@ -591,6 +604,7 @@
     "save_schedule_1np5zb9": "Save schedule",
     "save_settings_qh1tut": "Save settings",
     "saved_prize_990bbg": "Saved prize",
+    "saving_a_goal_does_not_reserve_stock_or_spend_points_a_cas_b9b6ar": "Saving a goal does not reserve stock or spend points. A cashier completes your purchase.",
     "saving_catalog_moderation_kidqha": "Saving catalog moderation…",
     "saving_email_schedule_j5de0i": "Saving email schedule…",
     "saving_for_this_xi7kfk": "Saving for this",
@@ -612,7 +626,10 @@
     "school_rewards_ldk23h": "School Rewards",
     "school_rewards_sections_i9hper": "School Rewards sections",
     "school_settings_tkw6om": "School settings",
+    "school_store_h7eqro": "School store",
     "school_viewing_and_printing_ko0nfs": "School viewing and printing",
+    "search_by_name_or_description_14q75gw": "Search by name or description",
+    "search_rewards_1f3lli5": "Search rewards",
     "search_students_kf4uuz": "Search students",
     "select_all_shown_1iw15pr": "Select all shown",
     "select_at_least_one_student_for_the_group_award_184a92w": "Select at least one student for the group award.",
@@ -635,6 +652,7 @@
     "someone_can_run_the_store_register_1m1rrwb": "Someone can run the store register",
     "someone_else_is_saving_right_now_wait_a_moment_and_try_aga_1hp2jd6": "Someone else is saving right now. Wait a moment and try again.",
     "sort_order_1kz23l1": "Sort order",
+    "sort_rewards_1545ucl": "Sort rewards",
     "source_format_must_be_recipe_glb_or_stl_dza646": "Source format must be recipe, GLB, or STL.",
     "staff_4dkf1t": "STAFF",
     "staff_access_deactivated_1eps2hn": "Staff access deactivated.",
@@ -659,6 +677,7 @@
     "stock_is_separate_from_the_prize_1fjqcff": "Stock is separate from the prize.",
     "storage_and_retention_10msj7p": "Storage and retention",
     "store_catalog_y44qkp": "Store catalog",
+    "store_order_h7sh1e": "Store order",
     "store_status_x0byyc": "Store status",
     "store_uf4yby": "Store",
     "store_window_1w7ppc6": "Store window",
@@ -882,6 +901,7 @@
     "why_y9m5zt": "Why",
     "window_name_wpcgkk": "Window name",
     "window_to_manage_1e1kht1": "Window to manage",
+    "within_my_balance_hxxwno": "Within my balance",
     "within_your_balance_13rf1l": "Within your balance",
     "worked_out_from_what_is_already_in_the_ledger_nothing_to_t_1ev417i": "Worked out from what is already in the ledger; nothing to tick by hand. Each line says which card to use.",
     "wrong_student_or_wrong_amount_ep5046": "Wrong student or wrong amount?",
@@ -896,8 +916,19 @@
     "your_role_cannot_resubmit_print_lab_requests_p7gcwi": "Your role cannot resubmit Print Lab requests.",
     "your_role_cannot_submit_print_lab_requests_1oj21n7": "Your role cannot submit Print Lab requests.",
     "your_role_cannot_upload_print_lab_assets_1nkp49v": "Your role cannot upload Print Lab assets.",
-    "download_model_for_review_zckbch": "Download model for review",
-    "download_the_exact_model_for_local_inspection_then_verify__72sv59": "Download the exact model for local inspection, then verify its hash, scale, and slicer preview. Downloads are limited to authorized staff; students never receive Drive links."
+    "help_learners_find_a_meaningful_reward_check_the_selected__ks0vb5": "Help learners find a meaningful reward. Check the selected student and live availability before completing a purchase.",
+    "available_to_spend_7321xx": "Available to spend",
+    "points_1gbpj2e": "points",
+    "your_growth_stays_with_you_when_you_spend_3bl2h9": "Your growth stays with you when you spend.",
+    "at_the_register_fy5pr8": "At the register",
+    "their_available_balance_will_appear_here_1qjlmax": "Their available balance will appear here.",
+    "your_saving_goal_ncnj1b": "Your saving goal",
+    "saving_goal_progress_15hcjeh": "Saving goal progress",
+    "currently_sold_out_you_can_keep_this_goal_or_choose_anothe_mc58qs": "Currently sold out. You can keep this goal or choose another reward.",
+    "no_rewards_match_your_filters_k8oosh": "No rewards match your filters.",
+    "try_another_search_or_choose_clear_filters_to_see_all_rewa_p5ly8m": "Try another search or choose Clear filters to see all rewards.",
+    "help_learners_find_a_meaningful_reward_1k3y9kp": "Help learners find a meaningful reward.",
+    "refreshing_current_details_1l7cic7": "Refreshing current details…"
   },
   "patterns": {
     "1_available_16n661b": {
@@ -1055,6 +1086,26 @@
     "upload_between_1_and_1_students_per_batch_psd58a": {
       "match": "^Upload between 1 and (\\d+) students per batch\\.$",
       "en": "Upload between 1 and {1} students per batch."
+    },
+    "1_of_2_rewards_shown_5qhwyo": {
+      "match": "^(\\d+) of (\\d+) rewards shown$",
+      "en": "{1} of {2} rewards shown"
+    },
+    "1_of_2_points_available_1ix16e7": {
+      "match": "^(\\d+) of (\\d+) points available$",
+      "en": "{1} of {2} points available"
+    },
+    "1_points_reserved_for_print_requests_wtwl6p": {
+      "match": "^(\\d+) points reserved for print requests$",
+      "en": "{1} points reserved for print requests"
+    },
+    "shopping_is_open_for_1_1xtcq55": {
+      "match": "^Shopping is open for (.+)\\.$",
+      "en": "Shopping is open for {1}."
+    },
+    "previewing_1_checkout_remains_closed_12ogx9z": {
+      "match": "^Previewing (.+)\\. Checkout remains closed\\.$",
+      "en": "Previewing {1}. Checkout remains closed."
     }
   }
 }

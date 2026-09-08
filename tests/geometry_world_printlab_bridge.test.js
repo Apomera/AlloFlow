@@ -25,7 +25,7 @@ function binaryStl(triangleCount, byteLength) {
   if (length >= 84) {
     const view = new DataView(bytes.buffer);
     view.setUint32(80, triangleCount, true);
-    const values = [0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 3, 1];
+    const values = [0, -1, 0, 0, 0, 0, 1, -2, 0, 0, -1, 3];
     const completeRecords = Math.min(triangleCount, Math.floor((length - 84) / 50));
     for (let triangle = 0; triangle < completeRecords; triangle += 1) {
       values.forEach((value, index) => view.setFloat32(84 + triangle * 50 + index * 4, value, true));
@@ -100,10 +100,10 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).toContain('HANDOFF_UNIT_MM');
     });
 
-    it(`selects only a connected student build for Print Lab — ${path}`, () => {
+    it(`selects student work and preserves its measurement for Print Lab — ${path}`, () => {
       expect(source).toContain('function openSelectedBuildInPrintLab(ctx)');
       expect(source).toContain("measurementLayerFor(data) !== 'student'");
-      expect(source).toContain('eng.measureStructure(selected.gp.x, selected.gp.y, selected.gp.z)');
+      expect(source).toContain('var measurement = selected.measurement;');
       expect(source).toContain('buildGeometryWorldStl(eng, measurement.blocks');
     });
 
@@ -367,7 +367,7 @@ describe('Geometry World bridge runtime behavior', () => {
     expect(overCases).toBeGreaterThan(5);
   });
 
-  it('drops a shared face only when both neighbours present the same polygon on it', () => {
+  it('subtracts shared polygon area for both full and partial face contacts', () => {
     // Each block is a closed shell, so touching neighbours keep a coincident pair
     // of faces between them. Print Lab's preflight counts every shared edge of
     // such a pair as non-manifold: measured, a slab on a cube drew 4 and a mixed
@@ -392,10 +392,11 @@ describe('Geometry World bridge runtime behavior', () => {
 
     const c = { position: { x: 1, y: 0, z: 0 }, triangles: halfMinusX.concat([other]) };
     const a2 = { position: { x: 0, y: 0, z: 0 }, triangles: squarePlusX.concat([other]) };
-    // A partial overlap is real geometry on both sides: nothing is dropped. The
-    // same triangle objects are reused from the call above on purpose: the rule
-    // must not leave marks on its inputs.
-    expect(pure.unionSurface([a2, c], selected)).toHaveLength(6);
+    // Partial contact removes the overlapping half, leaving only the exposed half
+    // of the cube face. Reused inputs must remain immutable.
+    const exposed = pure.unionSurface([a2,c],selected).filter(t=>t.n[0]===1);
+    const area=exposed.reduce((sum,t)=>{const [a,b,c]=t.v,u=b.map((v,k)=>v-a[k]),v=c.map((n,k)=>n-a[k]);return sum+Math.hypot(u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0])/2;},0);
+    expect(area).toBeCloseTo(0.5,6);
     expect(Object.keys(squarePlusX[0])).toEqual(['n', 'v']);
 
     // A neighbour that is not part of the selection never culls anything.
@@ -538,7 +539,7 @@ describe('Geometry World bridge runtime behavior', () => {
   it('updates printer fit and applies a conservative Geometry World scale recommendation', () => {
     const cfg = loadPrintLab();
     const bytes = binaryStl(1);
-    new DataView(bytes.buffer).setFloat32(84 + 10 * 4, 6, true);
+    new DataView(bytes.buffer).setFloat32(84 + 11 * 4, 6, true);
     window.__alloPrintLabPendingHandoff = pendingHandoff({ bytes });
     const host = document.createElement('div');
     document.body.appendChild(host);
@@ -659,8 +660,8 @@ describe('Geometry World bridge runtime behavior', () => {
     const bytes = binaryStl(1);
     const view = new DataView(bytes.buffer);
     view.setFloat32(84 + 6 * 4, 2, true);
-    view.setFloat32(84 + 8 * 4, 8, true);
-    view.setFloat32(84 + 10 * 4, 1, true);
+    view.setFloat32(84 + 7 * 4, -8, true);
+    view.setFloat32(84 + 11 * 4, 1, true);
     const originalBytes = Array.from(bytes);
     const profile = {
       name: 'Rectangular school printer',

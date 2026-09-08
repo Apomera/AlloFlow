@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "viewportWidths": [
+    1280,
+    390
+  ],
+  "checks": [
+    "3D keyboard rotation and layer selection",
+    "zero drain current with channel",
+    "NMOS and PMOS operating regions",
+    "BJT voltage range",
+    "CMOS transition",
+    "solar matched/open/short/dark load",
+    "amplifier clipping and zero input",
+    "Bode response",
+    "diode off-scale rendering",
+    "four mobile workspaces",
+    "WCAG automated scan",
+    "saved numerical notebook evidence",
+    "four device concept checks"
+  ],
+  "errors": []
+}

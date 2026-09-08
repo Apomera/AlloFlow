@@ -1,0 +1,501 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Likely Is Not Certain — Probability Models",
+    "author": "AlloFlow; AI-assisted draft, educator review pending",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabilities); CCSS.MATH.CONTENT.7.SP.C.7 (develop and evaluate probability models)",
+    "createdAt": "2026-09-08T00:00:00.000Z",
+    "imageShotList": "allopacks/probability_models_grade7.IMAGES.md",
+    "contentSources": [
+      {
+        "title": "Official learning standard",
+        "url": "https://www.thecorestandards.org/Math/Content/7/SP/C/7/"
+      }
+    ],
+    "reviewStatus": "AI content and structural checks; educator review pending",
+    "imageStatus": "planned-not-generated"
+  },
+  "sourceTopic": "Likely Is Not Certain — Probability Models",
+  "history": [
+    {
+      "id": "prb-directions",
+      "type": "directions",
+      "title": "Start Here",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "body": "Read **Likely Is Not Certain — Probability Models** with a partner or use read-aloud. Explore **Key Words**, then play Matching and Memory. Use **Keep the Ideas Clear** as a reference. Try **Sort and Explain**, **Explain Your Thinking**, and **Check Your Understanding**. Use **Remember the Ideas** to build a memory cue. Read **Questions to Explore**, then complete **Try It with Evidence**.\n\nExplain an answer using a detail from the lesson. Images are planned for a later edition; every activity works with text now.",
+        "objectives": [
+          {
+            "id": "prb-goal-match",
+            "label": "Complete Matching",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "prb-glossary"
+          },
+          {
+            "id": "prb-goal-memory",
+            "label": "Complete Memory",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "prb-glossary"
+          },
+          {
+            "id": "prb-goal-evidence",
+            "label": "I explained an answer using lesson evidence",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "7th Grade • Start Here"
+    },
+    {
+      "id": "prb-reading",
+      "type": "simplified",
+      "title": "Likely Is Not Certain — Probability Models",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": "## Likely Is Not Certain\n\nA bag holds three blue counters and one red counter. They have the same size and shape. You mix them, draw without looking, record the color, and put the counter back. Must every four draws include one red? No. A model describes chances, not a schedule.\n\nAn **outcome** is a possible result of one trial. An **event** is a set of outcomes we are interested in. Here the event is drawing red. A **trial** is one run of the chance process.\n\n**Probability** measures how likely an event is, using a number from zero to one. Zero means impossible in the stated model. One means certain in that model. A probability of one half is an even chance. Likely does not mean guaranteed.\n\nA **model** lists possible outcomes and assigns their chances. If each of the four counters is equally likely to be drawn, one of the four is red. The probability of red is one fourth. The probability of blue is three fourths. Colors are not equally likely just because there are two color names.\n\n**Random** selection means using a chance process instead of deliberately choosing a result. Our bag model assumes equal chances for the individual counters. Different sizes, poor mixing, or looking into the bag could make that model unsuitable.\n\n**Replacement** means returning the counter before the next draw. Mixing again keeps the intended setup the same. Without replacement, the bag changes. The next probability then depends on what was removed.\n\nThe **frequency** of red is how many times red occurs. Divide that count by the number of trials to get relative frequency. If red appears seven times in twenty draws, its relative frequency is 7/20, or 0.35. That does not exactly match the model's 0.25.\n\nSmall samples often vary. With many well-run trials, relative frequency tends to be closer to the model probability, but no particular result is promised. A long run of blue does not make red due on the next independent draw.\n\nUse results to question a model. A mismatch might reflect ordinary chance, too few trials, or a poor assumption. Repeat carefully and look for patterns before deciding which explanation fits.",
+      "meta": "7th Grade • Likely Is Not Certain — Probability Models"
+    },
+    {
+      "id": "prb-glossary",
+      "type": "glossary",
+      "title": "Key Words",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "term": "Outcome",
+          "def": "A possible result of one chance trial.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Event",
+          "def": "A set of possible outcomes of interest.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Trial",
+          "def": "One run of a chance process.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Probability",
+          "def": "A number from zero to one measuring how likely an event is.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Model",
+          "def": "A description of outcomes and the chances assigned to them.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Random",
+          "def": "Selected through a chance process rather than a deliberate choice.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Replacement",
+          "def": "Returning a selected object before another draw.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Frequency",
+          "def": "The number of times a result occurs.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "7th Grade • Key Words"
+    },
+    {
+      "id": "prb-anchor",
+      "type": "anchor-chart",
+      "title": "Keep the Ideas Clear",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "Likely Is Not Certain — Probability Models",
+        "sections": [
+          {
+            "id": "prb-section-1",
+            "label": "STATE THE MODEL",
+            "bullets": [
+              "List the outcomes",
+              "Explain why chances are assigned",
+              "Two colors need not be equally likely"
+            ],
+            "iconPrompt": "Exactly three blue counters and one red counter beside an opaque bag"
+          },
+          {
+            "id": "prb-section-2",
+            "label": "KEEP THE SETUP CLEAR",
+            "bullets": [
+              "Say whether each counter is returned",
+              "Mix before another draw",
+              "Do not look when selecting"
+            ],
+            "iconPrompt": "Hand returning a counter to an opaque bag"
+          },
+          {
+            "id": "prb-section-3",
+            "label": "COMPARE MODEL AND DATA",
+            "bullets": [
+              "Use event count divided by trial count",
+              "Expect variation in short runs",
+              "A streak does not make an outcome due"
+            ],
+            "iconPrompt": "Repeated counter draws recorded as pictures without implying a fixed sequence"
+          }
+        ]
+      },
+      "meta": "7th Grade • Keep the Ideas Clear"
+    },
+    {
+      "id": "prb-sort",
+      "type": "concept-sort",
+      "title": "Sort and Explain",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "prb-category-0",
+            "label": "Impossible in the stated bag",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "prb-category-1",
+            "label": "Possible but not certain",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "prb-category-2",
+            "label": "Certain in the stated bag",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "prb-card-1",
+            "content": "Draw a green counter from a bag containing only red and blue",
+            "categoryId": "prb-category-0"
+          },
+          {
+            "id": "prb-card-2",
+            "content": "Draw a yellow counter from a bag containing only red and blue",
+            "categoryId": "prb-category-0"
+          },
+          {
+            "id": "prb-card-3",
+            "content": "Draw red from a bag containing three blue and one red",
+            "categoryId": "prb-category-1"
+          },
+          {
+            "id": "prb-card-4",
+            "content": "Draw blue from a bag containing three blue and one red",
+            "categoryId": "prb-category-1"
+          },
+          {
+            "id": "prb-card-5",
+            "content": "Draw either red or blue from a bag containing only those colors",
+            "categoryId": "prb-category-2"
+          },
+          {
+            "id": "prb-card-6",
+            "content": "Draw red from a bag in which every counter is red",
+            "categoryId": "prb-category-2"
+          }
+        ]
+      },
+      "meta": "7th Grade • Sort and Explain"
+    },
+    {
+      "id": "prb-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Thinking",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I notice ____. This matters because ____."
+          },
+          {
+            "text": "I compared ____ with ____. They differ because ____."
+          },
+          {
+            "text": "My evidence is ____. It supports ____."
+          },
+          {
+            "text": "At first I thought ____. Now I think ____ because ____."
+          }
+        ],
+        "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
+      },
+      "meta": "7th Grade • Explain Your Thinking"
+    },
+    {
+      "id": "prb-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Three of four equally likely counters are blue. What is P(blue)?",
+            "options": [
+              "1/4",
+              "3/4",
+              "1/2",
+              "1"
+            ],
+            "correctAnswer": "3/4",
+            "conceptLabel": "probability models"
+          },
+          {
+            "type": "mcq",
+            "question": "Red occurs seven times in twenty trials. What is its relative frequency?",
+            "options": [
+              "7/4",
+              "20/7",
+              "7/20",
+              "1/7"
+            ],
+            "correctAnswer": "7/20",
+            "conceptLabel": "model and data"
+          },
+          {
+            "type": "mcq",
+            "question": "After five blue draws with replacement, what happens to P(red)?",
+            "options": [
+              "It becomes certain",
+              "It becomes impossible",
+              "It must now be one half",
+              "It stays one fourth"
+            ],
+            "correctAnswer": "It stays one fourth",
+            "conceptLabel": "probability models"
+          },
+          {
+            "type": "mcq",
+            "question": "Why return and mix the counter after each draw?",
+            "options": [
+              "To restore the same setup",
+              "To force equal color totals",
+              "To make the next draw red",
+              "To remove all chance variation"
+            ],
+            "correctAnswer": "To restore the same setup",
+            "conceptLabel": "probability models"
+          },
+          {
+            "type": "mcq",
+            "question": "A short trial set differs from the model. What follows?",
+            "options": [
+              "The model must be false",
+              "More evidence may be needed",
+              "The next trial must repair it",
+              "The data should be changed"
+            ],
+            "correctAnswer": "More evidence may be needed",
+            "conceptLabel": "model and data"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why two color names do not imply equal probabilities.",
+            "expectedAnswer": "Probabilities depend on equally likely individual outcomes. Three blue counters and one red counter give different numbers of outcomes for the two colors.",
+            "conceptLabel": "probability models"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "What changes if a red counter is drawn and not replaced?",
+            "expectedAnswer": "The stated bag then contains three blue counters and no red counters, so the next red probability is zero in that setup.",
+            "conceptLabel": "model and data"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which evidence or example helped you change your mind?"
+          },
+          {
+            "text": "What would you check next, and why?"
+          }
+        ]
+      },
+      "meta": "7th Grade • Check Your Understanding"
+    },
+    {
+      "id": "prb-memory",
+      "type": "memory-aid",
+      "title": "Remember the Ideas",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Ideas",
+        "instructions": "Study each cue. Make your own cue, then explain how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Probability is between zero and one. Equal chances for counters do not imply equal chances for colors. Returning and mixing a counter preserves the intended setup.",
+        "lessonRef": {
+          "resourceId": "prb-reading",
+          "title": "Likely Is Not Certain — Probability Models"
+        },
+        "cards": [
+          {
+            "id": "prb-memory-0",
+            "target": "Remember: STATE THE MODEL",
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "List the outcomes",
+              "Explain why chances are assigned",
+              "Two colors need not be equally likely",
+              "Probability is between zero and one."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Say this cue: STATE THE MODEL. Then explain: List the outcomes.",
+            "mapping": "The cue connects the key idea to a specific example: Probability is between zero and one.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          },
+          {
+            "id": "prb-memory-1",
+            "target": "Remember: KEEP THE SETUP CLEAR",
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Say whether each counter is returned",
+              "Mix before another draw",
+              "Do not look when selecting",
+              "Equal chances for counters do not imply equal chances for colors."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Picture this: Say whether each counter is returned. Mix before another draw. Do not look when selecting. Use the picture to explain the idea.",
+            "mapping": "The cue connects the key idea to a specific example: Equal chances for counters do not imply equal chances for colors.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          }
+        ]
+      },
+      "meta": "7th Grade • Remember the Ideas"
+    },
+    {
+      "id": "prb-faq",
+      "type": "faq",
+      "title": "Questions to Explore",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "question": "Does likely mean certain?",
+          "answer": "No. A likely event can fail to occur on any particular trial."
+        },
+        {
+          "question": "Must four trials include one red?",
+          "answer": "No. One fourth is a chance for each draw under this model, not a required pattern of four results."
+        },
+        {
+          "question": "Does a streak make the other color due?",
+          "answer": "No. With replacement and proper mixing, earlier results do not change the next draw probability."
+        },
+        {
+          "question": "Does a larger sample always match better?",
+          "answer": "No. Results can fluctuate. Over many trials, relative frequencies tend toward the probabilities of a suitable model."
+        }
+      ],
+      "meta": "7th Grade • Questions to Explore"
+    },
+    {
+      "id": "prb-challenge",
+      "type": "applied-challenge",
+      "title": "Try It with Evidence",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Try It with Evidence",
+        "instructions": "Make a prediction or first answer. Use evidence to check it. Explain what you found.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Our class has an opaque bag with three blue and one red counter of the same size and shape. We want to compare a model with trial results.",
+          "role": "Class investigators",
+          "audience": "A classmate checking our reasoning",
+          "drivingQuestion": "How closely do repeated draws with replacement match the model probability of red?",
+          "seedDirection": "State the model. Draw without looking, return the counter, and mix each time. Record every trial. Compare separate groups of twenty draws before combining counts.",
+          "lockedLessonFacts": [
+            "Probability is between zero and one.",
+            "Equal chances for counters do not imply equal chances for colors.",
+            "Returning and mixing a counter preserves the intended setup."
+          ],
+          "openQuestions": [
+            "What will count as useful evidence?",
+            "What might our method miss?"
+          ],
+          "criteria": [
+            "Describe the method or model clearly",
+            "Use evidence to support your answer",
+            "Name a limit or a question to check next"
+          ],
+          "constraints": [
+            "Use teacher-approved materials or supplied examples",
+            "Keep a record of what you actually observe or calculate"
+          ],
+          "deliverable": "Report model probability, counts, relative frequencies, and an explanation of variation without claiming a guaranteed pattern.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A classmate checks a related claim from this lesson.",
+            "move": "They use the lesson rule: Probability is between zero and one. They record an example, then check whether it supports the claim.",
+            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+          },
+          "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
+          "frameChoices": [
+            "Explain with a drawing and spoken words",
+            "Explain with a written record and evidence"
+          ],
+          "coachPrompts": [
+            "Which detail in your record supports your answer?"
+          ]
+        },
+        "coachHint": "Keep the claim and the evidence connected.",
+        "sourceExcerpt": "Probability is between zero and one. Equal chances for counters do not imply equal chances for colors. Returning and mixing a counter preserves the intended setup.",
+        "lessonRef": {
+          "resourceId": "prb-reading",
+          "title": "Likely Is Not Certain — Probability Models"
+        }
+      },
+      "meta": "7th Grade • Try It with Evidence"
+    }
+  ]
+}

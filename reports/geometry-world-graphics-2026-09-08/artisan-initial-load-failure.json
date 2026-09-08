@@ -1,0 +1,10 @@
+{
+  "scope": "One live WebGL engine; fixed pavilion, materials, camera and output pipeline across lighting variants",
+  "errors": [],
+  "consoleErrors": [
+    "[GeometryWorld] WebGL init failed: TypeError: Cannot set properties of undefined (setting 'derivatives')\n    at engine.configureBlockFinish (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:4264:43)\n    at engine.placeBlock (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:4457:18)\n    at engine.placeBlock (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:7221:21)\n    at engine.fillBlocks (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:4589:24)\n    at http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:4796:43\n    at Array.forEach (<anonymous>)\n    at engine.loadLesson (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:4795:52)\n    at Object.initEngine (http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:7589:16)\n    at http://127.0.0.1:61434/stem_lab/stem_tool_geometryworld.js:2724:83"
+  ],
+  "captures": [],
+  "failure": "page.waitForFunction: Timeout 120000ms exceeded.\n    at compareLighting (<anonymous>:31:16)",
+  "passed": false
+}

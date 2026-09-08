@@ -523,7 +523,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     clearTimeout(pairTimerRef.current);
     clearTimeout(scoreDeltaTimerRef.current);
     setScoreDelta(null);
-    const gameItems = (Array.isArray(data) ? data : []).filter(item => item && typeof item.term === 'string' && item.term.trim() && (item.def || item.image)).slice(0, 10);
+    const gameItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter(item => item && typeof item.term === 'string' && item.term.trim() && ((typeof item.def === 'string' && item.def.trim()) || item.image))).slice(0, 10);
     const deck = gameItems.flatMap((item, index) => {
       const pairId = index;
       let strategy = gameMode;
@@ -964,7 +964,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   useEffect(() => {
     dragCleanupRef.current?.();
     setTempLine(null);
-    const validItems = (Array.isArray(data) ? data : []).filter(d => d && typeof d.term === 'string' && d.term.trim() && typeof d.def === 'string' && d.def.trim()).slice(0, 8).map((item, i) => ({
+    const validItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter(d => d && typeof d.term === 'string' && d.term.trim() && typeof d.def === 'string' && d.def.trim())).slice(0, 8).map((item, i) => ({
         id: 'match-' + i,
         term: item.term,
         def: item.def
@@ -6443,6 +6443,8 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
   const { t } = useContext(LanguageContext);
   const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
+  const [cardVersion, setCardVersion] = useState(0);
+  const bingoDataKey = JSON.stringify((Array.isArray(data) ? data : []).filter(item => item && typeof item.term === 'string' && item.term.trim()).map(item => ({ term: item.term.trim(), image: item.image || item.imageUrl || null })));
   const [marks, setMarks] = useState(new Set());
   const [isWon, setIsWon] = useState(false);
   // Images-on toggle. Default true so vocabulary pictures appear by default in
@@ -6455,12 +6457,11 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
   const bingoCompleteFiredRef = useRef(false);
   useGameDialogFocus(studentBingoDialogRef, studentBingoCloseRef, onClose);
   useEffect(() => {
-      if (grid.length > 0) return; // Lock: don't regenerate if card already exists this session
-      if (!data || !Array.isArray(data) || data.length === 0) return;
-      const terms = data
-          .map(d => d?.term)
-          .filter(t => t && typeof t === 'string' && t.trim().length > 0);
-      if (terms.length === 0) return;
+      const entries = JSON.parse(bingoDataKey);
+      bingoCompleteFiredRef.current = false;
+      setGrid([]); setMarks(new Set()); setIsWon(false); setAnnouncement('');
+      const terms = [...new Set(entries.map(item => item.term))];
+      if (!terms.length) return;
       let pool = [...terms];
       const itemsNeeded = 24;
       if (pool.length < itemsNeeded) {
@@ -6477,7 +6478,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
               if (r===2 && c===2) {
                   row.push({ type: 'free', text: t('bingo.free_space') });
               } else {
-                  const matchingEntry = data.find(d => d?.term === shuffled[termIdx]);
+                  const matchingEntry = entries.find(d => d.term === shuffled[termIdx]);
                   // Glossary items store the generated picture under `image` (data URL or http URL).
                   // Falls back to `imageUrl` for any future variants.
                   row.push({ type: 'term', text: shuffled[termIdx], imageUrl: matchingEntry?.image || matchingEntry?.imageUrl || null });
@@ -6490,7 +6491,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       setMarks(new Set(['2-2']));
       setIsWon(false);
       setAnnouncement(t('bingo.card_ready_announcement') || 'Bingo card ready. Select a square to mark or unmark it.');
-  }, [data]);
+  }, [bingoDataKey, cardVersion]);
   const toggleCell = (r, c) => {
       const key = `${r}-${c}`;
       if (key === "2-2") return;
@@ -6571,6 +6572,10 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                     title={showImages ? (t('bingo.hide_images_title') || 'Hide pictures') : (t('bingo.show_images_title') || 'Show pictures')}
                  >
                     <ImageIcon size={20} aria-hidden="true" className={showImages ? 'text-white' : 'text-indigo-200'} />
+                 </button>
+                 <button type="button" data-help-key="bingo_new_card" onClick={() => setCardVersion(value => value + 1)}
+                   className="min-h-11 px-3 rounded-lg border border-indigo-300 font-bold text-sm hover:bg-indigo-600 focus-visible:ring-2 focus-visible:ring-white">
+                   {gameMessage(t, 'games.bingo.new_card', 'New card')}
                  </button>
                  <GameThemeToggle />
                  <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700" aria-label={t('bingo.close_game_aria')}>
@@ -6749,7 +6754,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
           setFeedback('correct');
           setAnnouncement(t('games.scramble.correct') || 'Correct');
           setResults(prev => [...prev, { term: currentItem.display, def: currentItem.def, correct: true }]);
-          const newScore = score + 10;
+          const newScore = score + Math.max(0, 10 - hintLevel * 3);
           setScore(newScore);
           scrambleTimerRef.current = setTimeout(() => {
               nextRound(newScore);
@@ -6781,7 +6786,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       if (hintLevel >= maxHints) return;
       setHintLevel(h => h + 1);
       setAnnouncement(`${t('games.scramble.hint_label')}: ${cells.slice(0, hintLevel + 1).join('')}`);
-      setScore(s => Math.max(0, s - 3));
+      // Hints reduce this word's award, never points earned on earlier words.
       if (playSound) playSound('click');
   };
   const hintCells = gameItems[currentIndex] ? gameGraphemes(gameItems[currentIndex].letters) : [];
@@ -6854,6 +6859,10 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                                 </div>
                             ))}
                         </div>
+                        <p className="text-xs text-slate-600">
+                          {gameMessage(t, 'games.scramble.word_points', 'Points available for this word')}: <strong>{Math.max(0, 10 - hintLevel * 3)}</strong>
+                          {' · '}{gameMessage(t, 'games.scramble.hint_cost_note', 'Each hint reduces this word by 3 points, down to 0.')}
+                        </p>
                         {hintText && (
                             <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold motion-safe:animate-in motion-safe:fade-in">
                                 {hintText}
@@ -6908,6 +6917,237 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     </div>
   );
 });
+
+// Meaning-based retrieval with deliberate feedback and a separate practice pass.
+const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, playSound }) => {
+  const { t } = useContext(LanguageContext);
+  const message = (key, fallback) => gameMessage(t, 'games.detective.' + key, fallback);
+  const dialogRef = useRef(null), closeRef = useRef(null), nextRef = useRef(null), promptRef = useRef(null), feedbackRef = useRef(null);
+  const lockedRef = useRef(false), reportedRef = useRef(false);
+  const callbacksRef = useRef({});
+  callbacksRef.current = { onScoreUpdate, onGameComplete, playSound };
+  const [rounds, setRounds] = useState([]), [index, setIndex] = useState(0);
+  const [results, setResults] = useState([]), [answer, setAnswer] = useState(null);
+  const [phase, setPhase] = useState('question'), [practice, setPractice] = useState(false);
+  const [roundVersion, setRoundVersion] = useState(0);
+  const [largeText, setLargeText] = useState(false);
+  const [audioState, setAudioState] = useState({ text: '', status: 'idle', error: false });
+  const ownedAudioRef = useRef(null), audioRequestRef = useRef(0);
+  // Own a shared-player session by ID, including while audio is being generated.
+  // Leaving a clue cancels our session without stopping another reader's audio.
+  const stopOwnedAudio = () => {
+    audioRequestRef.current++;
+    const owned = ownedAudioRef.current;
+    ownedAudioRef.current = null;
+    if (owned && owned.id != null && owned.player.getCurrentId?.() === owned.id) owned.player.stop?.();
+  };
+  const stopAudio = () => { stopOwnedAudio(); setAudioState({ text: '', status: 'idle', error: false }); };
+  const close = () => { stopAudio(); onClose?.(); };
+  useEffect(() => {
+    const sync = event => {
+      const owned = ownedAudioRef.current, state = event.detail || {};
+      setAudioState(previous => owned && state.currentId === owned.id
+        ? { text: owned.text, status: state.status || (state.isPlaying ? 'playing' : 'idle'), error: state.status === 'error' }
+        : { ...previous, text: '', status: 'idle' });
+    };
+    window.addEventListener('allo-speech-state', sync);
+    return () => { window.removeEventListener('allo-speech-state', sync); stopOwnedAudio(); };
+  }, []);
+  const readAloud = text => {
+    const isActive = audioState.text === text && ['generating', 'playing'].includes(audioState.status);
+    stopAudio();
+    if (isActive) return;
+    const player = window.AlloSpeechPlayer;
+    if (!player || typeof player.speak !== 'function' || typeof player.getCurrentId !== 'function') {
+      setAudioState({ text: '', status: 'error', error: true }); return;
+    }
+    const request = audioRequestRef.current;
+    try {
+      const previousId = player.getCurrentId();
+      const pending = player.speak(text, { reason: 'definition-detective' });
+      Promise.resolve(pending).catch(() => {
+        if (request === audioRequestRef.current) setAudioState({ text: '', status: 'error', error: true });
+      });
+      const id = player.getCurrentId();
+      // A muted request does not acquire a session. Never claim pre-existing audio.
+      const state = player.getState?.();
+      if (id == null || id === previousId || !state?.isPlaying || state.currentText !== text) {
+        setAudioState({ text: '', status: 'error', error: true }); return;
+      }
+      ownedAudioRef.current = { player, id, text };
+      setAudioState({ text, status: state.status || 'generating', error: false });
+
+    } catch (_) { setAudioState({ text: '', status: 'error', error: true }); }
+  };
+  const audioButton = (text, label) => {
+    const active = audioState.text === text && ['generating', 'playing'].includes(audioState.status);
+    return <button type="button" onClick={() => readAloud(text)} data-help-key="detective_read_aloud"
+      className="min-h-11 rounded-lg border border-slate-400 bg-white text-slate-800 px-3 py-2 font-bold inline-flex items-center gap-2 focus-visible:ring-4 focus-visible:ring-indigo-500">
+      {active ? <StopCircle size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}
+      {active ? message('stop_reading', 'Stop reading') : label}
+    </button>;
+  };
+  const keyFor = value => stripGameEmoji(value).normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+  const dataKey = JSON.stringify((Array.isArray(data) ? data : [])
+    .filter(item => item && typeof item.term === 'string' && typeof item.def === 'string' && keyFor(item.term) && keyFor(item.def))
+    .map(item => ({ term: item.term.trim(), def: item.def.trim() })));
+  const entries = useMemo(() => JSON.parse(dataKey), [dataKey]);
+  const mix = values => {
+    const shuffled = values.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  const buildRounds = () => {
+    const terms = new Map(), definitions = new Map();
+    entries.forEach(item => {
+      const termKey = keyFor(item.term), definitionKey = keyFor(item.def);
+      if (!terms.has(termKey)) terms.set(termKey, { key: termKey, term: item.term, defs: [] });
+      const term = terms.get(termKey);
+      if (!term.defs.includes(item.def)) term.defs.push(item.def);
+      if (!definitions.has(definitionKey)) definitions.set(definitionKey, { key: definitionKey, def: item.def, accepted: new Set() });
+      definitions.get(definitionKey).accepted.add(termKey);
+    });
+    return mix([...definitions.values()].map(clue => {
+      const targets = [...terms.values()].filter(term => clue.accepted.has(term.key));
+      const distractors = mix([...terms.values()].filter(term => !clue.accepted.has(term.key))).slice(0, 3);
+      if (!distractors.length) return null;
+      const target = mix(targets)[0];
+      return { key: clue.key, def: clue.def, target, choices: mix([target, ...distractors]) };
+    }).filter(Boolean));
+  };
+  const start = (nextRounds, isPractice = false) => {
+    stopAudio();
+    lockedRef.current = false; reportedRef.current = false;
+    setRoundVersion(value => value + 1);
+    setRounds(nextRounds); setIndex(0); setResults([]); setAnswer(null); setPhase('question'); setPractice(isPractice);
+  };
+  useEffect(() => { start(buildRounds()); }, [dataKey]);
+  useGameDialogFocus(dialogRef, closeRef, close);
+  useEffect(() => {
+    if (phase === 'feedback') {
+      feedbackRef.current?.focus({ preventScroll: true });
+      // Show the explanation, not just the heading at the bottom edge of a phone.
+      feedbackRef.current?.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+    }
+    else if (roundVersion > 0) promptRef.current?.focus();
+  }, [phase, index, roundVersion]);
+  useEffect(() => {
+    if (phase !== 'complete' || reportedRef.current || !rounds.length) return;
+    reportedRef.current = true;
+    if (practice) return;
+    const correctCount = results.filter(result => result.correct).length;
+    callbacksRef.current.onScoreUpdate?.(correctCount * 10, 'Definition Detective Complete');
+    callbacksRef.current.onGameComplete?.('definitionDetective', {
+      score: correctCount * 10, correctCount, correctPlacements: correctCount,
+      totalItems: rounds.length, isPerfect: correctCount === rounds.length,
+    });
+  }, [phase, results, rounds.length, practice]);
+  const current = rounds[index];
+  const choose = choice => {
+    if (lockedRef.current || phase !== 'question' || !current) return;
+    lockedRef.current = true;
+    stopAudio();
+    const correct = !!choice && choice.key === current.target.key;
+    const result = { ...current, choice, correct, skipped: !choice };
+    setAnswer(result); setResults(previous => [...previous, result]); setPhase('feedback');
+    if (choice) callbacksRef.current.playSound?.(correct ? 'correct' : 'incorrect');
+  };
+  const next = () => {
+    if (phase !== 'feedback' || !lockedRef.current) return;
+    stopAudio();
+    lockedRef.current = false;
+    if (index + 1 === rounds.length) { setPhase('complete'); return; }
+    lockedRef.current = false; setIndex(value => value + 1); setAnswer(null); setPhase('question');
+  };
+  const missed = results.filter(result => !result.correct);
+  const correctCount = results.length - missed.length;
+  const title = message('title', 'Definition Detective');
+  const clueAudio = current ? message('question', 'Which term matches this definition?') + ' ' + current.def + ' ' + message('choices', 'Answer choices') + ': ' + current.choices.map(choice => choice.term).join('. ') : '';
+  const feedbackAudio = answer ? current.target.term + '. ' + current.def + (!answer.correct && answer.choice ? ' ' + answer.choice.term + '. ' + answer.choice.defs.join('. ') : '') : '';
+  const choiceStyle = 'w-full min-h-14 rounded-xl border-2 px-4 py-4 text-left text-base sm:text-lg font-bold break-words focus-visible:ring-4 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
+  return (
+    <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="definition-detective-title" aria-describedby="detective-instructions"
+      className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5">
+      <div className={"bg-white w-full max-w-3xl max-h-[94vh] overflow-y-auto overscroll-contain rounded-2xl shadow-2xl border border-indigo-200 " + (largeText ? "detective-large-text" : "")}>
+        <style>{".detective-large-text [data-detective-reading]{font-size:1.5rem;line-height:1.75}.detective-large-text [data-help-key=detective_choice]{font-size:1.375rem;line-height:1.6}[data-help-key=detective_choice]:disabled{opacity:1}@media(forced-colors:active){[data-help-key=detective_choice][data-answer-state=correct]{outline:3px solid Highlight;outline-offset:-5px}[data-help-key=detective_choice][data-answer-state=wrong]{border-style:dashed}}"}</style>
+        <header className="flex items-start justify-between gap-3 bg-indigo-700 text-white p-4 sm:p-6 rounded-t-2xl">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-widest text-indigo-100 mb-2">{message('eyebrow', 'Vocabulary • meaning practice')}</p>
+            <h2 id="definition-detective-title" className="text-2xl sm:text-3xl font-black break-words">{title}</h2>
+            <p id="detective-instructions" className="mt-2 text-sm text-indigo-100">{message('instructions', 'Read the clue, choose a term, and check its meaning. Take your time.')}</p>
+          </div>
+          <div className="flex shrink-0 gap-1"><GameThemeToggle /><button ref={closeRef} type="button" onClick={close} aria-label={gameMessage(t, 'common.close', 'Close')}
+            className="min-w-11 min-h-11 rounded-full hover:bg-indigo-600 focus-visible:ring-2 focus-visible:ring-white"><X size={22} aria-hidden="true" className="mx-auto" /></button></div>
+        </header>
+        <div className="p-4 sm:p-7">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <button type="button" aria-pressed={largeText} onClick={() => setLargeText(value => !value)} className="min-h-11 rounded-lg border border-slate-400 bg-white text-slate-800 px-3 py-2 font-bold focus-visible:ring-4 focus-visible:ring-indigo-500">{message('larger_text', 'Larger text')}</button>
+            <span className="text-sm text-slate-600">{message('no_timer', 'No timer. Read or listen at your own pace.')}</span>
+          </div>
+          <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-700 mb-3">{audioState.error ? message('audio_unavailable', 'Audio is unavailable. Check your sound settings and try again. You can keep reading on screen.') : audioState.status === 'generating' ? message('audio_preparing', 'Preparing audio. Use Stop reading to cancel.') : audioState.status === 'playing' ? message('audio_playing', 'Reading aloud.') : ''}</p>
+          {!rounds.length ? <p role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900">
+            {message('empty', 'Add at least two terms with different definitions to play. Terms with the same meaning will not be used as misleading answer choices.')}
+          </p> : phase === 'complete' ? <section aria-labelledby="detective-summary-title">
+            <h3 ref={promptRef} tabIndex={-1} id="detective-summary-title" aria-describedby="detective-summary-count" className="text-2xl font-black text-slate-900">{practice ? message('practice_complete', 'Practice complete') : message('complete', 'Case closed!')}</h3>
+            <p id="detective-summary-count" className="mt-3 text-lg text-slate-700"><strong>{correctCount} / {rounds.length}</strong> {message('correct', 'correct')}</p>
+            {!practice && <p className="mt-1 text-sm text-slate-600">{message('score', 'Points')}: {correctCount * 10}</p>}
+            <p className="mt-4 text-slate-700">{missed.length ? message('review_prompt', 'These meanings are worth another look:') : message('all_correct', 'You matched every clue. Try explaining one of these terms in your own words.')}</p>
+            {!!missed.length && <ul className="mt-3 space-y-3">{missed.map(result => <li key={result.key} className="rounded-xl bg-amber-50 border border-amber-200 p-4">
+              <strong data-detective-reading className="text-slate-900 break-words" dir="auto">{result.target.term}</strong><p data-detective-reading className="mt-1 text-slate-700 break-words" dir="auto">{result.def}</p>
+            </li>)}</ul>}
+            <div className="mt-6 flex flex-wrap gap-3">
+              {!!missed.length && audioButton(missed.map(result => result.target.term + ". " + result.def).join(". "), message('read_review', 'Read review aloud'))}
+              {!!missed.length && <button type="button" data-help-key="detective_practice_missed" onClick={() => start(mix(missed.map(({ choice, correct, ...round }) => ({ ...round, choices: mix(round.choices) }))), true)}
+                className="min-h-11 rounded-lg bg-indigo-700 text-white px-4 py-3 font-bold focus-visible:ring-4 focus-visible:ring-indigo-400">{message('practice_missed', 'Practise missed clues')}</button>}
+              <button type="button" data-help-key="detective_new_round" onClick={() => start(buildRounds())} className="min-h-11 rounded-lg border border-slate-300 bg-white text-slate-800 px-4 py-3 font-bold focus-visible:ring-4 focus-visible:ring-indigo-400">{message('play_again', 'New round')}</button>
+            </div>
+            {!!missed.length && <p className="mt-2 text-xs text-slate-600">{message('practice_note', 'Practice helps you learn; it does not add points or another completion record.')}</p>}
+          </section> : current && <section aria-labelledby="detective-clue">
+            <div className="flex flex-wrap justify-between gap-3 text-sm font-bold text-indigo-800 mb-3">
+              <span id="detective-position">{practice ? message('practice', 'Practice') : message('clue', 'Clue')} {index + 1} / {rounds.length}</span>
+              <span>{message('answered', 'Answered')}: {results.length} / {rounds.length}</span>
+            </div>
+            <progress aria-label={message('progress', 'Clues answered')} max={rounds.length} value={results.length} className="w-full h-2 accent-indigo-600 mb-5" />
+            <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 sm:p-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-3">{message('question', 'Which term matches this definition?')}</p>
+              <h3 ref={promptRef} tabIndex={-1} id="detective-clue" data-detective-reading aria-describedby="detective-position" dir="auto" className="text-lg sm:text-2xl leading-relaxed font-semibold text-slate-900 break-words">{current.def}</h3>
+            </div>
+            <div className="mt-3">{audioButton(clueAudio, message('read_clue', 'Read clue and choices aloud'))}</div>
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3" role="group" aria-label={message('choices', 'Answer choices')} aria-describedby="detective-clue">
+              {current.choices.map(choice => {
+                const correct = answer && choice.key === current.target.key;
+                const wrong = answer && choice.key === answer.choice?.key && !answer.correct;
+                return <button key={choice.key} type="button" data-help-key="detective_choice" data-answer-state={correct ? "correct" : wrong ? "wrong" : undefined} disabled={phase !== 'question'} onClick={() => choose(choice)}
+                  className={choiceStyle + (correct ? ' bg-emerald-50 border-emerald-600 text-emerald-900' : wrong ? ' bg-rose-50 border-rose-500 text-rose-900' : ' bg-white border-slate-300 text-slate-800 enabled:hover:border-indigo-600 enabled:hover:bg-indigo-50')}>
+                  <span dir="auto">{choice.term}</span>{correct && <span className="block mt-1 text-xs">✓ {message('correct_answer', 'Correct answer')}</span>}{wrong && <span className="block mt-1 text-xs">× {message('your_choice', 'Your choice')}</span>}
+                </button>;
+              })}
+            </div>
+            {phase === 'question' && <button type="button" data-help-key="detective_not_sure" onClick={() => choose(null)} className="mt-4 min-h-11 rounded-lg border border-slate-400 bg-white text-slate-800 px-4 py-3 font-bold focus-visible:ring-4 focus-visible:ring-indigo-500">{message('not_sure', 'Not sure yet — show the meaning')}</button>}
+            {answer && <div className="mt-5">
+              <div role="region" aria-labelledby="detective-feedback-title" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-800">
+                <h4 ref={feedbackRef} tabIndex={-1} id="detective-feedback-title" aria-describedby="detective-feedback-meaning" className="font-bold text-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{answer.skipped ? message('learn_meaning', 'Let’s learn this meaning') : answer.correct ? message('well_done', 'That is the match!') : message('compare', 'Compare the meanings:')}</h4>
+                <div id="detective-feedback-meaning" data-detective-reading>
+                <p className="mt-2 break-words" dir="auto"><strong>{current.target.term}</strong> — {current.def}</p>
+                {!answer.correct && answer.choice && <p className="mt-2 break-words" dir="auto"><strong>{answer.choice.term}</strong> — {answer.choice.defs.join(' / ')}</p>}
+                </div>
+                <div className="mt-3">{audioButton(feedbackAudio, message('read_feedback', 'Read feedback aloud'))}</div>
+              </div>
+              <button ref={nextRef} type="button" data-help-key="detective_next" onClick={next} className="mt-4 min-h-11 w-full sm:w-auto rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-3 font-bold focus-visible:ring-4 focus-visible:ring-indigo-400">
+                {index + 1 === rounds.length ? message('review', 'See my review') : message('next', 'Next clue')} <span aria-hidden="true">→</span>
+              </button>
+            </div>}
+          </section>}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+
 
 // ── MultiZoneSortGame — shared base for Frayer / See-Think-Wonder / Story Map ──
 // Generic N-zone drag-and-drop sort. Each zone has an id, label, and color.

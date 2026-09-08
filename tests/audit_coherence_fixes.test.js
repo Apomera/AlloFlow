@@ -192,7 +192,9 @@ describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)
     expect(ce).toMatch(/Source-support check \(automated, from the grounding engine/);
     expect(ce).toMatch(/it does not guarantee the source states the claim/);
     const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
-    expect(ve).toMatch(/window\.__alloBuilderEditedPack = \{ html: '<!DOCTYPE html>\\n' \+ doc\.documentElement\.outerHTML, at: Date\.now\(\) \}/);
+    expect(ve).toContain("draftCaptureLatestRef.current?.(doc, 'Workbench edit')");
+    expect(ve).not.toContain("window.__alloBuilderEditedPack =");
+    expect(ve).toContain("onBuilderDraftCapture(clean.html, { doc, token, owner: builderDraftOwner })");
   });
 });
 
@@ -219,8 +221,14 @@ describe('export-format review round 2 (ePub/txt/md/BRF)', () => {
   });
   it('C18: txt/md/BRF flatten CLEANED clones (no style/script bodies, no editor chrome)', () => {
     const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
-    const strips = ve.match(/\.allo-block-controls, \.allo-block-remove/g) || [];
-    expect(strips.length).toBeGreaterThanOrEqual(4);                    // epub + txt + brf + md + notebooklm fallback
+    const strips = ve.match(/\.allo-block-controls,\s*\.allo-block-remove/g) || [];
+    // EPUB, text and BRF keep direct cleanup; Markdown and NotebookLM share a cleaned clone.
+    expect(strips.length).toBeGreaterThanOrEqual(4);
+    const markdownCleanup = ve.slice(ve.indexOf('function _builderCleanMarkdownRoot('), ve.indexOf('function _builderMarkdownFromRoot('));
+    expect(markdownCleanup).toContain('_builderFinalizeDocumentForExport(doc.body.cloneNode(true))');
+    expect(markdownCleanup).toContain('script,style');
+    expect(markdownCleanup).toContain('_builderStripEditorBreakMetadata(root)');
+    expect(ve.match(/const root = _builderCleanMarkdownRoot\(doc\);/g)).toHaveLength(2);
     // the raw tag-strip txt path is gone
     expect(ve).not.toMatch(/const text = html\.replace\(\/<\[\^>\]\*>\/g, '\n'\)/);
   });

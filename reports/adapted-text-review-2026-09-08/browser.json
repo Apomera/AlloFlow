@@ -1,0 +1,42 @@
+[
+  {
+    "width": 320,
+    "font": 16,
+    "readingTables": 2,
+    "semanticLists": 2,
+    "keyboardSentence": true,
+    "keyboardWord": true,
+    "horizontalOverflow": 0,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "font": 24,
+    "readingTables": 2,
+    "semanticLists": 2,
+    "keyboardSentence": true,
+    "keyboardWord": true,
+    "horizontalOverflow": 0,
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "font": 16,
+    "readingTables": 2,
+    "semanticLists": 2,
+    "keyboardSentence": true,
+    "keyboardWord": true,
+    "horizontalOverflow": 0,
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "font": 24,
+    "readingTables": 2,
+    "semanticLists": 2,
+    "keyboardSentence": true,
+    "keyboardWord": true,
+    "horizontalOverflow": 0,
+    "errors": []
+  }
+]

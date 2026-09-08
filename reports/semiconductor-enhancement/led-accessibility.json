@@ -1,0 +1,42 @@
+[
+  {
+    "variant": "AlGaAs/GaAs (Infrared)",
+    "violations": []
+  },
+  {
+    "variant": "AlGaAs (Red)",
+    "violations": []
+  },
+  {
+    "variant": "GaAsP (Red)",
+    "violations": []
+  },
+  {
+    "variant": "GaAsP (Orange)",
+    "violations": []
+  },
+  {
+    "variant": "GaP:N (Yellow)",
+    "violations": []
+  },
+  {
+    "variant": "InGaN (Green)",
+    "violations": []
+  },
+  {
+    "variant": "InGaN (Blue)",
+    "violations": []
+  },
+  {
+    "variant": "AlGaN (UV)",
+    "violations": []
+  },
+  {
+    "variant": "Blue InGaN + Phosphor",
+    "violations": []
+  },
+  {
+    "variant": "RGB Mixer",
+    "violations": []
+  }
+]

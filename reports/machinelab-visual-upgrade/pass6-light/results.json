@@ -1,0 +1,18 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "damage-cracked-wall",
+    "damage-cracked-rear",
+    "damage-breach-wall",
+    "damage-cracked-field",
+    "damage-breach-field"
+  ]
+}

@@ -4423,6 +4423,73 @@
   }
 
   // ════════════════════════════ Editor component ════════════════════════════
+  // Keep number entry local until committed; intermediate digits must not clamp the document.
+  function StudioNumberField(props) {
+    var state = React.useState(String(props.value)), draft = state[0], setDraft = state[1];
+    React.useEffect(function () { setDraft(String(props.value)); }, [props.value]);
+    var commit = function (input) {
+      var raw = input.value.trim(), value = raw ? Number(raw) : NaN;
+      if (!Number.isFinite(value)) { setDraft(String(props.value)); return; }
+      value = Math.round(Math.max(props.min, Math.min(props.max, value)));
+      setDraft(String(value));
+      if (value !== props.value) props.onCommit(value);
+    };
+    return React.createElement('input', {
+      type: 'number', value: draft, min: props.min, max: props.max, step: 1,
+      style: props.style, disabled: props.disabled, 'aria-label': props.label,
+      onChange: function (e) { setDraft(e.target.value); },
+      onBlur: function (e) { commit(e.currentTarget); },
+      onKeyDown: function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); commit(e.currentTarget); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setDraft(String(props.value)); }
+      }
+    });
+  }
+
+  function stFindInsertFrame(frame, canvas, objects, page) {
+    var initial = stClampFrame(frame, canvas);
+    var occupied = (objects || []).filter(function (o) { return o && o.frame && stObjectPage(o) === page; });
+    var clear = function (f) { return !occupied.some(function (o) {
+      var b = o.frame;
+      return f.x < b.x + b.w + 12 && f.x + f.w + 12 > b.x && f.y < b.y + b.h + 12 && f.y + f.h + 12 > b.y;
+    }); };
+    if (clear(initial)) return initial;
+    var xs = [initial.x, 32], ys = [initial.y, 32];
+    occupied.slice(0, 200).forEach(function (o) { xs.push(o.frame.x + o.frame.w + 16); ys.push(o.frame.y + o.frame.h + 16); });
+    xs = Array.from(new Set(xs)).filter(function (x) { return x >= 0 && x + initial.w <= canvas.w; }).slice(0, 16);
+    ys = Array.from(new Set(ys)).filter(function (y) { return y >= 0 && y + initial.h <= canvas.h; }).sort(function (a, b) { return a - b; }).slice(0, 64);
+    for (var yi = 0; yi < ys.length; yi++) for (var xi = 0; xi < xs.length; xi++) {
+      var candidate = Object.assign({}, initial, { x: xs[xi], y: ys[yi] });
+      if (clear(candidate)) return candidate;
+    }
+    // A crowded page still accepts an item within its bounds, visibly offset from the default.
+    return stClampFrame(Object.assign({}, initial, { x: initial.x + 24 * (1 + occupied.length % 6), y: initial.y + 24 * (1 + occupied.length % 6) }), canvas);
+  }
+
+  function stSnapCandidates(objects, page, selectedIds) {
+    return (objects || []).filter(function (o) { return o && stObjectPage(o) === page && selectedIds.indexOf(o.id) < 0; });
+  }
+
+  function stMeasureTextFit(obj, canvas) {
+    if (!obj || obj.type !== 'text' || !obj.frame || !document.body) return null;
+    var run = (obj.runs && obj.runs[0]) || {}, style = run.style || {}, frame = obj.frame;
+    var size = stFiniteNumber(style.size, 16), probe = document.createElement('div');
+    Object.assign(probe.style, { position: 'fixed', left: '-100000px', top: '0', visibility: 'hidden', pointerEvents: 'none', width: frame.w + 'px', height: 'auto', padding: '0', margin: '0', border: '0', boxSizing: 'border-box', fontFamily: stSafeFontFamily(style.font), fontWeight: style.bold ? '700' : '400', textAlign: style.align || 'left', whiteSpace: 'pre-wrap', overflowWrap: 'break-word', lineHeight: '1.25' });
+    probe.textContent = run.text || '';
+    document.body.appendChild(probe);
+    try {
+      var measure = function (fontSize) { probe.style.fontSize = fontSize + 'px'; return Math.ceil(probe.getBoundingClientRect().height); };
+      var height = measure(size);
+      if (!height && run.text) return null; // Layout is unavailable in non-rendering hosts.
+      var overflow = height > frame.h + 1, available = Math.max(0, canvas.h - frame.y), fitSize = null;
+      if (overflow && size > 12) {
+        var low = 12, high = Math.floor(size) - 1;
+        while (low <= high) { var mid = Math.floor((low + high) / 2); if (measure(mid) <= frame.h) { fitSize = mid; low = mid + 1; } else high = mid - 1; }
+      }
+      return { overflow: overflow, neededHeight: height, expandedHeight: Math.ceil(height + 1), canExpand: overflow && height + 1 <= available, fontSize: fitSize };
+    } finally { probe.remove(); }
+  }
+
   function AlloStudio(props) {
     var h = React.createElement;
     var t = props.t || function () { return ''; };
@@ -4465,11 +4532,18 @@
     var _pageIndex = React.useState(0); var pageIndex = _pageIndex[0], setPageIndex = _pageIndex[1];
     var _sel = React.useState(null); var selectedId = _sel[0], setSelectedId = _sel[1];
     var _multiSel = React.useState([]); var selectedIds = _multiSel[0], setSelectedIds = _multiSel[1];
+    var _multiMode = React.useState(false); var multiMode = _multiMode[0], setMultiMode = _multiMode[1];
+    var _pagesOpen = React.useState(false); var pagesOpen = _pagesOpen[0], setPagesOpen = _pagesOpen[1];
+    var _textFit = React.useState(null); var textFit = _textFit[0], setTextFit = _textFit[1];
     var _role = React.useState(props.initialRole === 'student' ? 'student' : 'teacher'); var role = _role[0], setRole = _role[1];
     var _scrub = React.useState(null); var scrubSeq = _scrub[0], setScrubSeq = _scrub[1];
     var _processActor = React.useState('all'); var processActorFilter = _processActor[0], setProcessActorFilter = _processActor[1];
-    var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
-    var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
+    var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = function (next) { _exportOpen[1](next); if (next === true) _preflightOpen[1](false); };
+    var _exportTask = React.useState(null); var exportTask = _exportTask[0], setExportTask = _exportTask[1];
+    var exportTaskRef = React.useRef(null);
+    var exportBusy = !!(exportTask && exportTask.state === 'working');
+    React.useEffect(function () { return function () { exportTaskRef.current = null; }; }, []);
+    var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = function (next) { _preflightOpen[1](next); if (next === true) _exportOpen[1](false); };
     var _preflightGuide = React.useState(0); var preflightGuideIndex = _preflightGuide[0], setPreflightGuideIndex = _preflightGuide[1];
     var _preflightIssueFilter = React.useState('all'); var preflightIssueFilter = _preflightIssueFilter[0], setPreflightIssueFilter = _preflightIssueFilter[1];
     var _shortcutsOpen = React.useState(false); var shortcutsOpen = _shortcutsOpen[0], setShortcutsOpen = _shortcutsOpen[1];
@@ -4498,6 +4572,8 @@
     var headerMoreRef = React.useRef(null);
     var inspectorRef = React.useRef(null);
     var pendingInspectorRef = React.useRef(false);
+    var zoomAnchorRef = React.useRef(null);
+    var dragPreviewRef = React.useRef(null);
     var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
     var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
     var _navigatorSearch = React.useState(''); var navigatorSearch = _navigatorSearch[0], setNavigatorSearch = _navigatorSearch[1];
@@ -4695,9 +4771,28 @@
     var fitScale = doc ? (canvasSize ? stCanvasViewportFitScale(doc.canvas, canvasSize, fitMode) : stCanvasFitScale(doc.canvas, layout, viewport)) : layout.canvasScale;
     var SCALE = canvasZoom === null ? fitScale : stAdjustCanvasZoom(canvasZoom, 'clamp', fitScale);
     var zoomLabel = Math.round(SCALE * 100) + '%';
+    React.useEffect(function () {
+      var anchor = zoomAnchorRef.current, node = canvasViewportRef.current;
+      zoomAnchorRef.current = null;
+      if (!anchor || !node || !node.firstElementChild) return;
+      if (anchor.fit) { node.scrollLeft = 0; node.scrollTop = 0; return; }
+      var pageRect = node.firstElementChild.getBoundingClientRect(), rect = node.getBoundingClientRect();
+      node.scrollLeft += pageRect.left - rect.left + anchor.x * SCALE - node.clientWidth / 2;
+      node.scrollTop += pageRect.top - rect.top + anchor.y * SCALE - node.clientHeight / 2;
+    }, [SCALE, fitMode, canvasZoom]);
     var changeCanvasZoom = function (action) {
-      if (action === 'fit' || action === 'fit-width') { setFitMode(action === 'fit-width' ? 'width' : 'page'); setCanvasZoom(null); return; }
-      setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
+      var node = canvasViewportRef.current;
+      if (action === 'fit' || action === 'fit-width') {
+        zoomAnchorRef.current = { fit: true };
+        if (node) { node.scrollLeft = 0; node.scrollTop = 0; }
+        setFitMode(action === 'fit-width' ? 'width' : 'page'); setCanvasZoom(null);
+      } else {
+        if (node && node.firstElementChild) {
+          var rect = node.getBoundingClientRect(), pageRect = node.firstElementChild.getBoundingClientRect();
+          zoomAnchorRef.current = { x: (rect.left + node.clientWidth / 2 - pageRect.left) / SCALE, y: (rect.top + node.clientHeight / 2 - pageRect.top) / SCALE };
+        }
+        setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
+      }
       stAnnounce(TT('studio.a11y_zoom_changed', 'Canvas zoom changed'));
     };
     var zoomToSelection = function () {
@@ -4739,12 +4834,41 @@
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'grouped edit failed'), 'error'); }
       return [];
     };
+    var historyAction = function (redo) {
+      commitFocusedField();
+      if ((redo ? stRedo : stUndo)(_docRef.current)) {
+        if (hasLinkedActivityWorksheet) setLinkedSaveState('dirty');
+        bump(); stAnnounce(redo ? TT('studio.a11y_redone', 'Redone') : TT('studio.a11y_undone', 'Undone'));
+      }
+    };
     var activePageObject = function (obj) {
       var copy = stClone(obj);
       return stSetObjectPage(copy, activePageIndex, studioPageCount);
     };
     var clearSelection = function () { setSelectedId(null); setSelectedIds([]); };
-    var selectOnly = function (id, deferPanel) { var fromNavigator = !deferPanel && !_drag.current && document.activeElement && document.activeElement.closest('[data-st-object-browser]'); setSelectedId(id || null); setSelectedIds(id ? [id] : []); if (id) { setInspectorTab('properties'); if (layout.stacked) { if (deferPanel || _drag.current) pendingInspectorRef.current = true; else setMobilePanel('properties'); } if (inspectorRef.current) inspectorRef.current.scrollTop = 0; if (fromNavigator) setTimeout(function () { var panel = inspectorRef.current; var field = panel && Array.from(panel.querySelectorAll('textarea, input, select, button')).find(function (node) { return !node.disabled && node.getClientRects().length && !node.closest('[data-st-object-browser]') && node.tagName !== 'BUTTON'; }); if (field) field.focus(); }, 0); } };
+    var revealNavigator = function (mode) {
+      setView('edit'); setInspectorTab('objects');
+      if (mode) setNavigatorMode(mode);
+      if (layout.stacked) setMobilePanel('objects');
+    };
+    var selectOnly = function (id, deferPanel) {
+      var fromNavigator = !deferPanel && !_drag.current && document.activeElement && document.activeElement.closest('[data-st-object-browser]');
+      setSelectedId(id || null); setSelectedIds(id ? [id] : []);
+      if (!id) return;
+      setInspectorTab('properties');
+      if (layout.stacked) {
+        if (deferPanel || _drag.current) pendingInspectorRef.current = true;
+        else setMobilePanel('properties');
+      }
+      if (inspectorRef.current) inspectorRef.current.scrollTop = 0;
+      if (fromNavigator) setTimeout(function () {
+        var panel = inspectorRef.current;
+        var field = panel && Array.from(panel.querySelectorAll('textarea, input, select')).find(function (node) {
+          return !node.disabled && node.getClientRects().length && !node.closest('[data-st-object-browser]');
+        });
+        if (field) field.focus();
+      }, 0);
+    };
     var toggleSelection = function (id) {
       if (!id) return;
       var list = Array.isArray(selectedIds) ? selectedIds.slice() : [];
@@ -4810,6 +4934,7 @@
     var selectAllObjects = function () {
       if (!doc || !pageObjects.length) return;
       var ids = pageObjects.map(function (o) { return o.id; });
+      setInspectorTab('properties'); if (layout.stacked && !multiMode) setMobilePanel('properties');
       setSelectedIds(ids);
       setSelectedId(ids[ids.length - 1]);
       stAnnounce(TT('studio.a11y_selected_all', 'Selected all objects'));
@@ -4826,6 +4951,29 @@
       stAnnounce(dir < 0 ? TT('studio.a11y_moved_earlier', 'Moved earlier in reading order') : TT('studio.a11y_moved_later', 'Moved later in reading order'));
     };
     var selected = doc && selectedId ? pageObjects.filter(function (o) { return o.id === selectedId; })[0] : null;
+    React.useEffect(function () {
+      var live = true;
+      var measure = function () {
+        if (!live) return;
+        var result = selected && doc ? stMeasureTextFit(selected, doc.canvas) : null;
+        setTextFit(function (prior) { return JSON.stringify(prior) === JSON.stringify(result) ? prior : result; });
+      };
+      measure();
+      if (document.fonts) { document.fonts.ready.then(measure); document.fonts.addEventListener('loadingdone', measure); }
+      return function () { live = false; if (document.fonts) document.fonts.removeEventListener('loadingdone', measure); };
+    }, [_tick[0], selectedId]);
+    var applyTextFit = function (action) {
+      commitFocusedField();
+      var live = _docRef.current.objects.find(function (o) { return o.id === selectedId; });
+      if (!live || stIsLockedObject(live)) return;
+      var fit = stMeasureTextFit(live, _docRef.current.canvas);
+      if (!fit || !fit.overflow) return;
+      if (action === 'expand' && fit.canExpand) dispatch({ type: 'object.resize', target: live.id, w: live.frame.w, h: fit.expandedHeight }, 'user');
+      else if (action === 'shrink' && fit.fontSize) {
+        var runs = stClone(live.runs); runs[0].style = Object.assign({}, runs[0].style, { size: fit.fontSize });
+        dispatch({ type: 'object.update', target: live.id, patch: { runs: runs } }, 'user');
+      }
+    };
     var selectionIds = (Array.isArray(selectedIds) ? selectedIds : []).filter(function (id) {
       return pageObjects.some(function (o) { return o && o.id === id; });
     });
@@ -4965,13 +5113,26 @@
     // closing the deck and picking a template does not rebuild it.
 
     // ── object insertion ──
-    var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
+    var selectFromOp = function (op, focusText) {
+      if (op && op.object && op.object.id) {
+        selectOnly(op.object.id);
+        if (focusText) setTimeout(function () {
+          var field = inspectorRef.current && inspectorRef.current.querySelector('textarea');
+          if (field) { field.focus(); field.select(); }
+        }, 0);
+      }
+      return op;
+    };
+    var placeInsertedObject = function (obj) {
+      obj.frame = stFindInsertFrame(obj.frame, _docRef.current.canvas, _docRef.current.objects, activePageIndex);
+      return activePageObject(obj);
+    };
     var insertText = function (roleKind) {
       var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
-      selectFromOp(dispatch({ type: 'object.add', object: activePageObject(obj) }, 'user'));
+      selectFromOp(dispatch({ type: 'object.add', object: placeInsertedObject(obj) }, 'user'), true);
     };
     var insertShape = function (kind) {
-      selectFromOp(dispatch({ type: 'object.add', object: activePageObject(stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe')) }, 'user'));
+      selectFromOp(dispatch({ type: 'object.add', object: placeInsertedObject(stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe')) }, 'user'));
     };
     var onPickImage = function (ev) {
       var f = ev.target.files && ev.target.files[0];
@@ -4984,7 +5145,7 @@
         // Downscaled first so a camera photo doesn't bloat the save file.
         stImportImageDataUrl(e.target.result, 1600).then(function (src) {
           if (!src) { addToast(TT('studio.image_import_failed', 'That file could not be imported as an image.'), 'error'); return; }
-          selectFromOp(dispatch({ type: 'object.add', object: activePageObject(stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload')) }, 'import'));
+          selectFromOp(dispatch({ type: 'object.add', object: placeInsertedObject(stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload')) }, 'import'));
           addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
         });
       };
@@ -5141,7 +5302,7 @@
         return;
       }
       if (action.type === 'review-reading-order') {
-        setNavigatorMode('reading');
+        revealNavigator('reading');
         stAnnounce(TT('studio.a11y_review_reading_order', 'Review the reading order list on the right'));
         addToast(TT('studio.review_reading_order', 'Use the reading-order list on the right to match the screen-reader order.'), 'info');
         return;
@@ -5550,9 +5711,10 @@
       stAnnounce(TT('studio.a11y_group_resized', 'Selected objects resized'));
     };
     var onGroupResizePointerDown = function (ev) {
-      if (!selectionCanResize) return;
+      if (!selectionCanResize || ev.button > 0 || ev.isPrimary === false) return;
+      commitFocusedField();
       ev.preventDefault(); ev.stopPropagation();
-      _drag.current = { id: '__group__', ids: selectionIds.slice(), mode: 'group-resize', startX: ev.clientX, startY: ev.clientY, keepRatio: !!ev.shiftKey };
+      _drag.current = { id: '__group__', ids: selectionIds.slice(), mode: 'group-resize', scale: SCALE, startX: ev.clientX, startY: ev.clientY, keepRatio: !!ev.shiftKey };
       try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
     };
     var onGroupResizeKeyDown = function (ev) {
@@ -5564,8 +5726,13 @@
     };
     var onObjectPointerDown = function (o, mode) {
       return function (ev) {
+        if (ev.button > 0 || ev.isPrimary === false) return;
+        commitFocusedField();
         ev.preventDefault(); ev.stopPropagation();
-        if (mode === 'move' && (ev.shiftKey || ev.ctrlKey || ev.metaKey)) {
+        _skipFocusSelect.current = true;
+        try { ev.currentTarget.focus({ preventScroll: true }); } catch (_) {}
+        _skipFocusSelect.current = false;
+        if (mode === 'move' && (multiMode || ev.shiftKey || ev.ctrlKey || ev.metaKey)) {
           _skipFocusSelect.current = true;
           toggleSelection(o.id);
           return;
@@ -5587,44 +5754,49 @@
           var target = doc.objects.filter(function (candidate) { return candidate && candidate.id === id; })[0];
           return target && target.frame ? { id: target.id, frame: stClone(target.frame) } : null;
         }).filter(Boolean);
-        _drag.current = { id: o.id, ids: dragIds, mode: mode, scale: SCALE, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame), frames0: dragFrames };
+        _drag.current = { id: o.id, ids: dragIds, mode: mode, page: activePageIndex, scale: SCALE, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame), frames0: dragFrames };
         try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
       };
     };
+    var updateDragPreview = function (preview) { dragPreviewRef.current = preview; setDragLive(preview); };
     var onCanvasPointerMove = function (ev) {
       var d = _drag.current; if (!d) return;
+      if (!d.moved && Math.hypot(ev.clientX - d.startX, ev.clientY - d.startY) < 3) return;
+      d.moved = true;
       var dx = (ev.clientX - d.startX) / (d.scale || SCALE), dy = (ev.clientY - d.startY) / (d.scale || SCALE);
       if (d.mode === 'group-resize') {
         var resizePreview = stResizeFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { minSize: 24, keepRatio: d.keepRatio });
         setSnapGuides([]);
         var resizePrimary = resizePreview.frames.filter(function (entry) { return entry.id === selectedId; })[0] || resizePreview.frames[0];
-        setDragLive({ id: d.id, frames: resizePreview.frames, frame: resizePrimary ? resizePrimary.frame : null });
+        updateDragPreview({ id: d.id, frames: resizePreview.frames, frame: resizePrimary ? resizePrimary.frame : null });
         return;
       }
       if (d.mode === 'move' && d.ids && d.ids.length > 1) {
-        var others = ((_docRef.current && _docRef.current.objects) || []).filter(function (o) { return o && d.ids.indexOf(o.id) < 0; });
+        var others = stSnapCandidates(_docRef.current.objects, d.page, d.ids);
         var groupPreview = stDragFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { snap: snapEnabled, snapObjects: others, threshold: 8 });
         setSnapGuides(groupPreview.guides || []);
         var primary = groupPreview.frames.filter(function (entry) { return entry.id === d.id; })[0] || groupPreview.frames[0];
-        setDragLive({ id: d.id, frames: groupPreview.frames, frame: primary ? primary.frame : null });
+        updateDragPreview({ id: d.id, frames: groupPreview.frames, frame: primary ? primary.frame : null });
         return;
       }
       var f = stClone(d.frame0);
       if (d.mode === 'move') { f.x += dx; f.y += dy; } else { f.w += dx; f.h += dy; }
       var live = stClampFrame(f, _docRef.current.canvas);
       if (snapEnabled && d.mode === 'move') {
-        var others = ((_docRef.current && _docRef.current.objects) || []).filter(function (o) { return o && o.id !== d.id; });
+        var others = stSnapCandidates(_docRef.current.objects, d.page, [d.id]);
         var snapped = stSnapFrame(f, _docRef.current.canvas, others, { threshold: 8 });
         live = snapped.frame;
         setSnapGuides(snapped.guides);
       } else {
         setSnapGuides([]);
       }
-      setDragLive({ id: d.id, frame: live });
+      updateDragPreview({ id: d.id, frame: live });
     };
-    var onCanvasPointerCancel = function () { _drag.current = null; pendingInspectorRef.current = false; setDragLive(null); setSnapGuides([]); };
-    var onCanvasPointerUp = function () {
+    var onCanvasPointerCancel = function () { _drag.current = null; pendingInspectorRef.current = false; updateDragPreview(null); setSnapGuides([]); };
+    var onCanvasPointerUp = function (ev) {
       var d = _drag.current; if (!d) return;
+      if (d.moved && ev && Number.isFinite(ev.clientX) && Number.isFinite(ev.clientY)) onCanvasPointerMove(ev);
+      var dragLive = dragPreviewRef.current;
       _drag.current = null;
       if (pendingInspectorRef.current) { pendingInspectorRef.current = false; setMobilePanel('properties'); }
       if (dragLive && dragLive.id === d.id) {
@@ -5644,7 +5816,7 @@
           else dispatch({ type: 'object.resize', target: d.id, w: f.w, h: f.h }, 'user');
         }
       }
-      setDragLive(null);
+      updateDragPreview(null);
       setSnapGuides([]);
     };
 
@@ -5652,6 +5824,8 @@
     // builder crop modal — arrows move 4px, Shift+arrows resize, Delete removes.
     var onObjectKeyDown = function (o) {
       return function (ev) {
+        if (ev.key === 'Escape' && _drag.current) { ev.preventDefault(); ev.stopPropagation(); onCanvasPointerCancel(); return; }
+        if (multiMode && (ev.key === ' ' || ev.key === 'Enter')) { ev.preventDefault(); ev.stopPropagation(); toggleSelection(o.id); return; }
         var f = o.frame;
         var step = 4;
         var moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
@@ -5683,6 +5857,7 @@
           clearSelection();
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
+          if (multiMode) { ev.preventDefault(); ev.stopPropagation(); setMultiMode(false); return; }
           ev.stopPropagation(); // handled here — don't let the shell close the modal
           clearSelection();
         }
@@ -5693,6 +5868,8 @@
     var _editingText = React.useState(null); var editingText = _editingText[0], setEditingText = _editingText[1];
     var commitTextEdit = function (o, value) {
       setEditingText(null);
+      o = _docRef.current.objects.find(function (item) { return item.id === o.id; });
+      if (!o || stIsLockedObject(o)) return;
       if (value === ((o.runs && o.runs[0] && o.runs[0].text) || '')) return;
       var runs = stClone(o.runs || [{ text: '', style: {} }]);
       runs[0].text = value;
@@ -5786,9 +5963,11 @@
       document.body.appendChild(a); a.click();
       setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (_) {} }, 1500);
     };
-    var safeName = function () { return (doc.title || 'allostudio').replace(/[^\w\u00C0-\uFFFF -]+/g, '').trim().replace(/ +/g, '_') || 'allostudio'; };
+    var safeName = function (source) { return ((source || doc).title || 'allostudio').replace(/[^\w\u00C0-\uFFFF -]+/g, '').trim().replace(/ +/g, '_') || 'allostudio'; };
     var gateOr = function (fn) {
       return function () {
+        commitFocusedField();
+        var altFailures = stAltGate(_docRef.current.objects);
         if (altFailures.length) {
           addToast(TT('studio.alt_gate_toast', '♿ Export blocked: every image needs alt text or an explicit "decorative" mark. The offenders are listed in the export panel.'), 'error');
           setExportOpen(true);
@@ -5803,25 +5982,45 @@
         fn();
       };
     };
+    var runExportJob = function (key, label, work) {
+      if (exportTaskRef.current) return;
+      commitFocusedField();
+      var task = { key: key, label: label, state: 'working', message: TT('studio.export_preparing', 'Preparing') + ' ' + label + '…' };
+      exportTaskRef.current = task; setExportTask(task);
+      var promise;
+      try { promise = work(stClone(_docRef.current)); } catch (err) { promise = Promise.reject(err); }
+      return Promise.resolve(promise).then(function (result) {
+        if (result === false) throw new Error(TT('studio.export_not_completed', 'The export did not complete. Try again.'));
+        if (exportTaskRef.current !== task) return;
+        exportTaskRef.current = null;
+        var message = label + ' ' + TT('studio.export_finished', 'export finished. Check your downloads.');
+        setExportTask({ key: key, state: 'done', message: message }); addToast(message, 'success');
+      }).catch(function (err) {
+        if (exportTaskRef.current !== task) return;
+        exportTaskRef.current = null;
+        var message = label + ': ' + stCleanText(err && err.message || TT('studio.export_error', 'Export failed. Try again.'), 220);
+        setExportTask({ key: key, state: 'error', message: message }); addToast(message, 'error');
+      });
+    };
     var exportHtml = gateOr(function () {
       download(new Blob([stExportHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.html');
       addToast(TT('studio.exported_html', '📄 Accessible HTML downloaded — reading order and alt text ride along.'), 'success');
     });
     var exportPng = gateOr(function () {
-      stRenderPng(doc, 1.5, activePageIndex).then(function (blob) {
-        var suffix = studioPageCount > 1 ? '-' + (doc.canvas.preset === 'slide-16x9' ? 'slide' : 'page') + (activePageIndex + 1) : '';
-        download(blob, safeName() + suffix + '.png');
-        addToast(studioPageCount > 1
-          ? TT('studio.exported_png_page', '🖼️ PNG of the current page downloaded. PNG is pixels-only — for the whole document use PowerPoint, HTML, or the tagged PDF.')
-          : TT('studio.exported_png', '🖼️ PNG downloaded. Note: PNG is pixels-only — share the HTML or tagged PDF when accessibility matters.'), 'info');
-      }).catch(function () { addToast(TT('studio.export_png_failed', 'PNG export failed.'), 'error'); });
+      var page = activePageIndex;
+      return runExportJob('png', 'PNG', function (snapshot) {
+        return stRenderPng(snapshot, 1.5, page).then(function (blob) {
+          if (!blob) throw new Error(TT('studio.export_png_failed', 'PNG export failed.'));
+          var suffix = stScenePageCount(snapshot) > 1 ? '-' + (snapshot.canvas.preset === 'slide-16x9' ? 'slide' : 'page') + (page + 1) : '';
+          download(blob, safeName(snapshot) + suffix + '.png');
+        });
+      });
     });
     var exportTagged = gateOr(function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'), 'error'); return; }
-      addToast(TT('studio.tagged_building', '📄 Building the tagged PDF from your reading order…'), 'info');
-      Promise.resolve(props.onExportTaggedPdf(stExportHtml(doc, { lang: 'en' }), doc.title || 'AlloStudio document'))
-        .then(function (ok) { if (ok !== false) addToast(TT('studio.tagged_done', '✅ Tagged PDF downloaded — structure comes from your reading-order panel.'), 'success'); })
-        .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
+      return runExportJob('tagged-pdf', TT('studio.tagged_pdf_label', 'Tagged PDF'), function (snapshot) {
+        if (typeof props.onExportTaggedPdf !== 'function') throw new Error(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'));
+        return props.onExportTaggedPdf(stExportHtml(snapshot, { lang: 'en' }), snapshot.title || 'AlloStudio document');
+      });
     });
     // Visual print/PDF: the positioned page, pixel-faithful, via a hidden
     // iframe (window.open is unreliable inside the Canvas iframe sandbox).
@@ -5843,39 +6042,36 @@
       addToast(TT('studio.print_opening', '🖨️ Opening the print dialog — choose "Save as PDF" for a pixel-faithful copy. For accessibility, share the Tagged PDF.'), 'info');
     });
     var exportPptx = gateOr(function () {
-      // The host loads PptxGenJS globally (the main app's slide export uses it,
-      // including inside Canvas); the studio never bundles it.
-      var Pptx = typeof window !== 'undefined' ? window.PptxGenJS : null;
-      if (typeof Pptx !== 'function') { addToast(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open Page Designer from the main app.'), 'error'); return; }
-      try {
-        var builtDeck = stRenderPptx(stExportPptxSpec(doc, { lang: 'en' }), Pptx);
-        Promise.resolve(builtDeck.writeFile({ fileName: safeName() + '.pptx' }))
-          .then(function () { addToast(TT('studio.exported_pptx', '📽️ PowerPoint downloaded — one slide per page, with alt text and reading order carried into the deck.'), 'success'); })
-          .catch(function (err) { addToast(TT('studio.pptx_failed', 'PowerPoint export failed: ') + (err && err.message || 'unknown'), 'error'); });
-      } catch (err) {
-        addToast(TT('studio.pptx_failed', 'PowerPoint export failed: ') + (err && err.message || 'unknown'), 'error');
-      }
+      return runExportJob('pptx', TT('studio.powerpoint_label', 'PowerPoint'), function (snapshot) {
+        var Pptx = typeof window !== 'undefined' ? window.PptxGenJS : null;
+        if (typeof Pptx !== 'function') throw new Error(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open Page Designer from the main app.'));
+        var builtDeck = stRenderPptx(stExportPptxSpec(snapshot, { lang: 'en' }), Pptx);
+        return builtDeck.writeFile({ fileName: safeName(snapshot) + '.pptx' });
+      });
     });
     var exportWorksheet = function () {
+      commitFocusedField();
       download(new Blob([JSON.stringify(stExportWorksheetData(doc), null, 2)], { type: 'application/json' }), safeName() + '.worksheet.json');
       addToast(TT('studio.exported_worksheet', 'Worksheet data downloaded.'), 'success');
     };
     var exportWorksheetHtml = function () {
+      commitFocusedField();
       download(new Blob([stExportWorksheetHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.worksheet.html');
       addToast(TT('studio.exported_worksheet_html', '📝 Structured worksheet HTML downloaded — real questions and answer spaces.'), 'success');
     };
     var exportWorksheetPdf = function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'), 'error'); return; }
-      addToast(TT('studio.ws_building', '📝 Building a structured, tagged worksheet…'), 'info');
-      Promise.resolve(props.onExportTaggedPdf(stExportWorksheetHtml(doc, { lang: 'en' }), (doc.title || 'Worksheet') + ' (worksheet)'))
-        .then(function (ok) { if (ok !== false) addToast(TT('studio.ws_done', '✅ Structured worksheet PDF downloaded (real questions + answer spaces).'), 'success'); })
-        .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
+      return runExportJob('worksheet-pdf', TT('studio.worksheet_pdf_label', 'Worksheet PDF'), function (snapshot) {
+        if (typeof props.onExportTaggedPdf !== 'function') throw new Error(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'));
+        return props.onExportTaggedPdf(stExportWorksheetHtml(snapshot, { lang: 'en' }), (snapshot.title || 'Worksheet') + ' (worksheet)');
+      });
     };
     var exportProcess = function () {
+      commitFocusedField();
       download(new Blob([stExportProcessMarkdown(doc, role)], { type: 'text/markdown' }), safeName() + '.process.md');
       addToast(TT('studio.exported_process', 'Process reflection downloaded.'), 'success');
     };
     var saveDoc = function () {
+      commitFocusedField();
       download(new Blob([JSON.stringify(stDurableDoc(doc), null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
       var recent = stSaveRecentProject(doc);
       setRecentTick(function (n) { return n + 1; });
@@ -5884,6 +6080,7 @@
       if (!recent.ok) addToast(TT('studio.recent_save_failed', 'Recent-project shelf could not update, but your file downloaded.'), 'info');
     };
     var saveLinkedArtifact = function () {
+      commitFocusedField();
       if (!hasLinkedActivityWorksheet) {
         addToast('This document is not linked to an Activity worksheet.', 'info');
         return;
@@ -6008,8 +6205,8 @@
       rpanel: Object.assign({ width: layout.inspectorWidth, padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }, layout.stacked ? { maxHeight: layout.inspectorMaxHeight, borderLeft: 'none', borderTop: '1px solid ' + C.border } : { borderLeft: '1px solid ' + C.border }),
       canvasWrap: { flex: 1, order: layout.stacked ? 0 : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start', gap: '8px', padding: layout.canvasPadding + 'px' },
       canvasToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', flexShrink: 0 },
-      canvasViewport: { flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' },
-      canvasPage: { position: 'relative', background: (doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
+      canvasViewport: { flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' },
+      canvasPage: { position: 'relative', marginLeft: 'auto', marginRight: 'auto', background: (doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
       readingList: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: layout.readingListMaxHeight, overflowY: 'auto' },
       tool: { padding: layout.compact ? '7px 9px' : '8px 10px', minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '12px', fontWeight: 700, color: C.text, cursor: 'pointer', textAlign: 'left' },
       label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: C.muted, marginTop: '4px' },
@@ -6017,7 +6214,7 @@
     };
     if (layout.stacked) {
       S.panel = Object.assign({}, S.panel, { display: mobilePanel === 'insert' ? 'flex' : 'none', order: 1, maxHeight: '34dvh', minHeight: 0 });
-      S.rpanel = Object.assign({}, S.rpanel, { display: mobilePanel === 'properties' || mobilePanel === 'objects' ? 'flex' : 'none', order: 1, maxHeight: '38dvh', minHeight: 0 });
+      S.rpanel = Object.assign({}, S.rpanel, { display: mobilePanel === 'properties' || mobilePanel === 'objects' ? 'flex' : 'none', order: 1, maxHeight: preflightOpen || exportOpen ? '24dvh' : '38dvh', minHeight: 0 });
       S.titleInput = Object.assign({}, S.titleInput, { width: 'auto', flex: '1 1 120px', minWidth: 0 });
       S.header = Object.assign({}, S.header, { flexShrink: 0 });
     }
@@ -6329,6 +6526,7 @@
       var base = {
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
+        touchAction: interactivity ? 'none' : undefined,
         boxSizing: 'border-box', cursor: interactivity ? (locked ? 'default' : 'move') : 'default',
         outline: isSel ? '2px solid ' + C.accent : (isAgentPending ? '2px solid ' + agentPendingColor : '1px dashed transparent'),
         boxShadow: isSel ? '0 0 0 4px rgba(99,102,241,0.18)' : (isAgentPending ? '0 0 0 4px rgba(245,158,11,0.22)' : undefined),
@@ -6363,10 +6561,10 @@
         onPointerMove: onCanvasPointerMove,
         onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel,
         onKeyDown: onObjectKeyDown(o),
-        onDoubleClick: o.type === 'text' ? function () { setEditingText({ id: o.id, value: (o.runs && o.runs[0] && o.runs[0].text) || '' }); } : undefined,
+        onDoubleClick: o.type === 'text' && !locked && !multiMode ? function () { setEditingText({ id: o.id, value: (o.runs && o.runs[0] && o.runs[0].text) || '' }); } : undefined,
         onFocus: function () {
           if (_skipFocusSelect.current) { _skipFocusSelect.current = false; return; }
-          selectOnly(o.id);
+          if (!multiMode) selectOnly(o.id);
         },
       }, extra),
         inner,
@@ -6414,12 +6612,13 @@
         (editingText && editingText.id === o.id) ? hh('textarea', {
           autoFocus: true,
           defaultValue: editingText.value,
+          onPointerDown: function (e) { e.stopPropagation(); },
           'aria-label': TT('studio.edit_text', 'Edit text'),
           style: { position: 'absolute', inset: 0, fontSize: (((o.runs && o.runs[0] && o.runs[0].style && o.runs[0].style.size) || 16) * scale) + 'px', border: '2px solid ' + C.accent, borderRadius: '4px', resize: 'none', padding: '2px', background: C.inputBg, color: C.inputText },
           onBlur: function (e) { commitTextEdit(o, e.target.value); },
           // Stop ALL keys from bubbling to the object's move/resize/delete
           // handler — typing an arrow key must edit the text, not move the box.
-          onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Escape') { commitTextEdit(o, e.target.value); } },
+          onKeyDown: function (e) { e.stopPropagation(); if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveDoc(); } else if (e.key === 'Escape') { commitTextEdit(o, e.target.value); } },
           onPointerDown: function (e) { e.stopPropagation(); },
         }) : null);
     }
@@ -6452,7 +6651,7 @@
     var findTotalMatches = findMatches.reduce(function (sum, match) { return sum + match.count; }, 0);
     var activeFindIndex = findMatches.length ? Math.min(Math.max(0, findResultIndex), findMatches.length - 1) : -1;
     var focusFindInput = function () {
-      setView('edit');
+      revealNavigator();
       setTimeout(function () {
         try { if (findInputRef.current) { findInputRef.current.focus(); findInputRef.current.select(); } } catch (_) {}
       }, 0);
@@ -6463,7 +6662,7 @@
       var match = findMatches[nextIndex];
       setFindResultIndex(nextIndex);
       setView('edit');
-      activateObjectPage(match.id); selectOnly(match.id);
+      activateObjectPage(match.id); setSelectedId(match.id); setSelectedIds([match.id]); revealNavigator();
       stAnnounce(TT('studio.find_selected', 'Selected text match') + ': ' + match.label);
     };
     var stepFindResult = function (direction) {
@@ -6630,12 +6829,15 @@
           })));
     } else if (selected) {
       var frameInput = function (key, label) {
+        var position = key === 'x' || key === 'y';
+        var maximum = key === 'x' ? doc.canvas.w - selected.frame.w : key === 'y' ? doc.canvas.h - selected.frame.h : key === 'w' ? doc.canvas.w : doc.canvas.h;
         return h('label', { style: { fontSize: '10px', color: C.muted, display: 'flex', flexDirection: 'column', gap: '2px' } }, label,
-          h('input', { type: 'number', value: selected.frame[key], style: S.input, 'aria-label': label,
-            onChange: function (e) {
-              var v = parseInt(e.target.value, 10); if (isNaN(v)) return;
-              if (key === 'x' || key === 'y') dispatch({ type: 'object.move', target: selected.id, x: key === 'x' ? v : selected.frame.x, y: key === 'y' ? v : selected.frame.y }, 'user');
-              else dispatch({ type: 'object.resize', target: selected.id, w: key === 'w' ? v : selected.frame.w, h: key === 'h' ? v : selected.frame.h }, 'user');
+          h(StudioNumberField, { key: selected.id + '-' + key, value: selected.frame[key], min: position ? 0 : ST_MIN_SIZE, max: maximum, style: S.input, label: label, disabled: stIsLockedObject(selected),
+            onCommit: function (value) {
+              var live = _docRef.current.objects.find(function (o) { return o.id === selected.id; });
+              if (!live || stIsLockedObject(live)) return;
+              if (position) dispatch({ type: 'object.move', target: live.id, x: key === 'x' ? value : live.frame.x, y: key === 'y' ? value : live.frame.y }, 'user');
+              else dispatch({ type: 'object.resize', target: live.id, w: key === 'w' ? value : live.frame.w, h: key === 'h' ? value : live.frame.h }, 'user');
             } }));
       };
       var textRunsFor = function (o) {
@@ -6667,11 +6869,18 @@
         { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' - ' + selected.type),
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_content', 'Text'),
-          h('textarea', { key: 'text-' + selected.id + '-' + selectedTextValue, defaultValue: selectedTextValue, rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), 'aria-label': TT('studio.text_content', 'Text'),
-            onKeyDown: function (e) { e.stopPropagation(); },
+          h('textarea', { key: 'text-' + selected.id + '-' + selectedTextValue, defaultValue: selectedTextValue, rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: selectedLocked, 'aria-label': TT('studio.text_content', 'Text'),
+            onKeyDown: function (e) { e.stopPropagation(); if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveDoc(); } },
             onBlur: function (e) { commitTextEdit(selected, e.target.value); } })) : null,
+        selected.type === 'text' && textFit && textFit.overflow ? h('div', { 'data-st-text-fit': true, role: 'status', style: { padding: '8px', borderRadius: '8px', background: statusTone('warning').bg, color: statusTone('warning').fg, fontSize: '11px' } },
+          h('strong', null, TT('studio.text_overflow', 'Text exceeds this box')),
+          h('p', { style: { margin: '4px 0 6px' } }, TT('studio.text_fit_hint', 'Add room or reduce the font size to show all the text.')),
+          h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
+            h('button', { style: S.tool, disabled: selectedLocked || !textFit.canExpand, onClick: function () { applyTextFit('expand'); } }, TT('studio.expand_text_box', 'Expand box')),
+            h('button', { style: S.tool, disabled: selectedLocked || !textFit.fontSize, onClick: function () { applyTextFit('shrink'); } }, TT('studio.reduce_font', 'Reduce font size') + (textFit.fontSize ? ' (' + textFit.fontSize + ' px)' : ''))),
+          !textFit.canExpand && !textFit.fontSize ? h('p', { style: { margin: '6px 0 0' } }, TT('studio.text_fit_more_room', 'Widen or move the box, or shorten the text. Suggested font sizes stay at 12 px or above.')) : null) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.font_size', 'Font size'),
-          h('input', { type: 'number', min: 8, max: 120, value: selectedTextStyle.size || 16, style: S.input, onChange: function (e) { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; var runs = textRunsFor(selected); runs[0].style.size = Math.max(8, Math.min(120, v)); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
+          h(StudioNumberField, { key: selected.id + '-font-size', min: 8, max: 120, value: selectedTextStyle.size || 16, style: S.input, label: TT('studio.font_size', 'Font size'), disabled: selectedLocked, onCommit: function (value) { var live = _docRef.current.objects.find(function (o) { return o.id === selected.id; }); if (!live || stIsLockedObject(live)) return; var runs = textRunsFor(live); runs[0].style.size = value; dispatch({ type: 'object.update', target: live.id, patch: { runs: runs } }, 'user'); } })) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_font', 'Font'),
           h('select', {
             value: (function () {
@@ -6795,6 +7004,8 @@
       var inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       // Escape: close the shortcuts overlay first, then deselect, then close.
       if (ev.key === 'Escape') {
+        if (_drag.current) { ev.preventDefault(); onCanvasPointerCancel(); return; }
+        if (multiMode) { ev.preventDefault(); setMultiMode(false); return; }
         if (commandOpen) { ev.preventDefault(); setCommandOpen(false); setCommandQuery(''); setCommandIndex(0); return; }
         if (inField) return;
         if (shortcutsOpen) { ev.preventDefault(); setShortcutsOpen(false); return; }
@@ -6812,14 +7023,15 @@
         ev.preventDefault(); setShortcutsOpen(function (v) { return !v; }); return;
       }
       if (!(ev.ctrlKey || ev.metaKey)) return;
-      if (inField) return;
       var k = (ev.key || '').toLowerCase();
+      if (k === 's') { ev.preventDefault(); saveDoc(); return; }
+      if (inField) return;
       if (k === 'k') { ev.preventDefault(); setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }
       else if (k === '+' || k === '=') { ev.preventDefault(); changeCanvasZoom('in'); }
       else if (k === '-' || k === '_') { ev.preventDefault(); changeCanvasZoom('out'); }
       else if (k === '0') { ev.preventDefault(); changeCanvasZoom('fit'); }
-      else if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
-      else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); if (stRedo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_redone', 'Redone')); } }
+      else if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); historyAction(false); }
+      else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); historyAction(true); }
       // Duplicate the selection (group-aware); mirrors the panel's Duplicate button.
       else if (k === 'd') { ev.preventDefault(); if (selectionIds.length > 1) duplicateSelectedGroup(); else if (selectedId) duplicateSelected(); }
       else if (k === 'a') { ev.preventDefault(); selectAllObjects(); }
@@ -6878,8 +7090,8 @@
       if (cmd.id === 'portfolio') { saveToPortfolio(); return; }
       if (cmd.id === 'view-edit') { setView('edit'); return; }
       if (cmd.id === 'view-process') { setView('process'); return; }
-      if (cmd.id === 'view-reading') { setView('edit'); setNavigatorMode('reading'); return; }
-      if (cmd.id === 'view-layers') { setView('edit'); setNavigatorMode('layers'); return; }
+      if (cmd.id === 'view-reading') { revealNavigator('reading'); return; }
+      if (cmd.id === 'view-layers') { revealNavigator('layers'); return; }
       if (cmd.id === 'zoom-fit') { changeCanvasZoom('fit'); return; }
       if (cmd.id === 'zoom-selection') { zoomToSelection(); return; }
       if (cmd.id === 'zoom-100') { changeCanvasZoom('actual'); return; }
@@ -6956,16 +7168,17 @@
           h('input', { key: 'title-' + ((doc && doc.createdAt) || 0) + '-' + doc.title, defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
-          h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
-          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
+          h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { historyAction(false); }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
+          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { historyAction(true); }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
           h('span', { style: S.headerSpacer }),
           hasLinkedActivityWorksheet ? h('span', { role: 'status', style: { fontSize: '10px', color: linkedSaveState === 'conflict' ? '#b91c1c' : C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, linkedStatusLabel) : null,
           hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
           h('span', { role: 'status', 'aria-live': 'polite', style: { color: saveState === 'error' ? '#fca5a5' : C.headerText, fontSize: '11px', flex: layout.stacked ? '1 1 100px' : '0 1 150px' } }, saveState === 'error' ? TT('studio.recovery_failed', 'Could not save on this device') : saveState === 'saved' ? TT('studio.recovery_saved', 'Saved on this device') : saveState === 'saving' ? TT('studio.recovery_saving', 'Saving changes...') : TT('studio.recovery_ready', 'Ready')),
           !layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null,
-          h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
+          h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen, 'aria-busy': exportBusy }, (exportBusy ? '⏳ ' : '📤 ') + TT('studio.export', 'Export')),
           h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: requestClose }, '✕')),
-        preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
+        preflightOpen ? h('section', { 'aria-label': TT('studio.accessibility_review', 'Accessibility review'), style: { maxHeight: layout.stacked ? '28dvh' : '38dvh', overflowY: 'auto', flexShrink: 0, padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: '1 1 100%' } }, h('strong', null, TT('studio.accessibility_review', 'Accessibility review')), h('button', { style: S.tool, onClick: function () { setPreflightOpen(false); if (headerMoreRef.current) headerMoreRef.current.querySelector('summary').focus(); }, 'aria-label': TT('studio.close_review', 'Close accessibility review') }, TT('studio.done', 'Done'))),
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
             h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : ''),
@@ -6982,7 +7195,7 @@
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '7px' } },
               h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setPreflightGuideIndex(preflightGuide.index - 1); } }, TT('studio.previous', 'Previous')),
               h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setPreflightGuideIndex(preflightGuide.index + 1); } }, TT('studio.next', 'Next')),
-              preflightGuide.issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { selectOnly(preflightGuide.issue.id); } }, TT('studio.select', 'Select')) : null,
+              preflightGuide.issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { activateObjectPage(preflightGuide.issue.id); selectOnly(preflightGuide.issue.id); } }, TT('studio.select', 'Select')) : null,
               preflightGuide.actions.map(function (action, idx) {
                 return h('button', { key: idx, type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: preflightGuideTone.bg, color: preflightGuideTone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: function () { applyReadyAction(action); } }, readyActionLabel(action));
               }))) : h('div', { style: { flex: '1 1 250px', border: '1px solid ' + successTone.border, background: successTone.bg, color: successTone.fg, borderRadius: '8px', padding: '8px', fontSize: '11px', fontWeight: 800 } }, TT('studio.guided_review_done', 'Guided review complete.')),
@@ -7039,10 +7252,12 @@
               h('span', null, TT('studio.issue_filter_empty', 'No issues in this filter.')),
               preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)) : null) : null,
         // export panel
-        exportOpen ? h('section', { 'aria-label': TT('studio.export_choices', 'Export choices'), style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '38dvh', overflowY: 'auto', flexShrink: 0 } }, h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_share_group', 'Share an accessible document')), h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')), h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML'))),
-          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_print_group', 'Print or share an image')), h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')), h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG')),
-          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_edit_group', 'Edit elsewhere')), h('button', { style: S.tool, onClick: exportPptx, title: TT('studio.pptx_hint', 'One slide per page at this document’s size. Alt text, reading order, and speaker-note headings ride along.') }, '📽️ ' + TT('studio.export_pptx', 'PowerPoint (.pptx)')), h('button', { style: S.tool, onClick: saveDoc }, TT('studio.download_project', 'Download project'))),
-          h('details', { style: { flex: '1 1 100%' } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700, padding: '6px 0' } }, TT('studio.export_advanced', 'Worksheet and teacher files')), h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '6px' } }, h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')), h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')), h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')), hasLinkedActivityWorksheet
+        exportOpen ? h('section', { 'aria-label': TT('studio.export_choices', 'Export choices'), style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: layout.stacked ? '28dvh' : '38dvh', overflowY: 'auto', flexShrink: 0 } },
+          exportTask ? h('div', { 'data-st-export-status': true, role: 'status', 'aria-live': 'polite', style: { flex: '1 1 100%', padding: '8px', borderRadius: '8px', background: exportTask.state === 'error' ? statusTone('error').bg : C.panel, color: exportTask.state === 'error' ? statusTone('error').fg : C.text, fontSize: '12px', fontWeight: 700 } }, exportTask.message, exportTask.state === 'error' ? h('span', { style: { display: 'block', fontWeight: 400, marginTop: '3px' } }, TT('studio.export_retry_hint', 'Choose the format again to retry. Your design is still here.')) : null) : null,
+          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_share_group', 'Share an accessible document')), h('button', { style: Object.assign({}, S.tool, exportBusy ? { opacity: 0.55, cursor: 'wait' } : null), disabled: exportBusy, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')), h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML'))),
+          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_print_group', 'Print or share an image')), h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')), h('button', { style: Object.assign({}, S.tool, exportBusy ? { opacity: 0.55, cursor: 'wait' } : null), disabled: exportBusy, onClick: exportPng, title: TT('studio.png_scope', 'PNG exports the current page as an image. Use HTML, PDF, or PowerPoint for all pages.') }, '🖼️ PNG' + (studioPageCount > 1 ? ' · ' + TT('studio.page', 'Page') + ' ' + (activePageIndex + 1) : ''))),
+          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_edit_group', 'Edit elsewhere')), h('button', { style: Object.assign({}, S.tool, exportBusy ? { opacity: 0.55, cursor: 'wait' } : null), disabled: exportBusy, onClick: exportPptx, title: TT('studio.pptx_hint', 'One slide per page at this document’s size. Alt text, reading order, and speaker-note headings ride along.') }, '📽️ ' + TT('studio.export_pptx', 'PowerPoint (.pptx)')), h('button', { style: S.tool, onClick: saveDoc }, TT('studio.download_project', 'Download project'))),
+          h('details', { style: { flex: '1 1 100%' } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700, padding: '6px 0' } }, TT('studio.export_advanced', 'Worksheet and teacher files')), h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '6px' } }, h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent }), disabled: exportBusy, onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')), h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')), h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')), hasLinkedActivityWorksheet
             ? h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity')
             : null, h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'), h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')))),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
@@ -7239,20 +7454,41 @@
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
           h('div', { style: S.canvasWrap },
+            pagesOpen ? h('div', { 'aria-label': TT('studio.page_previews', 'Page previews'), role: 'region', style: { flexShrink: 0, display: 'flex', gap: '6px', overflowX: 'auto', padding: '3px', maxHeight: '110px' } },
+              Array.from({ length: studioPageCount }, function (_, index) {
+                var thumbScale = Math.min(64 / doc.canvas.w, 68 / doc.canvas.h);
+                var items = doc.objects.filter(function (o) { return stObjectPage(o) === index; });
+                return h('button', { key: index, type: 'button', 'aria-label': TT('studio.go_to_page', 'Go to page') + ' ' + (index + 1), 'aria-current': index === activePageIndex ? 'page' : undefined, onClick: function () { setActivePage(index); }, style: { flex: '0 0 82px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '5px', borderRadius: '7px', border: '1px solid ' + (index === activePageIndex ? C.accent : C.border), background: index === activePageIndex ? C.selectedBg : C.panel, color: C.text, cursor: 'pointer' } },
+                  h('span', { 'aria-hidden': true, style: { display: 'block', position: 'relative', width: doc.canvas.w * thumbScale + 'px', height: doc.canvas.h * thumbScale + 'px', background: doc.canvas.background.fill, overflow: 'hidden', pointerEvents: 'none' } }, items.map(function (o) { return renderObject(o, thumbScale, false, {}, h); })),
+                  h('span', { style: { fontSize: '10px', fontWeight: 700 } }, TT('studio.page', 'Page') + ' ' + (index + 1)));
+              })) : null,
+            multiMode ? h('div', { role: 'status', style: { flexShrink: 0, fontSize: '11px', color: C.muted } }, selectionIds.length + ' ' + TT('studio.selected_count', 'selected') + '. ' + TT('studio.multi_select_hint', 'Tap objects to add or remove them. Choose Done selecting to move the group.')) : null,
             h('div', { style: S.canvasToolbar, role: 'group', 'aria-label': TT('studio.canvas_controls', 'Page and canvas controls') },
-              h('div', { style: Object.assign({}, S.canvasToolbar, { justifyContent: 'flex-start', flex: '1 1 270px', minWidth: 0 }), role: 'group', 'aria-label': TT('studio.page_navigation', 'Page navigation') },
-                h('button', { style: S.hBtn, disabled: activePageIndex === 0, onClick: function () { reorderActivePage(-1); }, title: TT('studio.page_move_earlier', 'Move page earlier'), 'aria-label': TT('studio.page_move_earlier', 'Move page earlier') }, 'Up'),
-                h('button', { style: S.hBtn, disabled: activePageIndex === studioPageCount - 1, onClick: function () { reorderActivePage(1); }, title: TT('studio.page_move_later', 'Move page later'), 'aria-label': TT('studio.page_move_later', 'Move page later') }, 'Down'),
-                h('select', { value: activePageIndex, style: Object.assign({}, S.input, { width: 'auto', minWidth: '92px', maxWidth: '132px' }), 'aria-label': TT('studio.page_select', 'Select page'), onChange: function (e) { setActivePage(parseInt(e.target.value, 10)); } },
-                  Array.from({ length: studioPageCount }, function (_, idx) { return h('option', { key: 'page-' + idx, value: idx }, (doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (idx + 1)); })),
-                h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '42px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: C.text } }, (activePageIndex + 1) + ' / ' + studioPageCount),
-                h('button', { style: S.hBtn, onClick: addPageAfter, title: TT('studio.page_add', 'Add a blank page'), 'aria-label': TT('studio.page_add', 'Add a blank page') }, 'Add'),
-                h('button', { style: S.hBtn, onClick: duplicateActivePage, title: TT('studio.page_duplicate', 'Duplicate this page'), 'aria-label': TT('studio.page_duplicate', 'Duplicate this page') }, 'Duplicate'),
-                h('button', { style: S.hBtn, disabled: studioPageCount <= 1, onClick: removeActivePage, title: TT('studio.page_remove', 'Remove this page and its objects'), 'aria-label': TT('studio.page_remove', 'Remove this page and its objects') }, 'Remove')),
-              h('span', { 'aria-hidden': true, style: { width: '1px', height: '24px', background: C.border, flex: '0 0 auto' } }),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }, role: 'group', 'aria-label': TT('studio.page_navigation', 'Page navigation') },
+                h('button', { style: Object.assign({}, S.hBtn, { opacity: activePageIndex === 0 ? 0.45 : 1 }), disabled: activePageIndex === 0, onClick: function () { setActivePage(activePageIndex - 1); }, 'aria-label': TT('studio.previous_page', 'Previous page'), title: TT('studio.previous_page', 'Previous page') }, '‹'),
+                h('select', { value: activePageIndex, style: Object.assign({}, S.input, { width: 'auto', minHeight: '32px', maxWidth: '125px' }), 'aria-label': TT('studio.page_select', 'Select page'), onChange: function (e) { setActivePage(parseInt(e.target.value, 10)); } },
+                  Array.from({ length: studioPageCount }, function (_, idx) { return h('option', { key: 'page-' + idx, value: idx }, (doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (idx + 1) + ' / ' + studioPageCount); })),
+                h('button', { style: Object.assign({}, S.hBtn, { opacity: activePageIndex === studioPageCount - 1 ? 0.45 : 1 }), disabled: activePageIndex === studioPageCount - 1, onClick: function () { setActivePage(activePageIndex + 1); }, 'aria-label': TT('studio.next_page', 'Next page'), title: TT('studio.next_page', 'Next page') }, '›'),
+                h('select', { value: '', style: Object.assign({}, S.input, { width: 'auto', minHeight: '32px', maxWidth: '140px' }), 'aria-label': TT('studio.page_actions', 'Page actions'), onChange: function (e) {
+                  var action = e.target.value; e.target.value = '';
+                  if (action === 'add') addPageAfter(); else if (action === 'duplicate') duplicateActivePage();
+                  else if (action === 'remove') removeActivePage(); else if (action === 'earlier') reorderActivePage(-1); else if (action === 'later') reorderActivePage(1);
+                } },
+                  h('option', { value: '', disabled: true }, TT('studio.page_actions', 'Page actions')),
+                  h('option', { value: 'add', disabled: studioPageCount >= ST_MAX_PAGES }, TT('studio.page_add', 'Add a blank page')),
+                  h('option', { value: 'duplicate', disabled: studioPageCount >= ST_MAX_PAGES }, TT('studio.page_duplicate', 'Duplicate this page')),
+                  h('option', { value: 'earlier', disabled: activePageIndex === 0 }, TT('studio.page_move_earlier', 'Move page earlier')),
+                  h('option', { value: 'later', disabled: activePageIndex === studioPageCount - 1 }, TT('studio.page_move_later', 'Move page later')),
+                  h('option', { value: 'remove', disabled: studioPageCount <= 1 }, TT('studio.page_remove', 'Remove this page and its objects')))),
+              h('button', { style: Object.assign({}, S.hBtn, pagesOpen ? { background: C.selectedBg, color: C.text } : null), 'aria-expanded': pagesOpen, onClick: function () { setPagesOpen(!pagesOpen); } }, TT('studio.pages', 'Pages')),
+              h('button', { style: Object.assign({}, S.hBtn, multiMode ? { background: C.selectedBg, color: C.text } : null), 'aria-pressed': multiMode, onClick: function () {
+                setMultiMode(!multiMode); setInspectorTab('properties');
+                if (layout.stacked) setMobilePanel(multiMode && selectionIds.length ? 'properties' : 'canvas');
+              } }, multiMode ? TT('studio.done_selecting', 'Done selecting') : TT('studio.select_multiple', 'Select multiple')),
+              h('div', { role: 'group', 'aria-label': TT('studio.zoom_controls', 'Zoom'), style: { display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 } },
               h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('out'); }, 'aria-label': TT('studio.zoom_out', 'Zoom out') }, '-'),
               h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '48px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: C.text } }, zoomLabel),
-              h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('in'); }, 'aria-label': TT('studio.zoom_in', 'Zoom in') }, '+'),
+              h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('in'); }, 'aria-label': TT('studio.zoom_in', 'Zoom in') }, '+')),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null && fitMode === 'page' ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit'); }, 'aria-pressed': canvasZoom === null && fitMode === 'page' }, TT('studio.zoom_fit_page', 'Fit page')),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null && fitMode === 'width' ? { background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit-width'); }, 'aria-pressed': canvasZoom === null && fitMode === 'width' }, TT('studio.zoom_fit_width', 'Fit width')),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === 1 ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('actual'); }, 'aria-pressed': canvasZoom === 1 }, '100%'),
@@ -7263,6 +7499,13 @@
               h('div', { style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
                 onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
                 onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel },
+                !pageObjects.length ? h('div', { 'data-st-empty-page': true, style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '16px', textAlign: 'center', color: C.text, background: C.panel }, onPointerDown: function (e) { e.stopPropagation(); } },
+                  h('strong', { style: { fontSize: '18px' } }, TT('studio.empty_page_title', 'Start this page')),
+                  h('p', { style: { maxWidth: '260px', fontSize: '12px', margin: 0, color: C.muted } }, TT('studio.empty_page_hint', 'Add a heading, some text, or an image. You can move and style everything later.')),
+                  h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
+                    h('button', { style: S.tool, onClick: function () { insertText('heading1'); } }, TT('studio.start_heading', 'Add heading')),
+                    h('button', { style: S.tool, onClick: function () { insertText('body'); } }, TT('studio.start_text', 'Add text')),
+                    h('button', { style: S.tool, onClick: function () { if (fileRef.current) fileRef.current.click(); } }, TT('studio.start_image', 'Add image')))) : null,
                 liveSelectionBounds ? h('div', {
                   key: 'selection-bounds',
                   role: 'group',
@@ -7497,6 +7740,9 @@
   AlloStudio.stResizeFramesAsGroup = stResizeFramesAsGroup;
   AlloStudio.stStudioLayout = stStudioLayout;
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
+  AlloStudio.stSnapCandidates = stSnapCandidates;
+  AlloStudio.stMeasureTextFit = stMeasureTextFit;
+  AlloStudio.stFindInsertFrame = stFindInsertFrame;
   AlloStudio.stCanvasViewportFitScale = stCanvasViewportFitScale;
   AlloStudio.stSelectionZoomScale = stSelectionZoomScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;

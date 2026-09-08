@@ -432,3 +432,51 @@ describe('Immersive headset comfort preferences', () => {
     }finally{lab.close();}
   });
 });
+
+describe('Immersive deliberate exact edits and quick control navigation',()=>{
+  it('keeps typing as a draft, cancels with Escape, and commits once with Enter',()=>{
+    const lab=boot();try{
+      lab.click('uiStarterCube');lab.document.getElementById('exactDimensions').open=true;
+      const field=lab.document.getElementById('uiExactL');field.focus();const before=lab.component.capture(),history=lab.component.history.slice();
+      field.value='2.75';field.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));
+      expect(lab.component.capture()).toEqual(before);expect(lab.component.history).toEqual(history);
+      field.dispatchEvent(new lab.dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+      expect(lab.component.capture()).toEqual(before);expect(lab.component.history).toEqual(history);
+      field.focus();field.value='2.75';field.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));
+      field.dispatchEvent(new lab.dom.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+      expect(lab.component.L).toBe(2.75);expect(lab.component.history).toHaveLength(history.length+1);
+      lab.click('uiUndo');expect(lab.component.capture()).toEqual(before);lab.click('uiRedo');expect(lab.component.L).toBe(2.75);
+      expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+  it('rejects invalid edits and does not round untouched exact fields',()=>{
+    const lab=boot();try{
+      lab.click('uiStarterCube');lab.component.L=2.345;lab.component.emitState();lab.document.getElementById('exactDimensions').open=true;
+      const field=lab.document.getElementById('uiExactL');field.focus();field.blur();expect(lab.component.L).toBe(2.345);
+      field.focus();const history=lab.component.history.slice();field.value='9';field.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));field.dispatchEvent(new lab.dom.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+      expect(lab.document.activeElement).toBe(field);expect(field.getAttribute('aria-invalid')).toBe('true');expect(lab.component.L).toBe(2.345);
+      field.blur();expect(field.getAttribute('aria-invalid')).toBeNull();expect(lab.component.L).toBe(2.345);expect(lab.component.history).toEqual(history);expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+  it('keeps Build and Settings resize-step controls synchronized without creating geometry history',()=>{
+    const lab=boot();try{
+      expect(lab.document.getElementById('uiBuildStep').disabled).toBe(true);lab.click('uiStarterLine');const history=lab.component.history.slice();
+      lab.change('uiBuildStep','0.05');expect(lab.document.getElementById('uiResizeStep').value).toBe('0.05');expect(lab.saved().resizeStep).toBe(.05);expect(lab.component.history).toEqual(history);
+      lab.click('uiGrow');lab.component.endNudge(false);expect(lab.component.L).toBeCloseTo(2.05);
+      lab.change('uiResizeStep','0.5');expect(lab.document.getElementById('uiBuildStep').value).toBe('0.5');expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+  it('filters navigation destinations, opens the selected section, and restores focus on cancel',()=>{
+    const lab=boot();try{
+      const dialog=lab.document.getElementById('quickFindDialog');dialog.showModal=function(){this.open=true;};dialog.close=function(){this.open=false;};
+      lab.click('uiStarterCube');const before=lab.component.capture(),history=lab.component.history.slice();
+      const trigger=lab.document.getElementById('uiQuickFind');trigger.focus();trigger.click();expect(dialog.open).toBe(true);
+      const input=lab.document.getElementById('uiFindInput');input.value='glass';input.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));
+      expect(lab.document.getElementById('quickFindResults').children).toHaveLength(1);
+      input.dispatchEvent(new lab.dom.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));expect(dialog.open).toBe(false);expect(lab.document.getElementById('workspaceSettings').hidden).toBe(false);expect(lab.document.getElementById('appearanceSettings').open).toBe(true);
+      trigger.focus();trigger.click();input.value='no matching destination';input.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));expect(lab.document.getElementById('quickFindEmpty').hidden).toBe(false);
+      dialog.dispatchEvent(new lab.dom.window.Event('cancel',{cancelable:true}));expect(dialog.open).toBe(false);expect(lab.document.activeElement).toBe(trigger);
+      expect(lab.component.capture()).toEqual(before);expect(lab.component.history).toEqual(history);expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+});

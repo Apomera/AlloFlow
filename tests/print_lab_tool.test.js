@@ -190,7 +190,7 @@ describe('Print Lab workflow surface', () => {
 
     expect(html).toContain('Prepare a staff-review handoff');
     expect(html).toContain('does not deduct points');
-    expect(html).toContain('Model bytes embedded');
+    expect(html).toContain('Review JSON embeds model');
     expect(html).toContain('>No<');
     expect(html).toContain('.alloflow-print.json');
     expect(html).toContain('contains no account identifier');

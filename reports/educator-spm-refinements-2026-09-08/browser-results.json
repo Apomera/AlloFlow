@@ -1,0 +1,353 @@
+{
+  "checks": [
+    "Default unfinished plan, locked history selection, submit, return, revise/resubmit, reviewed approval, results/reflection, reviewed rating/lock",
+    "Phone light/dark/high-contrast views and keyboard scrolling of the five-stage guide",
+    "Both manuals: all figures decode and match packaged copies, anchors resolve, desktop/phone and dark 160% text layouts pass"
+  ],
+  "views": {
+    "returned-plan-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-brand > div:nth-child(2) > p"
+            ],
+            [
+              ".ae-role > button:nth-child(1)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "width": 1180,
+      "scrollWidth": 1180
+    },
+    "locked-plan-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-brand > div:nth-child(2) > p"
+            ],
+            [
+              ".ae-role > button:nth-child(2)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ]
+          ]
+        }
+      ],
+      "width": 1180,
+      "scrollWidth": 1180
+    },
+    "spm-phone-light": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-role > button:nth-child(1)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".ae-step-current"
+            ],
+            [
+              "li:nth-child(4)"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "spm-phone-dark": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#ae-title"
+            ],
+            [
+              ".ae-role > button:nth-child(1)"
+            ],
+            [
+              "span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".ae-step-current"
+            ],
+            [
+              "li:nth-child(4)"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "spm-phone-contrast": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "span[aria-hidden=\"true\"]"
+            ],
+            [
+              "#ae-tab-walkthroughs"
+            ],
+            [
+              ".ae-step-current"
+            ],
+            [
+              "li:nth-child(4)"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "educator-evaluation-manual.html-desktop": {
+      "violations": [],
+      "incomplete": [],
+      "width": 1180,
+      "scrollWidth": 1180
+    },
+    "educator-evaluation-manual.html-phone": {
+      "violations": [],
+      "incomplete": [],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "educator-evaluation-manual.html-large-dark-phone": {
+      "violations": [],
+      "incomplete": [],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "school-rewards-manual.html-desktop": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "width": 1180,
+      "scrollWidth": 1180
+    },
+    "school-rewards-manual.html-phone": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "scrollWidth": 390
+    },
+    "school-rewards-manual.html-large-dark-phone": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "text[y=\"146\"]"
+            ],
+            [
+              "text[y=\"168\"]"
+            ],
+            [
+              "text[y=\"186\"]"
+            ],
+            [
+              "text[y=\"204\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"426\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"426\"]"
+            ],
+            [
+              ".t[y=\"60\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"82\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"100\"][x=\"717\"]"
+            ],
+            [
+              ".t[y=\"250\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"272\"][x=\"717\"]"
+            ],
+            [
+              ".s[y=\"290\"][x=\"717\"]"
+            ],
+            [
+              "text[y=\"160\"]"
+            ],
+            [
+              "text[y=\"178\"]"
+            ]
+          ]
+        }
+      ],
+      "width": 390,
+      "scrollWidth": 390
+    }
+  },
+  "errors": [],
+  "ok": true
+}

@@ -53,12 +53,32 @@ try {
   const download = await downloadPromise;
   const parts = []; for await (const chunk of await download.createReadStream()) parts.push(chunk);
   assert.deepEqual(Buffer.concat(parts), sample);
-  await click('[data-asset-action="VERIFY"]');
+  // Hold the post-save refresh open: quote fields must stay locked until it finishes.
+  let releaseRefresh, reportRefreshHeld;
+  const refreshGate = new Promise(resolve => { releaseRefresh = resolve; });
+  const refreshHeld = new Promise(resolve => { reportRefreshHeld = resolve; });
+  let holdRefresh = true;
+  const interceptRefresh = async route => {
+    const body = route.request().postDataJSON();
+    if (holdRefresh && body.name === 'getSchoolRewardsBootstrap') {
+      holdRefresh = false; reportRefreshHeld(); await refreshGate;
+    }
+    await route.continue();
+  };
+  await page.route('**/rpc', interceptRefresh);
+  await page.locator('[data-asset-action="VERIFY"]').click();
+  await Promise.race([refreshHeld, new Promise((_, reject) => { const timer = setTimeout(() => reject(Error('Refresh did not start')), 10000); timer.unref(); })]);
+  try {
+    assert.equal(await page.locator('[name="quotePoints"]').isDisabled(), true);
+    assert.equal(await page.locator('#notice').evaluate(el => el.classList.contains('busy')), true);
+  } finally { releaseRefresh(); }
+  await settled(); await page.unroute('**/rpc', interceptRefresh);
   await page.locator('[name="quotePoints"]').fill('15');
   await page.locator('[name="approvedMaterialId"]').fill('PLA');
   await page.locator('[name="printerProfileId"]').fill('DEMO-SIMULATED');
   await page.locator('[name="estimatedGrams"]').fill('2');
   await page.locator('[name="estimatedMinutes"]').fill('20');
+  assert.equal(await page.locator('[name="quotePoints"]').inputValue(), '15');
   await click('[data-print-review-action="QUOTE"]');
 
   await role('student'); await click('#tab-print'); await click('[data-print-confirm]');
@@ -68,10 +88,10 @@ try {
 
   await role('cashier'); await click('#tab-store');
   await page.locator('#checkout-student').selectOption({ label: await page.locator('#checkout-student option').nth(1).textContent() });
-  await click('#store-catalog [data-add]'); await click('#checkout-submit');
+  await click('#store-catalog [aria-label="Add Notebook to cart"]'); await click('#checkout-submit');
   let main = await state();
   assert.deepEqual([main.students[0].balance, main.students[0].reservedPoints, main.students[0].availableBalance], [70, 15, 55]);
-  assert.equal(main.catalog[0].remaining, 4);
+  assert.equal(main.catalog.find(item => item.name === 'Notebook').remaining, 4);
 
   await role('staff'); await click('#tab-print');
   for (const action of ['QUEUE', 'START_PRINT', 'MARK_READY']) await click('[data-print-advance="' + action + '"]');
@@ -93,7 +113,7 @@ try {
   assert.ok(width.page <= width.viewport, JSON.stringify(width));
   await page.screenshot({ path: new URL('student-mobile.png', output).pathname.replace(/^\/(\w:)/, '$1'), fullPage: true });
   assert.deepEqual(errors, []);
-  const result = { ok: true, awardBalance: 80, reservedPoints: 15, storeBalance: 70, storeAvailable: 55, stock: 4, fulfilledBalance: 55, refundedBalance: 70, exactAssetDownload: true, crossOriginRejected: true, mobile: width, pageErrors: errors };
+  const result = { ok: true, awardBalance: 80, reservedPoints: 15, storeBalance: 70, storeAvailable: 55, stock: 4, fulfilledBalance: 55, refundedBalance: 70, exactAssetDownload: true, postSaveRefreshLocksQuote: true, crossOriginRejected: true, mobile: width, pageErrors: errors };
   await writeFile(new URL('full-demo-results.json', output), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
 } catch (error) {

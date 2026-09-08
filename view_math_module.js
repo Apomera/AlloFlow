@@ -318,6 +318,8 @@ function _mathAccessibleRequestIsCurrent(registry, pending, request) {
 }
 function _mathManipulativeActualState(tool, snapshot) {
   try {
+    var adapter = window.AlloModules?.MathManipulativeGrader;
+    if (typeof adapter?.readMathViewState === 'function') return adapter.readMathViewState(tool, snapshot);
     var state = _mathPlainRecord(snapshot);
     var directKeys = {
       coordinate: 'gridPoints',
@@ -520,21 +522,46 @@ function MathView(props) {
   var setStemLabTool = typeof props.setStemLabTool === 'function' ? props.setStemLabTool : noop;
   var setStemLabTab = typeof props.setStemLabTab === 'function' ? props.setStemLabTab : noop;
   var setShowStemLab = typeof props.setShowStemLab === 'function' ? props.setShowStemLab : noop;
-  var canSetGridPoints = typeof props.setGridPoints === 'function';
-  var setGridPoints = canSetGridPoints ? props.setGridPoints : noop;
-  var canSetBase10Value = typeof props.setBase10Value === 'function';
-  var setBase10Value = canSetBase10Value ? props.setBase10Value : noop;
-  var setNumberLineRange = typeof props.setNumberLineRange === 'function' ? props.setNumberLineRange : noop;
-  var canSetNumberLineMarkers = typeof props.setNumberLineMarkers === 'function';
-  var setNumberLineMarkers = canSetNumberLineMarkers ? props.setNumberLineMarkers : noop;
-  var canSetFractionPieces = typeof props.setFractionPieces === 'function';
-  var setFractionPieces = canSetFractionPieces ? props.setFractionPieces : noop;
-  var canSetCubeDims = typeof props.setCubeDims === 'function';
-  var setCubeDims = canSetCubeDims ? props.setCubeDims : noop;
-  var canSetAngleValue = typeof props.setAngleValue === 'function';
-  var setAngleValue = canSetAngleValue ? props.setAngleValue : noop;
   var canSetLabToolData = typeof props.setLabToolData === 'function';
   var setLabToolData = canSetLabToolData ? props.setLabToolData : noop;
+  var workspaceAdapter = window.AlloModules?.MathManipulativeGrader;
+  var canUseWorkspaceAdapter = canSetLabToolData && typeof workspaceAdapter?.writeMathViewState === 'function';
+  var workspaceSetter = (tool, legacySetter) => value => {
+    if (canUseWorkspaceAdapter) setLabToolData(previous => workspaceAdapter.writeMathViewState(tool, previous, value));else if (typeof legacySetter === 'function') legacySetter(value);
+  };
+  var canSetGridPoints = canUseWorkspaceAdapter || typeof props.setGridPoints === 'function';
+  var setGridPoints = workspaceSetter('coordinate', props.setGridPoints);
+  var canSetBase10Value = canUseWorkspaceAdapter || typeof props.setBase10Value === 'function';
+  var setBase10Value = workspaceSetter('base10', props.setBase10Value);
+  var canSetNumberLineMarkers = canUseWorkspaceAdapter || typeof props.setNumberLineMarkers === 'function';
+  var setNumberLineMarkers = workspaceSetter('numberline', props.setNumberLineMarkers);
+  var setNumberLineRange = range => {
+    if (canUseWorkspaceAdapter) setLabToolData(previous => ({
+      ..._mathPlainRecord(previous),
+      _numberline: {
+        ..._mathPlainRecord(previous?._numberline),
+        range
+      }
+    }));else if (typeof props.setNumberLineRange === 'function') props.setNumberLineRange(range);
+  };
+  var canSetFractionPieces = canUseWorkspaceAdapter || typeof props.setFractionPieces === 'function';
+  var setFractionPieces = workspaceSetter('fractions', props.setFractionPieces);
+  var canSetCubeDims = canUseWorkspaceAdapter || typeof props.setCubeDims === 'function';
+  var setCubeDims = workspaceSetter('volume', props.setCubeDims);
+  var canSetAngleValue = typeof props.setAngleValue === 'function';
+  var setAngleValue = value => {
+    if (canSetAngleValue) props.setAngleValue(value);
+    if (canSetLabToolData) setLabToolData(previous => ({
+      ..._mathPlainRecord(previous),
+      protractor: {
+        ..._mathPlainRecord(previous?.protractor),
+        activeTab: 'explore',
+        snapEnabled: false,
+        estimateActive: false,
+        speedActive: false
+      }
+    }));
+  };
   var canSetMathEditInput = typeof props.setMathEditInput === 'function';
   var setMathEditInput = canSetMathEditInput ? props.setMathEditInput : noop;
   var canSetMathStudentAnswers = typeof props.setMathStudentAnswers === 'function';
@@ -558,7 +585,8 @@ function MathView(props) {
   var canCopyToClipboard = typeof props.copyToClipboard === 'function';
   var canSetShowMathAnswers = typeof props.handleSetShowMathAnswersToTrue === 'function';
   var canOpenStemLab = typeof props.setStemLabTool === 'function' && typeof props.setStemLabTab === 'function' && typeof props.setShowStemLab === 'function';
-  var canPrepareMathManipulativeTool = tool => {
+  var canPrepareMathManipulativeTool = (tool, target = {}) => {
+    if (tool === 'base10' && target.mode && target.mode !== 'blocks') return canUseWorkspaceAdapter && typeof workspaceAdapter.prepareHubActivity === 'function';
     if (tool === 'coordinate') return canSetGridPoints;
     if (tool === 'base10') return canSetBase10Value;
     if (tool === 'numberline') return canSetNumberLineMarkers;
@@ -701,7 +729,7 @@ function MathView(props) {
   };
   var manipulativeResponseAvailability = new Map(mathProblems.map(problem => {
     var availability = _mathManipulativeResponseAvailability(problem.manipulativeResponse);
-    if (availability.available === true && (!canOpenStemLab || !canPrepareMathManipulativeTool(problem.manipulativeResponse.tool))) {
+    if (availability.available === true && (!canOpenStemLab || !canPrepareMathManipulativeTool(problem.manipulativeResponse.tool, problem.manipulativeResponse.state))) {
       availability = {
         available: false,
         reason: 'lab-unavailable'
@@ -786,7 +814,7 @@ function MathView(props) {
         addToast('This visual support cannot open because the manipulative lab is unavailable.', 'error');
         return;
       }
-      if (!canPrepareMathManipulativeTool(tool)) {
+      if (!canPrepareMathManipulativeTool(tool, target)) {
         addToast('This visual support cannot open because its lab state controls are unavailable.', 'error');
         return;
       }
@@ -819,7 +847,7 @@ function MathView(props) {
         var supportBase10 = {
           ...target
         };
-        applySupportState = () => setBase10Value(supportBase10);
+        applySupportState = target.mode && target.mode !== 'blocks' && canUseWorkspaceAdapter ? () => setLabToolData(previous => workspaceAdapter.prepareHubActivity(previous, target, true)) : () => setBase10Value(supportBase10);
       } else if (tool === 'numberline') {
         var rawSupportRange = target.range;
         var supportRange = null;
@@ -837,6 +865,7 @@ function MathView(props) {
         var supportDenominatorRaw = finiteSupportValue(target.denominator, 8, ownsSupportValue('denominator'));
         var supportDenominator = Number.isInteger(supportDenominatorRaw) && supportDenominatorRaw >= 2 ? Math.min(supportFractionLimit, supportDenominatorRaw) : Math.min(8, supportFractionLimit);
         var supportNumeratorRaw = finiteSupportValue(target.numerator, 0, ownsSupportValue('numerator'));
+        if (!Number.isInteger(supportDenominatorRaw) || supportDenominatorRaw < 2 || supportDenominatorRaw > supportFractionLimit || !Number.isInteger(supportNumeratorRaw) || supportNumeratorRaw < 0 || supportNumeratorRaw > supportDenominatorRaw) throw new Error('unsupported fraction representation');
         var supportFraction = {
           numerator: Math.max(0, Math.min(supportDenominator, Math.floor(supportNumeratorRaw))),
           denominator: supportDenominator
@@ -860,6 +889,12 @@ function MathView(props) {
       } else {
         var seeded = {
           ...target
+        };
+        if (tool === 'chemBalance') seeded = {
+          ...seeded,
+          subtool: 'balance',
+          _everPicked: true,
+          tierFilter: 'all'
         };
         if (tool === 'wave') {
           if (Object.prototype.hasOwnProperty.call(target, 'wave2')) seeded.showSecond = target.wave2;
@@ -899,7 +934,9 @@ function MathView(props) {
     var target = _mathPlainRecord(response.state);
     var baseline = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
     var resetAvailable = true;
-    if (problem.manipulativeResponse.tool === 'coordinate') {
+    if (tool === 'base10' && target.mode && target.mode !== 'blocks' && canUseWorkspaceAdapter) {
+      setLabToolData(previous => workspaceAdapter.prepareHubActivity(previous, target));
+    } else if (problem.manipulativeResponse.tool === 'coordinate') {
       resetAvailable = canSetGridPoints;
       setGridPoints([]);
     } else if (problem.manipulativeResponse.tool === 'base10') {
@@ -917,6 +954,12 @@ function MathView(props) {
         setNumberLineRange({
           min: target.range.min,
           max: target.range.max
+        });
+      } else {
+        var markerValues = target.markers.map(marker => typeof marker === 'number' ? marker : marker.value);
+        setNumberLineRange({
+          min: Math.min(0, ...markerValues),
+          max: Math.max(20, ...markerValues)
         });
       }
     } else if (problem.manipulativeResponse.tool === 'fractions') {
@@ -937,6 +980,17 @@ function MathView(props) {
     } else if (problem.manipulativeResponse.tool === 'protractor') {
       setAngleValue(0);
       resetAvailable = canSetAngleValue;
+    } else if (tool === 'chemBalance') {
+      setLabToolData(previous => ({
+        ..._mathPlainRecord(previous),
+        chemBalance: {
+          equation: target.equation,
+          coefficients: target.coefficients.map(() => 1),
+          subtool: 'balance',
+          _everPicked: true,
+          tierFilter: 'all'
+        }
+      }));
     } else {
       resetAvailable = canSetLabToolData;
       setLabToolData(previous => {
@@ -1013,22 +1067,41 @@ function MathView(props) {
     if (diagnostic.response) handleStudentInput(mathResourceId, problem.__viewKey, diagnostic.response);
     addToast(diagnostic.message, diagnostic.tone);
   };
+  var renderMathManipulativeSupport = problem => /*#__PURE__*/React.createElement(React.Fragment, null, problem.manipulativeSupport && (() => {
+    // Inline accessible diagram (step 2): show the parametric scaffold inline +
+    // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
+    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, mathTitle);
+    return _suppSvg ? /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-x-auto",
+      dangerouslySetInnerHTML: {
+        __html: _suppSvg
+      }
+    }) : null;
+  })(), problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: !canOpenStemLab,
+    onClick: () => openMathManipulativeSupport(problem),
+    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2 disabled:cursor-not-allowed disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-lg"
+  }, "📂"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"));
   var renderMathManipulativeResponse = problem => {
     var response = problem.manipulativeResponse;
+    var displayTool = response?.state?.mode && response.state.mode !== 'blocks' ? workspaceAdapter?.activityOptions?.find(option => option.id === response.tool + ':' + response.state.mode)?.label || response.tool : response?.tool;
     if (!response || getMathManipulativeResponseAvailability(problem).available !== true) return null;
     return /*#__PURE__*/React.createElement("div", {
       "data-math-manipulative-response": response.tool,
       className: "bg-emerald-50 bg-opacity-50 p-4 rounded-xl border border-emerald-200"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-emerald-800 font-bold mb-3 flex items-center gap-2"
-    }, "🧩 Solve this problem using the ", response.tool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
+    }, "🧩 Solve this problem using the ", displayTool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: !canOpenStemLab,
       onClick: () => openMathManipulativeResponse(problem),
       className: "min-h-[44px] px-4 py-2 bg-white text-emerald-700 font-bold rounded-lg border border-emerald-300 hover:bg-emerald-100 transition-all text-sm shadow-sm flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
-    }, "Open ", response.tool), /*#__PURE__*/React.createElement("button", {
+    }, "Open ", displayTool), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: !canHandleStudentInput,
       onClick: () => checkMathManipulativeResponse(problem),
@@ -1212,24 +1285,7 @@ function MathView(props) {
     } : previous)
   }), `Open accessible math keyboard for answer ${pIdx + 1}`, !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && !problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-12 mt-4 mb-4 space-y-3"
-  }, problem.manipulativeSupport && (() => {
-    // Inline accessible diagram (step 2): show the parametric scaffold inline +
-    // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
-    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, mathTitle);
-    return _suppSvg ? /*#__PURE__*/React.createElement("div", {
-      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-x-auto",
-      dangerouslySetInnerHTML: {
-        __html: _suppSvg
-      }
-    }) : null;
-  })(), problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    disabled: !canOpenStemLab,
-    onClick: () => openMathManipulativeSupport(problem),
-    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2 disabled:cursor-not-allowed disabled:opacity-50"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-lg"
-  }, "📂"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"), getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement("div", {
+  }, renderMathManipulativeSupport(problem), getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-3 left-3 text-slate-600"
@@ -1339,7 +1395,7 @@ function MathView(props) {
     size: 14
   }), " ", t('math.display.answer_hidden')))) : /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-12 mt-4 space-y-3"
-  }, getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, !problem._verification?.reviewRequired && renderMathManipulativeSupport(problem), getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-3 left-3 text-slate-600"

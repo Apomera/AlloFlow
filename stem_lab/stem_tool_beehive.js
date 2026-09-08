@@ -203,6 +203,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-3d-bay="queen"]:fullscreen [data-bay-canvas-frame="queen"] { height:clamp(440px,64vh,820px) !important; }
       [data-beehive-3d-bay="queen"]:fullscreen .bee-rts-toolbar { position:sticky; top:0; z-index:4; background:var(--bd-paper); padding:8px 0; }
       @media(max-width:639px) { [data-bay-canvas-frame="queen"] { height:360px !important; } [data-beehive-3d-bay="queen"]:fullscreen { padding:10px; } .bee-rts-route-views { width:100%; } .bee-rts-route-views button { flex:1 1 70px; } }
+      .bee-map-study { margin-top:12px; border:1px solid var(--bd-line); border-radius:14px; background:var(--bd-paper); color:var(--bd-ink); overflow:hidden; }
+      .bee-map-study-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:16px; background:var(--bd-tint); }
+      .bee-map-study h4 { margin:4px 0; font-size:21px; line-height:1.3; font-weight:800; letter-spacing:-.025em; }
+      .bee-map-study h5 { margin:0 0 8px; font-size:15px; font-weight:800; }
+      .bee-map-study p { font-size:12px; line-height:1.6; margin:4px 0 10px; }
+      .bee-map-study-steps { display:flex; gap:8px; list-style:none; padding:14px 16px 0; margin:0; }
+      .bee-map-study-steps li { flex:1; display:flex; gap:8px; align-items:center; font-size:12px; font-weight:750; padding:8px; border-bottom:3px solid var(--bd-line); }
+      .bee-map-study-steps li[data-complete="true"],.bee-map-study-steps li[aria-current] { border-color:var(--bd-button); }
+      .bee-map-study-steps li > span:first-child { display:grid; place-items:center; width:24px; height:24px; flex-shrink:0; border:1px solid var(--bd-line); border-radius:50%; }
+      .bee-map-study-steps li[data-complete="true"] > span:first-child { color:var(--bd-on-button); background:var(--bd-button); }
+      .bee-map-study-stage { padding:16px; border-bottom:1px solid var(--bd-line); }
+      .bee-map-study-choices { display:grid; gap:6px; border:0; padding:0; margin:12px 0 0; min-width:0; }
+      .bee-map-study-choices legend { font-size:12px; font-weight:750; margin-bottom:6px; }
+      .bee-map-study-choices label { display:flex; align-items:center; gap:10px; min-height:44px; padding:9px 12px; border:1px solid var(--bd-line); border-radius:9px; font-size:12px; cursor:pointer; }
+      .bee-map-study-choices label:has(input:checked) { background:var(--bd-tint); border-color:var(--bd-button); }
+      .bee-map-study-choices input { width:18px; height:18px; flex-shrink:0; accent-color:var(--bd-button); }
+      .bee-map-study-routes { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+      .bee-map-study-route { min-width:0; border:1px solid var(--bd-line); border-radius:10px; padding:12px; }
+      .bee-map-study-route[data-recorded="true"] { background:var(--bd-tint); border-color:var(--bd-button); }
+      .bee-map-study-route-title { display:flex; flex-wrap:wrap; gap:6px; justify-content:space-between; font-size:12px; }
+      .bee-map-study-route-title > span { font-size:11px; }
+      .bee-map-study-path { display:flex; align-items:center; gap:8px; padding:16px 0; font-size:12px; font-weight:750; }
+      .bee-map-study-path i { flex:1; min-width:24px; border-top:3px solid #8861c9; position:relative; }
+      .bee-map-study-path i[data-colony="neighbor"] { border-top:3px dashed #c94d69; }
+      .bee-map-study-path i:after { content:'›'; position:absolute; right:-2px; top:-15px; font-style:normal; font-size:22px; }
+      .bee-map-study-feedback { border-left:3px solid var(--bd-button); padding:12px; margin:12px 0; background:var(--bd-tint); border-radius:0 8px 8px 0; font-size:13px; }
+      .bee-map-study-note { display:grid; gap:6px; margin-top:12px; font-size:12px; font-weight:700; }
+      .bee-map-study-note textarea { width:100%; min-height:90px; resize:vertical; border:1px solid var(--bd-line); border-radius:8px; padding:10px; background:var(--bd-paper); color:var(--bd-ink); font:inherit; font-weight:400; }
+      .bee-map-study-note textarea::placeholder { color:var(--bd-muted); opacity:1; }
+      .bee-map-study .bee-map-study-source { margin-top:10px; color:var(--bd-muted); }
+      .bee-map-study-source a { color:var(--bd-ink); text-decoration:underline; font-weight:700; }
+      .bee-map-study-footer { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:16px; }
+      .bee-map-study-footer > span { flex:1 1 220px; font-size:11px; line-height:1.5; color:var(--bd-muted); }
+      .bee-map-study :focus-visible,.bee-rts-study-shortcut :focus-visible { outline:3px solid var(--bd-button); outline-offset:3px; }
+      .bee-rts-study-shortcut { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--bd-line); }
+      .bee-rts-study-shortcut p { flex:1 1 200px; font-size:12px; line-height:1.5; }
+      @media(max-width:639px) { .bee-map-study-routes { grid-template-columns:1fr; } .bee-map-study-steps { padding:10px 8px 0; gap:2px; } .bee-map-study-steps li { gap:5px; padding:6px 3px; font-size:11px; } .bee-map-study-head,.bee-map-study-stage,.bee-map-study-footer { padding:12px; } .bee-map-study-head > .bee-discovery-button { width:100%; } }
+
       .bee-rts-layers { display:flex; flex-wrap:wrap; gap:4px 16px; border-bottom:1px solid var(--bd-line); padding:3px 0 8px; }
       .bee-rts-layers label { display:flex; align-items:center; gap:7px; font-size:12px; min-height:44px; cursor:pointer; }
       .bee-rts-layers input { accent-color:var(--bd-button); width:17px; height:17px; }
@@ -334,7 +372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-cycle-clock][data-cycle-state="paused"] [data-beehive-cycle-fill] { animation-play-state:paused; opacity:.42; }' +
       '[data-beehive-rts-live-dot] { display:inline-block; width:.48rem; height:.48rem; border-radius:999px; background:#fff; box-shadow:0 0 0 .2rem rgba(255,255,255,.18); animation:bee-live-pulse 1.15s ease-in-out infinite; }' +
       '[data-beehive-root="true"][data-beehive-motion-state="paused"] [data-beehive-rts-live-dot] { animation:none; opacity:.72; }' +
-      '[data-beehive-stage="drone"][data-flight-state="paused"] canvas { filter:saturate(.72) brightness(.72); }' +
+      '[data-beehive-stage="drone"][data-flight-state="paused"] canvas { filter:none; }' +
       '[data-beehive-flight-paused-overlay] { pointer-events:none; position:absolute; inset:0; z-index:15; display:grid; place-items:center; background:rgba(15,23,42,.18); backdrop-filter:blur(1.5px); }' +
       '[data-beehive-flight-paused-overlay] > div { max-width:min(84%,24rem); border:1px solid rgba(255,255,255,.24); border-radius:1.25rem; padding:1rem 1.25rem; background:rgba(2,6,23,.84); color:#fff; text-align:center; box-shadow:0 24px 58px rgba(2,6,23,.48); backdrop-filter:blur(14px); }' +
       '[data-flight-control]:not(:disabled):active { border-color:rgb(var(--bee-accent-rgb)) !important; box-shadow:inset 0 3px 10px rgba(var(--bee-accent-rgb),.18),0 0 0 2px rgba(var(--bee-accent-rgb),.26); transform:translateY(1px) scale(.98); }' +
@@ -2910,6 +2948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     dcaMaxFt: 130,
     dcaMarkerFt: 115,
     dcaDistanceM: 600,
+    dcaRadiusM: 72,
     timerByDifficulty: { easy: 150, normal: 110, hard: 75 }
   };
 
@@ -2917,6 +2956,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (document.getElementById('beehive-drone-decision-css')) return;
     var style = document.createElement('style'); style.id = 'beehive-drone-decision-css';
     style.textContent = `
+      #beehive-drone-playfield [data-flight-training],#beehive-drone-playfield [data-flight-renderer-badge],#beehive-drone-playfield [data-flight-quality-badge],#beehive-drone-playfield [data-beehive-flight-pause] { background:rgba(10,29,42,.94)!important; color:#f0f9ff!important; border-color:#819eaf!important; }
+      #beehive-drone-playfield > button[aria-label="End flight"] { background:#a91d3a!important; color:white!important; }
+      #beehive-drone-playfield [data-beehive-flight-pause]:focus-visible,#beehive-drone-playfield > button:focus-visible { outline:3px solid #7dd3fc; outline-offset:3px; }
+      #beehive-drone-playfield [data-flight-training-hint],#beehive-drone-playfield [data-beehive-flight-paused-overlay] p { color:#c4d8e7!important; }
+      .bee-flight-director { position:absolute; left:12px; right:12px; bottom:12px; z-index:12; display:flex; flex-wrap:wrap; align-items:center; gap:6px 20px; padding:10px 14px; border:1px solid #668a9e; border-radius:14px; background:rgba(10,29,42,.94); color:#f0f9ff; pointer-events:none; font:12px/1.45 system-ui,sans-serif; }
+      .bee-flight-bearing { display:flex; align-items:center; gap:10px; flex:1 1 230px; }
+      .bee-flight-bearing svg { width:58px; height:58px; flex:0 0 58px; }
+      .bee-flight-bearing strong,.bee-flight-bearing span { display:block; }
+      .bee-flight-bearing strong { font-size:16px; font-weight:750; }
+      .bee-flight-director-label { color:#b3d3e5; font-size:10px; text-transform:uppercase; font-weight:750; letter-spacing:.08em; }
+      .bee-flight-director-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px 16px; flex:1 1 285px; }
+      .bee-flight-director-metrics strong,.bee-flight-director-metrics span { display:block; }
+      .bee-flight-director-metrics strong { font-size:15px; font-variant-numeric:tabular-nums; }
+      .bee-flight-director p { flex-basis:100%; margin:0; font-size:10px; color:#b3d3e5; }
+      [data-reserve-low="true"] [data-director-value="energy"] { color:#fda4af; }
+      [data-beehive-stage="drone"][data-flight-hud="clear"] [data-beehive-stage-chip], [data-beehive-stage="drone"][data-flight-hud="detailed"] .bee-flight-director, [data-flight-pacing="steps"] .bee-flight-director { display:none; }
+      [data-beehive-flight-paused-overlay] { inset:151px auto auto 50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 24px); background:none; backdrop-filter:none; }
+      [data-beehive-flight-paused-overlay] > div { padding:8px 12px; border-radius:10px; max-width:none; box-shadow:none; }
+      [data-beehive-touch-controls] { --bf-ink:#173443; --bf-paper:#f5fbff; background:var(--bf-paper)!important; color:var(--bf-ink); }
+      [data-beehive-theme="dark"] [data-beehive-touch-controls] { --bf-ink:#e0f2fe; --bf-paper:#122c3a; }
+      [data-flight-control] { min-height:56px!important; }
+      [data-beehive-touch-controls] [data-flight-comfort-details] { border-top:1px solid #8198a5; margin-top:12px; }
+      [data-flight-comfort-details] > summary { min-height:44px; display:flex; align-items:center; cursor:pointer; font-size:12px; font-weight:750; }
+      [data-flight-comfort-details] :focus-visible { outline:3px solid #0284c7; outline-offset:3px; }
+      @media(max-width:639px) { .bee-flight-director { left:8px; right:8px; bottom:8px; padding:8px 10px; gap:6px; } .bee-flight-bearing { flex-basis:100%; } .bee-flight-bearing svg { width:40px; height:40px; flex-basis:40px; } .bee-flight-bearing strong { font-size:14px; } .bee-flight-director-metrics { gap:6px; flex-basis:100%; } .bee-flight-director-metrics strong { font-size:12px; } .bee-flight-director-label { font-size:9px; } .bee-flight-director p { font-size:9px; } }
+      @media(forced-colors:active) { .bee-flight-director { background:Canvas; color:CanvasText; border-color:CanvasText; } .bee-flight-director :is(span,p,strong) { color:CanvasText!important; } .bee-flight-bearing svg * { stroke:CanvasText; } .bee-flight-bearing svg path { fill:CanvasText; } }
+
+      .bee-flight-route {padding:0!important;}
+      .bfd.bee-flight-route > summary {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:16px 20px;list-style:none;}
+      .bfd.bee-flight-route > summary::-webkit-details-marker {display:none;}
+      .bfd.bee-flight-route > summary > span:first-child:before {content:'▸';display:inline-block;margin-right:10px;}
+      .bee-flight-route[open] > summary > span:first-child:before {content:'▾';}
+      .bee-route-open-hint {font-size:12px;font-weight:500;color:var(--bf-muted);}
+      .bee-flight-route[open] .bee-route-open-hint {display:none;}
+      .bee-route-content {padding:0 20px 20px;}
+      .bee-route-checkpoints {list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0;margin:0 0 18px;}
+      .bee-route-checkpoints li {border-bottom:3px solid var(--bf-line);padding:10px 0;display:grid;grid-template-columns:24px 1fr;gap:3px 8px;align-items:center;}
+      .bee-route-checkpoints li[aria-current] {border-color:var(--bf-accent);}
+      .bee-route-checkpoints li[data-complete="true"] {border-color:#15803d;}
+      .bee-route-checkpoints [data-route-check-symbol] {grid-row:span 2;border:1px solid var(--bf-line);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-size:12px;font-weight:750;}
+      .bee-route-checkpoints li[data-complete="true"] [data-route-check-symbol] {background:#166534;border-color:#166534;color:#fff;}
+      .bee-route-checkpoints strong {font-size:13px;}.bee-route-checkpoints small {font-size:11px;}
+      .bee-route-layout {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(245px,1fr);gap:22px;align-items:start;}
+      .bee-route-map {margin:0;min-width:0;}.bee-route-map svg {display:block;width:100%;height:auto;font:19px system-ui,sans-serif;fill:var(--bf-ink);}
+      .bee-route-map .bee-route-axis {font-size:13px;font-weight:650;}.bee-route-map figcaption {font-size:12px;line-height:1.65;color:var(--bf-muted);margin-top:10px;}
+      .bee-route-coach h3 {font-size:18px;}.bee-route-coach p {font-size:13px;}
+      .bee-route-entry > div {display:grid;gap:3px;border:1px solid var(--bf-line);border-left-width:4px;border-radius:8px;margin-top:8px;padding:10px 12px;font-size:12px;}
+      .bee-route-entry > div[data-met="true"] {border-left-color:#15803d;}.bee-route-entry small {font-weight:750;font-size:12px;}
+      @media(max-width:700px) {.bee-route-layout {grid-template-columns:1fr;}.bee-route-content {padding:0 12px 14px;}.bfd.bee-flight-route > summary {padding:14px 12px;}.bee-route-checkpoints {gap:6px;}.bee-route-checkpoints li {grid-template-columns:1fr;}.bee-route-checkpoints [data-route-check-symbol] {grid-row:auto;}.bee-route-map svg {font-size:24px;}.bee-route-map .bee-route-axis {font-size:17px;}}
+      @media(forced-colors:active) {.bee-route-checkpoints li[data-complete="true"] [data-route-check-symbol] {background:Highlight;border-color:Highlight;color:HighlightText;}.bee-route-entry > div[data-met="true"] {border-left-color:Highlight;}}
+
       .bfd {--bf-paper:#fff;--bf-ink:#172b3a;--bf-muted:#425466;--bf-line:#b7c7cf;--bf-tint:#eef7fa;--bf-accent:#075985;background:var(--bf-paper);color:var(--bf-ink);border:1px solid var(--bf-line);border-radius:18px;padding:clamp(16px,2.4vw,26px);font:400 1rem/1.55 system-ui,sans-serif;text-align:left;min-width:0;overflow-wrap:anywhere;}
       [data-beehive-theme="dark"] .bfd {--bf-paper:#10222d;--bf-ink:#f1f5f9;--bf-muted:#cbd5e1;--bf-line:#647b88;--bf-tint:#173443;--bf-accent:#7dd3fc;}
       .bfd * {box-sizing:border-box;} .bfd h3 {font-size:1.35rem;font-weight:750;margin:0 0 8px;} .bfd p {margin:10px 0;} .bfd small,.bfd-caption {font-size:.875rem;color:var(--bf-muted);} .bfd fieldset {border:0;margin:18px 0;padding:0;min-width:0;} .bfd legend {font-weight:700;margin-bottom:10px;}
@@ -2978,6 +3068,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return { target: target.label, range: range, altitude: Math.round(s.y || 0), targetAltitude: Math.round(target.y),
       energy: Math.round(Math.max(0, s.energy || 0) / max * 100), seconds: Math.max(0, Math.round(s.timer || 0)),
       text: target.label + ' horizontal range ' + range + ' model m. Altitude ' + Math.round(s.y || 0) + ' ft; target ' + Math.round(target.y) + ' ft. Energy ' + Math.round(Math.max(0, s.energy || 0) / max * 100) + '% of the difficulty reserve.' };
+  }
+
+  function bhDroneFlightDirector(state) {
+    var s = state || {}, target = bhDroneNavigationTarget(s);
+    function number(v) { return Number.isFinite(v) ? v : 0; }
+    var dx = target.x - number(s.x), dz = target.z - number(s.z), range = Math.hypot(dx, dz);
+    var error = range < 1 ? 0 : Math.atan2(Math.sin(Math.atan2(dx, -dz) - number(s.yaw)), Math.cos(Math.atan2(dx, -dz) - number(s.yaw)));
+    var degrees = Math.round(error * 180 / Math.PI), height = Math.round(target.y - number(s.y));
+    var direction = range < 1 ? 'At target horizontally' : Math.abs(degrees) <= 5 ? 'Target ahead' : (degrees < 0 ? 'Turn left ' : 'Turn right ') + Math.abs(degrees) + '°';
+    var vertical = Math.abs(height) <= 5 ? 'Near target altitude' : (height > 0 ? 'Target above · ' : 'Target below · ') + Math.abs(height) + ' ft';
+    var maxEnergy = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
+    return { target: target.label, degrees: degrees, direction: direction, vertical: vertical,
+      range: Math.round(range), altitude: Math.round(number(s.y)), energy: Math.max(0, Math.min(100, Math.round(number(s.energy) / maxEnergy * 100))),
+      seconds: Math.max(0, Math.ceil(number(s.timer))), arrived: !!s.reachedQueen,
+      text: target.label + ': ' + direction + '. ' + vertical + '. Horizontal range ' + Math.round(range) + ' model m.' };
+  }
+
+  // A read-only teaching map: one scale for both horizontal axes, actual samples,
+  // and checkpoint flags from physics. Opening a map can never award a checkpoint.
+  function bhDroneRouteOverview(state) {
+    var s = state || {}, p = DRONE_FLIGHT_PARAMS;
+    function finite(value) { return Number.isFinite(value) ? value : 0; }
+    var x = finite(s.x), z = finite(s.z), altitude = finite(s.y);
+    var dcaRange = Math.hypot(x, z + p.dcaDistanceM);
+    var inRange = dcaRange <= p.dcaRadiusM, inAltitude = altitude >= p.dcaMinFt && altitude <= p.dcaMaxFt;
+    var target = bhDroneNavigationTarget(s);
+    var queen = s.reachedDca && (s.nearQueens || []).find(function(q) { return !q.caught || s.reachedQueen; });
+    var samples = (Array.isArray(s.telemetry) ? s.telemetry : []).slice(-90).filter(function(t) { return t && Number.isFinite(t.x) && Number.isFinite(t.z); });
+    var positions = [{ x: 0, z: 0 }, { x: 0, z: -p.dcaDistanceM }, { x: x, z: z }].concat(samples);
+    if (queen) positions.push({ x: finite(queen.x), z: finite(queen.z) });
+    var minX = -180, maxX = 180, minZ = -p.dcaDistanceM - 120, maxZ = 120;
+    positions.forEach(function(point) { minX = Math.min(minX, point.x - 80); maxX = Math.max(maxX, point.x + 80); minZ = Math.min(minZ, point.z - 80); maxZ = Math.max(maxZ, point.z + 80); });
+    var scale = Math.min(548 / (maxX - minX), 224 / (maxZ - minZ));
+    var centerX = (minX + maxX) / 2, centerZ = (minZ + maxZ) / 2;
+    function point(px, pz) { return { x: 310 + (finite(px) - centerX) * scale, y: 150 + (finite(pz) - centerZ) * scale }; }
+    var player = point(x, z), hive = point(0, 0), dca = point(0, -p.dcaDistanceM), next = point(target.x, target.z);
+    var trail = samples.map(function(t) { return point(t.x, t.z); }).concat([player]);
+    var stage = s.reachedQueen ? 'complete' : s.reachedDca ? 'queen' : s.reachedLaunch ? 'dca' : 'launch';
+    var title = stage === 'complete' ? 'All flight checkpoints recorded' : stage === 'queen' ? 'Queen cue unlocked' : stage === 'launch' ? 'Lift off and build control' : 'Enter the golden DCA band';
+    var advice = stage === 'complete' ? 'The game route is complete. The cue intercept does not model mating.'
+      : stage === 'queen' ? 'Use the diamond cue and compare its height with yours. The dashed line is a bearing guide; check the 3D view for obstacles.'
+      : stage === 'launch' ? 'Use short powered climbs. The launch checkpoint records above 40 model ft; route markers are optional.'
+      : inRange && !inAltitude ? (altitude < p.dcaMinFt ? 'You are close enough horizontally. Climb into the ' : 'You are close enough horizontally. Descend into the ') + p.dcaMinFt + '–' + p.dcaMaxFt + ' model ft band.'
+      : inRange && inAltitude ? 'Both DCA entry conditions are met. Flight progression records the checkpoint when the simulation advances.'
+      : inAltitude ? 'Your altitude is in the band. Close the horizontal gap while checking obstacles.'
+      : 'DCA entry needs both horizontal range and altitude. A ring seen ahead does not mean the checkpoint is reached.';
+    return { stage: stage, title: title, advice: advice, inRange: inRange, inAltitude: inAltitude,
+      dcaRange: Math.round(dcaRange), altitude: Math.round(altitude), radius: p.dcaRadiusM, minAltitude: p.dcaMinFt, maxAltitude: p.dcaMaxFt,
+      checkpoints: [{ id: 'launch', label: 'Lift off', done: !!s.reachedLaunch }, { id: 'dca', label: 'Reach DCA', done: !!s.reachedDca }, { id: 'queen', label: 'Queen cue', done: !!s.reachedQueen }],
+      player: player, hive: hive, dca: dca, queen: queen ? point(queen.x, queen.z) : null, target: next,
+      heading: finite(s.yaw) * 180 / Math.PI, dcaRadius: p.dcaRadiusM * scale, scale: scale,
+      trail: trail.map(function(t) { return t.x.toFixed(2) + ',' + t.y.toFixed(2); }).join(' '),
+      obstacles: (s.obstacles || []).slice(0, 80).map(function(ob) { return point(ob.x, ob.z); }),
+      text: title + '. ' + advice + ' DCA horizontal range ' + Math.round(dcaRange) + ' model m; altitude ' + Math.round(altitude) + ' model ft.' };
   }
 
   // Wing beat, shared by every 3D bee in this file (flight avatars, hive
@@ -5202,6 +5346,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var index = QUEEN_LANDSCAPE_PATCHES.findIndex(function(patch) { return patch.id === patchId; });
     return { patchIndex: index, patch: index < 0 ? null : QUEEN_LANDSCAPE_PATCHES[index], colony: colony === 'home' || colony === 'neighbor' ? colony : 'both' };
   }
+  var QUEEN_MAP_PREDICTIONS = { shared: 'Both colonies can reach the same patch.', separate: 'Each colony has its own separate patches.', unsure: 'I am not sure yet.' };
+  var QUEEN_MAP_CLAIMS = { shared: 'The diagram shows both colonies reaching one patch.', border: 'The selection ring proves a defended territory.', equal: 'The routes prove both colonies collect equal amounts of food.' };
+  function bhQueenMapStudy(raw) {
+    var s = raw && raw.version === 1 ? raw : {};
+    var patch = bhQueenMapInspection(s.patchId).patch;
+    var prediction = Object.prototype.hasOwnProperty.call(QUEEN_MAP_PREDICTIONS, s.prediction) ? s.prediction : '';
+    var captures = {};
+    ['home', 'neighbor'].forEach(function(colony) {
+      var c = s.captures && s.captures[colony];
+      if (!patch || !prediction || !c || c.source !== 'shared-map-v1' || c.patchId !== patch.id || c.colony !== colony || c.routeCount !== 1 || !Number.isInteger(c.cycle) || c.cycle < 0 || c.cycle > 10000000 || typeof c.recordedAt !== 'string' || !Number.isFinite(Date.parse(c.recordedAt))) return;
+      captures[colony] = { source: 'shared-map-v1', patchId: patch.id, colony: colony, routeCount: 1, cycle: c.cycle, recordedAt: new Date(c.recordedAt).toISOString() };
+    });
+    var count = Object.keys(captures).length;
+    return { version: 1, patchId: patch ? patch.id : '', prediction: prediction, captures: captures,
+      claim: count === 2 && Object.prototype.hasOwnProperty.call(QUEEN_MAP_CLAIMS, s.claim) ? s.claim : '',
+      reflection: typeof s.reflection === 'string' ? s.reflection.slice(0, 1200) : '' };
+  }
+  function bhQueenMapStudyReady(raw, view) {
+    var s = bhQueenMapStudy(raw), v = view || {}, selection = bhQueenMapInspection(v.patchId, v.colony);
+    if (!s.patchId || !s.prediction) return 'Choose a study patch and make a prediction first.';
+    if (!v.ready) return 'The 3D map must be ready before recording a visible route.';
+    if (Math.floor(((v.cycle || 0) % 120) / 30) === 3) return 'The game’s winter calendar hides routes. Keep these notes and return when routes are visible.';
+    if (v.routes === false) return 'Turn on Forager routes to record a visible path.';
+    if (!selection.patch || selection.patch.id !== s.patchId) return 'Show the study patch before recording.';
+    if (selection.colony === 'both') return 'Show one colony at a time to compare their routes.';
+    if (s.captures[selection.colony]) return 'This colony’s route is already recorded. Compare the other colony or explain your observations.';
+    return '';
+  }
+  function bhQueenMapStudyCapture(raw, view, recordedAt) {
+    var s = bhQueenMapStudy(raw);
+    if (bhQueenMapStudyReady(s, view) || !Number.isInteger(view.cycle) || view.cycle < 0 || view.cycle > 10000000 || !Number.isFinite(Date.parse(recordedAt))) return s;
+    s.captures[view.colony] = { source: 'shared-map-v1', patchId: s.patchId, colony: view.colony, routeCount: 1, cycle: view.cycle, recordedAt: new Date(recordedAt).toISOString() };
+    return s;
+  }
+  function bhQueenMapStudyText(raw) {
+    var s = bhQueenMapStudy(raw), patch = bhQueenMapInspection(s.patchId).patch;
+    var lines = ['## Shared-patch map investigation', '', 'Source: shared-map-v1 — a schematic teaching diagram, not field observations or tracked flights.', 'Study patch: ' + (patch ? patch.label : 'Not chosen'), 'Prediction before recording: ' + (QUEEN_MAP_PREDICTIONS[s.prediction] || 'Not recorded'), ''];
+    ['home', 'neighbor'].forEach(function(colony) {
+      var c = s.captures[colony], name = colony === 'home' ? 'Your colony' : 'Neighbor colony';
+      lines.push(name + ': ' + (c ? '1 visible diagram route to ' + patch.label + '; ' + (colony === 'home' ? 'solid purple' : 'dashed coral') + '; game cycle ' + c.cycle + '; recorded ' + c.recordedAt + '.' : 'Not recorded.'));
+    });
+    lines.push('', 'My selected explanation: ' + (QUEEN_MAP_CLAIMS[s.claim] || 'Not selected'), 'Review: ' + (s.claim === 'shared' ? 'Explanation supported by the two recorded diagram views.' : s.claim ? 'Revisit this explanation: route lines do not establish territory or equal food collection.' : 'Incomplete.'), 'My note / next field question: ' + (s.reflection.trim() || 'Not recorded.'), '', 'Limits: view filters change what is shown, not access to flowers. Route counts are diagram lines, not bee counts, visit rates, travel distances, or food yields. Real neighboring colonies can overlap in landscape use while favoring different patches.', 'Research: https://doi.org/10.1002/ece3.71401');
+    return lines.join('\n');
+  }
+
   var QUEEN_3D_PARTS = [
     { id: 'home_hive', label: 'Your nest', color: '#a78bfa', desc: 'An enlarged cavity-nest symbol. Honey bees keep brood and food in comb inside the nest. The ring shows game health; the cavity does not shrink when bees are lost.' },
     { id: 'rival_hive', label: 'Neighbor nest', color: '#fb7185', desc: 'A second honey-bee colony can visit the same flower patches. Nearby nests are not automatically enemies. This tree-and-rock illustration is not a surveyed site.' },
@@ -20347,6 +20536,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var droneGraphicsMode = ['auto', 'high', 'eco'].indexOf(droneData.graphicsMode) >= 0 ? droneData.graphicsMode : 'auto';
         var droneSteeringSensitivity = ['gentle', 'standard', 'quick'].indexOf(droneData.steeringSensitivity) >= 0 ? droneData.steeringSensitivity : 'standard';
         var droneCameraStabilized = droneData.cameraStabilized !== false;
+        var _droneHudDetail = React.useRef(false);
+        var _droneRedraw = React.useRef(null);
+        _droneHudDetail.current = droneData.detailedHud === true;
         var _droneCameraMode = React.useRef('cockpit');
         var _droneGraphicsMode = React.useRef('auto');
         var _droneSteeringSensitivity = React.useRef('standard');
@@ -20374,7 +20566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var dx = Number(state.x) || 0, dz = (Number(state.z) || 0) + 600, altitude = Math.max(0, Number(state.y) || 0);
           var planarDistance = Math.sqrt(dx * dx + dz * dz);
           var altitudeBand = altitude >= DRONE_FLIGHT_PARAMS.dcaMinFt && altitude <= DRONE_FLIGHT_PARAMS.dcaMaxFt;
-          var inVolume = planarDistance <= 72 && altitudeBand;
+          var inVolume = planarDistance <= DRONE_FLIGHT_PARAMS.dcaRadiusM && altitudeBand;
           return { planarDistance: planarDistance, altitude: altitude, altitudeBand: altitudeBand, inVolume: inVolume, label: inVolume ? 'Inside DCA volume' : planarDistance < 180 ? 'Approaching DCA' : 'En route' };
         }
         function droneObstacleMetrics(state, obstacle) {
@@ -20625,10 +20817,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var overallAdvice = state.paused ? 'Review the five conditions before resuming.' : dangerCount ? items.filter(function(item) { return item.state === 'danger'; })[0].advice : cautionCount ? 'The route is viable, but one or more conditions need attention.' : 'All five conditions currently support the mission.';
           return { items: items, overallState: overallState, overallLabel: overallLabel, overallAdvice: overallAdvice, nearestObstacle: nearestObstacle, nearestTraffic: nearestTraffic, dcaStatus: dcaStatus };
         }
+        function renderDroneRouteInspector() {
+          var r = bhDroneRouteOverview(_droneState.current);
+          function at(point) { return 'translate(' + point.x + ' ' + point.y + ')'; }
+          return h('details', { className: 'bfd bee-flight-route', 'data-flight-route-panel': 'true', onToggle: function(event) {
+            if (!event.currentTarget.open) return;
+            var state = _droneState.current;
+            if (!state || state.phase === 'end') return;
+            if (!state.paused) {
+              state.paused = true; _droneKeys.current = {};
+              updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { paused: true }); });
+              announceBee('Flight paused for route inspection. Resume from the flight controls when ready.', false);
+            }
+            syncDroneRouteInspector(state);
+          } },
+            h('summary', null, h('span', null, 'Route map & checkpoints'), h('span', { className: 'bee-route-open-hint' }, 'Open to pause and plan')),
+            h('div', { className: 'bee-route-content' },
+              h('ol', { className: 'bee-route-checkpoints', 'aria-label': 'Recorded flight checkpoints' }, r.checkpoints.map(function(checkpoint, i) {
+                return h('li', { key: checkpoint.id, 'data-route-checkpoint': checkpoint.id, 'data-complete': String(checkpoint.done), 'aria-current': r.stage === checkpoint.id ? 'step' : undefined },
+                  h('span', { 'data-route-check-symbol': 'true', 'aria-hidden': 'true' }, checkpoint.done ? '✓' : String(i + 1)), h('strong', null, checkpoint.label), h('small', { 'data-route-check-status': 'true' }, checkpoint.done ? 'Recorded' : r.stage === checkpoint.id ? 'Current' : 'Next'));
+              })),
+              h('div', { className: 'bee-route-layout' },
+                h('figure', { className: 'bee-route-map' },
+                  h('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-label': r.text, 'data-route-map': 'true' },
+                    h('defs', null, h('clipPath', { id: 'bee-route-map-clip' }, h('rect', { x: 14, y: 24, width: 592, height: 252, rx: 12 }))),
+                    h('rect', { x: 14, y: 24, width: 592, height: 252, rx: 12, fill: 'var(--bf-tint)' }),
+                    h('g', { clipPath: 'url(#bee-route-map-clip)' },
+                      h('path', { d: 'M14 87H606 M14 150H606 M14 213H606 M162 24V276 M310 24V276 M458 24V276', stroke: 'var(--bf-line)', strokeWidth: 1, opacity: 0.45 }),
+                      r.obstacles.map(function(point, i) { return h('circle', { key: i, 'data-route-obstacle': i, cx: point.x, cy: point.y, r: 3, fill: 'var(--bf-muted)', opacity: 0.45 }); }),
+                      h('circle', { 'data-route-dca-area': 'true', cx: r.dca.x, cy: r.dca.y, r: r.dcaRadius, fill: 'none', stroke: 'var(--bf-accent)', strokeWidth: 2 }),
+                      h('polyline', { 'data-route-trail': 'true', points: r.trail, fill: 'none', stroke: 'var(--bf-accent)', strokeWidth: 3, strokeLinejoin: 'round' }),
+                      h('line', { 'data-route-bearing': 'true', x1: r.player.x, y1: r.player.y, x2: r.target.x, y2: r.target.y, stroke: 'var(--bf-ink)', strokeDasharray: '6 5', strokeWidth: 1.5 }),
+                      h('g', { 'data-route-hive': 'true', transform: at(r.hive) }, h('rect', { x: -6, y: -6, width: 12, height: 12, fill: 'var(--bf-ink)' }), h('text', { x: 14, y: 6 }, 'Hive')),
+                      h('g', { 'data-route-dca': 'true', transform: at(r.dca) }, h('circle', { r: 4, fill: 'var(--bf-accent)' }), h('text', { 'data-route-dca-label': 'true', x: r.dcaRadius + 9, y: 6 }, 'DCA')),
+                      h('g', { 'data-route-queen': 'true', transform: at(r.queen || r.target), style: { display: r.queen ? '' : 'none' } }, h('path', { d: 'M0 -8L8 0L0 8L-8 0Z', fill: 'var(--bf-ink)' }), h('text', { x: 14, y: 6 }, 'Queen cue')),
+                      h('g', { 'data-route-player': 'true', transform: at(r.player) + ' rotate(' + r.heading + ')' }, h('path', { d: 'M0 -12L9 9L0 5L-9 9Z', fill: 'var(--bf-accent)', stroke: 'var(--bf-paper)', strokeWidth: 2 }))),
+                    h('text', { x: 22, y: 18, className: 'bee-route-axis' }, 'TOP DOWN · FIXED ORIENTATION'),
+                    h('path', { 'data-route-scale-bar': 'true', d: 'M22 286h' + (100 * r.scale), stroke: 'var(--bf-ink)', strokeWidth: 2 }),
+                    h('text', { 'data-route-scale-label': 'true', x: 30 + 100 * r.scale, y: 290, className: 'bee-route-axis' }, '100 model m')),
+                  h('figcaption', null, 'Triangle: you · solid line: recent flight · dashed line: target bearing · dots: course obstacles, height not shown. This map is a human learning aid.')),
+                h('div', { className: 'bee-route-coach' },
+                  h('h3', { 'data-route-title': 'true' }, r.title), h('p', { 'data-route-advice': 'true' }, r.advice),
+                  h('div', { className: 'bee-route-entry', 'data-route-entry': 'true', hidden: !!_droneState.current.reachedDca },
+                    h('p', null, 'DCA entry requires both:'),
+                    h('div', { 'data-route-condition': 'range', 'data-met': String(r.inRange) }, h('strong', null, 'Horizontal range'), h('span', { 'data-route-range': 'true' }, r.dcaRange + ' model m · within ' + r.radius + ' needed'), h('small', { 'data-route-range-status': 'true' }, r.inRange ? '✓ In range' : 'Move closer')),
+                    h('div', { 'data-route-condition': 'altitude', 'data-met': String(r.inAltitude) }, h('strong', null, 'Altitude band'), h('span', { 'data-route-altitude': 'true' }, r.altitude + ' model ft · ' + r.minAltitude + '–' + r.maxAltitude + ' needed'), h('small', { 'data-route-altitude-status': 'true' }, r.inAltitude ? '✓ In band' : 'Adjust altitude'))),
+                  h('p', { className: 'bfd-caption' }, 'Opening pauses the flight. Resume with the flight controls when ready; closing this map keeps your pause.')))));
+        }
+        function syncDroneRouteInspector(state) {
+          var panel = document.querySelector('[data-flight-route-panel]'); if (!panel || !panel.open) return;
+          var r = bhDroneRouteOverview(state);
+          function attr(selector, attributes) { var node = panel.querySelector(selector); if (node) Object.keys(attributes).forEach(function(key) { node.setAttribute(key, attributes[key]); }); }
+          function text(selector, value) { var node = panel.querySelector(selector); if (node) node.textContent = value; }
+          function at(point) { return 'translate(' + point.x + ' ' + point.y + ')'; }
+          attr('[data-route-map]', { 'aria-label': r.text });
+          attr('[data-route-player]', { transform: at(r.player) + ' rotate(' + r.heading + ')' });
+          attr('[data-route-hive]', { transform: at(r.hive) }); attr('[data-route-dca]', { transform: at(r.dca) });
+          attr('[data-route-dca-label]', { x: r.dcaRadius + 9 });
+          attr('[data-route-dca-area]', { cx: r.dca.x, cy: r.dca.y, r: r.dcaRadius });
+          attr('[data-route-trail]', { points: r.trail });
+          attr('[data-route-bearing]', { x1: r.player.x, y1: r.player.y, x2: r.target.x, y2: r.target.y });
+          attr('[data-route-scale-bar]', { d: 'M22 286h' + (100 * r.scale) }); attr('[data-route-scale-label]', { x: 30 + 100 * r.scale });
+          var queen = panel.querySelector('[data-route-queen]'); if (queen) { queen.style.display = r.queen ? '' : 'none'; if (r.queen) queen.setAttribute('transform', at(r.queen)); }
+          r.obstacles.forEach(function(point, i) { attr('[data-route-obstacle="' + i + '"]', { cx: point.x, cy: point.y }); });
+          r.checkpoints.forEach(function(checkpoint, i) {
+            var node = panel.querySelector('[data-route-checkpoint="' + checkpoint.id + '"]'); if (!node) return;
+            node.setAttribute('data-complete', String(checkpoint.done));
+            if (r.stage === checkpoint.id) node.setAttribute('aria-current', 'step'); else node.removeAttribute('aria-current');
+            node.querySelector('[data-route-check-symbol]').textContent = checkpoint.done ? '✓' : String(i + 1);
+            node.querySelector('[data-route-check-status]').textContent = checkpoint.done ? 'Recorded' : r.stage === checkpoint.id ? 'Current' : 'Next';
+          });
+          text('[data-route-title]', r.title); text('[data-route-advice]', r.advice);
+          var entry = panel.querySelector('[data-route-entry]'); if (entry) entry.hidden = !!state.reachedDca;
+          attr('[data-route-condition="range"]', { 'data-met': String(r.inRange) }); attr('[data-route-condition="altitude"]', { 'data-met': String(r.inAltitude) });
+          text('[data-route-range]', r.dcaRange + ' model m · within ' + r.radius + ' needed'); text('[data-route-altitude]', r.altitude + ' model ft · ' + r.minAltitude + '–' + r.maxAltitude + ' needed');
+          text('[data-route-range-status]', r.inRange ? '✓ In range' : 'Move closer'); text('[data-route-altitude-status]', r.inAltitude ? '✓ In band' : 'Adjust altitude');
+        }
+
+        function renderDroneDirector() {
+          var r = bhDroneFlightDirector(_droneState.current);
+          return h('div', { className: 'bee-flight-director', 'data-flight-director': 'true', role: 'group', 'aria-label': 'Flight direction guide. ' + r.text },
+            h('div', { className: 'bee-flight-bearing' },
+              h('svg', { viewBox: '0 0 64 64', 'aria-hidden': 'true' }, h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: '#55768a', strokeWidth: 1.5 }), h('path', { d: 'M32 3V9 M32 55V61 M3 32H9 M55 32H61', stroke: '#9db8c8', strokeWidth: 1.5 }),
+                h('g', { 'data-director-arrow': 'true', transform: 'rotate(' + r.degrees + ' 32 32)' }, h('path', { d: 'M32 13L42 39L32 34L22 39Z', fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }))),
+              h('div', null, h('span', { className: 'bee-flight-director-label', 'data-director-value': 'target' }, r.target), h('strong', { 'data-director-value': 'direction' }, r.direction), h('span', { 'data-director-value': 'vertical' }, r.vertical))),
+            h('div', { className: 'bee-flight-director-metrics' }, [['range','Range · model m',String(r.range)],['altitude','Altitude',r.altitude + ' ft'],['energy','Energy',r.energy + '%'],['seconds','Time',r.seconds + ' s']].map(function(item) {
+              return h('div', { key: item[0] }, h('span', { className: 'bee-flight-director-label' }, item[1]), h('strong', { 'data-director-value': item[0] }, item[2]));
+            })),
+            h('p', null, 'Direction guide only · check obstacles before turning. The arrow points relative to your heading.'));
+        }
+        function syncDroneDirector(state) {
+          var node = document.querySelector('[data-flight-director]'); if (!node) return;
+          var r = bhDroneFlightDirector(state);
+          var values = { target: r.target, direction: r.direction, vertical: r.vertical, range: String(r.range), altitude: r.altitude + ' ft', energy: r.energy + '%', seconds: r.seconds + ' s' };
+          Object.keys(values).forEach(function(key) { var item = node.querySelector('[data-director-value="' + key + '"]'); if (item) item.textContent = values[key]; });
+          var arrow = node.querySelector('[data-director-arrow]'); if (arrow) arrow.setAttribute('transform', 'rotate(' + r.degrees + ' 32 32)');
+          node.setAttribute('aria-label', 'Flight direction guide. ' + r.text);
+          node.setAttribute('data-reserve-low', String(r.energy < 25));
+        }
+        function toggleDroneHud() {
+          _droneHudDetail.current = !_droneHudDetail.current;
+          updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { detailedHud: _droneHudDetail.current }); });
+          if (_droneRedraw.current) _droneRedraw.current();
+          announceBee(_droneHudDetail.current ? 'Detailed cockpit instruments shown.' : 'Clear flight view. Target and hazard cues remain visible.', false);
+        }
+
         function syncDroneInstruments(state, now) {
           if (!state || typeof document === 'undefined') return;
           if (state._nextInstrumentSync && now < state._nextInstrumentSync) return;
           state._nextInstrumentSync = now + 250;
+          syncDroneDirector(state);
+          syncDroneRouteInspector(state);
           var panel = document.querySelector('[data-beehive-flight-instruments="true"]');
           if (!panel) return;
           var phaseInfo = droneInstrumentPhase(state);
@@ -21107,7 +21406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (error && typeof console !== 'undefined' && console.warn) console.warn('[Beehive] Drone WebGL scene failed; continuing with the 2D safety view.', error);
             disposeThreeWorld();
             cv.setAttribute('data-flight-frame-health', 'fallback');
-            if (threeAlive) setDroneRendererState('canvas-2d-fallback', '2D safety view');
+            if (threeAlive) setDroneRendererState('canvas-2d-fallback', '2D flight view');
           }
           function buildThreeWorld(THREE) {
             var threeCanvas = document.createElement('canvas');
@@ -21485,7 +21784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               depthGroup.position.z = depthZ; scene.add(depthGroup); objects.depthMarkers.push(depthGroup);
             }
             var dcaBeacon = new THREE.Group();
-            var dcaColumn = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 150, 24, 1, true), basic(0xfbbf24, { transparent: true, opacity: 0.075, side: THREE.DoubleSide, depthWrite: false })); dcaColumn.position.y = 75; dcaBeacon.add(dcaColumn);
+            var dcaColumn = new THREE.Mesh(new THREE.CylinderGeometry(DRONE_FLIGHT_PARAMS.dcaRadiusM, DRONE_FLIGHT_PARAMS.dcaRadiusM, DRONE_FLIGHT_PARAMS.dcaMaxFt - DRONE_FLIGHT_PARAMS.dcaMinFt, 48, 1, true), basic(0xfbbf24, { transparent: true, opacity: 0.10, side: THREE.DoubleSide, depthWrite: false })); dcaColumn.position.y = DRONE_FLIGHT_PARAMS.dcaMarkerFt; dcaColumn.name = 'drone-dca-entry-volume'; dcaBeacon.add(dcaColumn);
             // Bright enough to be a LIGHT, not a tint. Measured: at 0xfde68a/0.7
             // this ring rendered DARKER than the sky behind it — toggling the whole
             // beacon off actually raised the count of pixels above the bloom cut
@@ -21493,8 +21792,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // translucent ring that dimmed the sky, and the bloom added for exactly
             // this cue never touched it. Lifted past the 0.90 threshold so the
             // primary navigation target finally glows.
-            var dcaHalo = new THREE.Mesh(new THREE.TorusGeometry(42, 1.8, 10, 48), basic(0xfff3bd, { transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false })); dcaHalo.rotation.x = Math.PI / 2; dcaHalo.position.y = 100; dcaBeacon.add(dcaHalo);
-            var dcaLight = new THREE.PointLight(0xfbbf24, 1.6, 360); dcaLight.position.y = 90; dcaBeacon.add(dcaLight); dcaBeacon.position.set(0, 0, -600); scene.add(dcaBeacon); objects.dcaBeacon = dcaBeacon;
+            var dcaHalo = new THREE.Mesh(new THREE.TorusGeometry(DRONE_FLIGHT_PARAMS.dcaRadiusM, 1.2, 10, 64), basic(0xfff3bd, { transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false })); dcaHalo.rotation.x = Math.PI / 2; dcaHalo.position.y = DRONE_FLIGHT_PARAMS.dcaMinFt; dcaBeacon.add(dcaHalo);
+            var dcaLight = new THREE.PointLight(0xfbbf24, 1.6, 360); dcaLight.position.y = DRONE_FLIGHT_PARAMS.dcaMarkerFt; dcaBeacon.add(dcaLight); dcaBeacon.position.set(0, 0, -DRONE_FLIGHT_PARAMS.dcaDistanceM); scene.add(dcaBeacon); objects.dcaBeacon = dcaBeacon;
+            // This human learning aid outlines the actual game volume; its radius
+            // and altitude planes stay fixed while the scenery animates.
+            var dcaCeiling = dcaHalo.clone(); dcaCeiling.position.y = DRONE_FLIGHT_PARAMS.dcaMaxFt; dcaBeacon.add(dcaCeiling);
+            var dcaStruts = [];
+            for (var strut = 0; strut < 8; strut++) {
+              var angle = strut * Math.PI / 4, sx = Math.cos(angle) * DRONE_FLIGHT_PARAMS.dcaRadiusM, sz = Math.sin(angle) * DRONE_FLIGHT_PARAMS.dcaRadiusM;
+              dcaStruts.push(new THREE.Vector3(sx, DRONE_FLIGHT_PARAMS.dcaMinFt, sz), new THREE.Vector3(sx, DRONE_FLIGHT_PARAMS.dcaMaxFt, sz));
+            }
+            dcaBeacon.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(dcaStruts), new THREE.LineBasicMaterial({ color: 0xfff3bd, transparent: true, opacity: 0.6 })));
             var queenBeacon = new THREE.Group();
             var queenColumn = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 80, 20, 1, true), basic(0xa78bfa, { transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false })); queenColumn.position.y = 40; queenBeacon.add(queenColumn);
             // Same treatment as the DCA halo above: this is the cue that REPLACES it
@@ -21693,12 +22001,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Vertical gates make the 600 m approach leg legible in depth.
             // Their spacing gives learners a visual distance rhythm before the DCA.
             var routeGates = [];
-            [-140, -300, -460, -600].forEach(function(z, idx) {
+            [-140, -300, -460].forEach(function(z, idx) {
               var gate = new THREE.Group();
-              var finalGate = idx === 3;
-              var gateColor = finalGate ? 0xfbbf24 : 0x22d3ee;
-              var gateRadius = finalGate ? 42 : 30;
-              var gateRing = new THREE.Mesh(new THREE.TorusGeometry(gateRadius, 1.2, 8, 36), basic(gateColor, { transparent: true, opacity: finalGate ? 0.76 : 0.52, side: THREE.DoubleSide, depthWrite: false }));
+              var gateColor = 0x22d3ee;
+              var gateRadius = 30;
+              var gateRing = new THREE.Mesh(new THREE.TorusGeometry(gateRadius, 1.2, 8, 36), basic(gateColor, { transparent: true, opacity: 0.52, side: THREE.DoubleSide, depthWrite: false }));
               gateRing.position.y = 100; gate.add(gateRing);
               var gateTop = new THREE.Mesh(new THREE.BoxGeometry(gateRadius * 2, 1.2, 1.2), basic(gateColor, { transparent: true, opacity: 0.42, depthWrite: false }));
               gateTop.position.set(0, 100 + gateRadius, 0); gate.add(gateTop);
@@ -21759,7 +22066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             } catch (_) { setDroneFrameHealth('unverified'); return; }
             if (opaqueSamples >= 2 && maxChannel - minChannel >= 12) {
               world.frameHealth = 'verified';
-              setDroneFrameHealth('verified', '3D scene verified');
+              setDroneFrameHealth('verified', '3D meadow');
               return;
             }
             world.flatFrameChecks = (world.flatFrameChecks || 0) + 1;
@@ -21769,6 +22076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function updateThreeWorld(now) {
             if (!threeWorld || !threeWorld.ready) return;
             if (ds.pacing === 'steps') now = (ds.simulationClock || 0) * 1000;
+            else { if (!ds.paused || ds._heldVisualTime == null) ds._heldVisualTime = now; now = ds._heldVisualTime; }
             var t = threeWorld, THREE = t.THREE, o = t.objects;
             var scenarioVisual = DRONE_SCENARIOS[ds.scenario] || DRONE_SCENARIOS.clear;
             var skyBlend = Math.max(0, Math.min(1, ((ds.y || 0) - 50) / 130));
@@ -21851,7 +22159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               t.camera.rotation.set((ds.pitch || 0) - cameraBob, -(ds.yaw || 0), (ds.roll || 0) * (cameraStabilized ? 0.35 : 1));
             }
             var targetFov = cameraMode === 'chase' ? 58 + Math.min(8, (ds.speed || 0) * 0.75) : 62 + Math.min(9, (ds.speed || 0) * 0.82);
-            if (Math.abs(t.camera.fov - targetFov) > 0.03) { t.camera.fov += (targetFov - t.camera.fov) * (prefersReducedMotion ? 1 : 0.09); t.camera.updateProjectionMatrix(); }
+            if (Math.abs(t.camera.fov - targetFov) > 0.03) { t.camera.fov += (targetFov - t.camera.fov) * ((prefersReducedMotion || ds.paused) ? 1 : 0.09); t.camera.updateProjectionMatrix(); }
             var visibilityScale = scenarioVisual.visibility || 1;
             // Fog starts far enough out that "Clear field" actually looks clear.
             // It began at 340 units in a world whose hills sit at ~980 and whose
@@ -21910,7 +22218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             if (o.routeLine) {
               var routeTarget = null, routeColor = 0xfbbf24, routeVisible = false;
-              if (ds.phase !== 'end' && ds.phase !== 'mating' && !ds.reachedDca) { routeTarget = { x: 0, y: 100, z: -600 }; routeVisible = true; }
+              if (ds.phase !== 'end' && ds.phase !== 'mating' && !ds.reachedDca) { routeTarget = { x: 0, y: DRONE_FLIGHT_PARAMS.dcaMarkerFt, z: -DRONE_FLIGHT_PARAMS.dcaDistanceM }; routeVisible = true; }
               else if (ds.phase === 'congregation' || ds.reachedDca) {
                 (ds.nearQueens || []).some(function(q) { if (!q.caught) { routeTarget = q; return true; } return false; });
                 routeColor = 0xf59e0b; routeVisible = !!routeTarget;
@@ -21984,14 +22292,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             verifyThreeFrameHealth(t);
           }
           function initThreeWorld() {
-            if (!(window.StemLab && typeof window.StemLab.ensureThree === 'function')) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+            if (!(window.StemLab && typeof window.StemLab.ensureThree === 'function')) { setDroneRendererState('canvas-2d-fallback', '2D flight view'); return; }
             setDroneRendererState('loading', 'Preparing 3D');
             window.StemLab.ensureThree({ failMessage: 'The 3D flight engine could not load; the accessible 2D flight view remains active.' }).then(function(THREE) {
               if (!threeAlive) return;
-              if (!THREE) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+              if (!THREE) { setDroneRendererState('canvas-2d-fallback', '2D flight view'); return; }
               try { threeWorld = buildThreeWorld(THREE); }
               catch (error) { disableThreeWorld(error); return; }
-              if (!threeWorld) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+              if (!threeWorld) { setDroneRendererState('canvas-2d-fallback', '2D flight view'); return; }
               applyThreeQuality(threeWorld, threeWorld.qualityTier || 'high', 'initial quality');
               if (par && threeWorld.canvas.parentNode !== par) par.insertBefore(threeWorld.canvas, cv);
               cv.style.position = 'relative';
@@ -22240,7 +22548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   : ds.phase === 'congregation'
                     ? 'Drone Congregation Area reached. Follow the queen signal with small steering corrections.'
                     : ds.phase === 'mating'
-                      ? 'Queen intercepted. Mating flight complete.'
+                      ? 'Queen cue reached. Flight challenge complete; this game intercept does not model mating.'
                       : ds.phase === 'end'
                         ? 'Flight ended. Review the flight debrief before retrying.'
                         : '';
@@ -22281,14 +22589,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (ds.telemetryAccumulator >= 0.5 || (ds.phase === 'end' && !ds._telemetryFinalLogged)) {
                 var replayWind = ds.windNow || ds.wind || { x: 0, z: 0 };
                 var replayObstacle = ds.nearestObstacle || droneNearestObstacle(ds);
-                var replaySample = { t: Math.round((ds.flightElapsed || 0) * 10) / 10, altitude: Math.round(ds.y || 0), energy: Math.round(Math.max(0, ds.energy || 0) / Math.max(1, droneMaxEnergy(ds.difficulty)) * 100), wind: Math.round(Math.sqrt((replayWind.x || 0) * (replayWind.x || 0) + (replayWind.z || 0) * (replayWind.z || 0)) * 10) / 10, clearance: replayObstacle ? Math.round(replayObstacle.clearance) : 160, hazard: !!(ds.hitFlash > 0), phase: ds.phase, action: ds.lastManeuver && ds.lastManeuver.action ? ds.lastManeuver.action : 'Glide', impact: ds.lastManeuver && ds.lastManeuver.impact ? ds.lastManeuver.impact : '' };
+                var replaySample = { t: Math.round((ds.flightElapsed || 0) * 10) / 10, x: Math.round(ds.x * 10) / 10, z: Math.round(ds.z * 10) / 10, altitude: Math.round(ds.y || 0), energy: Math.round(Math.max(0, ds.energy || 0) / Math.max(1, droneMaxEnergy(ds.difficulty)) * 100), wind: Math.round(Math.sqrt((replayWind.x || 0) * (replayWind.x || 0) + (replayWind.z || 0) * (replayWind.z || 0)) * 10) / 10, clearance: replayObstacle ? Math.round(replayObstacle.clearance) : 160, hazard: !!(ds.hitFlash > 0), phase: ds.phase, action: ds.lastManeuver && ds.lastManeuver.action ? ds.lastManeuver.action : 'Glide', impact: ds.lastManeuver && ds.lastManeuver.impact ? ds.lastManeuver.impact : '' };
                 ds.telemetry = (ds.telemetry || []).concat(replaySample).slice(-90);
                 ds.telemetryAccumulator = 0;
                 if (ds.phase === 'end') ds._telemetryFinalLogged = true;
               }
             }
           }
-          function droneFrame(now) {
+          function droneFrame(now, viewOnly) {
             var dt = Math.min(0.05, (now - lastTime) / 1000);
             var frameScale = Math.max(0.35, Math.min(2.2, dt * 60));
             lastTime = now;
@@ -22296,7 +22604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var keys = _droneKeys.current;
             var maxDroneEnergy = droneMaxEnergy(ds.difficulty);
 
-            advanceDronePhysics(dt, now, keys);
+            if (!viewOnly) advanceDronePhysics(dt, now, keys);
 
             // ── RENDER ──
             syncDroneInstruments(ds, now);
@@ -22587,16 +22895,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             function drawSpatialCue(target, label, color) {
               if (!target) return;
               var projected = project(target.x, target.y, target.z);
+              if (usingThreeScene) {
+                var cuePoint = new threeWorld.THREE.Vector3(target.x, target.y, target.z);
+                var cueDepth = -cuePoint.clone().applyMatrix4(threeWorld.camera.matrixWorldInverse).z;
+                cuePoint.project(threeWorld.camera);
+                projected = cueDepth > 1 ? { x: (cuePoint.x + 1) * halfW, y: (1 - cuePoint.y) * halfH, s: 300 / cueDepth } : null;
+              }
               var sx, sy, visible = false;
               var rollCos = Math.cos(-roll), rollSin = Math.sin(-roll);
               if (projected) {
                 var relX = projected.x - halfW, relY = projected.y - halfH;
-                sx = halfW + relX * rollCos - relY * rollSin;
-                sy = halfH + relX * rollSin + relY * rollCos;
+                sx = usingThreeScene ? projected.x : halfW + relX * rollCos - relY * rollSin; sy = usingThreeScene ? projected.y : halfH + relX * rollSin + relY * rollCos;
                 visible = sx > 34 && sx < W - 34 && sy > 96 && sy < H - 92;
               }
               var bearing = Math.atan2(target.x - ds.x, -(target.z - ds.z)) - ds.yaw;
-              var dist = Math.sqrt((target.x - ds.x) * (target.x - ds.x) + (target.y - ds.y) * (target.y - ds.y) + (target.z - ds.z) * (target.z - ds.z));
+              var dist = Math.hypot(target.x - ds.x, target.z - ds.z);
               c.save(); c.lineWidth = 1.6; c.strokeStyle = color; c.fillStyle = color; c.shadowColor = color; c.shadowBlur = 7;
               if (!visible) {
                 var edgeR = Math.max(44, Math.min(halfW - 30, halfH - 72));
@@ -22606,12 +22919,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               } else {
                 var arm = Math.max(8, Math.min(15, 8 + (projected.s || 0) * 3));
                 c.beginPath(); c.moveTo(sx - arm, sy - arm); c.lineTo(sx - arm * 0.35, sy - arm); c.moveTo(sx + arm * 0.35, sy - arm); c.lineTo(sx + arm, sy - arm); c.moveTo(sx - arm, sy + arm); c.lineTo(sx - arm * 0.35, sy + arm); c.moveTo(sx + arm * 0.35, sy + arm); c.lineTo(sx + arm, sy + arm); c.stroke();
-                c.textAlign = 'center'; c.font = 'bold 8px system-ui'; c.fillText(label, sx, sy - arm - 6); c.font = '7px monospace'; c.fillText(Math.round(dist) + ' m', sx, sy + arm + 12);
+                c.textAlign = 'center'; c.font = 'bold 8px system-ui'; c.fillText(label, sx, sy - arm - 6); c.font = '7px monospace'; c.fillText(Math.round(dist) + ' model m', sx, sy + arm + 12);
               }
               c.restore();
             }
             var liveDcaCue = droneDcaStatus(ds);
-            if (ds.phase !== 'mating' && ds.phase !== 'end' && !ds.reachedDca) drawSpatialCue({ x: 0, y: 100, z: -600 }, liveDcaCue.inVolume ? 'DCA INSIDE' : 'DCA VOLUME', liveDcaCue.inVolume ? '#22c55e' : '#fbbf24');
+            if (ds.phase !== 'mating' && ds.phase !== 'end' && !ds.reachedDca) drawSpatialCue({ x: 0, y: DRONE_FLIGHT_PARAMS.dcaMarkerFt, z: -DRONE_FLIGHT_PARAMS.dcaDistanceM }, liveDcaCue.inVolume ? 'DCA INSIDE' : 'DCA VOLUME', liveDcaCue.inVolume ? '#22c55e' : '#fbbf24');
             (ds.nearQueens || []).forEach(function(q) { if (!q.caught && (ds.phase === 'congregation' || ds.reachedDca)) drawSpatialCue(q, 'QUEEN SIGNAL', '#f59e0b'); });
             var nearestObstacleCue = ds.nearestObstacle || droneNearestObstacle(ds);
             if (nearestObstacleCue && nearestObstacleCue.obstacle && nearestObstacleCue.horizontalDistance < 150 && nearestObstacleCue.clearance < 90) drawSpatialCue({ x: nearestObstacleCue.obstacle.x, y: nearestObstacleCue.targetY, z: nearestObstacleCue.obstacle.z }, nearestObstacleCue.clearance < 0 ? 'OBSTACLE IMPACT' : 'OBSTACLE', '#fb7185');
@@ -22644,6 +22957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.shadowBlur = 0; c.font = 'bold 6px system-ui'; c.textAlign = 'center'; c.fillStyle = '#bae6fd'; c.fillText('FLIGHT PATH', pathX, pathY + 18); c.restore();
             ds.flightPathCue = { x: Math.round(pathX - halfW), y: Math.round(pathY - halfH), slip: Math.round(localSideVelocity * 10) / 10 };
 
+            if (_droneHudDetail.current) {
             // ── Compass / Queen bearing indicator (bottom-right) ──
             var compR = 22, compX = W - 36, compY = H - 36;
             c.save();
@@ -22788,36 +23102,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(droneSunX + flareVx * lfT, droneSunY + flareVy * lfT, 4 + lf * 2, 0, 6.28); c.fill();
               }
               c.restore();
-            }
-
-            // Low-energy red vignette warning (flashes when energy < 25%)
-            if (ds.energy < 25 && ds.phase !== 'end') {
-              var warnPulse = (Math.sin(now * 0.012) + 1) * 0.5;
-              var warnAlpha = (1 - ds.energy / 25) * 0.3 * warnPulse;
-              var warnG = c.createRadialGradient(halfW, halfH, Math.min(W, H) * 0.3, halfW, halfH, Math.max(W, H) * 0.7);
-              warnG.addColorStop(0, 'rgba(220,38,38,0)');
-              warnG.addColorStop(1, 'rgba(220,38,38,' + warnAlpha + ')');
-              c.fillStyle = warnG; c.fillRect(0, 0, W, H);
-              // Warning text
-              c.fillStyle = 'rgba(220,38,38,' + (0.7 + warnPulse * 0.3) + ')';
-              c.font = 'bold 14px system-ui'; c.textAlign = 'center';
-              c.fillText('⚠ LOW ENERGY', halfW, 90);
-            }
-
-            // Altitude warning: pull up! (if falling fast)
-            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'launch' && ds.phase !== 'end' && ds.phase !== 'mating') {
-              var pullPulse = (Math.sin(now * 0.02) + 1) * 0.5;
-              c.fillStyle = 'rgba(220,38,38,' + (0.7 + pullPulse * 0.3) + ')';
-              c.font = 'bold 16px system-ui'; c.textAlign = 'center';
-              c.fillText('▲ PULL UP ▲', halfW, halfH - 30);
-            }
-
-            // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
-            if (ds.stallWarning && ds.phase !== 'end') {
-              var stallPulse = prefersReducedMotion ? 1 : 0.72 + (Math.sin(now * 0.014) + 1) * 0.14;
-              c.save(); c.fillStyle = 'rgba(15,23,42,0.82)'; c.fillRect(halfW - 112, halfH + 34, 224, 28);
-              c.strokeStyle = 'rgba(251,191,36,' + stallPulse + ')'; c.lineWidth = 2; c.strokeRect(halfW - 112, halfH + 34, 224, 28);
-              c.fillStyle = '#fde68a'; c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillText('SLOW CLIMB - COMPARE ALTITUDE', halfW, halfH + 52); c.restore();
             }
 
             // Attitude indicator (bottom-left, round gauge showing pitch + roll)
@@ -23024,7 +23308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.restore();
 
             // Phase indicator
-            var phaseLabel = { launch: '🚀 LAUNCHING...', flight: '✈️ FLYING TO DCA', congregation: '🎯 DRONE CONGREGATION AREA — FIND THE QUEEN!', mating: '❤️ MATING SUCCESS!', end: '🏁 FLIGHT OVER' }[ds.phase] || '';
+            var phaseLabel = { launch: '🚀 LAUNCHING...', flight: '✈️ FLYING TO DCA', congregation: '🎯 DRONE CONGREGATION AREA — FIND THE QUEEN!', mating: 'QUEEN CUE REACHED', end: '🏁 FLIGHT OVER' }[ds.phase] || '';
             if (phaseLabel) {
               c.fillStyle = ds.phase === 'mating' ? 'rgba(245,158,11,0.8)' : ds.phase === 'congregation' ? 'rgba(99,102,241,0.7)' : 'rgba(15,23,42,0.5)';
               c.textAlign = 'center'; c.font = 'bold 11px system-ui';
@@ -23047,15 +23331,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.beginPath(); if (c.roundRect) c.roundRect(10, H - 28, 200, 20, 6); else c.rect(10, H - 28, 200, 20); c.fill();
             c.fillStyle = '#94a3b8'; c.fillText('↑↓ Thrust · ←→ Turn · Space/Shift Altitude', 16, H - 14);
 
+            } // Detailed cockpit HUD
+            // Low-energy red vignette warning (flashes when energy < 25%)
+            if (ds.energy / maxDroneEnergy < .25 && ds.phase !== 'end') {
+              var warnPulse = (prefersReducedMotion || ds.paused) ? 1 : (Math.sin(now * 0.012) + 1) * 0.5;
+              var warnAlpha = (1 - ds.energy / (maxDroneEnergy * .25)) * 0.3 * warnPulse;
+              var warnG = c.createRadialGradient(halfW, halfH, Math.min(W, H) * 0.3, halfW, halfH, Math.max(W, H) * 0.7);
+              warnG.addColorStop(0, 'rgba(220,38,38,0)');
+              warnG.addColorStop(1, 'rgba(220,38,38,' + warnAlpha + ')');
+              c.fillStyle = warnG; c.fillRect(0, 0, W, H);
+              // Warning text
+              c.fillStyle = 'rgba(220,38,38,' + (0.7 + warnPulse * 0.3) + ')';
+              c.font = 'bold 14px system-ui'; c.textAlign = 'center';
+              c.fillText('⚠ LOW ENERGY', halfW, 90);
+            }
+
+            // Altitude warning: pull up! (if falling fast)
+            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'launch' && ds.phase !== 'end' && ds.phase !== 'mating') {
+              var pullPulse = (prefersReducedMotion || ds.paused) ? 1 : (Math.sin(now * 0.02) + 1) * 0.5;
+              c.fillStyle = 'rgba(220,38,38,' + (0.7 + pullPulse * 0.3) + ')';
+              c.font = 'bold 16px system-ui'; c.textAlign = 'center';
+              c.fillText('▲ PULL UP ▲', halfW, halfH - 30);
+            }
+
+            // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
+            if (ds.stallWarning && ds.phase !== 'end') {
+              var stallPulse = prefersReducedMotion ? 1 : 0.72 + (Math.sin(now * 0.014) + 1) * 0.14;
+              c.save(); c.fillStyle = 'rgba(15,23,42,0.82)'; c.fillRect(halfW - 112, halfH + 34, 224, 28);
+              c.strokeStyle = 'rgba(251,191,36,' + stallPulse + ')'; c.lineWidth = 2; c.strokeRect(halfW - 112, halfH + 34, 224, 28);
+              c.fillStyle = '#fde68a'; c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillText('SLOW CLIMB - COMPARE ALTITUDE', halfW, halfH + 52); c.restore();
+            }
+
+
             // Mating success overlay
             if (ds.phase === 'mating') {
               c.fillStyle = 'rgba(245,158,11,0.15)'; c.fillRect(0, 0, W, H);
               c.textAlign = 'center'; c.fillStyle = '#fbbf24'; c.font = 'bold 24px system-ui';
-              c.fillText('MATING SUCCESS!', halfW, halfH - 20);
+              c.fillText('QUEEN CUE REACHED', halfW, halfH - 20);
               c.font = '12px system-ui'; c.fillStyle = '#fef3c7';
-              c.fillText('+200 pts — You fulfilled the drone\'s sole biological purpose', halfW, halfH + 10);
+              c.fillText('+200 pts · Flight challenge complete', halfW, halfH + 10);
               c.font = '10px system-ui'; c.fillStyle = '#e2e8f0';
-              c.fillText('In reality, this is instantly fatal for the drone.', halfW, halfH + 30);
+              c.fillText('This game intercept does not model mating.', halfW, halfH + 30);
             }
 
             // End screen
@@ -23111,6 +23427,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if ((ds.phase !== 'end' && !ds.paused) || (threeWorld && threeWorld.ready && threeWorld.renderedFrames < 9)) _droneAnimId.current = requestAnimationFrame(droneFrame);
           }
 
+          _droneRedraw.current = function() {
+            if (!ds.paused) return;
+            ds._nextInstrumentSync = 0;
+            if (_droneAnimId.current) cancelAnimationFrame(_droneAnimId.current);
+            droneFrame(performance.now(), true);
+          };
+          var flightResizeObserver = null;
+          if (typeof window.ResizeObserver === 'function' && par) {
+            flightResizeObserver = new window.ResizeObserver(function() {
+              var nextW = par.clientWidth, nextH = par.clientHeight;
+              if (!threeAlive || nextW < 1 || nextH < 1 || (nextW === W && nextH === H)) return;
+              W = nextW; H = nextH; cv.width = W * 2; cv.height = H * 2; c.setTransform(2, 0, 0, 2, 0, 0);
+              if (threeWorld && threeWorld.ready) {
+                threeWorld.camera.aspect = W / H; threeWorld.camera.updateProjectionMatrix();
+                applyThreeQuality(threeWorld, threeWorld.qualityTier, 'view resized');
+              }
+              if (_droneRedraw.current) _droneRedraw.current();
+            });
+            flightResizeObserver.observe(par);
+          }
           _droneDecisionStep.current = function(actionId, finish) {
             if (ds.pacing !== 'steps' || ds.phase === 'end' || _droneDecisionBusy.current) return;
             var action = BEEHIVE_DRONE_DECISIONS.filter(function(a) { return a.id === actionId; })[0];
@@ -23196,6 +23532,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Focus loss (Alt-Tab, clicking away) can swallow the keyup and leave a
           // key "stuck on" — clear the whole map when the window blurs.
           function dkBlur() { _droneKeys.current = {}; }
+          function pauseHiddenFlight() {
+            if (!document.hidden || ds.paused || ds.pacing === 'steps' || ds.phase === 'end' || ds.phase === 'mating') return;
+            ds.paused = true; _droneKeys.current = {};
+            updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { paused: true }); });
+            announceBee('Flight paused while the page is hidden. Resume when you are ready.', false);
+          }
+          document.addEventListener('visibilitychange', pauseHiddenFlight);
           document.addEventListener('keydown', dkDown);
           document.addEventListener('keyup', dkUp);
           if (typeof window !== 'undefined') window.addEventListener('blur', dkBlur);
@@ -23209,6 +23552,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             document.removeEventListener('keyup', dkUp);
             if (typeof window !== 'undefined') window.removeEventListener('blur', dkBlur);
             _droneDecisionStep.current = null;
+            _droneRedraw.current = null;
+            if (flightResizeObserver) flightResizeObserver.disconnect();
+            document.removeEventListener('visibilitychange', pauseHiddenFlight);
             threeAlive = false;
             disposeThreeWorld();
           };
@@ -23250,6 +23596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           _droneCameraMode.current = nextCamera;
           if (_droneState.current) _droneState.current.cameraMode = nextCamera;
           updAll({ drone: Object.assign({}, droneData, { cameraMode: nextCamera }) });
+          if (_droneRedraw.current) _droneRedraw.current();
           announceBee(nextCamera === 'chase' ? 'Chase camera enabled. Use it to inspect bank angle, obstacle clearance, and route depth.' : 'Cockpit camera enabled. Use the crosshair and instruments for precise steering.', false);
         }
         function setDroneGraphicsMode(mode) {
@@ -23257,6 +23604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             _droneGraphicsMode.current = mode;
             if (_droneState.current) { _droneState.current.graphicsMode = mode; if (mode !== 'auto') _droneState.current.graphicsTier = mode; }
             updAll({ drone: Object.assign({}, droneData, { graphicsMode: mode }) });
+          if (_droneRedraw.current) _droneRedraw.current();
             announceBee('Graphics quality set to ' + (mode === 'auto' ? 'automatic. It will adapt to sustained frame time.' : droneGraphicsProfile(mode).label + '.'), false);
           }
         function setDroneSteeringSensitivity(mode) {
@@ -23271,6 +23619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             _droneCameraStabilized.current = next;
             if (_droneState.current) _droneState.current.cameraStabilized = next;
             updAll({ drone: Object.assign({}, droneData, { cameraStabilized: next }) });
+          if (_droneRedraw.current) _droneRedraw.current();
             announceBee(next ? 'Camera stabilization enabled. Visual roll and bob are reduced.' : 'Camera stabilization disabled. Full bank and motion are visible.', false);
           }
         function leaveDroneFlight() {
@@ -24029,7 +24378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var node = inMap(); if (!node) return;
             if (event.key === 'Escape') { event.preventDefault(); document.exitFullscreen().catch(function() {}); return; }
             if (event.key !== 'Tab') return;
-            var items = Array.from(node.querySelectorAll('button:not([disabled]),select:not([disabled]),input:not([disabled]),a[href],summary,[tabindex="0"]')).filter(function(item) { return item.getClientRects().length > 0; });
+            var items = Array.from(node.querySelectorAll('button:not([disabled]),select:not([disabled]),input:not([disabled]),textarea:not([disabled]),a[href],summary,[tabindex="0"]')).filter(function(item) { return item.getClientRects().length > 0; });
             if (!items.length) return;
             var first = items[0], last = items[items.length - 1];
             if (!node.contains(document.activeElement) || (event.shiftKey && document.activeElement === first)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
@@ -24181,7 +24530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     id: 'queen',
                     leading: h(React.Fragment, null, renderQueen3dToolbar(), renderQueenPatchExplorer()), layers: renderQueen3dLayers(),
                     canvasHeight: 'clamp(420px, 52vw, 620px)',
-                    afterScene: h(React.Fragment, null, renderQueenScienceNotes(), renderQueenMapImpact(), renderQueenFieldGuide()),
+                    afterScene: h(React.Fragment, null, renderQueenMapStudy(), renderQueenScienceNotes(), renderQueenMapImpact(), renderQueenFieldGuide()),
                     viewer: QUEEN_3D_VIEWER,
                     attach: queen3dAttach,
                     status: queen3dStatus,
@@ -24205,6 +24554,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     readout: h('p', { className: 'text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') },
                       'Game readings: RTS advantage ' + Math.round(queen3dShare * 100) + '/100 · brood core ' + Math.round(queenHiveHealth) + '/100 · neighbor health ' + Math.round(queenRival.health) + '/100 · ' + queen3dStructures.length + (queen3dStructures.length === 1 ? ' structure' : ' structures') + ' built. The score does not determine flower ownership or flight range. The game uses a simplified temperate calendar; this is not an African climate simulation.')
                   });
+        }
+
+        function queenStudyView(state) {
+          return { ready: queen3dStatus === 'ready', patchId: state.queen3dPatch, colony: state.queen3dColony, routes: state.queen3dRoutes, cycle: (state.queen || {}).day || 0 };
+        }
+        function editQueenStudy(key, value) {
+          updFn(function(state) {
+            var s = bhQueenMapStudy(state.queenMapStudy);
+            if ((key === 'patchId' || key === 'prediction') && Object.keys(s.captures).length) return;
+            s[key] = value; state.queenMapStudy = bhQueenMapStudy(s);
+          });
+        }
+        function showQueenStudyRoute(colony) {
+          updFn(function(state) {
+            var s = bhQueenMapStudy(state.queenMapStudy); if (!s.patchId) return;
+            state.queen3dPatch = s.patchId; state.queen3dPart = s.patchId; state.queen3dColony = colony; state.queen3dRoutes = true;
+          });
+          QUEEN_3D_VIEWER.reset();
+          focusDiscoveryTarget('beehive-3d-queen-content');
+          announceBee((colony === 'home' ? 'Your colony’s solid purple route' : 'The neighbor’s dashed coral route') + ' selected. Inspect the path, then record this route above the map.', false);
+        }
+        function captureQueenStudyRoute() {
+          var now = new Date().toISOString();
+          updFn(function(state) { state.queenMapStudy = bhQueenMapStudyCapture(state.queenMapStudy, queenStudyView(state), now); });
+        }
+        function saveQueenStudy() {
+          updFn(function(state) {
+            var study = bhQueenMapStudy(state.queenMapStudy);
+            if (!Object.keys(study.captures).length) return;
+            state.notebook = Object.assign({}, state.notebook || {}, { sharedMap: { study: study, text: bhQueenMapStudyText(study) } });
+          });
+          announceBee('Map investigation saved to your Science Notebook. It will be included when you copy the notebook portfolio.', false);
+        }
+        function openQueenStudyNotebook() {
+          function reveal() { upd('notebookOpen', true); window.requestAnimationFrame(function() { focusDiscoveryTarget('beehive-notebook-summary'); }); }
+          var expanded = document.fullscreenElement;
+          if (expanded && expanded.getAttribute('data-beehive-3d-bay') === 'queen') {
+            _queenExpandReturn.current = null;
+            document.exitFullscreen().then(reveal).catch(function() { announceBee('Leave expanded view with Escape, then open your notebook.', false); });
+          } else reveal();
+        }
+        function renderQueenMapStudy() {
+          var study = bhQueenMapStudy(d.queenMapStudy), patch = bhQueenMapInspection(study.patchId).patch;
+          var count = Object.keys(study.captures).length, predicted = !!(patch && study.prediction), complete = count === 2 && study.claim === 'shared';
+          var open = d.queenMapStudyOpen === true;
+          var saved = d.notebook && d.notebook.sharedMap;
+          var isSaved = !!(saved && saved.text === bhQueenMapStudyText(study));
+          function routeCard(colony, name) {
+            var c = study.captures[colony], reason = bhQueenMapStudyReady(study, queenStudyView(d));
+            return h('div', { key: colony, className: 'bee-map-study-route', 'data-study-route': colony, 'data-recorded': !!c },
+              h('div', { className: 'bee-map-study-route-title' }, h('strong', null, name), h('span', null, c ? '✓ Recorded' : 'Not recorded')),
+              h('div', { className: 'bee-map-study-path', 'aria-hidden': 'true' }, h('span', null, colony === 'home' ? 'Your nest' : 'Neighbor nest'), h('i', { 'data-colony': colony }), h('span', null, patch.label)),
+              h('p', null, c ? '1 diagram route · cycle ' + c.cycle + ' · ' + (colony === 'home' ? 'solid purple' : 'dashed coral') : 'Show this colony, trace its route to ' + patch.label + ', then record what is visible.'),
+              h('div', { className: 'bee-discovery-actions' },
+                h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: function() { showQueenStudyRoute(colony); } }, colony === 'home' ? 'Show your route' : 'Show neighbor route'),
+                !c && h('button', { type: 'button', className: 'bee-discovery-button', disabled: !!reason || queenInspection.colony !== colony, 'aria-describedby': 'bee-map-study-readiness', onClick: captureQueenStudyRoute }, colony === 'home' ? 'Record your route' : 'Record neighbor route')));
+          }
+          return h('section', { className: 'bee-map-study', 'data-rts-map-investigation': 'true', 'aria-labelledby': 'bee-map-study-title' },
+            h('div', { className: 'bee-map-study-head' },
+              h('div', null, h('div', { className: 'bee-discovery-kicker' }, 'Optional map investigation · 3 steps'), h('h4', { id: 'bee-map-study-title' }, 'Can two colonies share a patch?'), h('p', null, 'Predict, trace both routes, then separate a diagram observation from a field claim.')),
+              h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'aria-expanded': open, 'aria-controls': 'bee-rts-study-panel', onClick: function() {
+                updFn(function(state) { state.queenMapStudyOpen = !open; if (!state.queenMapStudy) state.queenMapStudy = bhQueenMapStudy({ version: 1, patchId: bhQueenMapInspection(state.queen3dPatch).patch ? state.queen3dPatch : 'patch_b' }); });
+              } }, open ? 'Hide investigation' : count ? 'Continue investigation' : 'Start investigation')),
+            open && h('div', { id: 'bee-rts-study-panel', tabIndex: -1 },
+              h('ol', { className: 'bee-map-study-steps', 'aria-label': 'Investigation progress' }, [['Predict',predicted],['Observe',count === 2],['Explain',complete]].map(function(step, i) {
+                return h('li', { key: step[0], 'data-complete': step[1], 'aria-current': !complete && i === (!predicted ? 0 : count < 2 ? 1 : 2) ? 'step' : undefined }, h('span', { 'aria-hidden': 'true' }, step[1] ? '✓' : i + 1), step[0], h('span', { className: 'sr-only' }, step[1] ? ' complete' : ' incomplete'));
+              })),
+              h('div', { className: 'bee-map-study-stage' }, h('h5', null, '1 · Make a prediction'),
+                count ? h('p', null, patch.label + ' · ' + QUEEN_MAP_PREDICTIONS[study.prediction] + ' Your prediction is kept with these observations.') : h(React.Fragment, null,
+                  h('label', { className: 'bee-rts-patch-select' }, h('span', null, 'Study patch'), h('select', { value: study.patchId, onChange: function(e) { editQueenStudy('patchId', e.target.value); } }, h('option', { value: '' }, 'Choose a patch'), QUEEN_LANDSCAPE_PATCHES.map(function(p) { return h('option', { key: p.id, value: p.id }, p.label); }))),
+                  h('fieldset', { className: 'bee-map-study-choices' }, h('legend', null, 'What do you think the map will show?'), Object.keys(QUEEN_MAP_PREDICTIONS).map(function(id) { return h('label', { key: id }, h('input', { type: 'radio', name: 'bee-map-prediction', value: id, checked: study.prediction === id, onChange: function() { editQueenStudy('prediction', id); } }), QUEEN_MAP_PREDICTIONS[id]); })))),
+              predicted && h('div', { className: 'bee-map-study-stage' }, h('h5', null, '2 · Trace the same destination'),
+                h('p', { id: 'bee-map-study-readiness', role: 'status' }, count === 2 ? 'Both colony views recorded at ' + patch.label + '. These snapshots stay fixed when the map changes.' : bhQueenMapStudyReady(study, queenStudyView(d)) || 'This view is ready. Trace the visible path, then record it.'),
+                h('div', { className: 'bee-map-study-routes' }, routeCard('home', 'Your colony'), routeCard('neighbor', 'Neighbor colony'))),
+              count === 2 && h('div', { className: 'bee-map-study-stage' }, h('h5', null, '3 · Explain the evidence'),
+                h('fieldset', { className: 'bee-map-study-choices' }, h('legend', null, 'Which claim do your two diagram views support?'), Object.keys(QUEEN_MAP_CLAIMS).map(function(id) { return h('label', { key: id }, h('input', { type: 'radio', name: 'bee-map-claim', checked: study.claim === id, onChange: function() { editQueenStudy('claim', id); } }), QUEEN_MAP_CLAIMS[id]); })),
+                study.claim && h('div', { className: 'bee-map-study-feedback', role: 'status', 'data-supported': complete }, h('strong', null, complete ? 'Observation supported · investigation complete' : 'Look again at what was recorded'), h('p', null, complete ? 'Both routes end at ' + patch.label + '. This diagram illustrates shared access. It does not measure how often either colony visits, how far bees fly, or how much food they collect.' : study.claim === 'border' ? 'The ring marks your selection. Each recorded colony route reaches the same patch; neither view records a defended border. Try another claim.' : 'One line per colony is a drawing choice. Your records contain no visit counts or nectar measurements, so they cannot show equal food collection. Try another claim.')),
+                h('label', { className: 'bee-map-study-note' }, h('span', null, 'My note or next field question (optional)'), h('textarea', { rows: 3, maxLength: 1200, value: study.reflection, placeholder: 'What would you need to observe at real nests and flowers?', onChange: function(e) { editQueenStudy('reflection', e.target.value); } })),
+                h('p', { className: 'bee-map-study-source' }, 'Field research reports overlapping landscape use alongside differences in local patch use. ', h('a', { href: 'https://doi.org/10.1002/ece3.71401', target: '_blank', rel: 'noopener noreferrer' }, 'Compare with the 2025 study ↗'))),
+              h('div', { className: 'bee-map-study-footer' },
+                h('button', { type: 'button', className: 'bee-discovery-button', disabled: !count || isSaved, onClick: saveQueenStudy }, isSaved ? 'Saved to Science Notebook' : 'Save to Science Notebook'),
+                h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !count && !study.prediction, onClick: function() { upd('queenMapStudy', bhQueenMapStudy({ version: 1, patchId: study.patchId })); announceBee('Investigation cleared. Any version saved to the Science Notebook is kept.', false); } }, 'Clear investigation'),
+                saved && h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: openQueenStudyNotebook }, 'Open Science Notebook'),
+                h('span', { role: 'status' }, isSaved ? 'Saved in your notebook portfolio.' : saved ? 'A previous version is in your notebook. Save again to replace it with this investigation.' : 'Records are diagram observations. Save to include them in your notebook portfolio.'))));
         }
 
         function renderQueenScienceNotes() {
@@ -24237,6 +24670,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('small', { id: 'bee-rts-field-cost' }, 'Command cost: ' + (cost || 'no resource cost') + (!affordable ? '. Gather the missing resources before using this response.' : '.')));
         }
         function renderQueenPatchExplorer() {
+          var study = bhQueenMapStudy(d.queenMapStudy), studyCount = Object.keys(study.captures).length;
+          var studyReason = bhQueenMapStudyReady(study, queenStudyView(d));
           var patch = queenInspection.patch, winter = Math.floor((queenDay % 120) / 30) === 3;
           var routesVisible = d.queen3dRoutes !== false && !winter;
           var count = routesVisible ? (patch ? 1 : QUEEN_LANDSCAPE_PATCHES.length) * (queenInspection.colony === 'both' ? 2 : 1) : 0;
@@ -24250,7 +24685,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !patch || queen3dStatus !== 'ready', onClick: function() { QUEEN_3D_VIEWER.focus(patch.id, { immediate: prefersReducedMotion }); } }, 'Focus patch'),
               h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: function() { updFn(function(state) { state.queen3dPatch = null; state.queen3dPart = null; state.queen3dColony = 'both'; }); QUEEN_3D_VIEWER.reset(); } }, 'Whole landscape')),
             h('p', { className: 'bee-rts-inspection-readout', role: 'status', 'aria-atomic': 'true' }, count + ' diagram route' + (count === 1 ? '' : 's') + ' shown' + (patch ? ' to ' + patch.label : ' across six patches') + '. ' + (winter ? 'The game’s winter calendar hides routes and forager traffic.' : d.queen3dRoutes === false ? 'Turn on Forager routes below the map to see the paths.' : patch ? 'The ring marks your selection. Filtering a colony does not change access to the flowers.' : 'Select flowers on the map or choose a patch, then compare the two colonies.')),
-            h('p', { className: 'bee-rts-explorer-hint' }, 'Try this: choose one patch, show each colony in turn, and compare where the routes end. These view controls do not spend resources or advance the game.'));
+            h('p', { className: 'bee-rts-explorer-hint' }, 'Try this: choose one patch, show each colony in turn, and compare where the routes end. These view controls do not spend resources or advance the game.'),
+            d.queenMapStudyOpen === true && study.prediction && h('div', { className: 'bee-rts-study-shortcut' },
+              h('p', { role: 'status' }, 'Investigation · ' + (bhQueenMapInspection(study.patchId).patch || {}).label + ' · ' + studyCount + '/2 routes recorded. ' + (studyCount === 2 ? 'Return to explain your observations.' : studyReason || 'Trace this path, then record it.')),
+              studyCount < 2 && h('button', { type: 'button', className: 'bee-discovery-button', disabled: !!studyReason, onClick: captureQueenStudyRoute }, 'Record this route'),
+              h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: function() { focusDiscoveryTarget('bee-rts-study-panel'); } }, 'Open investigation ↓')));
         }
         function renderQueen3dToolbar() {
           return h('div', { className: 'bee-rts-toolbar', 'data-rts-3d-toolbar': 'true' },
@@ -25698,6 +26137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             lines.push(notebook.honeyStores.text);
             lines.push('');
           }
+          if (notebook.sharedMap && typeof notebook.sharedMap.text === 'string') lines.push(notebook.sharedMap.text, '');
           lines.push('## Cross-perspective synthesis');
           lines.push(String(notebook.synthesis || '').trim() || 'Not recorded yet.');
           lines.push('');
@@ -25854,6 +26294,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               notebook.discoveries && h('section', { 'data-discovery-notebook-records': 'true', className: 'mt-4 rounded-xl border p-4 ' + (dk ? 'border-emerald-700 bg-slate-900 text-slate-100' : 'border-emerald-300 bg-emerald-50 text-slate-900'), 'aria-label': discoveryText('ui', 'saved_records', 'Saved field discoveries') },
                 h('h4', { className: 'text-base font-bold' }, discoveryText('ui', 'saved_records', 'Saved field discoveries')),
                 discoveryLessons.map(function(lesson) { var record = notebook.discoveries[lesson.id]; if (!record) return null; return h('article', { key: lesson.id, style: { marginTop: 12 } }, h('h5', { className: 'text-sm font-bold' }, discoveryText(lesson.id, 'title', lesson.title)), h('p', { className: 'text-sm mt-1' }, h('strong', null, discoveryText('ui', 'prediction_label', 'Prediction: ')), String(record.prediction || '')), h('p', { className: 'text-sm mt-1' }, h('strong', null, discoveryText('ui', 'observation_label', 'Observation: ')), String(record.observation || '')), record.comparison && h('p', { className: 'text-sm mt-1' }, h('strong', null, 'Before and after: '), String(record.comparison)), h('p', { className: 'text-sm mt-1' }, h('strong', null, discoveryText('ui', 'explanation_label', 'Explanation: ')), String(record.explanation || ''))); })),
+              notebook.sharedMap && typeof notebook.sharedMap.text === 'string' && h('section', { 'data-map-study-notebook-record': 'true', className: 'mt-4 rounded-xl border p-4 ' + (dk ? 'border-emerald-700 bg-slate-900 text-slate-100' : 'border-emerald-300 bg-emerald-50 text-slate-900'), 'aria-label': 'Saved shared-patch map investigation' },
+                h('h4', { className: 'text-base font-bold' }, 'Can two colonies share a patch?'),
+                h('p', { className: 'mt-2 text-sm' }, 'Your saved diagram observations, prediction, and explanation. This record is included in the notebook portfolio.'),
+                h('details', { className: 'mt-2' }, h('summary', { className: 'min-h-[44px] cursor-pointer py-2 font-bold' }, 'Read the saved map investigation'),
+                  h('pre', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', font: 'inherit', fontSize: '.875rem', lineHeight: '1.6' } }, notebook.sharedMap.text))),
               notebook.honeyStores && h('section', { 'data-honey-notebook-record': 'true', className: 'mt-4 rounded-xl border p-4 ' + (dk ? 'border-amber-700 bg-slate-900 text-slate-100' : 'border-amber-300 bg-amber-50 text-slate-900'), 'aria-label': __alloT('stem.beehive.a11y_saved_honey_stores_investigation', 'Saved honey stores investigation') },
                 h('h4', { className: 'text-base font-bold' }, 'Why are stores falling?'),
                 h('p', { className: 'mt-2 text-sm' }, notebook.honeyStores.evidence),
@@ -27621,7 +28066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[0.625rem] mt-0.5 opacity-70' }, diff.desc));
                     })),
                   h('p', { className: 'text-[0.6875rem] ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Glowing route markers score control evidence but do not restore energy.')))
-              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
+              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(440px, 56vw, 620px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
+                  renderDroneDirector(),
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
                   h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
                   h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: { position: 'absolute', top: '58px', left: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
@@ -27629,7 +28075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[0.625rem] font-black text-amber-200' }, cue.label)),
                     h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[0.625rem] font-semibold leading-snug text-white' }, cue.instruction),
                     h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[0.625rem] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
-                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. A renderer badge reports whether the true 3D scene is pixel-verified or the 2D safety view is active. A second badge reports adaptive graphics quality. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. Graphics, steering sensitivity, and camera stabilization controls follow the instruments. The radar uses distinct shapes for route targets, predator birds, thermals, and optional route markers, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
+                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. The scene uses a 3D or 2D flight view. Open Route map & checkpoints to pause and inspect your recent path, heading, and DCA entry conditions. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. Flight controls follow the scene. Display settings include a clear view, detailed HUD, graphics quality, steering sensitivity, and camera stabilization. The optional detailed HUD includes radar with distinct shapes for route targets, predator birds, thermals, and route markers, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
                     h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[0.625rem] font-black text-amber-200' }, droneFlightActive && _droneState.current && _droneState.current.phase !== 'launch' ? droneInstrumentPhase(_droneState.current).label : 'Flight objective'),
@@ -27637,14 +28083,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { 'data-flight-scene-detail': 'true', className: 'hidden min-w-0 truncate normal-case tracking-normal opacity-75 sm:inline' }, droneFlightActive && _droneState.current ? droneSceneCueDetail(_droneState.current) : 'Pass markers -> reach DCA -> track queen')),
                   dronePaused && dronePacing !== 'steps' && h('div', { 'data-beehive-flight-paused-overlay': 'true', 'aria-hidden': 'true' },
                     h('div', null,
-                      h('div', { className: 'text-3xl leading-none' }, '\u23F8'),
-                      h('div', { className: 'mt-2 text-lg font-black tracking-tight' }, 'FLIGHT PAUSED'),
-                      h('p', { className: 'mt-1 text-[0.6875rem] font-semibold text-slate-300' }, 'The simulation clock is stopped. Press P or use Resume below.'))),
+                      h('div', { className: 'text-xs font-bold leading-none' }, 'PAUSED · INSPECT THE VIEW'),
+                      h('div', { className: 'sr-only' }, 'FLIGHT PAUSED'),
+                      h('p', { className: 'mt-1 text-[0.6875rem] font-semibold text-slate-300' }, 'Camera and display controls remain available. Resume when ready.'))),
                   dronePacing !== 'steps' && h('button', { onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', style: { position: 'absolute', top: '8px', right: '8px', zIndex: 20 },
                     className: 'min-h-[44px] min-w-[104px] rounded-lg border border-white/20 bg-slate-950/82 px-3 py-2 text-[0.6875rem] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-slate-900', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-keyshortcuts': 'P' }, dronePaused ? '\u25B6 Resume' : '\u23F8 Pause'),
                   // Stop button overlay
                   h('button', { type: 'button', onClick: leaveDroneFlight, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 20 },
                     className: 'min-h-[44px] rounded-lg bg-red-700/88 px-3 py-2 text-[0.6875rem] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.beehive.end_flight', 'End flight') }, __alloT('stem.beehive.end_flight_2', '✕ End Flight'))),
+            droneFlightActive && dronePacing !== 'steps' && _droneState.current && _droneState.current.phase !== 'end' && h('section', { 'data-beehive-touch-controls': 'true', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': __alloT('stem.beehive.a11y_drone_flight_controls', 'Drone flight controls') },
+              h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
+                h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Flight controls'), h('p', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Hold buttons to steer. Keyboard: arrows/WASD, Space climb, Shift descend, P pause, V camera.'))),
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { type: 'button', onClick: toggleDronePause, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
+                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': __alloT('stem.beehive.a11y_chase_camera', 'Chase camera'), title: 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera (V)', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, 'Chase camera')),
+              h('div', { className: 'mt-3 grid grid-cols-3 gap-2 select-none', style: { touchAction: 'none' } },
+                [{ key: 'ArrowLeft', label: 'Turn left', effect: 'Yaw left', icon: '←', keycap: 'A / ←' }, { key: ' ', label: 'Climb', effect: 'Gain altitude', icon: '↑', keycap: 'SPACE' }, { key: 'ArrowRight', label: 'Turn right', effect: 'Yaw right', icon: '→', keycap: 'D / →' }, { key: 'ArrowDown', label: 'Brake', effect: 'Reduce speed', icon: '▼', keycap: 'S / ↓' }, { key: 'ArrowUp', label: 'Thrust', effect: 'Gain speed', icon: '▲', keycap: 'W / ↑' }, { key: 'Shift', label: 'Descend', effect: 'Lose altitude', icon: '↓', keycap: 'SHIFT' }].map(function(control) {
+                  function release() { setDroneControl(control.key, false); }
+                  return h('button', { key: control.label, disabled: dronePaused, 'data-flight-control': control.key === ' ' ? 'Space' : control.key, 'data-control-active': 'false', 'aria-label': control.label + ': ' + control.effect + '. Key: ' + control.keycap, onPointerDown: function(e) { e.preventDefault(); if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); setDroneControl(control.key, true); }, onPointerUp: release, onPointerCancel: release, onLostPointerCapture: release, onPointerLeave: release, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { if (e.key === ' ') e.preventDefault(); setDroneControl(control.key, true); } }, onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') release(); }, onBlur: release, className: 'min-h-[58px] rounded-xl border px-2 py-2 text-[0.6875rem] font-black shadow-sm transition-all active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-indigo-700 bg-slate-900 text-indigo-200 hover:bg-slate-800' : 'border-indigo-200 bg-white text-indigo-800 hover:bg-indigo-100') }, h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, control.icon), h('span', { className: 'mt-1 block' }, control.label), h('span', { className: 'mt-0.5 block text-[0.625rem] font-semibold opacity-70' }, control.effect), h('span', { className: 'mt-1 inline-flex rounded bg-slate-950/10 px-1.5 py-0.5 text-[0.625rem] font-black tracking-wide opacity-70' }, control.keycap));
+                 })),
+               h('details', { 'data-flight-comfort-details': 'true' }, h('summary', null, 'Display & flight settings'),
+                 h('button', { type: 'button', className: 'bee-flight-hud-toggle', 'data-flight-hud-toggle': 'true', 'aria-pressed': droneData.detailedHud === true, onClick: toggleDroneHud, style: { minHeight: 44, padding: '8px 12px', border: '1px solid currentColor', borderRadius: 8 } }, 'Detailed cockpit HUD'),
+              h('div', { 'data-flight-comfort-settings': 'true', className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_flight_comfort_and_graphics_settings', 'Flight comfort and graphics settings') },
+                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Graphics'), h('select', { 'data-flight-graphics-mode': 'true', value: droneGraphicsMode, onChange: function(event) { setDroneGraphicsMode(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[0.6875rem] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': __alloT('stem.beehive.a11y_drone_graphics_quality', 'Drone graphics quality') }, h('option', { value: 'auto' }, 'Auto'), h('option', { value: 'high' }, 'High'), h('option', { value: 'eco' }, 'Eco'))),
+                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Steering'), h('select', { 'data-flight-steering-sensitivity': 'true', value: droneSteeringSensitivity, onChange: function(event) { setDroneSteeringSensitivity(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[0.6875rem] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': __alloT('stem.beehive.a11y_drone_steering_sensitivity', 'Drone steering sensitivity') }, h('option', { value: 'gentle' }, 'Gentle'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'quick' }, 'Quick'))),
+                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-label': __alloT('stem.beehive.a11y_camera_stabilization', 'Camera stabilization'), 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Camera stabilization'), h('span', { className: 'mt-1 block text-[0.6875rem] font-black', 'aria-hidden': 'true' }, droneCameraStabilized ? 'On' : 'Off'), h('span', { className: 'mt-0.5 block text-[0.625rem] opacity-80', 'aria-hidden': 'true' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Full bank angle'))),
+              h('p', { 'data-flight-weather-summary': 'true', className: 'mt-2 rounded-lg border px-2.5 py-2 text-[0.625rem] font-semibold ' + (dk ? 'border-sky-800 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, (DRONE_SCENARIOS[(_droneState.current && _droneState.current.scenario) || droneScenario] || DRONE_SCENARIOS.clear).weather))),
+            droneFlightActive && dronePacing !== 'steps' && _droneState.current && _droneState.current.phase !== 'end' && renderDroneRouteInspector(),
             droneFlightActive && dronePacing === 'steps' && _droneState.current.phase !== 'end' && renderDroneDecisionPanel(),
             droneFlightActive && _droneState.current && _droneState.current.phase !== 'end' && (function() {
               var instrumentState = _droneState.current;
@@ -27743,26 +28208,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'mt-0.5', 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
                   h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[0.6875rem] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
             })(),
-            droneFlightActive && dronePacing !== 'steps' && _droneState.current && _droneState.current.phase !== 'end' && h('section', { 'data-beehive-touch-controls': 'true', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': __alloT('stem.beehive.a11y_drone_flight_controls', 'Drone flight controls') },
-              h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
-                h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Flight controls'), h('p', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Hold buttons to steer. Keyboard: arrows/WASD, Space climb, Shift descend, P pause, V camera.'))),
-                h('div', { className: 'flex items-center gap-2' },
-                  h('button', { type: 'button', onClick: toggleDronePause, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
-                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': __alloT('stem.beehive.a11y_chase_camera', 'Chase camera'), title: 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera (V)', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, 'Chase camera')),
-              h('div', { 'data-flight-comfort-settings': 'true', className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_flight_comfort_and_graphics_settings', 'Flight comfort and graphics settings') },
-                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Graphics'), h('select', { 'data-flight-graphics-mode': 'true', value: droneGraphicsMode, onChange: function(event) { setDroneGraphicsMode(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[0.6875rem] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': __alloT('stem.beehive.a11y_drone_graphics_quality', 'Drone graphics quality') }, h('option', { value: 'auto' }, 'Auto'), h('option', { value: 'high' }, 'High'), h('option', { value: 'eco' }, 'Eco'))),
-                h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Steering'), h('select', { 'data-flight-steering-sensitivity': 'true', value: droneSteeringSensitivity, onChange: function(event) { setDroneSteeringSensitivity(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[0.6875rem] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': __alloT('stem.beehive.a11y_drone_steering_sensitivity', 'Drone steering sensitivity') }, h('option', { value: 'gentle' }, 'Gentle'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'quick' }, 'Quick'))),
-                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-label': __alloT('stem.beehive.a11y_camera_stabilization', 'Camera stabilization'), 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-wide' }, 'Camera stabilization'), h('span', { className: 'mt-1 block text-[0.6875rem] font-black', 'aria-hidden': 'true' }, droneCameraStabilized ? 'On' : 'Off'), h('span', { className: 'mt-0.5 block text-[0.625rem] opacity-80', 'aria-hidden': 'true' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Full bank angle'))),
-              h('p', { 'data-flight-weather-summary': 'true', className: 'mt-2 rounded-lg border px-2.5 py-2 text-[0.625rem] font-semibold ' + (dk ? 'border-sky-800 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, (DRONE_SCENARIOS[(_droneState.current && _droneState.current.scenario) || droneScenario] || DRONE_SCENARIOS.clear).weather),
-              h('div', { className: 'mt-3 grid grid-cols-3 gap-2 select-none', style: { touchAction: 'none' } },
-                [{ key: 'ArrowLeft', label: 'Turn left', effect: 'Yaw left', icon: '←', keycap: 'A / ←' }, { key: ' ', label: 'Climb', effect: 'Gain altitude', icon: '↑', keycap: 'SPACE' }, { key: 'ArrowRight', label: 'Turn right', effect: 'Yaw right', icon: '→', keycap: 'D / →' }, { key: 'ArrowDown', label: 'Brake', effect: 'Reduce speed', icon: '▼', keycap: 'S / ↓' }, { key: 'ArrowUp', label: 'Thrust', effect: 'Gain speed', icon: '▲', keycap: 'W / ↑' }, { key: 'Shift', label: 'Descend', effect: 'Lose altitude', icon: '↓', keycap: 'SHIFT' }].map(function(control) {
-                  function release() { setDroneControl(control.key, false); }
-                  return h('button', { key: control.label, disabled: dronePaused, 'data-flight-control': control.key === ' ' ? 'Space' : control.key, 'data-control-active': 'false', 'aria-label': control.label + ': ' + control.effect + '. Key: ' + control.keycap, onPointerDown: function(e) { e.preventDefault(); setDroneControl(control.key, true); }, onPointerUp: release, onPointerCancel: release, onPointerLeave: release, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { if (e.key === ' ') e.preventDefault(); setDroneControl(control.key, true); } }, onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') release(); }, onBlur: release, className: 'min-h-[58px] rounded-xl border px-2 py-2 text-[0.6875rem] font-black shadow-sm transition-all active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-indigo-700 bg-slate-900 text-indigo-200 hover:bg-slate-800' : 'border-indigo-200 bg-white text-indigo-800 hover:bg-indigo-100') }, h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, control.icon), h('span', { className: 'mt-1 block' }, control.label), h('span', { className: 'mt-0.5 block text-[0.625rem] font-semibold opacity-70' }, control.effect), h('span', { className: 'mt-1 inline-flex rounded bg-slate-950/10 px-1.5 py-0.5 text-[0.625rem] font-black tracking-wide opacity-70' }, control.keycap));
-                }))),
             droneFlightActive && droneLastRun && droneLastRun.decisionLog && droneLastRun.decisionLog.length > 0 && _droneState.current.phase === 'end' && h('section', { className: 'bfd', 'data-flight-decision-debrief': 'true', tabIndex: -1, 'aria-label': __alloT('stem.beehive.a11y_saved_flight_decision_evidence', 'Saved flight decision evidence') }, h('h3', null, 'Your flight decisions'), h('p', null, 'Course ' + droneLastRun.courseSeed + ' · Pause and plan · Navigation assistance used ' + (droneLastRun.navigationAssists || 0) + ' times. Decisions are saved with this flight.'), renderDroneDecisionLog(droneLastRun.decisionLog), renderDroneScienceBoundary()),
             droneFlightActive && droneLastRun && _droneState.current && _droneState.current.phase === 'end' && h('section', { className: 'rounded-2xl border-2 p-4 ' + (droneLastRun.success ? (dk ? 'border-emerald-600 bg-emerald-950/30' : 'border-emerald-300 bg-emerald-50') : (dk ? 'border-amber-600 bg-amber-950/30' : 'border-amber-300 bg-amber-50')), 'data-flight-main-debrief': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_debrief', 'Flight debrief') },
               h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
-                h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider ' + (droneLastRun.success ? 'text-emerald-600' : 'text-amber-600') }, 'Flight debrief'), h('h3', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneLastRun.success ? 'Queen intercepted - route complete' : 'Queen not reached - revise and retry'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, droneLastRun.success ? 'You reached the congregation area with enough control to acquire the queen signal.' : (droneLastRun.energyLeft <= 0 ? 'Energy reached zero. Coast between corrections and use updrafts; route markers do not refuel the drone.' : !droneLastRun.reachedDca ? 'The route never entered the DCA. Enter the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft band and travel at least ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' meters before searching for the queen.' : 'You reached the DCA; use smaller turns and follow the golden queen cue more closely.'))),
+                h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider ' + (droneLastRun.success ? 'text-emerald-600' : 'text-amber-600') }, 'Flight debrief'), h('h3', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneLastRun.success ? 'Queen intercepted - route complete' : 'Queen not reached - revise and retry'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, droneLastRun.success ? 'You reached the congregation area with enough control to acquire the queen signal.' : (droneLastRun.energyLeft <= 0 ? 'Energy reached zero. Coast between corrections and use updrafts; route markers do not refuel the drone.' : !droneLastRun.reachedDca ? 'The route never entered the DCA. Be within ' + DRONE_FLIGHT_PARAMS.dcaRadiusM + ' model m of its center and inside the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' model ft altitude band at the same time.' : 'You reached the DCA; use smaller turns and follow the golden queen cue more closely.'))),
                 h('div', { className: 'flex gap-2' }, h('button', { type: 'button', onClick: function() { startDroneFlight(droneLastRun.difficulty, droneDebrief && droneDebrief.planId); }, className: 'rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2' }, 'Apply plan & fly again'), h('button', { type: 'button', onClick: leaveDroneFlight, className: 'rounded-lg border px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-slate-600 text-slate-200' : 'border-slate-300 text-slate-700') }, 'Change difficulty'))),
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7 text-center', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_flight_debrief_measurements', 'Flight debrief measurements') }, [[droneLastRun.score, 'score'], [droneLastRun.maxAlt + ' ft', 'altitude'], [droneLastRun.distance + ' m', 'distance'], [(droneLastRun.routeMarkers != null ? droneLastRun.routeMarkers : droneLastRun.nectar) + '/' + (droneLastRun.routeMarkerGoal || droneLastRun.nectarGoal), 'route markers'], [droneLastRun.facts + '/' + DRONE_FACTS.length, 'facts'], [droneLastRun.trafficHits || 0, 'traffic conflicts'], [DRONE_ROUTE_PLANS[droneLastRun.routePlan] ? DRONE_ROUTE_PLANS[droneLastRun.routePlan].label : 'Balanced', 'route plan']].map(function(stat) { return h('div', { key: stat[1], role: 'listitem', className: 'min-w-0 rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white/80') }, h('div', { className: 'break-words text-sm font-black leading-tight ' + (dk ? 'text-white' : 'text-slate-900') }, stat[0]), h('div', { className: 'text-[0.625rem] uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stat[1])); })),
               droneDebrief && h('section', { 'data-drone-debrief-coach': droneDebrief.id, role: 'region', 'aria-labelledby': 'drone-debrief-coach-title', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/45 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/70') },
@@ -29500,6 +29949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhForecastColony: bhForecastColony,
       bhQueenFieldObjective: bhQueenFieldObjective,
       bhQueenMapInspection: bhQueenMapInspection, QUEEN_LANDSCAPE_PATCHES: QUEEN_LANDSCAPE_PATCHES,
+      bhQueenMapStudy: bhQueenMapStudy, bhQueenMapStudyReady: bhQueenMapStudyReady, bhQueenMapStudyCapture: bhQueenMapStudyCapture, bhQueenMapStudyText: bhQueenMapStudyText,
       bhWaggleReading: bhWaggleReading, bhDiscoveryComparison: bhDiscoveryComparison, bhDiscoveryComparisonText: bhDiscoveryComparisonText,
       SIMULATION_PARAMS: SIMULATION_PARAMS,
       DRONE_FLIGHT_PARAMS: DRONE_FLIGHT_PARAMS,
@@ -29508,7 +29958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhSeedFromInput: bhSeedFromInput,
       bhFreshExperimentSeed: bhFreshExperimentSeed,
       bhCreateSeededRandom: bhCreateSeededRandom,
-      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneNavigationTarget: bhDroneNavigationTarget,
+      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneRouteOverview: bhDroneRouteOverview,
       bhRunHoneyLab: bhRunHoneyLab, bhNewHoneyLab: bhNewHoneyLab,
       bhNormalizeHoneyLab: bhNormalizeHoneyLab, bhHoneyLabReady: bhHoneyLabReady,
       bhHoneyLabPlan: bhHoneyLabPlan, bhHoneyLabComparison: bhHoneyLabComparison,

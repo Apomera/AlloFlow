@@ -1,7 +1,7 @@
 // Quest map: per-type station designs + inline travel links (2026-07-20, Aaron's ask —
 // "custom designs for each resource type" + "go immediately to the resource that's next").
 // The three new helpers are pure and exercised FOR REAL via eval-slice; the wiring
-// (clickable stations, keyboard travel strip, role=img unchanged) is pinned.
+// (clickable stations, keyboard travel strip, interactive SVG group) is pinned.
 // NO GATING remains a pin: recommending a next step must never lock the others.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -158,11 +158,11 @@ describe('wiring: the map is a way to MOVE, and it stays accessible', () => {
   it('stations travel through the SAME handleRestoreView every other lane uses', () => {
     expect(anti).toContain('onTravel={(value) => {');
     expect(anti).toContain('handleRestoreView(');
-    expect(directionsViewSource).toContain("<g key={station.id} onClick={() => travelTo(station)}");
+    expect(directionsViewSource).toContain("<g key={station.id} role=\"button\" tabIndex={0}");
   });
-  it('the SVG is still role=img with a spoken summary; travel lives in real HTML buttons', () => {
+  it('the interactive map has a spoken summary and retains the HTML travel alternatives', () => {
     const view = viewSlice();
-    expect(view).toMatch(/<svg\s+role="img"/);
+    expect(view).toMatch(/<svg\s+role="group"/);
     expect(view).toContain("text('mapJumpAny', 'Go to any station')");
     expect(view).toContain('nextGoalLabel');
     expect(directionsViewModule).toContain('mapJumpAny');

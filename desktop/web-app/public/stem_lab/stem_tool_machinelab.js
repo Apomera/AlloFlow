@@ -1586,7 +1586,7 @@ window.StemLab = window.StemLab || {
 
   var SHOP_HOME = { rotY: 28, rotX: 16, zoom: 1 };
   var MACHINE_HOME = { rotY: 22, rotX: 12, zoom: 1 };
-  var RANGE_HOME = { rotY: 72, rotX: 18, zoom: 1 };
+  var RANGE_HOME = { rotY: 24, rotX: 14, zoom: 1 };
   // Behind the machine, looking down the field at the castle. The camera
   // direction runs (sin rotY, ., cos rotY), so a rotY near 0 puts the camera on
   // the far side of the wall and you watch the impact from the defenders' side,
@@ -1605,6 +1605,24 @@ window.StemLab = window.StemLab || {
   // 3D SIMPLE-MACHINE WORKSHOP (P1)
   // The machine is now the primary learning surface. Text panels remain as
   // equivalents, while every control changes the geometry in this scene.
+  // Per-build textures stay owned by scene materials and the viewer disposal path.
+  // No extra render loop, external assets, or post-processing passes are needed.
+  function detailMachineBox(THREE, mesh, x, y, z, contrast) {
+    if (!THREE.EdgesGeometry || !THREE.LineSegments) return;
+    var edges = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 28),
+      new THREE.LineBasicMaterial({ color: contrast ? 0x000000 : 0x302719,
+        transparent: !contrast, opacity: contrast ? 1 : 0.28 }));
+    mesh.add(edges);
+    // Rivets and straps travel with the load, not with the stationary test bed.
+    if (Math.min(x, y, z) > 0.35 && Math.max(x, y, z) < 1.8) {
+      var steel = new THREE.MeshStandardMaterial({ color: contrast ? 0xffffff : 0x536477, roughness: 0.36, metalness: 0.55 });
+      [-1, 1].forEach(function (side) {
+        var strap = new THREE.Mesh(new THREE.BoxGeometry(x + 0.012, y + 0.012, Math.min(0.07, z * 0.08)), steel);
+        strap.position.z = side * z * 0.32; mesh.add(strap);
+      });
+    }
+  }
+
   function buildSimpleMachineScene(THREE, S, m) {
     var p = m.params || {};
     var id = m.kind || 'lever';
@@ -1626,10 +1644,19 @@ window.StemLab = window.StemLab || {
       S.renderer.setClearColor(clearColor, 1);
     }
     if (!contrast && S.scene && typeof THREE.Fog === 'function') S.scene.fog = new THREE.Fog(clearColor, 11, 27);
+    var workshopWood = contrast ? null : woodTexture(THREE);
+    var workshopSurface = contrast ? null : makeCanvasTexture(THREE,128,function(g,n) {
+      g.fillStyle='#ededed';g.fillRect(0,0,n,n);
+      for(var speck=0;speck<800;speck++) { g.fillStyle=speck%2 ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.18)';g.fillRect(hash01(speck,7,190)*n,hash01(speck,11,191)*n,1,1); }
+    });
     function mat(color, emissive) {
-      var cfg = { color: color };
+      var cfg = { color: color, roughness: 0.72, metalness: 0.08 };
+      if (color === C.platform && workshopSurface) {cfg.map=workshopSurface;cfg.roughness=0.8;}
+      if (!contrast && color === C.wood && workshopWood) { cfg.map = workshopWood; cfg.color = 0xe8c49a; cfg.roughness = 0.86; }
+      if (color === C.metal || color === C.frame) { cfg.metalness = 0.48; cfg.roughness = 0.36; }
+      if (color === C.load || color === C.effort) { cfg.roughness = 0.32; cfg.metalness = 0.22; }
       if (emissive) { cfg.emissive = color; cfg.emissiveIntensity = 0.13; }
-      return new THREE.MeshLambertMaterial(cfg);
+      return contrast ? new THREE.MeshLambertMaterial({ color: color }) : new THREE.MeshStandardMaterial(cfg);
     }
     function finishMesh(mesh, receives) {
       mesh.castShadow = !contrast;
@@ -1640,6 +1667,7 @@ window.StemLab = window.StemLab || {
       var mesh = finishMesh(new THREE.Mesh(new THREE.BoxGeometry(x, y, z), mat(color)));
       mesh.position.set(px || 0, py || 0, pz || 0);
       if (rz) mesh.rotation.z = rz;
+      if (color === C.wood || color === C.load) detailMachineBox(THREE, mesh, x, y, z, contrast);
       (parent || S.model).add(mesh);
       return mesh;
     }
@@ -1658,6 +1686,12 @@ window.StemLab = window.StemLab || {
       if (axis === 'y') mesh.rotation.x = Math.PI / 2;
       (parent || S.model).add(mesh);
       return mesh;
+    }
+    function sheave(px, py, parent) {
+      cylinder(0.32, 0.16, px, py, 0, C.frame, 'z', parent);
+      for (var spoke = 0; spoke < 4; spoke++) box(0.74, 0.055, 0.09, px, py, 0.12, C.metal, parent, spoke * Math.PI / 4);
+      cylinder(0.13, 0.26, px, py, 0, C.effort, 'z', parent);
+      cylinder(0.07, 0.31, px, py, 0, C.metal, 'z', parent);
     }
     function arrow(px, top, length, color, direction) {
       var group = new THREE.Group();
@@ -1775,6 +1809,9 @@ window.StemLab = window.StemLab || {
       var leverMotion = new THREE.Group();
       leverMotion.position.set(0, 1.24, 0); leverMotion.rotation.z = 0.055; S.model.add(leverMotion);
       box(eVis + lVis, 0.22, 0.62, (lVis - eVis) / 2, 0, 0, C.wood, leverMotion);
+      cylinder(0.15, 0.82, 0, 0, 0, C.metal, 'z', leverMotion);
+      [-1, 1].forEach(function (side) { cylinder(0.22, 0.06, 0, 0, side * 0.38, C.frame, 'z', leverMotion); });
+      for (var graduation = 1; graduation < 18; graduation++) box(0.025, 0.012, graduation % 3 ? 0.13 : 0.26, -eVis + graduation * 5.4 / 18, 0.117, 0.17, C.metal, leverMotion);
       box(0.7, 0.7, 0.7, lVis - 0.12, 0.58, 0, C.load, leverMotion);
       demo.motion = leverMotion; demo.baseRotation = 0.055;
       demo.effortArrow = arrow(-eVis + 0.12, 2.75, 0.8, C.effort);
@@ -1784,16 +1821,19 @@ window.StemLab = window.StemLab || {
       box(5.4, 0.18, 0.45, 0, 3.25, 0, C.frame);
       [-2.5, 2.5].forEach(function (x) { box(0.18, 3.0, 0.35, x, 1.72, 0, C.frame); });
       var spread = Math.min(3.6, 0.62 * (segs - 1));
+      var supportingRopes = [];
       for (var si = 0; si < segs; si++) {
         var sx = segs === 1 ? 0 : -spread / 2 + spread * si / (segs - 1);
-        cylinder(0.035, 1.55, sx, 2.25, 0, C.rope, 'y');
+        supportingRopes.push(cylinder(0.035, 2.24, sx, 2.04, 0, C.rope, 'y'));
       }
       torus(0.48, 0.12, -0.62, 2.68, 0, C.metal, 'z');
+      sheave(-0.62, 2.68);
       var pulleyMotion = new THREE.Group(); S.model.add(pulleyMotion);
       torus(0.48, 0.12, 0.62, 1.35, 0, C.metal, 'z', pulleyMotion);
-      box(2.2, 0.2, 0.72, 0, 0.82, 0, C.frame, pulleyMotion);
+      sheave(0.62, 1.35, pulleyMotion);
+      box(Math.max(2.2, spread + 0.3), 0.2, 0.72, 0, 0.82, 0, C.frame, pulleyMotion);
       box(1.25, 0.72, 0.92, 0, 0.43, 0, C.load, pulleyMotion);
-      demo.motion = pulleyMotion;
+      demo.motion = pulleyMotion; demo.supportingRopes = supportingRopes;
       demo.effortArrow = arrow(2.0, 2.75, 0.9, C.effort);
       demo.loadArrow = arrow(0, 1.05, 0.45, C.load, 'up');
     } else if (id === 'windlass') {
@@ -1801,26 +1841,55 @@ window.StemLab = window.StemLab || {
       var drumR = Math.max(0.02, Number(p.drumR) || 0.1);
       var wheelR = 0.85 + Math.min(0.75, handleR * 1.5);
       var drumVis = 0.18 + Math.min(0.34, drumR * 0.8);
-      [-1.25, 1.25].forEach(function (z) { box(0.26, 2.25, 0.26, 0, 1.35, z, C.frame); });
-      var windlassDrum = cylinder(drumVis, 2.8, 0, 1.85, 0, C.wood, 'z');
-      var wheelMotion = new THREE.Group(); wheelMotion.position.set(0, 1.85, 1.52); S.model.add(wheelMotion);
+      var axleY=2.15;
+      [-1.25, 1.25].forEach(function (z) {
+        box(0.86,0.12,0.68,0,0.34,z,C.metal);
+        box(0.26,1.72,0.28,0,1.2,z,C.frame);
+        box(0.68,0.55,0.32,0,axleY,z,C.frame);
+        torus(0.22,0.065,0,axleY,z+(z>0 ? 0.18 : -0.18),C.metal,'z');
+        [-1,1].forEach(function(side){
+          cylinder(0.075,0.045,side*0.3,0.425,z,C.effort,'y');
+          cylinder(0.052,0.36,side*0.24,axleY-0.17,z,C.metal,'z');
+        });
+      });
+      var windlassDrum = cylinder(drumVis, 2.8, 0, axleY, 0, C.wood, 'z');
+      cylinder(0.105,3.25,0,axleY,0,C.metal,'z');
+      var wheelMotion = new THREE.Group(); wheelMotion.position.set(0, axleY, 1.52); S.model.add(wheelMotion);
       torus(wheelR, 0.12, 0, 0, 0, C.effort, 'z', wheelMotion);
       box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58);
-      cylinder(0.055, 1.4, 0.48, 1.05, -0.02, C.rope, 'y');
-      var windlassLoad = box(0.86, 0.72, 0.72, 0.48, 0.48, 0, C.load);
-      demo.motion = wheelMotion; demo.drum = windlassDrum; demo.load = windlassLoad; demo.loadY = 0.48;
+      box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58 + Math.PI / 2);
+      cylinder(0.16, 0.26, 0, 0, 0, C.metal, 'z', wheelMotion);
+      cylinder(0.10, 0.38, wheelR * Math.cos(0.58), wheelR * Math.sin(0.58), 0.2, C.wood, 'z', wheelMotion);
+      [-1, 1].forEach(function (side) { cylinder(drumVis + 0.12, 0.09, 0, axleY, side * 1.05, C.metal, 'z'); });
+      // A continuous winding ends at the tangent of the hanging rope.
+      var coilPoints=[],ropeRadius=drumVis+0.03;
+      for(var coil=0;coil<=320;coil++){
+        var ct=coil/320,ca=ct*Math.PI*20;
+        coilPoints.push(new THREE.Vector3(ropeRadius*Math.cos(ca),axleY+ropeRadius*Math.sin(ca),-0.9+ct*0.9));
+      }
+      var winding=finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(coilPoints),320,0.028,6,false),mat(C.rope)));S.model.add(winding);
+      var loadY=0.66,ropeLength=axleY-(loadY+0.36);
+      var hangingRope=cylinder(0.035,ropeLength,ropeRadius,axleY-ropeLength/2,0,C.rope,'y');
+      var windlassLoad=box(0.86,0.72,0.72,ropeRadius,loadY,0,C.load);
+      demo.motion=wheelMotion;demo.drum=windlassDrum;demo.load=windlassLoad;demo.loadY=loadY;demo.hangingRope=hangingRope;
+      demo.axleY=axleY;demo.ropeLength=ropeLength;demo.winding=winding;
       demo.effortArrow = arrow(1.55, 3.25, 0.72, C.effort);
       demo.loadArrow = arrow(0.48, 0.92, 0.42, C.load, 'up');
     } else if (id === 'ramp') {
       var L = Math.max(0.5, Number(p.length) || 4);
       var H = Math.max(0.2, Math.min(L, Number(p.height) || 1));
-      var angle = Math.asin(Math.min(0.98, H / L));
-      var visL = 5.4, visH = Math.max(0.7, Math.min(2.8, visL * H / L));
+      var angle = Math.asin(Math.min(1, H / L));
+      var visL = 5.4, visH = visL * H / L;
       box(visL, 0.24, 2.15, 0, 0.42 + visH / 2, 0, C.wood, null, angle);
-      var rampCrate = box(0.95, 0.85, 0.95, 0.72, 0.95 + visH / 2 + 0.72 * Math.sin(angle), 0, C.load, null, angle);
+      var rampCrate = box(0.95, 0.85, 0.95,
+        -0.72 * Math.cos(angle) - 0.545 * Math.sin(angle),
+        0.42 + visH / 2 - 0.72 * Math.sin(angle) + 0.545 * Math.cos(angle), 0, C.load, null, angle);
       demo.motion = rampCrate; demo.baseX = rampCrate.position.x; demo.baseY = rampCrate.position.y; demo.angle = angle;
-      box(0.16, visH, 1.85, visL / 2 - 0.12, 0.28 + visH / 2, 0, C.frame);
-      demo.effortArrow = arrow(-2.1, 2.35, 0.72, C.effort);
+      box(0.16, visH, 1.85, (visL / 2 - 0.12) * Math.cos(angle), 0.28 + visH / 2, 0, C.frame);
+      [-1, 1].forEach(function (side) { box(visL, 0.08, 0.07, -0.16 * Math.sin(angle), 0.42 + visH / 2 + 0.16 * Math.cos(angle), side * 1.01, C.metal, null, angle); });
+      demo.effortArrow = arrow(rampCrate.position.x - 1.65 * Math.cos(angle), rampCrate.position.y - 1.65 * Math.sin(angle), 0.72, C.effort);
+      demo.effortArrow.rotation.z = angle + Math.PI / 2;
+      demo.effortArrow.userData.mlBaseX = demo.effortArrow.position.x;
       demo.loadArrow = arrow(1.35, 2.0 + visH / 2, 0.46, C.load, 'up');
     } else if (id === 'wedge') {
       var ratio = Math.max(1, (Number(p.length) || 0.3) / Math.max(0.001, Number(p.thickness) || 0.06));
@@ -1832,24 +1901,60 @@ window.StemLab = window.StemLab || {
       // separate, rather than two unrelated objects beside the wedge.
       box(0.055, 1.72, 2.9, -0.015, 1.36, 0, C.frame, splitLeft);
       box(0.055, 1.72, 2.9, 0.015, 1.36, 0, C.frame, splitRight);
-      var wedge = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.28, 1.4 / Math.sqrt(ratio)), 2.8, 3), mat(C.metal));
-      wedge.position.set(0, 2.05, 0); wedge.rotation.z = Math.PI; S.model.add(wedge);
+      var wedgeHalf = Math.max(0.18, 1.4 / Math.sqrt(ratio));
+      var wedgeProfile = new THREE.Shape();
+      wedgeProfile.moveTo(-wedgeHalf, 1.4); wedgeProfile.lineTo(wedgeHalf, 1.4);
+      wedgeProfile.lineTo(0, -1.4); wedgeProfile.closePath();
+      var wedgeGeometry = new THREE.ExtrudeGeometry(wedgeProfile, {depth:2.6, bevelEnabled:true, bevelSegments:1, steps:1, bevelSize:0.025, bevelThickness:0.025});
+      wedgeGeometry.translate(0,0,-1.3);
+      var wedge = finishMesh(new THREE.Mesh(wedgeGeometry, mat(C.metal)));
+      var bladeEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wedgeGeometry, 25),
+        new THREE.LineBasicMaterial({color:contrast ? 0x000000 : 0x334155, transparent:!contrast, opacity:contrast ? 1 : 0.6}));
+      wedge.add(bladeEdges);
+      wedge.position.set(0, 2.05, 0); S.model.add(wedge);
       demo.motion = wedge; demo.baseY = 2.05; demo.splitLeft = splitLeft; demo.splitRight = splitRight;
       box(2.5, 0.24, 0.24, 0, 3.42, 0, C.effort);
       demo.effortArrow = arrow(0, 4.0, 0.55, C.effort);
+      demo.splitArrows = [-1,1].map(function (side) {
+        var splitArrow = arrow(side * 0.7, 1.8, 0.65, C.load);
+        splitArrow.position.z = 1.85; splitArrow.rotation.z = side * Math.PI / 2;
+        splitArrow.userData.mlSide = side; return splitArrow;
+      });
     } else {
       var pitch = Math.max(0.001, Number(p.pitch) || 0.005);
       var hr = Math.max(0.02, Number(p.handleR) || 0.15);
       var screwMotion = new THREE.Group(); S.model.add(screwMotion);
-      cylinder(0.35, 2.8, 0, 1.85, 0, C.metal, 'y', screwMotion);
+      cylinder(0.35, 2.2, 0, 2.15, 0, C.metal, 'y', screwMotion);
       var rings = Math.max(6, Math.min(22, Math.round(0.055 / pitch)));
-      for (var ri = 0; ri < rings; ri++) {
-        torus(0.4, 0.055, 0, 0.52 + ri * (2.55 / (rings - 1)), 0, C.effort, 'y', screwMotion);
+      // A continuous thread shows the inclined plane wrapped around the shaft.
+      var threadPoints = [];
+      for (var ri = 0; ri <= rings * 32; ri++) {
+        var threadT = ri / (rings * 32), threadAngle = threadT * rings * Math.PI * 2;
+        threadPoints.push(new THREE.Vector3(0.4 * Math.cos(threadAngle), 1.08 + threadT * 1.99, 0.4 * Math.sin(threadAngle)));
       }
+      var thread = finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(threadPoints), rings * 32, 0.055, 6, false), mat(C.effort)));
+      screwMotion.add(thread);
+      [-1, 1].forEach(function (side) { box(0.2, 2.5, 0.28, side * 1.05, 1.55, -0.35, C.frame); });
+      box(2.5, 0.24, 0.55, 0, 2.68, -0.12, C.frame);
+      cylinder(0.54, 0.32, 0, 2.68, 0, C.metal, 'y');
+      // A swivel shoe translates with the shaft but does not spin the workpiece.
+      var pressShoe=new THREE.Group();S.model.add(pressShoe);
+      cylinder(0.68,0.14,0,0.98,0,C.metal,'y',pressShoe);
+      cylinder(0.24,0.16,0,1.13,0,C.frame,'y',pressShoe);
+      torus(0.48,0.035,0,1.055,0,C.effort,'y',pressShoe);
+      box(2.45,0.15,1.95,0,0.355,0,C.metal);
+      [-1,1].forEach(function(side){
+        box(0.46,0.12,0.72,side*1.05,0.49,-0.35,C.frame);
+        [-1,1].forEach(function(front){cylinder(0.07,0.055,side*1.05,0.575,-0.35+front*0.24,C.effort,'y');});
+        cylinder(0.075,0.62,side*1.04,2.68,-0.12,C.metal,'z');
+      });
+      // Front tick marks show the vertical travel against the fixed frame.
+      for(var pressMark=0;pressMark<8;pressMark++)box(pressMark%2 ? 0.09 : 0.15,0.018,0.015,1.05,0.88+pressMark*0.12,-0.195,C.effort);
       var handleW = 1.8 + Math.min(2.2, hr * 5);
       box(handleW, 0.2, 0.28, 0, 3.45, 0, C.effort, screwMotion);
       cylinder(0.14, 0.52, -handleW / 2, 3.45, 0, C.wood, 'y', screwMotion);
-      box(1.55, 0.48, 1.55, 0, 0.4, 0, C.load);
+      demo.pressLoad = box(1.55, 0.48, 1.55, 0, 0.67, 0, C.load);
+      demo.pressShoe=pressShoe;demo.pressBaseY=0.43;
       demo.motion = screwMotion;
       demo.effortArrow = arrow(-handleW / 2, 4.1, 0.5, C.effort);
       demo.loadArrow = arrow(0, 0.66, 0.38, C.load, 'up');
@@ -1857,7 +1962,7 @@ window.StemLab = window.StemLab || {
 
     S.target = new THREE.Vector3(0, 1.65, 0);
     S.fitPts = [
-      new THREE.Vector3(-4.1, 0, -2.5), new THREE.Vector3(4.1, 4.4, 2.5),
+      new THREE.Vector3(-4.1, 0, -2.5), new THREE.Vector3(4.1, id === 'ramp' ? Math.max(4.4, visH + 0.9) : 4.4, 2.5),
       new THREE.Vector3(0, 0, 2.8), new THREE.Vector3(0, 3.5, -2.8)
     ];
     demo.effortDot = effortDot; demo.loadDot = loadDot;
@@ -1866,32 +1971,36 @@ window.StemLab = window.StemLab || {
       var data = S.data || {};
       var active = data.demoId || 0;
       if (active && S.mlDemoId !== active) { S.mlDemoId = active; S.mlDemoT0 = now; }
-      var elapsed = active ? Math.max(0, (now - (S.mlDemoT0 || now)) / 1000) : 0;
+      var elapsed = active ? Math.max(0, (now - (S.mlDemoT0 == null ? now : S.mlDemoT0)) / 1000) : 0;
       var reducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var wave = active ? (reducedMotion ? 1 : Math.sin(Math.min(1, elapsed / 2.2) * Math.PI)) : 0;
       var k = wave * wave * (3 - 2 * wave);
       var D = S.mlDemo || {};
       if (D.lamps) {
         for (var li = 0; li < D.lamps.length; li++) {
-          D.lamps[li].material.emissiveIntensity = active ? 0.58 + 0.12 * Math.sin(elapsed * 10 + li) : 0.48;
+          D.lamps[li].material.emissiveIntensity = active && !reducedMotion ? 0.58 + 0.06 * Math.sin(elapsed * 2 + li) : 0.48;
         }
       }
       if (D.beacons) {
         for (var bi = 0; bi < D.beacons.length; bi++) {
-          var beaconPulse = active ? 1 + 0.18 * Math.sin(elapsed * 14 + bi * Math.PI) : 1;
+          var beaconPulse = active && !reducedMotion ? 1 + 0.10 * Math.sin(elapsed * 2 + bi * Math.PI) : 1;
           D.beacons[bi].scale.setScalar(beaconPulse);
-          D.beacons[bi].material.emissiveIntensity = active ? 0.5 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 14 + bi * Math.PI)) : 0.24;
+          D.beacons[bi].material.emissiveIntensity = active ? 0.5 : 0.24;
         }
       }
       if (D.kind === 'lever' && D.motion) D.motion.rotation.z = D.baseRotation - 0.22 * k;
       if (D.kind === 'pulley' && D.motion) D.motion.position.y = 0.72 * k;
+      if (D.supportingRopes) D.supportingRopes.forEach(function (rope) {
+        rope.scale.y = (2.24 - 0.72 * k) / 2.24; rope.position.y = 2.04 + 0.36 * k;
+      });
       if (D.kind === 'windlass') {
         if (D.motion) D.motion.rotation.z = Math.PI * 2 * k;
         if (D.drum) D.drum.rotation.y = Math.PI * 2 * k;
         if (D.load) D.load.position.y = D.loadY + 0.72 * k;
+        if (D.hangingRope) { D.hangingRope.scale.y = (D.ropeLength - 0.72 * k) / D.ropeLength; D.hangingRope.position.y = D.axleY-D.ropeLength/2 + 0.36 * k; }
       }
       if (D.kind === 'ramp' && D.motion) {
-        D.motion.position.x = D.baseX + 1.45 * k;
+        D.motion.position.x = D.baseX + 1.45 * Math.cos(D.angle) * k;
         D.motion.position.y = D.baseY + 1.45 * Math.sin(D.angle) * k;
       }
       if (D.kind === 'wedge' && D.motion) D.motion.position.y = D.baseY - 0.62 * k;
@@ -1901,11 +2010,18 @@ window.StemLab = window.StemLab || {
       }
       if (D.kind === 'screw' && D.motion) {
         D.motion.rotation.y = Math.PI * 2 * k;
-        D.motion.position.y = -0.55 * k;
+        D.motion.position.y = -0.18 * k;
+        if(D.pressShoe)D.pressShoe.position.y=-0.18*k;
+        if (D.pressLoad) { D.pressLoad.scale.y = 1 - 0.375 * k; D.pressLoad.position.y = D.pressBaseY + 0.24 * (1 - 0.375 * k); }
       }
       if (D.effortDot) D.effortDot.position.x = D.effortStartX + (D.effortEndX - D.effortStartX) * k;
       if (D.loadDot) D.loadDot.position.x = D.loadStartX + (D.loadEndX - D.loadStartX) * k;
       if (D.effortArrow) D.effortArrow.position.y = D.effortArrow.userData.mlBaseY - 0.16 * k;
+      if (D.kind === 'ramp' && D.effortArrow) {
+        D.effortArrow.position.x = D.effortArrow.userData.mlBaseX + 1.45 * Math.cos(D.angle) * k;
+        D.effortArrow.position.y = D.effortArrow.userData.mlBaseY + 1.45 * Math.sin(D.angle) * k;
+      }
+      if (D.splitArrows) D.splitArrows.forEach(function (a) { a.position.x = a.userData.mlSide * (0.7 + 0.42 * k); });
       if (D.loadArrow) {
         D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + 0.12 * k;
         D.loadArrow.scale.setScalar(1 + 0.18 * k);
@@ -1925,12 +2041,32 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  function dressTorsionBundle(THREE, bundle, radius, height, contrast) {
+    var rope = new THREE.MeshLambertMaterial({color:contrast ? 0xffffff : 0xb45309});
+    var iron = new THREE.MeshLambertMaterial({color:contrast ? 0xffffff : 0xe2e8f0});
+    for (var strand=0;strand<10;strand++) {
+      var pts=[];
+      for(var step=0;step<=16;step++) {
+        var t=step/16, angle=strand*Math.PI/5+t*1.8;
+        pts.push(new THREE.Vector3(Math.cos(angle)*radius, (t-0.5)*height, Math.sin(angle)*radius));
+      }
+      var cord=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,radius*0.065,4,false),rope);
+      bundle.add(cord);
+    }
+    [-1,1].forEach(function(side) {
+      var collar=new THREE.Mesh(new THREE.TorusGeometry(radius*1.04,radius*0.12,6,20),iron);
+      collar.rotation.x=Math.PI/2;collar.position.y=side*height*0.47;bundle.add(collar);
+      var lock=new THREE.Mesh(new THREE.BoxGeometry(radius*2.8,radius*0.16,radius*0.3),iron);
+      lock.position.y=side*height*0.52;bundle.add(lock);
+    });
+  }
+
   function buildTorsionScene(THREE, S, m) {
     var g = m.geom || {};
     var twoArmed = m.kind === 'ballista';
     var armLen = g.armLength || 1.1;
     var draw = g.drawLength || 0.85;
-    var sling = twoArmed ? 0 : (g.slingLength || 1.0);
+    var sling = twoArmed ? 0 : Math.max(0, g.slingLength == null ? 1.0 : g.slingLength);
     var projR = Math.max(0.06, Math.min(0.3, (g.projDiameter || 0.24) / 2));
 
     var frameCol = m.contrast ? 0xc8c8c8 : (m.dark === false ? 0x94a3b8 : 0x64748b);
@@ -1952,8 +2088,8 @@ window.StemLab = window.StemLab || {
     }
 
     var deckH = 0.42;
-    var deckLen = Math.max(1.3, armLen * 1.35);
-    var deckW = Math.max(0.85, armLen * 0.95);
+    var deckLen = twoArmed ? Math.max(2.5, armLen * 2.6) : Math.max(1.3, armLen * 1.35);
+    var deckW = twoArmed ? Math.max(1.5, armLen * 0.95) : Math.max(0.85, armLen * 0.95);
     decorateEngineYard(THREE, S, m, Math.max(4.6, deckLen * 2.7), Math.max(3.6, deckW * 2.8), mat, frameCol, projCol);
     var deck = new THREE.Mesh(new THREE.BoxGeometry(deckLen, 0.12, deckW), mat(frameCol));
     deck.position.set(0, deckH, 0);
@@ -1982,6 +2118,7 @@ window.StemLab = window.StemLab || {
         pivotX = -armLen * 0.42; pivotY = deckH + br * 2.4;
         var bundle = new THREE.Mesh(new THREE.CylinderGeometry(br, br, br * 3.6, 14), mat(ropeCol));
         bundle.position.set(-armLen * 0.42, deckH + br * 2.4, zz);
+        dressTorsionBundle(THREE, bundle, br, br*3.6, !!m.contrast);
         S.model.add(bundle);
         var pivot = new THREE.Group();
         pivot.position.set(-armLen * 0.42, deckH + Math.max(0.12, armLen * 0.15) * 2.4, zz);
@@ -1995,16 +2132,24 @@ window.StemLab = window.StemLab || {
         arms.push(pivot);
       });
       // The bowstring, rebuilt each frame from the live arm tips.
-      var stringMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 0.035, 0.035), mat(0xe2e8f0));
+      var stringMesh = new THREE.Group();
+      for(var stringSide=0;stringSide<2;stringSide++) stringMesh.add(new THREE.Mesh(new THREE.BoxGeometry(1,0.025,0.025),mat(ropeCol)));
       S.model.add(stringMesh);
       S.bowString = stringMesh;
       // A stock to sight along, so the machine reads as an engine and not a table.
       var stock = new THREE.Mesh(new THREE.BoxGeometry(deckLen * 0.85, 0.09, 0.12), mat(ink));
-      stock.position.set(deckLen * 0.12, deckH + 0.16, 0);
+      stock.position.set(0, pivotY - 0.11, 0);
       S.model.add(stock);
+      [-1,1].forEach(function(side) {
+        var rail=new THREE.Mesh(new THREE.BoxGeometry(deckLen*0.85,0.07,0.04),mat(0xe2e8f0));
+        rail.position.set(0,pivotY-0.04,side*0.11);S.model.add(rail);
+        var support=new THREE.Mesh(new THREE.BoxGeometry(0.14,pivotY-deckH,0.2),mat(frameCol));
+        support.position.set(side*deckLen*0.32,(pivotY+deckH)/2,0);S.model.add(support);
+      });
     } else {
       // One arm, sprung from a single bundle, whipping into a padded stop.
       var bundle1 = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 1.0, 16), mat(ropeCol));
+      dressTorsionBundle(THREE, bundle1, 0.17, 1.0, !!m.contrast);
       bundle1.rotation.x = Math.PI / 2;
       bundle1.position.set(-armLen * 0.5, deckH + 0.22, 0);
       S.model.add(bundle1);
@@ -2025,24 +2170,23 @@ window.StemLab = window.StemLab || {
       arm1.position.set(armLen / 2, 0, 0);
       pivot1.add(arm1);
       if (sling > 0) {
-        var cord1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, sling, 0.03), mat(frameCol));
-        cord1.position.set(armLen, -sling / 2, 0);
-        pivot1.add(cord1);
+        var cord1 = new THREE.Mesh(new THREE.BoxGeometry(1,0.028,0.028),mat(ropeCol));
+        S.model.add(cord1);S.onagerCord=cord1;
       }
       pivot1.userData.side = 0;
       arms.push(pivot1);
     }
 
     S.ml = { arms: arms, stone: stone, twoArmed: twoArmed, armLen: armLen, sling: sling,
-             deckH: deckH, draw: draw, pivotX: pivotX, pivotY: pivotY };
+             deckH: deckH, deckLen: deckLen, deckW: deckW, draw: draw, pivotX: pivotX, pivotY: pivotY, nock: new THREE.Vector3() };
     S.mlShot = null;
 
-    var reachX = Math.max(deckLen * 0.6, armLen * 0.95);
-    var reachY = deckH + 0.5 + armLen * 0.85 + sling;
+    var reachX = Math.max(deckLen * 0.6, armLen + draw * 0.45);
+    var reachY = twoArmed ? pivotY + 0.7 : deckH + 0.5 + armLen * 0.85 + sling;
     S.target = new THREE.Vector3(0, deckH + (reachY - deckH) * 0.42, 0);
     S.fitPts = [
       new THREE.Vector3(-reachX, 0, 0), new THREE.Vector3(reachX, reachY, 0),
-      new THREE.Vector3(0, 0, deckW * 0.75), new THREE.Vector3(0, 0, -deckW * 0.75)
+      new THREE.Vector3(0, 0, twoArmed ? 0.6+armLen : deckW*0.75), new THREE.Vector3(0, 0, twoArmed ? -0.6-armLen : -deckW*0.75)
     ];
     if (!m.embedded && !m.contrast && S.model && S.model.traverse) {
       S.model.traverse(function (obj) { if (obj.isMesh) { obj.castShadow = true; obj.receiveShadow = true; } });
@@ -2051,22 +2195,30 @@ window.StemLab = window.StemLab || {
     function pose(k) {
       // k = 0 fully drawn back, k = 1 released.
       var ml = S.ml;
-      var cocked = ml.twoArmed ? -38 : -10;
+      var cocked = ml.twoArmed ? -38 : 12;
       var released = ml.twoArmed ? 26 : 68;
       var deg = cocked + (released - cocked) * k;
-      ml.arms.forEach(function (p) { p.rotation.z = deg * Math.PI / 180; });
-      // Stretch the bowstring between the two arm tips so it tracks the draw.
-      if (S.bowString && ml.arms.length === 2 && S.THREE) {
-        var tips = ml.arms.map(function (p) {
-          var v = new S.THREE.Vector3(ml.armLen, 0, 0);
-          p.updateMatrixWorld(true);
-          return v.applyMatrix4(p.matrixWorld);
-        });
-        var mid = tips[0].clone().add(tips[1]).multiplyScalar(0.5);
-        var span = tips[0].distanceTo(tips[1]);
-        S.bowString.position.copy(mid);
-        S.bowString.scale.set(Math.max(0.05, span), 1, 1);
-        S.bowString.rotation.set(0, Math.atan2(tips[1].x - tips[0].x, tips[1].z - tips[0].z) + Math.PI / 2, 0);
+      ml.arms.forEach(function (p) {
+        if(ml.twoArmed) p.rotation.set(0,-p.userData.side*(1.9-1.3*k),0);
+        else p.rotation.z=deg*Math.PI/180;
+      });
+      // All endpoints live in the model's coordinates, also when this engine
+      // is translated and rotated into the field. No world transform is applied twice.
+      function tip(p) { p.updateMatrix();return new THREE.Vector3(ml.armLen,0,0).applyMatrix4(p.matrix); }
+      function connect(mesh,a,b) {
+        var direction=b.clone().sub(a),length=direction.length();
+        mesh.position.copy(a).add(b).multiplyScalar(0.5);mesh.scale.x=Math.max(0.0001,length);
+        if(length>0.0001)mesh.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),direction.normalize());
+      }
+      if(S.bowString && ml.twoArmed) {
+        var tips=ml.arms.map(tip);
+        ml.nock.copy(tips[0]).add(tips[1]).multiplyScalar(0.5);ml.nock.x-=ml.draw*0.45*(1-k);
+        S.bowString.children.forEach(function(segment,i){connect(segment,tips[i],ml.nock);});
+      } else {
+        var top=tip(ml.arms[0]),drop=Math.min(ml.sling,Math.max(0,top.y-deckH-0.06-projR));
+        ml.nock.copy(top);ml.nock.y-=drop;
+        ml.nock.x+=Math.sqrt(Math.max(0,ml.sling*ml.sling-drop*drop));
+        if(S.onagerCord)connect(S.onagerCord,top,ml.nock);
       }
       return deg * Math.PI / 180;
     }
@@ -2075,7 +2227,7 @@ window.StemLab = window.StemLab || {
     // function the swing uses, so the two cannot disagree about the arms.
     S.mlPose = function (k) { pose(1 - Math.max(0, Math.min(1, k))); };
     pose(0);
-    stone.position.set(pivotX + armLen * Math.cos(-0.96), pivotY + armLen * Math.sin(-0.96) - sling, 0);
+    stone.position.copy(S.ml.nock);
 
     S.tick = function (now) {
       var data = S.data || {};
@@ -2094,11 +2246,11 @@ window.StemLab = window.StemLab || {
         updateYardSignals(false, false);
         var r0 = pose(0);
         ml.stone.visible = true;
-        ml.stone.position.set(ml.pivotX + ml.armLen * Math.cos(r0), ml.pivotY + ml.armLen * Math.sin(r0) - ml.sling, 0);
+        ml.stone.position.copy(ml.nock);
         return;
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
-      var el = Math.max(0, (now - (S.mlT0 || now)) / 1000);
+      var el = Math.max(0, (now - (S.mlT0 == null ? now : S.mlT0)) / 1000);
       // Reduced motion still communicates the release, but skips the arm whip
       // and the moving stone entirely. The viewer is render-on-demand, so this
       // settles the machine in one deterministic frame.
@@ -2113,23 +2265,109 @@ window.StemLab = window.StemLab || {
         var vDir = (data.releaseAngle == null ? 45 : data.releaseAngle) * Math.PI / 180;
         var sp = Math.min(data.muzzleV || 20, 70);
         ml.stone.visible = f < 1.0;
-        ml.stone.position.set(ml.pivotX + sp * f * Math.cos(vDir), ml.pivotY + sp * f * Math.sin(vDir) - 4.9 * f * f, 0);
+        ml.stone.position.set(ml.nock.x + sp * f * Math.cos(vDir), ml.nock.y + sp * f * Math.sin(vDir) - 4.9 * f * f, ml.nock.z);
       } else {
         ml.stone.visible = true;
-        ml.stone.position.set(ml.pivotX + ml.armLen * Math.cos(rot), ml.pivotY + ml.armLen * Math.sin(rot) - ml.sling, 0);
+        ml.stone.position.copy(ml.nock);
       }
     };
   }
 
   function buildMachineScene(THREE, S, m) {
-    if (m && (m.kind === 'ballista' || m.kind === 'onager')) return buildTorsionScene(THREE, S, m);
-    return buildTrebuchetScene(THREE, S, m);
+    if (m && (m.kind === 'ballista' || m.kind === 'onager')) buildTorsionScene(THREE, S, m);
+    else buildTrebuchetScene(THREE, S, m);
+    finishEngineMechanism(THREE, S, m || {});
+  }
+
+  function finishEngineMechanism(THREE, S, m) {
+    if (!S.ml || m.embedded) return;
+    var contrast = !!m.contrast;
+    var wood = contrast ? null : woodTexture(THREE);
+    var parts = S.model.children.slice(S.mlYard ? S.mlYard.endIndex : 0), originals = [];
+    parts.forEach(function (part) { part.traverse(function (o) { if (o.isMesh) originals.push(o); }); });
+    originals.forEach(function (o) {
+      var old = o.material, hex = old && old.color && old.color.getHexString();
+      var timber = ['64748b', '94a3b8', '475569', 'cbd5e1'].indexOf(hex) !== -1;
+      var rope = hex === 'b45309' || (S.ml.cord && o === S.ml.cord);
+      if (!contrast && old && old.color) {
+        var cfg = { color: old.color.clone(), roughness: 0.42, metalness: 0.25 };
+        if (timber && !rope) { cfg.color = new THREE.Color(0xe5c29c); cfg.map = wood; cfg.roughness = 0.82; cfg.metalness = 0; }
+        if (rope) { cfg.color = new THREE.Color(0xd4b37f); cfg.roughness = 1; cfg.metalness = 0; }
+        o.material = new THREE.MeshStandardMaterial(cfg); old.dispose();
+      }
+      if (o.geometry && o.geometry.type === 'BoxGeometry' && !rope && !o.userData.mlCounterweight) {
+        var p = o.geometry.parameters; detailMachineBox(THREE, o, p.width, p.height, p.depth, contrast);
+      }
+    });
+    var iron = new THREE.MeshStandardMaterial({color:contrast ? 0xffffff : 0x526074, roughness:0.38, metalness:0.55});
+    var timberMat = contrast ? new THREE.MeshLambertMaterial({color:0xffffff}) : new THREE.MeshStandardMaterial({color:0xdfb787,map:wood,roughness:0.86});
+    function beam(a, b, width, material, parent) {
+      var start = new THREE.Vector3(a[0],a[1],a[2]), end = new THREE.Vector3(b[0],b[1],b[2]);
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(width,start.distanceTo(end),width),material);
+      mesh.position.copy(start).add(end).multiplyScalar(0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),end.sub(start).normalize());
+      mesh.castShadow = !contrast; mesh.receiveShadow = !contrast; (parent || S.model).add(mesh); return mesh;
+    }
+    function axle(radius, length, x, y, z, parent) {
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,20),iron);
+      mesh.rotation.x = Math.PI/2; mesh.position.set(x,y,z); (parent || S.model).add(mesh); return mesh;
+    }
+    if (S.ml.arm) {
+      var height = S.ml.pivotH;
+      [-0.7,0.7].forEach(function (z) {
+        [-1,1].forEach(function (side) { beam([side*1.65,0.24,z],[0,height-0.2,z],0.18,timberMat); });
+        beam([-1.9,0.25,z],[1.9,0.25,z],0.26,timberMat); axle(0.24,0.08,0,height,z);
+      });
+      axle(0.13,1.75,0,height,0); axle(0.23,1.65,-1.25,0.7,0);
+      for(var ring=0;ring<9;ring++) {
+        var winding = new THREE.Mesh(new THREE.TorusGeometry(0.245,0.024,6,24),timberMat);
+        winding.position.set(-1.25,0.7,-0.55+ring*0.14); S.model.add(winding);
+      }
+      beam([-1.25,0.7,0.94],[-1.25,1.19,0.94],0.07,iron); axle(0.07,0.28,-1.25,1.19,1.06);
+      [-0.76,0.76].forEach(function(z){beam([-1.25,0.25,z],[-1.25,0.72,z],0.12,timberMat);});
+    } else if (S.ml.arms) {
+      S.ml.arms.forEach(function (arm) {
+        var pin=axle(0.13,0.32,0,0,0,arm);
+        if(S.ml.twoArmed)pin.rotation.x=0;
+        var collar = new THREE.Mesh(new THREE.TorusGeometry(0.17,0.045,8,24),iron);
+        if(S.ml.twoArmed){collar.rotation.x=Math.PI/2;collar.position.y=0.13;}else collar.position.z=0.13;arm.add(collar);
+      });
+      var deckLen=S.ml.deckLen, deckW=S.ml.deckW;
+      [-1,1].forEach(function(side){beam([-deckLen/2,0.5,side*deckW/2],[deckLen/2,0.5,side*deckW/2],0.055,iron);});
+      axle(0.11,deckW*1.1,deckLen*0.42,0.57,0);
+      beam([deckLen*0.42,0.57,deckW*0.6],[deckLen*0.42,0.86,deckW*0.6],0.045,iron);
+      axle(0.055,0.18,deckLen*0.42,0.86,deckW*0.67);
+    }
   }
 
   // The range view is the one place where the student follows the payload,
   // not the mechanism. Keep its 3D world deliberately sparse: the launch deck
   // establishes scale, the lane marks distance, and one stone traces the same
   // sampled path used by the graph and the scorer below it.
+  // Compact paths need not have uniform sample spacing. Read their own clock,
+  // retaining index interpolation only for older snapshots without timestamps.
+  function rangePointAt(path, fraction) {
+    if (!path || !path.length) return null;
+    var f = Math.max(0, Math.min(1, fraction)), last = path.length - 1;
+    var timed = finite(path[0].t) && finite(path[last].t) && path[last].t > path[0].t;
+    var i = Math.min(last, Math.floor(f * last)), mix = f * last - i;
+    if (timed) {
+      var time = path[0].t + f * (path[last].t - path[0].t), lo = 0, hi = last;
+      while (lo < hi) { var mid = Math.floor((lo + hi) / 2); if (path[mid].t < time) lo = mid + 1; else hi = mid; }
+      i = Math.max(0, lo - 1);
+      mix = Math.max(0, Math.min(1, (time - path[i].t) / Math.max(1e-9, path[Math.min(last, i + 1)].t - path[i].t)));
+    }
+    var a = path[i], b = path[Math.min(last, i + 1)];
+    return { x: (Number(a.x) || 0) + ((Number(b.x) || 0) - (Number(a.x) || 0)) * mix,
+      y: (Number(a.y) || 0) + ((Number(b.y) || 0) - (Number(a.y) || 0)) * mix,
+      z: (Number(a.z) || 0) + ((Number(b.z) || 0) - (Number(a.z) || 0)) * mix };
+  }
+
+  function rangeRulerStep(extent) {
+    var rough=Math.max(1,extent)/6,power=Math.pow(10,Math.floor(Math.log(rough)/Math.LN10)),unit=rough/power;
+    return (unit<=1 ? 1 : unit<=2 ? 2 : unit<=5 ? 5 : 10)*power;
+  }
+
   function buildRangeScene(THREE, S, m) {
     m = m || {};
     var dark = m.dark !== false;
@@ -2150,7 +2388,7 @@ window.StemLab = window.StemLab || {
     var maxY = Math.max(3, (showPath ? Number(m.apex) : 0) || path.reduce(function (acc, p) {
       return Math.max(acc, Number(p.y) || 0);
     }, 0));
-    var drift = Math.max(2.5, Math.abs(Number(m.drift) || Number(end.z) || 0) + 2.5);
+    var drift = showPath ? Math.max(2.5,Math.abs(Number(m.drift) || Number(end.z) || 0)+2.5) : 2.5;
     var laneDepth = Math.max(8, drift * 2.4);
     var colors = contrast ? {
       ground: 0x000000, platform: 0x111111, frame: 0xffffff,
@@ -2166,9 +2404,9 @@ window.StemLab = window.StemLab || {
     if (S.renderer && S.renderer.setClearColor) {
       S.renderer.setClearColor(contrast ? 0x000000 : (dark ? 0x07111f : 0xeaf0f6), 1);
     }
-    if (!contrast && S.scene && typeof THREE.Fog === 'function') {
-      S.scene.fog = new THREE.Fog(contrast ? 0x000000 : (dark ? 0x07111f : 0xeaf0f6), Math.max(20, maxX * 0.1), Math.max(100, maxX * 2.4));
-    }
+    // The measuring bay must stay readable when portrait framing pulls the
+    // camera back. Atmospheric fog belongs to the field, not this instrument.
+    if (S.scene) S.scene.fog = null;
 
     function material(color, emissive, opacity) {
       var cfg = { color: color };
@@ -2218,12 +2456,15 @@ window.StemLab = window.StemLab || {
     ground.receiveShadow = !contrast;
     S.model.add(ground);
 
-    if (typeof THREE.GridHelper === 'function') {
-      var divisions = Math.max(10, Math.min(48, Math.round(maxX / 5)));
-      var grid = new THREE.GridHelper(maxX + 12, divisions, colors.frame, dark ? 0x18283e : 0xb7c4d2);
-      grid.position.set(maxX / 2, 0.012, 0);
-      S.model.add(grid);
-    }
+    // A measured rectangle, rather than a square grid extending far outside the lane.
+    var majorStep=rangeRulerStep(maxX),power=Math.pow(10,Math.floor(Math.log(majorStep)/Math.LN10));
+    var minorStep=majorStep/(Math.round(majorStep/power)===2 ? 4 : 5),gridPoints=[];
+    for(var gx=0;gx<=maxX+0.0001;gx+=minorStep)gridPoints.push(gx,0.018,-laneDepth/2,gx,0.018,laneDepth/2);
+    var sideStep=rangeRulerStep(laneDepth);
+    for(var gz=-Math.floor(laneDepth/2/sideStep)*sideStep;gz<=laneDepth/2+0.0001;gz+=sideStep)gridPoints.push(0,0.018,gz,maxX,0.018,gz);
+    var gridGeometry=new THREE.BufferGeometry();gridGeometry.setAttribute('position',new THREE.Float32BufferAttribute(gridPoints,3));
+    var grid=new THREE.LineSegments(gridGeometry,new THREE.LineBasicMaterial({color:colors.quiet,transparent:true,opacity:contrast ? 0.65 : 0.32}));S.model.add(grid);
+    S.rangeScale={step:majorStep,minorStep:minorStep,major:[],labels:[],grid:grid,depth:laneDepth};
 
     // The launch deck is compact and close to the camera, so there is always
     // a physical origin to compare with the far-away flag.
@@ -2238,16 +2479,27 @@ window.StemLab = window.StemLab || {
     launchStone.position.y += 0.05;
     launchStone.castShadow = !contrast;
     S.model.add(launchStone);
+    var launchY=Math.max(0.5,launchStone.position.y),launchR=launchStone.geometry.parameters.radius;
+    var mastTop=Math.max(0.4,launchY-launchR-0.11);
+    box(0.16,mastTop-0.3,0.16,0,(mastTop+0.3)/2,0,colors.frame);
+    var cradle=new THREE.Mesh(new THREE.CylinderGeometry(launchR+0.08,launchR+0.12,0.1,16),material(colors.load));
+    cradle.position.set(0,launchY-launchR-0.06,0);S.model.add(cradle);
+    [-1,1].forEach(function(x){[-1,1].forEach(function(z){
+      var bolt=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.04,6),material(colors.frame));bolt.position.set(x*1.35,0.24,z*1.02);S.model.add(bolt);
+    });});
 
     // A low pair of rails turns the downrange axis into something the eye can
     // measure. Ticks are capped so a 250 m throw does not become a picket fence.
     box(maxX + 1.2, 0.045, 0.06, maxX / 2, 0.06, -2.35, colors.effort);
     box(maxX + 1.2, 0.045, 0.06, maxX / 2, 0.06, 2.35, colors.load);
-    var tickCount = Math.max(4, Math.min(16, Math.ceil(maxX / 10)));
-    for (var ti = 0; ti <= tickCount; ti++) {
-      var tx = (maxX * ti) / tickCount;
-      box(0.045, 0.08, 0.28, tx, 0.08, -2.35, ti === tickCount ? colors.load : colors.quiet);
-      box(0.045, 0.08, 0.28, tx, 0.08, 2.35, ti === tickCount ? colors.load : colors.quiet);
+    for(var tick=0;tick<=Math.floor(maxX/minorStep+0.0001);tick++) {
+      var tx=tick*minorStep,isMajor=Math.abs(tx/majorStep-Math.round(tx/majorStep))<0.0001;
+      [-1,1].forEach(function(side){box(isMajor ? 0.07 : 0.035,0.035,isMajor ? 0.55 : 0.25,tx,0.09,side*2.35,isMajor ? colors.frame : colors.quiet);});
+      if(isMajor){
+        S.rangeScale.major.push(tx);
+        var rulerLabel=makeLabelSprite(THREE,Math.max(0.5,maxX*0.065),contrast ? '#ffffff' : dark ? '#dce8f7' : '#24364c',true,dark || contrast ? null : 'rgba(255,255,255,.96)');
+        if(rulerLabel){S.rangeScale.labels.push({label:rulerLabel,scale:rulerLabel.sprite.scale.clone()});rulerLabel.draw(String(Math.round(tx*10)/10)+(m.metresWord || ' m'));rulerLabel.sprite.position.set(tx,Math.max(0.4,maxX*0.014),3.35);rulerLabel.sprite.visible=true;S.model.add(rulerLabel.sprite);}
+      }
     }
 
     var past = revealed ? (m.past || []).filter(function (r) { return r && r.length > 1; }).slice(-4) : [];
@@ -2259,13 +2511,13 @@ window.StemLab = window.StemLab || {
     if (!currentLine && showPath) currentLine = line(currentPoints, colors.effort, 0.98, false);
     if (showPath) line([
       new THREE.Vector3(0, 0.035, 0),
-      new THREE.Vector3(Number(end.x) || maxX, 0.035, Number(end.z) || 0)
+      new THREE.Vector3(Number(end.x) || 0, 0.035, Number(end.z) || 0)
     ], colors.effort, 0.28, true);
 
     // A simple impact flag makes the terminal point obvious even when the arc
     // is shallow. Its height is deliberately independent of the trajectory.
     if (showPath) {
-      var flagX = Number(end.x) || maxX, flagZ = Number(end.z) || 0;
+      var flagX = Number(end.x) || 0, flagZ = Number(end.z) || 0;
       box(0.08, 1.7, 0.08, flagX, 0.85, flagZ, colors.load);
       box(0.7, 0.34, 0.06, flagX + 0.34, 1.5, flagZ, colors.load, true);
     }
@@ -2300,7 +2552,7 @@ window.StemLab = window.StemLab || {
         apRing.rotation.x = Math.PI / 2;
         apRing.position.copy(apPt);
         S.model.add(apRing);
-        var apLabel = makeLabelSprite(THREE, Math.max(1.1, maxX * 0.03), contrast ? '#ffffff' : '#fde68a', true);
+        var apLabel = makeLabelSprite(THREE, Math.max(1.1, maxX * 0.055), contrast ? '#ffffff' : dark ? '#fde68a' : '#92400e', true, dark || contrast ? null : 'rgba(255,255,255,.96)');
         if (apLabel) {
           apLabel.draw((m.apexWord || 'apex ') + Math.round(Number(m.apex) || apPt.y) + (m.metresWord || ' m'));
           apLabel.sprite.position.set(apPt.x, apPt.y + Math.max(1, maxY * 0.14), apPt.z);
@@ -2333,6 +2585,42 @@ window.StemLab = window.StemLab || {
       ghost.visible = false;
       S.model.add(ghost); rangeGhosts.push(ghost);
     }
+    // A ground projection gives height and crosswind a common reference.
+    // These instruments exist only for a revealed, valid flight.
+    var heightGuide = null, groundRing = null;
+    if (showPath) {
+      heightGuide = line([new THREE.Vector3(),new THREE.Vector3(0,1,0)], colors.load, 0.65, true);
+      heightGuide.visible = false;
+      groundRing = new THREE.Mesh(new THREE.RingGeometry(markerR * 1.25, markerR * 1.65, 32),
+        new THREE.MeshBasicMaterial({color:colors.load, side:THREE.DoubleSide, transparent:true, opacity:0.8, depthWrite:false}));
+      groundRing.rotation.x = -Math.PI / 2; groundRing.visible = false; S.model.add(groundRing);
+    }
+    var apexScale=apLabel ? apLabel.sprite.scale.clone() : null;
+    var landing=null,driftGuide=null,landingLabel=null;
+    // Match the result card: range includes sideways travel, while ruler ticks measure x.
+    var landingDistance=m.range != null && isFinite(Number(m.range)) ? Math.max(0,Number(m.range)) : Math.sqrt(end.x*end.x+(end.z||0)*(end.z||0));
+    if(showPath){
+      landing=new THREE.Group();landing.position.set(Number(end.x)||0,0.045,Number(end.z)||0);landing.visible=false;S.model.add(landing);
+      var targetR=Math.max(0.38,Math.min(1.6,maxX*0.008));
+      [1,1.7,2.4].forEach(function(size){
+        var ring=new THREE.Mesh(new THREE.RingGeometry(targetR*size,targetR*size+targetR*0.12,40),new THREE.MeshBasicMaterial({color:colors.load,side:THREE.DoubleSide,transparent:true,opacity:0.78,depthWrite:false}));
+        ring.rotation.x=-Math.PI/2;landing.add(ring);
+      });
+      var dz=Number(end.z)||0;
+      if(Math.abs(dz)>0.05){
+        driftGuide=line([new THREE.Vector3(Number(end.x)||0,0.055,0),new THREE.Vector3(Number(end.x)||0,0.055,dz)],colors.load,0.85,true);driftGuide.visible=false;
+        [-1,1].forEach(function(side){var tick=new THREE.Mesh(new THREE.BoxGeometry(targetR,0.04,0.04),material(colors.load));tick.position.set(0,0.02,side===1 ? 0 : -dz);landing.add(tick);});
+      }
+      landingLabel=makeLabelSprite(THREE,Math.max(0.65,maxX*0.065),contrast ? '#00ffff' : dark ? '#7dd3fc' : '#0369a1',true,dark || contrast ? null : 'rgba(255,255,255,.96)');
+      if(landingLabel){
+        var resultText=(Math.round(landingDistance*10)/10)+(m.metresWord || ' m');
+        if(Math.abs(dz)>0.05)resultText+=' · '+(m.driftWord || 'drift ')+(Math.round(Math.abs(dz)*10)/10)+(m.metresWord || ' m');
+        landingLabel.draw(resultText);landingLabel.sprite.position.set(Number(end.x)||0,Math.max(2,maxY*0.13),dz);S.model.add(landingLabel.sprite);
+      }
+    }
+    S.rangeInstruments = {heightGuide:heightGuide, groundRing:groundRing, trail:rangeGhosts,landing:landing,driftGuide:driftGuide,landingLabel:landingLabel};
+    var landingScale=landingLabel ? landingLabel.sprite.scale.clone() : null;
+    var labelWidth=0;
     S.rangeShotId = null;
     S.tick = function (now) {
       var data = S.data || {};
@@ -2344,22 +2632,44 @@ window.StemLab = window.StemLab || {
           fraction = 1;
         } else {
           var seconds = Math.max(0.6, Number(data.flightTime) || 1.4);
-          fraction = Math.max(0, Math.min(1, (now - (S.rangeT0 || now)) / 1000 / seconds));
+          fraction = Math.max(0, Math.min(1, (now - (S.rangeT0 == null ? now : S.rangeT0)) / 1000 / seconds));
         }
       } else {
         fraction = data.shotId ? 1 : 0;
       }
       var pts = S.rangePath || [];
+      // Keep a small set of readable measurements when the canvas narrows or resizes.
+      var viewportWidth=S.renderer && S.renderer.domElement ? S.renderer.domElement.clientWidth : 1130;
+      viewportWidth=viewportWidth || 1130;
+      if(viewportWidth!==labelWidth){
+        labelWidth=viewportWidth;
+        var compact=viewportWidth<600,labelFactor=Math.min(2.6,Math.max(1,800/viewportWidth));
+        S.rangeScale.labels.forEach(function(entry,index){entry.label.sprite.scale.copy(entry.scale).multiplyScalar(labelFactor);entry.label.sprite.visible=!compact || index%2===0;});
+        if(apLabel)apLabel.sprite.scale.copy(apexScale).multiplyScalar(labelFactor);
+        if(landingLabel){
+          landingLabel.sprite.scale.copy(landingScale).multiplyScalar(labelFactor);
+          landingLabel.draw(compact ? (Math.round(landingDistance*10)/10)+(m.metresWord || ' m') : resultText);
+          landingLabel.sprite.position.x=(Number(end.x)||0)-(compact ? maxX*0.055 : 0);
+          landingLabel.sprite.position.y=Math.max(2,maxY*(compact ? 0.23 : 0.13));
+        }
+      }
+      var atLanding=!!(data.shotId && pts.length>1 && fraction>=1);
+      if(landing)landing.visible=atLanding;
+      if(driftGuide)driftGuide.visible=atLanding;
+      if(landingLabel)landingLabel.sprite.visible=atLanding;
       // Reduced motion: the arc as a strobe photograph, which is the textbook
       // figure for a projectile and not a lesser view of it.
       var strobe = !!(data.reduced && data.shotId && pts.length > 1);
       for (var gi2 = 0; gi2 < rangeGhosts.length; gi2++) {
         var gp = rangeGhosts[gi2];
-        gp.visible = strobe;
-        if (strobe) {
-          var gf = (gi2 + 1) / (rangeGhosts.length + 1);
-          var q = pts[Math.min(pts.length - 1, Math.floor(gf * (pts.length - 1)))];
-          gp.position.set(Number(q.x) || 0, Math.max(0.12, Number(q.y) || 0), Number(q.z) || 0);
+        var trailAge = (rangeGhosts.length - gi2) * 0.045;
+        var gf = strobe ? (gi2 + 1) / (rangeGhosts.length + 1) : fraction - trailAge;
+        gp.visible = strobe || (active && fraction < 1 && gf >= 0);
+        if (gp.visible) {
+          var q = rangePointAt(pts, gf);
+          gp.position.set(q.x, Math.max(0.12, q.y), q.z);
+          gp.material.opacity = strobe ? 0.55 : 0.08 + gi2 * 0.055;
+          gp.scale.setScalar(strobe ? 1 : 0.4 + gi2 * 0.075);
         }
       }
       if (!pts.length) {
@@ -2368,19 +2678,24 @@ window.StemLab = window.StemLab || {
         // state; keep the launch prop visible and settle the field safely.
         stone.visible = false;
         launchStone.visible = true;
+        if (heightGuide) heightGuide.visible = false;
+        if (groundRing) groundRing.visible = false;
         return;
       }
-      var idx = Math.min(pts.length - 1, Math.max(0, Math.floor(fraction * (pts.length - 1))));
-      var next = Math.min(pts.length - 1, idx + 1);
-      var seg = (fraction * (pts.length - 1)) - idx;
-      var a = pts[idx] || pts[0], b = pts[next] || a;
-      var pos = new THREE.Vector3(
-        (Number(a.x) || 0) + ((Number(b.x) || 0) - (Number(a.x) || 0)) * seg,
-        Math.max(0.12, (Number(a.y) || 0) + ((Number(b.y) || 0) - (Number(a.y) || 0)) * seg),
-        (Number(a.z) || 0) + ((Number(b.z) || 0) - (Number(a.z) || 0)) * seg
-      );
-      stone.position.copy(pos);
-      stone.scale.setScalar(active && !data.reduced ? 1 + 0.18 * Math.sin((now || 0) * 0.018) : 1);
+      var sample = rangePointAt(pts, fraction);
+      stone.position.set(sample.x, Math.max(0.12, sample.y), sample.z);
+      stone.scale.setScalar(1);
+      if (groundRing) {
+        groundRing.visible = !!data.shotId && fraction<1;
+        groundRing.position.set(sample.x,0.035,sample.z);
+      }
+      if (heightGuide) {
+        heightGuide.visible = !!data.shotId && sample.y > markerR * 2;
+        var hp = heightGuide.geometry.attributes.position;
+        hp.setXYZ(0,sample.x,0.045,sample.z); hp.setXYZ(1,sample.x,Math.max(0.045,sample.y),sample.z);
+        hp.needsUpdate = true; heightGuide.computeLineDistances();
+        heightGuide.geometry.computeBoundingSphere();
+      }
       launchStone.visible = !active && !data.shotId;
       stone.visible = active || !!data.shotId;
     };
@@ -2448,16 +2763,17 @@ window.StemLab = window.StemLab || {
       var grid = new THREE.GridHelper(Math.max(width, depth), Math.max(8, Math.round(width * 2)), railCol, dark ? 0x1b2c42 : 0xb8c5d3);
       grid.position.y = 0.205; S.model.add(grid);
     }
+    S.mlYard.endIndex = S.model.children.length;
   }
 
   function buildTrebuchetScene(THREE, S, m) {
     var g = m.geom || {};
     var beamLong = g.beamLong || 4.5;
     var beamShort = g.beamShort || 1.2;
-    var sling = g.slingLength || 2.0;
+    var sling = Math.max(0, g.slingLength == null ? 2.0 : g.slingLength);
     var cwSize = Math.max(0.35, Math.min(1.6, Math.pow((g.cwMass || 1200) / 1200, 1 / 3) * 0.9));
     var projR = Math.max(0.08, Math.min(0.45, (g.projDiameter || 0.24) / 2));
-    var pivotH = Math.max(beamShort + 1.4, (g.cwDrop || 3.2) + 1.0);
+    var pivotH = Math.max(beamShort + 1.4, (g.cwDrop || 3.2) + 1.0, beamLong * Math.sin(-COCKED_DEG*Math.PI/180) + Math.max(projR,0.22) + 0.35);
 
     var ink = m.contrast ? 0xffffff : (m.dark === false ? 0x475569 : 0xcbd5e1);
     var frameCol = m.contrast ? 0xc8c8c8 : (m.dark === false ? 0x94a3b8 : 0x64748b);
@@ -2501,23 +2817,44 @@ window.StemLab = window.StemLab || {
     beam.position.set(span / 2 - beamShort, 0, 0);
     arm.add(beam);
 
-    var cw = new THREE.Mesh(new THREE.BoxGeometry(cwSize, cwSize, cwSize), mat(cwCol));
+    var cw = new THREE.Mesh(new THREE.BoxGeometry(cwSize,cwSize,cwSize),mat(frameCol));
+    cw.userData.mlCounterweight=true;
+    var hardware=mat(m.contrast ? 0xffffff : 0xe2e8f0);
+    [-1,1].forEach(function(side) {
+      var band=new THREE.Mesh(new THREE.BoxGeometry(cwSize*1.025,cwSize*1.025,cwSize*0.085),hardware);
+      band.position.z=side*cwSize*0.31;cw.add(band);
+      for(var row=0;row<3;row++) {
+        var seam=new THREE.Mesh(new THREE.BoxGeometry(cwSize*1.004,0.008,cwSize*1.004),mat(m.contrast ? 0x111111 : 0x475569));
+        seam.position.y=(row-1)*cwSize*0.24;if(side===1)cw.add(seam);
+      }
+      [-1,1].forEach(function(x) {[-1,1].forEach(function(y) {
+        var bolt=new THREE.Mesh(new THREE.CylinderGeometry(cwSize*0.033,cwSize*0.033,cwSize*0.04,6),hardware);
+        bolt.rotation.x=Math.PI/2;bolt.position.set(x*cwSize*0.39,y*cwSize*0.38,side*cwSize*0.525);cw.add(bolt);
+      });});
+      var cap=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.1,20),hardware);
+      cap.rotation.x=Math.PI/2;cap.position.set(0,pivotH,side*0.84);S.model.add(cap);
+      var nut=new THREE.Mesh(new THREE.CylinderGeometry(0.115,0.115,0.13,6),hardware);
+      nut.rotation.x=Math.PI/2;nut.position.set(0,pivotH,side*0.91);S.model.add(nut);
+    });
     cw.position.set(-beamShort, -cwSize / 2 - 0.1, 0);
     arm.add(cw);
 
-    // Sling hangs from the long-arm tip; modelled as a thin bar plus the stone.
-    var slingGrp = new THREE.Group();
-    slingGrp.position.set(beamLong, 0, 0);
-    arm.add(slingGrp);
-    var cord = new THREE.Mesh(new THREE.BoxGeometry(0.07, sling, 0.07), mat(frameCol));
-    cord.position.set(0, -sling / 2, 0);
-    slingGrp.add(cord);
-    var stone = new THREE.Mesh(new THREE.SphereGeometry(Math.max(projR, 0.22), 18, 14), mat(projCol));
-    stone.position.set(0, -sling, 0);
-    slingGrp.add(stone);
-
-    S.ml = { arm: arm, sling: slingGrp, stone: stone, cord: cord, pivotH: pivotH,
-             beamLong: beamLong, sling3: sling, stoneR: Math.max(projR, 0.22) };
+    // The pouch and two rope legs stay attached to the arm. The projectile
+    // lives in model coordinates so its flight does not inherit arm rotation.
+    var slingGrp=new THREE.Group();slingGrp.position.set(beamLong,0,0);arm.add(slingGrp);
+    var ropeMat=mat(m.contrast ? 0xffffff : 0xb45309),cords=[];
+    for(var leg=0;leg<2;leg++) {
+      var rope=new THREE.Mesh(new THREE.CylinderGeometry(0.024,0.024,1,8),ropeMat);
+      slingGrp.add(rope);cords.push(rope);
+    }
+    var stoneRadius=Math.max(projR,0.22);
+    var pouch=new THREE.Mesh(new THREE.SphereGeometry(stoneRadius*1.12,16,8,0,Math.PI*2,Math.PI/2,Math.PI/2),ropeMat);
+    pouch.scale.y=0.65;pouch.material.side=THREE.DoubleSide;slingGrp.add(pouch);
+    var pin=new THREE.Mesh(new THREE.TorusGeometry(0.1,0.025,6,16),hardware);
+    pin.position.set(beamLong+0.03,0.06,0);arm.add(pin);
+    var stone=new THREE.Mesh(new THREE.SphereGeometry(stoneRadius,18,14),mat(projCol));S.model.add(stone);
+    S.ml={arm:arm,sling:slingGrp,stone:stone,cord:cords[0],cords:cords,pouch:pouch,counterweight:cw,pivotH:pivotH,
+      beamLong:beamLong,sling3:sling,stoneR:stoneRadius,nock:new THREE.Vector3()};
     S.mlShot = null;
     // Winding pose for the field bays: k = 0 cocked (long arm down), k = 1 at
     // rest with the counterweight down and the long arm in the air. The crew
@@ -2550,17 +2887,22 @@ window.StemLab = window.StemLab || {
     slingGrp.rotation.z = -arm.rotation.z;
     restSlingOnGround(S.ml, arm.rotation.z);
 
-    // With the arm down, the tip is barely above the ground, so a full-length
-    // sling would put the stone under it. Shorten the drawn cord to rest the
-    // stone on the ground, which is also where a real crew loads it.
-    function restSlingOnGround(ml, armRad) {
-      var tipY = ml.pivotH + ml.beamLong * Math.sin(armRad);
-      var drop = Math.max(0.25, Math.min(ml.sling3, tipY - ml.stoneR));
-      if (ml.cord && ml.sling3 > 0) {
-        ml.cord.scale.y = drop / ml.sling3;
-        ml.cord.position.set(0, -drop / 2, 0);
-      }
-      ml.stone.position.set(0, -drop, 0);
+    // Rest the pouch above the surface when loading, and extend the ropes
+    // continuously as the arm rises. The same pose function serves winding and firing.
+    function restSlingOnGround(ml,armRad) {
+      var tipY=ml.pivotH+ml.beamLong*Math.sin(armRad);
+      var lean=armRad+ml.sling.rotation.z;
+      var drop=Math.max(0,Math.min(ml.sling3,(tipY-ml.stoneR-0.04)/Math.max(0.15,Math.cos(lean))));
+      ml.pouch.position.set(0,-drop,0);ml.pouch.visible=ml.sling3>0;
+      ml.cords.forEach(function(rope,i) {
+        var side=i ? 1 : -1,start=new THREE.Vector3(0,0,side*0.07),end=new THREE.Vector3(0,-drop,side*ml.stoneR*0.7);
+        var direction=end.clone().sub(start),length=direction.length();
+        rope.position.copy(start).add(end).multiplyScalar(0.5);rope.scale.y=Math.max(0.001,length);rope.visible=ml.sling3>0;
+        if(length>0.001)rope.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
+      });
+      ml.arm.updateMatrix();ml.sling.updateMatrix();
+      ml.nock.copy(ml.pouch.position).applyMatrix4(ml.sling.matrix).applyMatrix4(ml.arm.matrix);
+      ml.stone.position.copy(ml.nock);
     }
 
     // Per-frame animation. Runs ONLY while the pushed data says static:false,
@@ -2588,7 +2930,7 @@ window.StemLab = window.StemLab || {
         return;
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
-      var el = Math.max(0, (now - (S.mlT0 || now)) / 1000);
+      var el = Math.max(0, (now - (S.mlT0 == null ? now : S.mlT0)) / 1000);
       if (reduced) el = 1.8;
       updateYardSignals(true, el > 0.75);
       var SWING = 0.75;                       // seconds of arm swing
@@ -2600,6 +2942,7 @@ window.StemLab = window.StemLab || {
       ml.arm.rotation.z = deg * Math.PI / 180;
       // The sling trails the arm, then whips level just before release.
       ml.sling.rotation.z = -ml.arm.rotation.z * (1 - 0.85 * eased);
+      restSlingOnGround(ml,ml.arm.rotation.z);
       if (el > SWING) {
         // Stone is away. Let it leave the frame rather than shrinking the
         // camera to fit a 200 m shot around a 4 m machine.
@@ -2607,10 +2950,10 @@ window.StemLab = window.StemLab || {
         var vDir = releaseDeg * Math.PI / 180;
         var sp = Math.min(data.muzzleV || 20, 60);
         ml.stone.visible = f < 1.0;
-        ml.stone.position.set(sp * f * Math.cos(vDir), sp * f * Math.sin(vDir) - 4.9 * f * f, 0);
+        ml.stone.position.set(ml.nock.x+sp*f*Math.cos(vDir),ml.nock.y+sp*f*Math.sin(vDir)-4.9*f*f,ml.nock.z);
       } else {
         ml.stone.visible = true;
-        ml.stone.position.set(0, -ml.sling3, 0);
+        ml.stone.position.copy(ml.nock);
       }
     };
   }
@@ -2783,6 +3126,27 @@ window.StemLab = window.StemLab || {
   // The machine geometry is not re-modelled here. buildTrebuchetScene and
   // buildTorsionScene are called with embedded:true onto a sub-group, so there
   // is one trebuchet in this tool and editing it changes both views.
+  // Shared, two-sided fracture marks: triangle strips keep a visible width
+  // under WebGL, and the same branching pattern survives orbiting the wall.
+  function makeWallCracks(THREE, model, capacity, depth, contrast) {
+    var paths=[[[0.02,0.4],[-0.08,0.22],[0.04,0.08],[-0.06,-0.08],[0.04,-0.23],[-0.03,-0.4]],
+      [[0.04,0.08],[0.2,0.16],[0.35,0.12]], [[-0.06,-0.08],[-0.22,-0.04],[-0.36,-0.15]],
+      [[0.04,-0.23],[0.22,-0.29],[0.31,-0.25]], [[-0.08,0.22],[-0.23,0.3]]];
+    var vertices=[],half=contrast ? 0.013 : 0.009;
+    paths.forEach(function(path){for(var i=1;i<path.length;i++){
+      var a=path[i-1],b=path[i],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.sqrt(dx*dx+dy*dy),nx=-dy/len*half,ny=dx/len*half;
+      [0,-depth].forEach(function(z){vertices.push(a[0]+nx,a[1]+ny,z,a[0]-nx,a[1]-ny,z,b[0]+nx,b[1]+ny,z,
+        b[0]+nx,b[1]+ny,z,a[0]-nx,a[1]-ny,z,b[0]-nx,b[1]-ny,z);});
+    }});
+    var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();
+    var material=new THREE.MeshBasicMaterial({color:contrast ? 0x000000 : 0x30251e,side:THREE.DoubleSide,depthWrite:false});
+    var marks=[];
+    for(var n=0;n<Math.min(256,Math.max(1,capacity));n++){
+      var mark=new THREE.Mesh(geometry,material);mark.rotation.y=Math.PI;mark.visible=false;model.add(mark);marks.push(mark);
+    }
+    return marks;
+  }
+
   function buildSiegeScene(THREE, S, m) {
     var blocks = (m && m.blocks) || [];
     var contrast = !!(m && m.contrast);
@@ -2800,6 +3164,8 @@ window.StemLab = window.StemLab || {
       new THREE.MeshLambertMaterial({ color: contrast ? 0x000000 : (dark ? 0x16233a : 0xd7dfe8) })
     );
     ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow=!contrast;
+    if(S.renderer && S.renderer.shadowMap){S.renderer.shadowMap.enabled=!contrast;S.renderer.shadowMap.type=THREE.PCFSoftShadowMap;}
     S.model.add(ground);
 
     // ── The wall ──
@@ -2807,11 +3173,20 @@ window.StemLab = window.StemLab || {
       ? window.StemLab.makeVoxelBatch(THREE, {
           capacity: Math.max(16, blocks.length),
           size: 0.94,
-          edges: !contrast
+          material: new THREE.MeshLambertMaterial({color:0xffffff,map:contrast ? null : stoneTexture(THREE)}),
+          castShadow: !contrast, receiveShadow: !contrast, edges: !contrast
         })
       : null;
     if (batch) batch.addTo(S.model);
     S.wall = { batch: batch, contrast: contrast, dark: dark };
+    S.cracks=makeWallCracks(THREE,S.model,blocks.length,0.962,contrast);
+    if(!contrast && typeof THREE.InstancedMesh === 'function') {
+      var settled=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.5,0),
+        new THREE.MeshLambertMaterial({color:0xffffff,map:stoneTexture(THREE)}),Math.max(16,blocks.length));
+      for(var seed=0;seed<settled.count;seed++)settled.setColorAt(seed,new THREE.Color(0xffffff));
+      settled.count=0;settled.frustumCulled=false;settled.castShadow=true;settled.receiveShadow=true;S.model.add(settled);
+      S.siegeRubble={mesh:settled,dummy:new THREE.Object3D(),color:new THREE.Color()};
+    }
 
     var ext = { minCol: 0, maxCol: 0, maxRow: 0 };
     blocks.forEach(function (b) {
@@ -2822,6 +3197,13 @@ window.StemLab = window.StemLab || {
     var midCol = (ext.minCol + ext.maxCol) / 2;
     var span = Math.max(2, ext.maxCol - ext.minCol + 1);
     var wallTop = ext.maxRow + 1;
+    if(S.siegeKey){
+      S.siegeKey.castShadow=!contrast;S.siegeKey.position.set(span*0.35,wallTop+16,-14);
+      S.siegeKey.target.position.set(0,wallTop*0.4,0);
+      var shadowSpan=Math.max(span/2+6,wallTop+4),camera=S.siegeKey.shadow.camera;
+      camera.left=-shadowSpan;camera.right=shadowSpan;camera.top=shadowSpan;camera.bottom=-shadowSpan;
+      camera.near=0.5;camera.far=100;camera.updateProjectionMatrix();
+    }
 
     function colourFor(b) {
       if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
@@ -2842,6 +3224,7 @@ window.StemLab = window.StemLab || {
     } catch (e) { guest.ml = null; }
     // The machine models fire along +x; the field runs along +z.
     mg.rotation.y = Math.PI / 2;
+    if (!contrast) skinMachine(THREE, mg, false, {wood:woodTexture(THREE)});
     // The guest's tick closes over the GUEST, not over this scene, so its data
     // has to be written onto the guest. Keeping the object is the whole point.
     S.siegeGuest = guest;
@@ -2886,7 +3269,7 @@ window.StemLab = window.StemLab || {
       var pathGeo = new THREE.BufferGeometry();
       pathGeo.setFromPoints(wallPathPts);
       pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({
-        color: contrast ? 0xffff00 : 0xf59e0b, transparent: true, opacity: 0.28
+        color: contrast ? 0xffff00 : (dark ? 0xfbbf24 : 0x9a4c08), transparent: true, opacity: contrast ? 1 : 0.75
       }));
       S.model.add(pathLine);
     }
@@ -2993,7 +3376,7 @@ window.StemLab = window.StemLab || {
       var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
 
       if (S.siegePathLine && S.siegePathLine.material) {
-        S.siegePathLine.material.opacity = flying ? 0.52 : 0.28;
+        S.siegePathLine.material.opacity = contrast ? 1 : (flying ? 0.9 : 0.75);
       }
       if (S.siegeImpactRing) {
         var ringPulse = flying && !reduced ? (0.5 + 0.5 * Math.sin((now || 0) * 0.014)) : 0;
@@ -3009,15 +3392,28 @@ window.StemLab = window.StemLab || {
         }
       }
 
+      var crackCount=0;
+      for(var ci=0;ci<list.length && crackCount<S.cracks.length;ci++) {
+        var cracked=list[ci];if(cracked.state!=='cracked')continue;
+        var mark=S.cracks[crackCount++];mark.position.set(cracked.col-midCol,cracked.row+0.5,-0.481);
+        mark.rotation.z=hash01(cracked.col,cracked.row,105)*6.28;mark.visible=true;
+      }
+      for(;crackCount<S.cracks.length;crackCount++)S.cracks[crackCount].visible=false;
       if (S.wall.batch) {
-        var n = 0;
+        var n = 0, rubbleN=0;
         for (var i = 0; i < list.length && i < S.wall.batch.capacity; i++) {
           var b = list[i];
           var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
           if (b.state === 'breached') {
             // The heap the model settled, if this block has one: the same pile
             // the Siege Field draws. The batch cannot rotate, so upright.
-            var restB = m.rubbleRest ? m.rubbleRest[b.col + '_' + b.row] : null;
+            var restB = (data.rubbleRest || m.rubbleRest || {})[b.col + '_' + b.row];
+            if(restB && S.siegeRubble && rubbleN<S.siegeRubble.mesh.instanceMatrix.count) {
+              var rubble=S.siegeRubble,rd=rubble.dummy;
+              rd.position.set(restB[0],restB[1],restB[2]);rd.rotation.set(restB[3],restB[4],restB[5]);
+              rd.scale.set(restB[6]*(0.7+hash01(b.col,b.row,51)*0.3),restB[6]*(0.7+hash01(b.col,b.row,52)*0.3),restB[6]*(0.7+hash01(b.col,b.row,53)*0.3));
+              rd.updateMatrix();rubble.mesh.setMatrixAt(rubbleN,rd.matrix);rubble.color.setHex(b.mat==='granite' ? 0x94a3b8 : (b.mat==='earth' ? 0x9b7651 : 0xb8aa92));rubble.mesh.setColorAt(rubbleN,rubble.color);rubbleN++;continue;
+            }
             if (restB) {
               x = restB[0]; y = restB[1]; z = restB[2]; sc = restB[6];
             } else {
@@ -3033,6 +3429,7 @@ window.StemLab = window.StemLab || {
           n++;
         }
         S.wall.batch.commit(n);
+        if(S.siegeRubble){S.siegeRubble.mesh.count=rubbleN;S.siegeRubble.mesh.instanceMatrix.needsUpdate=true;S.siegeRubble.mesh.instanceColor.needsUpdate=true;}
       }
 
       // The machine's own swing, driven off the flight clock so the arm reaches
@@ -3090,6 +3487,7 @@ window.StemLab = window.StemLab || {
       ? window.StemLab.makeVoxelBatch(THREE, {
           capacity: Math.max(16, blocks.length),
           size: 0.94,
+          material: new THREE.MeshLambertMaterial({color:0xffffff,map:contrast ? null : stoneTexture(THREE)}),
           edges: !contrast
         })
       : null;
@@ -3168,10 +3566,12 @@ window.StemLab = window.StemLab || {
         // reads as distance.
         rot: { y: 206, x: 9 },
         failMessage: 'The 3D wall is unavailable. The wall diagram and the course table below carry the same information.',
-        lights: function (THREE, scene) {
+        lights: function (THREE, scene, S) {
           scene.add(new THREE.AmbientLight(0xffffff, 0.55));
           var key = new THREE.DirectionalLight(0xfff4e0, 0.8);
-          key.position.set(2.0, 4.2, 3.0);
+          key.position.set(12,22,-14);
+          key.shadow.mapSize.set(1024,1024);key.shadow.bias=-0.0002;key.shadow.normalBias=0.03;
+          if(S)S.siegeKey=key;scene.add(key.target);
           scene.add(key);
           var fill = new THREE.DirectionalLight(0xbcd4ff, 0.3);
           fill.position.set(-2.4, 1.4, -2.2);
@@ -3332,7 +3732,7 @@ window.StemLab = window.StemLab || {
     return out;
   }
 
-  function makeLabelSprite(THREE, scale, tint, through) {
+  function makeLabelSprite(THREE, scale, tint, through, outline) {
     if (typeof document === 'undefined' || !THREE || typeof THREE.Sprite !== 'function' || typeof THREE.CanvasTexture !== 'function') return null;
     var c, g;
     try {
@@ -3368,7 +3768,7 @@ window.StemLab = window.StemLab || {
           }
           g.textAlign = 'center'; g.textBaseline = 'middle';
           g.lineWidth = Math.max(5, size / 5); g.lineJoin = 'round';
-          g.strokeStyle = 'rgba(12,9,5,0.94)';
+          g.strokeStyle = outline || 'rgba(12,9,5,0.94)';
           g.strokeText(text, 128, 64);
           g.fillStyle = tint || '#fff6dc';
           g.fillText(text, 128, 64);
@@ -3393,13 +3793,91 @@ window.StemLab = window.StemLab || {
     });
   }
 
+  // Small procedural surfaces keep the field offline and reproducible.
+  function fieldSurfaceTexture(THREE, kind) {
+    return makeCanvasTexture(THREE, 256, function (g, n) {
+      if (kind === 'cloth') {
+        g.fillStyle = '#c8c1ac'; g.fillRect(0,0,n,n);
+        for (var thread=0;thread<n;thread+=3) {
+          g.fillStyle=thread%2 ? 'rgba(255,255,245,.12)' : 'rgba(65,52,38,.11)';
+          g.fillRect(thread,0,1,n);g.fillRect(0,thread,n,1);
+        }
+        return;
+      }
+      var rows=kind === 'roof' ? 12 : 16, cols=kind === 'roof' ? 16 : 8;
+      var w=n/cols,h=n/rows;
+      g.fillStyle=kind === 'roof' ? '#333b43' : '#605e55';g.fillRect(0,0,n,n);
+      for(var row=0;row<rows;row++) for(var col=-1;col<cols;col++) {
+        var v=hash01(col+12,row,kind === 'roof' ? 181 : 182);
+        var value=Math.round((kind === 'roof' ? 102 : 154)+v*42);
+        g.fillStyle='rgb('+value+','+value+','+(value+(kind === 'roof' ? 8 : -9))+')';
+        var x=(col+(row%2)*0.5)*w,y=row*h;
+        g.fillRect(x+1,y+1,w-2,h-2);
+        g.fillStyle='rgba(255,255,255,.18)';g.fillRect(x+2,y+1,w-4,1);
+        g.fillStyle='rgba(20,24,28,.24)';g.fillRect(x+1,y+h-3,w-2,2);
+      }
+      for(var grain=0;grain<1600;grain++) {
+        g.fillStyle=grain%2 ? 'rgba(255,255,255,.08)' : 'rgba(24,20,18,.12)';
+        g.fillRect(hash01(grain,11,183)*n,hash01(grain,13,184)*n,1,1);
+      }
+    });
+  }
+
+  // One geometry per species, still instanced: richer silhouettes without
+  // multiplying trees or adding per-tree draw calls or animation state.
+  function canopyGeometry(THREE, broadleaf) {
+    var geo=broadleaf ? new THREE.SphereGeometry(1.5,12,8) : new THREE.ConeGeometry(1.15,3.4,9,8);
+    var p=geo.attributes.position, colors=new Float32Array(p.count*3);
+    for(var i=0;i<p.count;i++) {
+      var x=p.getX(i),y=p.getY(i),z=p.getZ(i),theta=Math.atan2(z,x);
+      var factor=broadleaf
+        ? 1 + 0.12*Math.sin(theta*5)*Math.cos(y*2.4) + 0.07*Math.cos(theta*3+y*4)
+        : 1 + 0.2*Math.cos((y+1.7)*7.4) + 0.06*Math.sin(theta*3);
+      p.setXYZ(i,x*factor,y,z*factor);
+      var shade=0.74+0.22*Math.max(0,Math.min(1,(y+1.7)/3.4));
+      colors[i*3]=shade;colors[i*3+1]=shade;colors[i*3+2]=shade;
+    }
+    geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
+    geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
+  }
+
+  function dressFieldTent(THREE, tent, radius, height, cloth) {
+    tent.material.map=cloth || null;tent.material.needsUpdate=true;
+    var seams=[];
+    for(var i=0;i<8;i++) {
+      var a=i*Math.PI/4;
+      seams.push(0,height/2+0.015,0,Math.sin(a)*radius*1.005,-height/2+0.025,Math.cos(a)*radius*1.005);
+    }
+    var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(seams,3));
+    tent.add(new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0x756950,transparent:true,opacity:0.65})));
+    var opening=new THREE.BufferGeometry();
+    opening.setAttribute('position',new THREE.Float32BufferAttribute([-radius*0.27,-height/2+0.03,-radius*0.94,radius*0.27,-height/2+0.03,-radius*0.94,0,height*0.05,-radius*0.47],3));
+    opening.computeVertexNormals();
+    tent.add(new THREE.Mesh(opening,new THREE.MeshBasicMaterial({color:0x302d27,side:THREE.DoubleSide})));
+    var ropes=[];
+    [-1,1].forEach(function(side) {
+      ropes.push(side*radius*0.65,-height*0.14,-radius*0.65,side*radius*1.35,-height/2,-radius*1.25);
+      var peg=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.05,0.3,5),new THREE.MeshLambertMaterial({color:0x685239}));
+      peg.position.set(side*radius*1.35,-height/2+0.09,-radius*1.25);peg.rotation.z=side*0.25;tent.add(peg);
+    });
+    var rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(ropes,3));
+    tent.add(new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xd3c19a})));
+  }
+
   function woodTexture(THREE) {
-    return makeCanvasTexture(THREE, 128, function (g, n) {
-      g.fillStyle = '#9a6a3c'; g.fillRect(0, 0, n, n);
+    return makeCanvasTexture(THREE, 256, function (g, n) {
+      g.fillStyle = '#b68a5a'; g.fillRect(0, 0, n, n);
       for (var y = 0; y < n; y += 3) {
         var w = hash01(y, 3, 9);
         g.fillStyle = 'rgba(60,32,12,' + (0.08 + w * 0.22) + ')';
         g.fillRect(0, y + Math.sin(y * 0.3) * 1.5, n, 1 + w * 2);
+      }
+      for (var fibre = 0; fibre < 100; fibre++) {
+        var fy = hash01(fibre, 29, 4) * n;
+        g.strokeStyle = fibre % 3 ? 'rgba(54,28,10,0.17)' : 'rgba(255,235,200,0.22)';
+        g.lineWidth = 0.5 + hash01(fibre, 13, 6);
+        g.beginPath(); g.moveTo(0, fy);
+        g.bezierCurveTo(n*0.3,fy-4,n*0.7,fy+4,n,fy); g.stroke();
       }
       for (var k = 0; k < 6; k++) {
         var kx = hash01(k, 5, 1) * n, ky = hash01(k, 7, 2) * n;
@@ -3427,7 +3905,7 @@ window.StemLab = window.StemLab || {
       if (!o.isMesh || !o.material || !o.material.color) return;
       var hex = o.material.color.getHexString();
       var to = MAP[hex] || [0x6b4b2a, true];
-      var next = new THREE.MeshLambertMaterial({ color: to[0] });
+      var next = new THREE.MeshStandardMaterial({ color: to[1] ? 0xc9a57d : to[0], roughness: to[1] ? 0.88 : 0.66, metalness: to[1] ? 0 : 0.12 });
       if (to[1] && tex && tex.wood) next.map = tex.wood;
       try { o.material.dispose(); } catch (e) {}
       o.material = next;
@@ -3629,7 +4107,7 @@ window.StemLab = window.StemLab || {
       if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) cfg[k] = extra[k];
       return new THREE.MeshLambertMaterial(cfg);
     };
-    var tex = contrast ? {} : { stone: stoneTexture(THREE), wood: woodTexture(THREE) };
+    var tex = contrast ? {} : { stone: stoneTexture(THREE), wood: woodTexture(THREE), masonry: fieldSurfaceTexture(THREE, 'masonry'), roof: fieldSurfaceTexture(THREE, 'roof'), cloth: fieldSurfaceTexture(THREE, 'cloth') };
 
     // The field is as long as the standoff, so everything that stands at the
     // edge of it has to be sized from the same number. groundSpan is set with
@@ -3809,10 +4287,10 @@ window.StemLab = window.StemLab || {
     geo.rotateX(-Math.PI / 2);
     var posAttr = geo.attributes.position;
     var cols = new Float32Array(posAttr.count * 3);
-    var cGrass = new THREE.Color(contrast ? 0x000000 : 0x4f7a34);
-    var cGrass2 = new THREE.Color(contrast ? 0x000000 : 0x7f9a44);
+    var cGrass = new THREE.Color(contrast ? 0x000000 : 0x354d38);
+    var cGrass2 = new THREE.Color(contrast ? 0x000000 : 0x687653);
     var cRock = new THREE.Color(contrast ? 0x151515 : 0x7b7468);
-    var cDirt = new THREE.Color(contrast ? 0x0a0a0a : 0x8a7452);
+    var cDirt = new THREE.Color(contrast ? 0x0a0a0a : 0x8c7255);
     var tmp = new THREE.Color();
     for (var vi = 0; vi < posAttr.count; vi++) {
       var vx = posAttr.getX(vi), vz = posAttr.getZ(vi) - standoff * 0.5;
@@ -3880,7 +4358,7 @@ window.StemLab = window.StemLab || {
     // ── Trees and rocks ──
     if (!contrast && typeof THREE.InstancedMesh === 'function') {
       var TREES = 110;
-      var foliage = new THREE.InstancedMesh(new THREE.ConeGeometry(1.15, 3.4, 7), mat(0xffffff), TREES);
+      var foliage = new THREE.InstancedMesh(canopyGeometry(THREE, false), mat(0xffffff, {vertexColors:true,flatShading:true}), TREES);
       var trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.24, 1.3, 6), mat(0x5a3d22), TREES);
       // Foliage throws the shadow; trunks are inside it and only cost a pass.
       foliage.castShadow = true; trunks.castShadow = false;
@@ -3905,7 +4383,7 @@ window.StemLab = window.StemLab || {
         // it is, how tall its trunk is (the pivot it leans about), and its own
         // phase, so a wood does not sway as one object.
         crowns.push({ x: tx, y: ty, z: tz, s: sc, lift: 1.7 * sc + 0.6, spin: dummy.rotation.y, ax: 1, ay: 1, phase: hash01(tries, 53, 13) * 6.28 });
-        leaf.setHex(0x2f6b2a).lerp(new THREE.Color(0x6f9a3a), hash01(tries, 47, 12));
+        leaf.setHex(0x304f3b).lerp(new THREE.Color(0x68865a), hash01(tries, 47, 12));
         foliage.setColorAt(placed, leaf);
         dummy.position.set(tx, ty + 0.55 * sc, tz);
         dummy.updateMatrix();
@@ -3916,7 +4394,7 @@ window.StemLab = window.StemLab || {
       // Broadleaf trees: a round canopy on a taller trunk, a lighter green,
       // scattered among the conifers so the woods read as woods.
       var BROAD = 60;
-      var canopy = new THREE.InstancedMesh(new THREE.SphereGeometry(1.5, 8, 6), mat(0xffffff), BROAD);
+      var canopy = new THREE.InstancedMesh(canopyGeometry(THREE, true), mat(0xffffff, {vertexColors:true,flatShading:true}), BROAD);
       var boles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.14, 0.22, 2.2, 6), mat(0x6b4b2a), BROAD);
       canopy.castShadow = true;
       var bPlaced = 0, bTries = 0;
@@ -3935,7 +4413,7 @@ window.StemLab = window.StemLab || {
         canopy.setMatrixAt(bPlaced, dummy.matrix);
         broadCrowns.push({ x: bx, y: by, z: bz, s: bsc, lift: 2.2 * bsc + 0.9, spin: 0,
                            ax: 0.9 + hash01(bTries, 83, 74) * 0.4, ay: 0.85, phase: hash01(bTries, 97, 76) * 6.28 });
-        leaf.setHex(0x5f9a3a).lerp(new THREE.Color(0xa7c94a), hash01(bTries, 89, 75));
+        leaf.setHex(0x496d3c).lerp(new THREE.Color(0x8b9f58), hash01(bTries, 89, 75));
         canopy.setColorAt(bPlaced, leaf);
         dummy.position.set(bx, by + 1.1 * bsc, bz);
         dummy.scale.set(bsc, bsc, bsc);
@@ -4118,8 +4596,8 @@ window.StemLab = window.StemLab || {
       return new THREE.Color(0.86 * v * damp, 0.82 * v * damp * green, 0.74 * v * damp).getHex();
     }
     if (m.wallPreset !== 'imported') {
-      var towerMat = mat(contrast ? 0xffffff : 0xb9b1a3, tex.stone ? { map: tex.stone } : null);
-      var roofMat = mat(contrast ? 0xffffff : 0x7a2e2a);
+      var towerMat = contrast ? mat(0xffffff) : new THREE.MeshStandardMaterial({color:0xd4cbbb,map:tex.masonry,bumpMap:tex.masonry,bumpScale:0.025,roughness:0.92});
+      var roofMat = contrast ? mat(0xffffff) : new THREE.MeshStandardMaterial({color:0x727f8c,map:tex.roof,bumpMap:tex.roof,bumpScale:0.045,roughness:0.8});
       [-1, 1].forEach(function (side) {
         var tx = side * (span / 2 + 1.9);
         var th = wallTop + 2.6;
@@ -4127,10 +4605,23 @@ window.StemLab = window.StemLab || {
         tower.position.set(tx, th / 2, 0);
         tower.castShadow = !contrast; tower.receiveShadow = !contrast;
         S.model.add(tower);
+        if (!contrast) {
+          [0.24,th*0.34,th*0.69,th-0.16].forEach(function(y) {
+            var radius=1.9-0.15*(y/th)+0.08;
+            var course=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,0.16,14),mat(0xa49b89));
+            course.position.set(tx,y,0);course.receiveShadow=true;S.model.add(course);
+          });
+        }
         var roof = new THREE.Mesh(new THREE.ConeGeometry(2.1, 2.2, 14), roofMat);
         roof.position.set(tx, th + 1.1, 0);
         roof.castShadow = !contrast;
         S.model.add(roof);
+        if (!contrast) {
+          var eave=new THREE.Mesh(new THREE.CylinderGeometry(2.12,2.12,0.12,14),roofMat);
+          eave.position.set(tx,th+0.03,0);S.model.add(eave);
+          var finial=new THREE.Mesh(new THREE.ConeGeometry(0.09,0.65,8),mat(0x424b51));
+          finial.position.set(tx,th+2.35,0);S.model.add(finial);
+        }
         if (!contrast) {
           // Windows on the face toward the engine, lit after dark.
           var lit = P.fire >= 0.9;
@@ -4253,8 +4744,8 @@ window.StemLab = window.StemLab || {
     // camera. Windows light after dark, like the towers'. ──
     if (!contrast && m.wallPreset !== 'imported') {
       var wardLit = P.fire >= 0.9;
-      var wardWall = mat(0xa89b86, tex.stone ? { map: tex.stone } : null);
-      var wardRoof = mat(0x6f3a2c);
+      var wardWall = new THREE.MeshStandardMaterial({color:0xc8bda7,map:tex.masonry,bumpMap:tex.masonry,bumpScale:0.05,roughness:0.94});
+      var wardRoof = new THREE.MeshStandardMaterial({color:0x887969,map:tex.roof,bumpMap:tex.roof,bumpScale:0.035,roughness:0.86});
       var wardWood = mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null);
       var litMat = function () {
         return new THREE.MeshLambertMaterial({
@@ -4393,7 +4884,7 @@ window.StemLab = window.StemLab || {
       });
       if (gm.arm) {
         gm.arm.children.forEach(function (c) {
-          if (!c.geometry || !c.geometry.parameters || c.geometry.parameters.width !== c.geometry.parameters.height) return;
+          if (c.userData.mlCounterweight || !c.geometry || !c.geometry.parameters || !finite(c.geometry.parameters.width) || c.geometry.parameters.width !== c.geometry.parameters.height) return;
           // The counterweight is the one cube on the arm: band it.
           var cwSize = c.geometry.parameters.width;
           [-0.3, 0.3].forEach(function (off) {
@@ -4421,6 +4912,7 @@ window.StemLab = window.StemLab || {
       var tent = new THREE.Mesh(new THREE.ConeGeometry(2.4, 2.8, 8), mat(0xd9c9a2));
       tent.position.set(11.5, terrainHeight(11.5, -standoff + 1, standoff, laneHalf) + 1.4, -standoff + 1);
       tent.castShadow = true; tent.receiveShadow = true;
+      dressFieldTent(THREE, tent, 2.4, 2.8, tex.cloth);
       S.model.add(tent);
       for (var pi = 0; pi < 7; pi++) {
         var ps = new THREE.Mesh(new THREE.DodecahedronGeometry(0.34 + hash01(pi, 73, 18) * 0.2, 0), mat(0x7d7569));
@@ -4462,6 +4954,7 @@ window.StemLab = window.StemLab || {
         var tent2 = new THREE.Mesh(new THREE.ConeGeometry(t2[2], t2[3], 8), mat(t2[4]));
         tent2.position.set(t2x, campGround(t2x, t2z) + t2[3] / 2, t2z);
         tent2.castShadow = true; tent2.receiveShadow = true;
+        dressFieldTent(THREE, tent2, t2[2], t2[3], tex.cloth);
         S.model.add(tent2);
       });
 
@@ -4473,8 +4966,13 @@ window.StemLab = window.StemLab || {
       bed.position.y = 0.95; bed.castShadow = true;
       cart.add(bed);
       [-1, 1].forEach(function (ws) {
-        var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.14, 12), mat(0x5b3b1f));
-        wheel.rotation.x = Math.PI / 2;
+        var wheel = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.08, 6, 16), mat(0x5b3b1f));
+        for(var spoke=0;spoke<4;spoke++) {
+          var spokeMesh=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.055,0.07),mat(0x9b7546));
+          spokeMesh.rotation.z=spoke*Math.PI/4;wheel.add(spokeMesh);
+        }
+        var hub=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.24,10),mat(0x4a5057));
+        hub.rotation.x=Math.PI/2;wheel.add(hub);
         wheel.position.set(0.2, 0.62, ws * 0.82);
         wheel.castShadow = true;
         cart.add(wheel);
@@ -4496,6 +4994,12 @@ window.StemLab = window.StemLab || {
         var blx = -9.6 + (bl % 2) * 0.82, blz = -standoff - 1.6 + Math.floor(bl / 2) * 0.85;
         barrel.position.set(blx, campGround(blx, blz) + 0.4, blz);
         barrel.castShadow = true;
+        [-0.26,0.26].forEach(function(y) {
+          var hoop=new THREE.Mesh(new THREE.TorusGeometry(0.355,0.027,6,16),mat(0x4a5057));
+          hoop.rotation.x=Math.PI/2;hoop.position.y=y;barrel.add(hoop);
+        });
+        var lid=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,0.035,10),mat(0xa58250,tex.wood ? {map:tex.wood} : null));
+        lid.position.y=0.41;barrel.add(lid);
         S.model.add(barrel);
       }
 
@@ -4776,31 +5280,11 @@ window.StemLab = window.StemLab || {
       S.model.add(sockPivot);
       S.sock = sockPivot;
     }
-    // ── Cracks: a pool of decals laid on the face of cracked blocks. ──
-    var crackTex = contrast ? null : makeCanvasTexture(THREE, 128, function (g2, n2) {
-      g2.clearRect(0, 0, n2, n2);
-      g2.strokeStyle = 'rgba(25,18,12,0.9)'; g2.lineWidth = 3; g2.lineCap = 'round';
-      for (var ck2 = 0; ck2 < 3; ck2++) {
-        g2.beginPath();
-        var cx2 = n2 * (0.3 + hash01(ck2, 3, 101) * 0.4), cy2 = n2 * (0.2 + hash01(ck2, 5, 102) * 0.3);
-        g2.moveTo(cx2, cy2);
-        for (var seg2 = 0; seg2 < 6; seg2++) { cx2 += (hash01(ck2 * 7 + seg2, 7, 103) - 0.5) * 34; cy2 += 12 + hash01(ck2 * 7 + seg2, 11, 104) * 12; g2.lineTo(cx2, cy2); }
-        g2.stroke();
-      }
-    });
-    if (crackTex) {
-      var cracks = [];
-      var crackMat = new THREE.MeshLambertMaterial({ map: crackTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
-      for (var cr2 = 0; cr2 < 24; cr2++) {
-        var crk = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), crackMat);
-        crk.rotation.y = Math.PI; crk.visible = false;
-        S.model.add(crk); cracks.push(crk);
-      }
-      S.cracks = cracks;
-    }
+    // Pool branching cracks on both faces, including the high-contrast wall.
+    S.cracks=makeWallCracks(THREE,S.model,blocks.length,1.01,contrast);
     // ── Torsion engines: a wheeled carriage under the deck. ──
     if (!contrast && guest.ml && (m.kind === 'ballista' || m.kind === 'onager')) {
-      var tl = Math.max(1.3, (guest.ml.armLen || 1.1) * 1.35), tw = Math.max(0.85, (guest.ml.armLen || 1.1) * 0.95);
+      var tl = guest.ml.deckLen, tw = guest.ml.deckW;
       var carMat = new THREE.MeshLambertMaterial({ color: 0x5b3b1f, map: tex.wood || null });
       var axleMat = new THREE.MeshLambertMaterial({ color: 0x3a3a40 });
       [-1, 1].forEach(function (ex) {
@@ -4808,8 +5292,14 @@ window.StemLab = window.StemLab || {
         axle.rotation.x = Math.PI / 2; axle.position.set(ex * tl * 0.42, 0.3, 0);
         mg.add(axle);
         [-1, 1].forEach(function (ez) {
-          var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 12), carMat);
-          wheel.rotation.x = Math.PI / 2; wheel.position.set(ex * tl * 0.42, 0.3, ez * (tw / 2 + 0.4));
+          var wheel = new THREE.Mesh(new THREE.TorusGeometry(0.27,0.03,6,16),carMat);
+          wheel.position.set(ex * tl * 0.42,0.3,ez*(tw/2+0.4));
+          for(var spoke=0;spoke<4;spoke++) {
+            var ws=new THREE.Mesh(new THREE.BoxGeometry(0.51,0.035,0.06),carMat);
+            ws.rotation.z=spoke*Math.PI/4;wheel.add(ws);
+          }
+          var hub=new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.075,0.16,10),axleMat);
+          hub.rotation.x=Math.PI/2;wheel.add(hub);
           wheel.castShadow = true; mg.add(wheel);
         });
       });
@@ -4852,11 +5342,13 @@ window.StemLab = window.StemLab || {
     }
     S.ghosts = ghosts;
     var burst = [];
+    var chipGeometry=new THREE.OctahedronGeometry(0.14,0);
     for (var bu = 0; bu < 40; bu++) {
-      var bm = new THREE.Mesh(new THREE.BoxGeometry(0.22 + hash01(bu, 89, 23) * 0.3, 0.2, 0.22), new THREE.MeshLambertMaterial({
+      var bm = new THREE.Mesh(chipGeometry, new THREE.MeshLambertMaterial({
         color: contrast ? 0xffffff : (bu % 3 === 0 ? 0xcbbfa8 : 0x9a8f7c), transparent: true, opacity: 1
       }));
       bm.visible = false;
+      bm.scale.set(0.8+hash01(bu,89,23)*1.5,0.65+hash01(bu,91,24)*0.2,0.6+hash01(bu,93,25)*0.6);
       bm.userData = { v: new THREE.Vector3(), life: 0 };
       S.model.add(bm); burst.push(bm);
     }
@@ -5352,7 +5844,8 @@ window.StemLab = window.StemLab || {
             S.dusts.forEach(function (dsp, di) {
               dsp.visible = true;
               dsp.position.copy(S.impactPos);
-              dsp.position.x += (hash01(di, 3, 96) - 0.5) * 1.6; dsp.position.z += (hash01(di, 5, 97) - 0.5) * 1.6 + (data.outcomeKind === 'hit' ? 1.0 : 0);
+              dsp.position.x += (hash01(di, 3, 96) - 0.5) * 1.6;
+              dsp.position.z = data.outcomeKind === 'hit' ? -0.7-hash01(di,5,97)*0.9 : dsp.position.z+(hash01(di,5,97)-0.5)*1.6;
               dsp.userData = { t0: now, dx: (hash01(di, 7, 98) - 0.5) * 0.8, sc: 1.2 + hash01(di, 11, 99) * 1.4 };
             });
           }
@@ -5361,7 +5854,8 @@ window.StemLab = window.StemLab || {
             S.burst.forEach(function (bm, k) {
               bm.visible = true;
               bm.position.copy(S.impactPos);
-              bm.userData.v.set((hash01(k, 3, 31) - 0.5) * 9, 2 + hash01(k, 5, 32) * 7, (hash01(k, 7, 33) - 0.2) * 7);
+              if(data.outcomeKind === 'hit')bm.position.z=-0.62;
+              bm.userData.v.set((hash01(k, 3, 31) - 0.5) * 9, 2 + hash01(k, 5, 32) * 7, data.outcomeKind === 'hit' ? -0.5-hash01(k,7,33)*4 : (hash01(k,7,33)-0.5)*7);
               bm.userData.life = 0;
               bm.material.opacity = 1;
             });
@@ -5711,7 +6205,7 @@ window.StemLab = window.StemLab || {
       var mode = data.camMode || 'cinematic';
       var goal = null;
       if (mode === 'machine') goal = { target: machinePos, half: [reachM, highM * 0.6, reachM], rotY: 238, rotX: 12 };
-      else if (mode === 'castle') goal = { target: wallPos, half: [span / 2 + 3, wallTop * 0.55 + 2, 4], rotY: 196, rotX: 9 };
+      else if (mode === 'castle') goal = contrast ? { target: new THREE.Vector3(0, (wallTop + 5) / 2, 0), half: [span / 2 + 5, (wallTop + 7) / 2, 5], rotY: 196, rotX: 12 } : { target: new THREE.Vector3(0, (wallTop + 11) / 2, 4), half: [span / 2 + 5, (wallTop + 12) / 2, 12], rotY: 196, rotX: 14 };
       else if (mode === 'field') goal = { target: fieldTarget, pts: fieldPts, rotY: SCENE_HOME.rotY, rotX: SCENE_HOME.rotX };
       else if (mode === 'map') goal = { target: new THREE.Vector3(0, 0, -standoff * 0.5), half: [Math.max(laneHalf, span / 2 + 6), 2, standoff * 0.5 + 10], rotY: 180, rotX: 86 };
       else if (mode === 'stone') {
@@ -5858,7 +6352,7 @@ window.StemLab = window.StemLab || {
       // push resets the view to dead-on and throws cfg.rot away.
       shopRotY: 28, shopRotX: 16, shopZoom: 1,
       machineRotY: 22, machineRotX: 12, machineZoom: 1,
-      rangeRotY: 72, rangeRotX: 18, rangeZoom: 1,
+      rangeRotY: RANGE_HOME.rotY, rangeRotX: RANGE_HOME.rotX, rangeZoom: RANGE_HOME.zoom,
       wallRotY: 14, wallRotX: 16, wallZoom: 1,
       sceneRotY: 202, sceneRotX: 11, sceneZoom: 1,
 
@@ -7952,6 +8446,7 @@ window.StemLab = window.StemLab || {
             ? __alloT('stem.machinelab.scene_apex_mark_y', 'highest ')
             : __alloT('stem.machinelab.scene_apex_mark', 'apex '),
           metresWord: __alloT('stem.machinelab.scene_metres', ' m'),
+          driftWord: __alloT('stem.machinelab.range_drift_mark', 'drift '),
           projDiameter: d.projDiameter,
           dark: isDark, contrast: isContrast
         });
@@ -7980,8 +8475,9 @@ window.StemLab = window.StemLab || {
           key: 'rangeview',
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }
         }, [
+          h('style', { key: 'range-layout' }, '@media(max-width:600px){.ml-range-world .ml-range-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px}.ml-range-hud>div{flex:1 1 100px;min-width:0!important}.ml-range-world .ml-range-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}}'),
           h('div', {
-            key: 'world', ref: rangeFsRef,
+            key: 'world', ref: rangeFsRef, className: 'ml-range-world',
             style: {
               gridColumn: '1 / -1', position: 'relative', display: 'flex', flexDirection: 'column',
               overflow: 'hidden', padding: 8, marginBottom: 0, borderRadius: 18,
@@ -7990,7 +8486,7 @@ window.StemLab = window.StemLab || {
             }
           }, [
             h('div', {
-              key: 'bay', ref: rangeGlRef, role: 'img', 'data-ml-orbitable': 'true',
+              key: 'bay', ref: rangeGlRef, role: 'img', className: 'ml-range-bay', 'data-ml-orbitable': 'true',
               onPointerDown: beginRangeOrbit, onPointerMove: moveRangeOrbit,
               onPointerUp: endRangeOrbit, onPointerCancel: endRangeOrbit,
               'aria-label': __alloT('stem.machinelab.aria_range3d', 'Interactive three-dimensional range showing the selected machine’s launch path. Drag with a mouse or pen to orbit. The graph and controls below provide keyboard and numeric equivalents.'),
@@ -8001,7 +8497,7 @@ window.StemLab = window.StemLab || {
               }
             }, null),
             h('div', {
-              key: 'hud', 'aria-hidden': 'true',
+              key: 'hud', 'aria-hidden': 'true', className: 'ml-range-hud',
               style: {
                 position: 'absolute', top: 22, left: 22, right: 22,
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -8050,7 +8546,7 @@ window.StemLab = window.StemLab || {
             h('div', {
               key: 'legend', 'aria-hidden': 'true',
               style: {
-                position: 'absolute', left: 22, bottom: 104, display: 'flex', gap: 12,
+                position: 'relative', alignSelf: 'flex-start', margin: '8px 6px 0', display: 'flex', gap: 12, flexWrap: 'wrap', maxWidth: 'calc(100% - 12px)', boxSizing: 'border-box',
                 padding: '6px 9px', borderRadius: 999, color: '#f8fafc',
                 background: 'rgba(7,17,31,.76)', fontSize: 10, fontWeight: 750,
                 pointerEvents: 'none', backdropFilter: 'blur(8px)'
@@ -8059,9 +8555,12 @@ window.StemLab = window.StemLab || {
               revealMetrics
                 ? h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_path', 'Computed path'))
                 : h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_predict', 'Predict to reveal the path')),
-              revealMetrics ? h('span', { key: 'f', style: { color: '#7dd3fc' } }, '⚑ ' + __alloT('stem.machinelab.range_world_flag', 'Impact flag')) : null
+              revealMetrics ? h('span', { key: 'f', style: { color: '#7dd3fc' } }, '⚑ ' + __alloT('stem.machinelab.range_world_flag', 'Impact flag')) : null,
+              revealMetrics ? h('span', { key: 'height', style: { color: '#7dd3fc' } }, '↕ ' + __alloT('stem.machinelab.range_height_guide', 'Height above ground')) : null
             ]),
             camControls(rangeCam, __alloT('stem.machinelab.range_lane', '3D range lane'), 'range'),
+            revealMetrics ? h('p', { key: 'guide-note', style: { margin: '6px 8px', fontSize: 12, lineHeight: 1.5, color: T.muted } },
+              __alloT('stem.machinelab.range_guide_note', 'The fading trail marks equal time steps. The blue line connects the stone to the ground directly beneath it.')) : null,
             rangeStatus !== 'ready' ? h('p', {
               key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
             }, rangeStatus === 'failed'
@@ -8342,8 +8841,9 @@ window.StemLab = window.StemLab || {
         var completed = Object.keys(d.provenBenches || {}).length;
         return h('div', { key: 'machview' }, [
           benchTabs(),
+          h('style', {key:'shop-layout'}, '@media(max-width:600px){.ml-shop-world .ml-shop-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.ml-shop-hud>div{min-width:0!important;max-width:none!important}.ml-shop-hud>div:nth-child(2){grid-column:1/-1;order:3}.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}'),
           h('div', {
-            key: 'world', ref: shopFsRef,
+            key: 'world', ref: shopFsRef, className:'ml-shop-world',
             style: {
               position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden',
               padding: 8, marginBottom: 12, borderRadius: 18, background: T.card,
@@ -8352,7 +8852,7 @@ window.StemLab = window.StemLab || {
             }
           }, [
             h('div', {
-              key: 'bay', ref: shopGlRef, role: 'img',
+              key: 'bay', ref: shopGlRef, role: 'img', className:'ml-shop-bay',
               'data-ml-orbitable': 'true',
               onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
               onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
@@ -8365,7 +8865,7 @@ window.StemLab = window.StemLab || {
               }
             }, null),
             h('div', {
-              key: 'hud', 'aria-hidden': 'true',
+              key: 'hud', 'aria-hidden': 'true', className:'ml-shop-hud',
               style: {
                 position: 'absolute', top: 22, left: 22, right: 22, display: 'flex',
                 alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
@@ -8414,7 +8914,7 @@ window.StemLab = window.StemLab || {
               ])
             ]),
             h('div', {
-              key: 'legend', 'aria-hidden': 'true',
+              key: 'legend', 'aria-hidden': 'true', className:'ml-shop-legend',
               style: {
                 position: 'absolute', left: 22, bottom: 104, display: 'flex', gap: 12,
                 padding: '6px 9px', borderRadius: 999, color: '#f8fafc',

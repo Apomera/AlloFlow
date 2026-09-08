@@ -22,7 +22,7 @@ function writeIfChanged(file, contents) {
   throw lastError;
 }
 
-const source = fs.readFileSync('view_adventure_source.jsx', 'utf-8');
+const source = fs.readFileSync('view_adventure_settings_source.jsx', 'utf-8') + '\n' + fs.readFileSync('view_adventure_source.jsx', 'utf-8');
 
 const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
@@ -107,6 +107,7 @@ const moduleSrc = `/**
   window.AlloModules.AdventureView = AdventureView;
   window.AlloModules.AdventureLearningProfiles = AdventureLearningProfiles;
   window.AlloModules.AdventureEpisodeSettings = AdventureEpisodeSettings;
+  window.AlloModules.AdventureSetupFields = AdventureSetupFields;
   window.AlloModules.ViewAdventureModule = true;
 })();
 `;

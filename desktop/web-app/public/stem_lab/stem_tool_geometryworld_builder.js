@@ -145,6 +145,14 @@
   // can never describe different scales.
   var HANDOFF_UNIT_MM = 5;
 
+  function printUnit(value) {
+    var n = Number(value);
+    return isFinite(n) && n > 0 ? Math.max(0.01, Math.min(1000, n)) : HANDOFF_UNIT_MM;
+  }
+  function printContext(ctx) {
+    var data = ctx && ctx.toolData && ctx.toolData.geometryWorld;
+    return data && data.builderPrintContext || {};
+  }
   function compareBlocks(a, b) {
     return a.y - b.y || a.x - b.x || a.z - b.z || a.shape.localeCompare(b.shape) || a.type.localeCompare(b.type) || a.rotation - b.rotation;
   }
@@ -191,7 +199,8 @@
   // What the printer will actually make solid, in the units the lesson counts and
   // in millimetres at the hand-off scale, with the shape breakdown. Ties the
   // print to V = L x W x H rather than to the bounding box alone.
-  function printVolumeSentence(measurement) {
+  function printVolumeSentence(measurement, unitMm) {
+    unitMm = printUnit(unitMm);
     if (!measurement || typeof measurement.totalVolume !== 'number' || !isFinite(measurement.totalVolume)) return null;
     var counts = measurement.shapeCounts || {};
     var parts = BLOCK_SHAPES.filter(function (shape) { return counts[shape.id] > 0; }).map(function (shape) {
@@ -199,14 +208,15 @@
       return n + ' ' + (n === 1 ? name : (/half$/.test(name) ? name.replace(/half$/, 'halves') : name + 's'));
     });
     var units = measurement.totalVolume;
-    var mm3 = Math.round(units * Math.pow(HANDOFF_UNIT_MM, 3) * 100) / 100;
+    var mm3 = Math.round(units * Math.pow(unitMm, 3) * 100) / 100;
     return 'Prints solid at ' + (measurement.formattedVolume || units) + ' cubic unit' + (units === 1 ? '' : 's')
-      + ' = ' + mm3.toLocaleString('en-US') + ' mm\u00B3 at ' + HANDOFF_UNIT_MM + ' mm per block'
+      + ' = ' + mm3.toLocaleString('en-US') + ' mm\u00B3 at ' + unitMm + ' mm per block'
       + (parts.length ? ' (' + parts.join(', ') + ')' : '') + '.';
   }
-  function defaultPrintEnvelope(measurement, profile) {
+  function defaultPrintEnvelope(measurement, profile, unitMm) {
+    unitMm = printUnit(unitMm);
     if (!measurement || ![measurement.L, measurement.W, measurement.H].every(function (value) { return typeof value === 'number' && isFinite(value) && value > 0; })) return null;
-    function millimetres(blocks) { return Math.round(blocks * HANDOFF_UNIT_MM * 100) / 100; }
+    function millimetres(blocks) { return Math.round(blocks * unitMm * 100) / 100; }
     var bed = builderBedLimits(profile);
     var envelope = {
       widthMm: millimetres(measurement.L),
@@ -261,6 +271,11 @@
     var index = mesh.geometry.index ? mesh.geometry.index.array : null;
     var count = index ? index.length : position.count;
     var elements = mesh.matrixWorld.elements;
+    // Placement pop is a display effect, never a change in printable dimensions.
+    if (mesh.userData && mesh.userData._popT != null && mesh.scale) {
+      elements = Array.prototype.slice.call(elements);
+      ['x','y','z'].forEach(function(axis,column){var scale=mesh.scale[axis];if(scale && isFinite(scale)){for(var row=0;row<4;row++)elements[column*4+row]/=scale;}});
+    }
     var triangles = [];
     for (var i = 0; i + 2 < count; i += 3) {
       var i0 = index ? index[i] : i;
@@ -276,21 +291,7 @@
     }
     return triangles;
   }
-  // ── Union surface ──
-  // Each block is a closed shell on its own, so two neighbours that touch keep a
-  // pair of coincident, opposite-facing faces between them. A slicer merges those,
-  // but Print Lab's preflight counts each shared edge as non-manifold and stops
-  // reporting the enclosed volume: measured, a slab on a cube drew 4 such edges and
-  // a mixed 12-block build 17, all flagged for review in the tool that teaches
-  // exactly those shapes. The old rule dropped a face only between two cubes.
-  //
-  // This drops a face wherever two adjacent blocks present the SAME polygon on
-  // their shared cell boundary: same set of corner points, same area, opposite
-  // normals. That covers cube against cube, a slab or wedge standing on a cube,
-  // a wedge's full side against a cube, and two slabs side by side. It is decided
-  // from the triangles themselves, so no shape table has to be kept in step with
-  // createShapeGeometry. A partial overlap (a half-height slab beside a full cube)
-  // is left alone: both faces are real geometry there.
+  // Join the actual boundary polygons of adjacent blocks.
   function axisPlane(triangle) {
     var n = triangle.n, axis = -1;
     for (var k = 0; k < 3; k++) if (Math.abs(n[k]) >= 0.99) axis = k;
@@ -316,44 +317,111 @@
     });
     return Object.keys(points).sort().join(';') + '#' + area.toFixed(4);
   }
-  // Pure: it marks nothing on its inputs, so callers may reuse triangle objects
-  // across calls (the unit test does, deliberately).
-  function unionSurface(blocks, selected) {
-    var byKey = {}, faces = [], drop = [];
-    blocks.forEach(function (block, b) {
-      byKey[keyFor(block.position)] = b;
-      var facesByDirection = {};
-      block.triangles.forEach(function (triangle, index) {
-        var plane = axisPlane(triangle);
-        if (!plane) return;
-        var id = plane.axis + ':' + plane.sign;
-        (facesByDirection[id] = facesByDirection[id] || []).push(index);
-      });
-      faces.push(facesByDirection);
-      drop.push({});
-    });
-    blocks.forEach(function (block, b) {
-      Object.keys(faces[b]).forEach(function (id) {
-        var axis = Number(id.split(':')[0]), sign = Number(id.split(':')[1]);
-        if (sign < 0) return;   // each pair is handled from its positive side once
-        var neighborPos = { x: block.position.x, y: block.position.y, z: block.position.z };
-        neighborPos[['x', 'y', 'z'][axis]] += 1;
-        var neighborKey = keyFor(neighborPos);
-        if (!selected[neighborKey] || byKey[neighborKey] === undefined) return;
-        var n = byKey[neighborKey];
-        var facing = faces[n][axis + ':-1'];
-        if (!facing || !facing.length) return;
-        var mine = faces[b][id];
-        if (faceSignature(mine.map(function (i) { return block.triangles[i]; })) !== faceSignature(facing.map(function (i) { return blocks[n].triangles[i]; }))) return;
-        mine.forEach(function (i) { drop[b][i] = true; });
-        facing.forEach(function (i) { drop[n][i] = true; });
-      });
-    });
+  // Cells never overlap in volume. Only polygons on their common boundary need
+  // subtraction; general scene booleans or voxel remeshing would lose shape fidelity.
+  function clipFace(poly, a, b, axis, orientation, inside) {
+    var axes = [0,1,2].filter(function(k){return k !== axis;});
+    function distance(p) { return orientation * ((b[axes[0]]-a[axes[0]])*(p[axes[1]]-a[axes[1]])-(b[axes[1]]-a[axes[1]])*(p[axes[0]]-a[axes[0]])); }
     var out = [];
-    blocks.forEach(function (block, b) {
-      block.triangles.forEach(function (triangle, i) { if (!drop[b][i]) out.push(triangle); });
+    for (var i=0;i<poly.length;i++) {
+      var p=poly[i], q=poly[(i+1)%poly.length], dp=distance(p), dq=distance(q);
+      var pin=inside ? dp>=-1e-9 : dp<=1e-9, qin=inside ? dq>=-1e-9 : dq<=1e-9;
+      if(pin) out.push(p);
+      if(pin!==qin && Math.abs(dp-dq)>1e-12) { var t=dp/(dp-dq); out.push(p.map(function(v,k){return v+(q[k]-v)*t;})); }
+    }
+    return out.filter(function(p,i){var prev=out[(i+out.length-1)%out.length];return p.some(function(v,k){return Math.abs(v-prev[k])>1e-8;});});
+  }
+  function polygonArea(poly) {
+    var area=0;
+    for(var i=1;i+1<poly.length;i++) area+=triangleArea({v:[poly[0],poly[i],poly[i+1]]});
+    return area;
+  }
+  function subtractFace(poly, cutter, axis) {
+    var axes=[0,1,2].filter(function(k){return k!==axis;}), a=cutter[0],b=cutter[1],c=cutter[2];
+    var orientation=((b[axes[0]]-a[axes[0]])*(c[axes[1]]-a[axes[1]])-(b[axes[1]]-a[axes[1]])*(c[axes[0]]-a[axes[0]]))>=0 ? 1 : -1;
+    var overlap=poly;
+    for(var i=0;i<3 && overlap.length;i++) overlap=clipFace(overlap,cutter[i],cutter[(i+1)%3],axis,orientation,true);
+    if(polygonArea(overlap)<1e-9) return {polygons:[poly],touching:false};
+    var remaining=poly, pieces=[];
+    for(var j=0;j<3 && remaining.length;j++) {
+      var outside=clipFace(remaining,cutter[j],cutter[(j+1)%3],axis,orientation,false);
+      if(polygonArea(outside)>1e-9) pieces.push(outside);
+      remaining=clipFace(remaining,cutter[j],cutter[(j+1)%3],axis,orientation,true);
+    }
+    return {polygons:pieces,touching:true};
+  }
+  // Partial face subtraction creates vertices halfway along adjoining edges.
+  // Split those edges too, otherwise an apparently closed surface has T-junctions.
+  function stitchSurface(triangles) {
+    var unique={}, buckets={};
+    triangles=triangles.map(function(t){return {n:t.n.slice(),v:t.v.map(function(p){
+      var v=p.map(function(x){return Math.round(x*1e6)/1e6;}), key=v.join(',');
+      if(!unique[key]) {unique[key]=v; var cell=v.map(Math.floor).join(',');(buckets[cell]=buckets[cell]||[]).push(v);}
+      return unique[key];
+    })};});
+    var out=[];
+    triangles.forEach(function(t){
+      var polygon=[], split=false;
+      for(var i=0;i<3;i++) {
+        var a=t.v[i], b=t.v[(i+1)%3], delta=b.map(function(v,k){return v-a[k];});
+        var length2=delta.reduce(function(n,v){return n+v*v;},0), found=[];
+        if(length2<1e-14) continue;
+        var lo=a.map(function(v,k){return Math.floor(Math.min(v,b[k])-1e-7);}),hi=a.map(function(v,k){return Math.floor(Math.max(v,b[k])+1e-7);});
+        for(var x=lo[0];x<=hi[0];x++)for(var y=lo[1];y<=hi[1];y++)for(var z=lo[2];z<=hi[2];z++) {
+          (buckets[x+','+y+','+z]||[]).forEach(function(p){
+            var u=p.reduce(function(n,v,k){return n+(v-a[k])*delta[k];},0)/length2;
+            if(u<=1e-7 || u>=1-1e-7)return;
+            var error=p.reduce(function(n,v,k){return n+Math.pow(v-a[k]-u*delta[k],2);},0);
+            if(error<1e-12)found.push({u:u,p:p});
+          });
+        }
+        polygon.push(a);found.sort(function(p,q){return p.u-q.u;});found.forEach(function(p){polygon.push(p.p);});
+        if(found.length)split=true;
+      }
+      if(!split){if(triangleArea(t)>1e-9)out.push(t);return;}
+      var center=[0,0,0];polygon.forEach(function(p){p.forEach(function(v,k){center[k]+=v/polygon.length;});});
+      for(var j=0;j<polygon.length;j++) {var v=[center,polygon[j],polygon[(j+1)%polygon.length]];var next={n:triangleNormal(v[0],v[1],v[2]),v:v};if(triangleArea(next)>1e-9)out.push(next);}
     });
     return out;
+  }
+  function unionSurface(blocks, selected) {
+    var byKey={}, faces=[], parents=blocks.map(function(_,i){return i;});
+    function root(i){while(parents[i]!==i){parents[i]=parents[parents[i]];i=parents[i];}return i;}
+    blocks.forEach(function(block,index){
+      byKey[keyFor(block.position)]=index;var dirs={};
+      block.triangles.forEach(function(t){var p=axisPlane(t);if(p)(dirs[p.axis+':'+p.sign]=dirs[p.axis+':'+p.sign]||[]).push(t);});faces.push(dirs);
+    });
+    var out=[];
+    blocks.forEach(function(block,index){
+      block.triangles.forEach(function(t){
+        var plane=axisPlane(t), pieces=[t.v];
+        if(plane){
+          var p=Object.assign({},block.position);p[['x','y','z'][plane.axis]]+=plane.sign;
+          var key=keyFor(p), neighbor=byKey[key];
+          if(selected[key] && neighbor!==undefined){
+            (faces[neighbor][plane.axis+':'+(-plane.sign)]||[]).forEach(function(cutter){
+              if(axisPlane(cutter).coordinate!==plane.coordinate)return;
+              var next=[];
+              pieces.forEach(function(poly){var cut=subtractFace(poly,cutter.v,plane.axis);if(cut.touching)parents[root(index)]=root(neighbor);next=next.concat(cut.polygons);});pieces=next;
+            });
+          }
+        }
+        pieces.forEach(function(poly){for(var i=1;i+1<poly.length;i++){var v=[poly[0],poly[i],poly[i+1]];if(triangleArea({v:v})>1e-9)out.push({n:t.n.slice(),v:v});}});
+      });
+    });
+    out=stitchSurface(out);
+    var groups={};blocks.forEach(function(block,i){var id=root(i);(groups[id]=groups[id]||[]).push(block.position);});
+    out.contactGroups=Object.keys(groups).map(function(key){return groups[key];});
+    return out;
+  }
+
+  // World and editable source stay Y-up; STL uses Z-up, with a proper rotation
+  // (not a reflection) so triangle winding and physical volume are preserved.
+  function worldToStl(v) { return [v[0], -v[2], v[1]]; }
+  function surfaceTopology(triangles) {
+    var edges={};triangles.forEach(function(t){for(var i=0;i<3;i++){var a=t.v[i].map(function(v){return Math.round(v*1e5);}).join(','),b=t.v[(i+1)%3].map(function(v){return Math.round(v*1e5);}).join(',');var key=a<b?a+'|'+b:b+'|'+a;edges[key]=(edges[key]||0)+1;}});
+    var open=0,nonManifold=0;Object.keys(edges).forEach(function(key){if(edges[key]===1)open++;else if(edges[key]>2)nonManifold++;});
+    return {openEdges:open,nonManifoldEdges:nonManifold};
   }
   function writeBinaryStl(triangles) {
     var buffer = new ArrayBuffer(84 + triangles.length * 50);
@@ -364,7 +432,7 @@
     view.setUint32(80, triangles.length, true);
     var offset = 84;
     triangles.forEach(function (triangle) {
-      var values = triangle.n.concat(triangle.v[0], triangle.v[1], triangle.v[2]);
+      var values = worldToStl(triangle.n).concat(worldToStl(triangle.v[0]), worldToStl(triangle.v[1]), worldToStl(triangle.v[2]));
       values.forEach(function (value) { view.setFloat32(offset, Number(value) || 0, true); offset += 4; });
       view.setUint16(offset, 0, true); offset += 2;
     });
@@ -427,6 +495,9 @@
       buffer: writeBinaryStl(triangles),
       blockCount: sourceBlocks.length,
       triangleCount: triangles.length,
+      topology:surfaceTopology(triangles),
+      contactGroups: triangles.contactGroups || [],
+      connectedComponents: (triangles.contactGroups || []).length,
       shapedCount: shapedCount,
       shapeCounts: shapeCounts,
       materialCounts: materialCounts,
@@ -498,7 +569,10 @@
     var engine = window[ENGINE_KEY];
     if (!engine || typeof engine.loadLesson !== 'function') { announce(ctx, 'The 3D world is still getting ready. Try Free Build again in a moment.', 'info'); return false; }
     engine.loadLesson(FREE_BUILD_LESSON);
+    engine._builderSelection = null;
     patchGeometryState(ctx, {
+      builderPrintContext:null, builderPrintCheck:null, builderPanel:'build',
+      sandboxDockCollapsed:typeof window.matchMedia === 'function' && window.matchMedia('(max-width:800px)').matches,
       activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false,
       showSandboxLauncher: false, creatorMode: false, tutorialDismissed: true,
       hudPreset: 'builder', hudPanel: 'inventory', objectivesOpen: false,
@@ -529,6 +603,56 @@
     engine._redoStack = [];
     return { ok: true, value: checked.value, summary: checked.summary, placedCount: placedCount };
   }
+  function selectionMeasurement(engine) {
+    var selected = engine && engine._builderSelection;
+    if (!selected || !selected.blocks || !engine.measureStructure) return null;
+    var seed = selected.blocks.find(function(p) { var mesh = engine.blocks[keyFor(p)]; return mesh && isStudentBlock(mesh.userData); });
+    if (!seed) { engine._builderSelection = null; return null; }
+    var measurement = engine.measureStructure(seed.x, seed.y, seed.z, selected.blocks);
+    if (measurement && measurement.isComplete !== false) engine._builderSelection = {blocks:measurement.blocks.slice()};
+    return measurement && measurement.isComplete !== false ? { engine: engine, gp: seed, measurement: measurement } : null;
+  }
+  function copyLocal(value) { return JSON.parse(JSON.stringify(value)); }
+  // The complete project stays in this browser only, outside exported model metadata.
+  // A matching handoff ID prevents a stale or unrelated source from replacing it.
+  function captureProject(ctx, engine, id) {
+    var blocks = [];
+    Object.keys(engine.blocks || {}).forEach(function(key) {
+      var mesh = engine.blocks[key], p = gridPosition(mesh), u = mesh && mesh.userData;
+      if (!p || !u || u._lessonBlock) return;
+      blocks.push(Object.assign({}, p, { type:u.blockType, shape:u.shape || 'cube', rotation:u.rotation || 0 }));
+    });
+    return { id:id, blocks:blocks, lesson:copyLocal(engine._currentLesson || FREE_BUILD_LESSON),
+      state:copyLocal(ctx.toolData && ctx.toolData.geometryWorld || {}),
+      selection:engine._builderSelection && copyLocal(engine._builderSelection),
+      undo:copyLocal(engine._undoStack || []), redo:copyLocal(engine._redoStack || []),
+      blocksPlaced:engine.blocksPlaced || 0, sessionXP:engine._sessionXP || 0, milestones:copyLocal(engine._blockMilestones || {}),
+      camera:engine.camera && engine.camera.position.toArray(), cameraQuaternion:engine.camera && engine.camera.quaternion.toArray(), yaw:engine.yaw, pitch:engine.pitch, flyMode:!!engine.flyMode };
+  }
+  function restoreProject(ctx, engine, pending) {
+    var saved = window.__alloGeometryWorldReturnProject;
+    if (!saved || !pending.projectId || saved.id !== pending.projectId) return false;
+    engine.loadLesson(saved.lesson);
+    saved.blocks.forEach(function(block) { engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation); });
+    engine._undoStack = copyLocal(saved.undo); engine._redoStack = copyLocal(saved.redo);
+    engine.blocksPlaced = saved.blocksPlaced; engine._sessionXP = saved.sessionXP; engine._blockMilestones = saved.milestones;
+    engine._entryAnim = null; engine._builderSelection = saved.selection;
+    if (saved.camera && engine.camera) engine.camera.position.fromArray(saved.camera);
+    if (saved.cameraQuaternion && engine.camera) { engine.camera.quaternion.fromArray(saved.cameraQuaternion); if(engine.euler) engine.euler.setFromQuaternion(engine.camera.quaternion); }
+    if (isFinite(saved.yaw)) engine.yaw = saved.yaw;
+    if (isFinite(saved.pitch)) engine.pitch = saved.pitch;
+    engine.flyMode = saved.flyMode;
+    if (engine.velocity) engine.velocity.set(0,0,0);
+    var context = pending.printContext || {};
+    var selected = selectionMeasurement(engine);
+    patchGeometryState(ctx, Object.assign({}, saved.state, { worldActive:true, showLessonIntro:false,
+      showGameSettings:false, builderPanel:'build', measureResult:selected ? selected.measurement : null,
+      builderPrintContext:{unitMm:printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:String(context.aiDisclosure || '').slice(0,500)} }));
+    delete window.__alloGeometryWorldReturnProject;
+    announce(ctx, 'Returned to your complete workspace with selection, undo history, and print scale preserved. Check the revised model before printing.', 'success');
+    focusWorldSurface(50);
+    return true;
+  }
   function aimedStudentMeasurement(ctx, updateDisplay) {
     var engine = window[ENGINE_KEY];
     var hit = engine && engine.blockUnderCrosshair ? engine.blockUnderCrosshair() : null;
@@ -547,29 +671,200 @@
     }
     return { engine: engine, measurement: measurement, gp: gp };
   }
+  function showcaseBuild(ctx) {
+    var selected = selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx, false);
+    var THREE = window.THREE;
+    if (!selected || !THREE) return;
+    var engine = selected.engine, camera = engine.camera;
+    if (!camera || engine._showcase) return;
+    var box = new THREE.Box3();
+    selected.measurement.blocks.forEach(function(p){box.expandByObject(engine.blocks[keyFor(p)]);});
+    if (box.isEmpty()) return;
+    if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+    try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (_) {}
+    var saved = {position:camera.position.clone(),quaternion:camera.quaternion.clone(),up:camera.up.clone(),fov:camera.fov,far:camera.far,view:'perspective',
+      fog:engine.scene.fog ? {near:engine.scene.fog.near,far:engine.scene.fog.far}:null,
+      collapsed:!!(ctx.toolData.geometryWorld || {}).sandboxDockCollapsed, hidden:[]};
+    selected.measurement.blocks.forEach(function(p){var mesh=engine.blocks[keyFor(p)];saved.hidden.push([mesh,mesh.visible]);mesh.visible=true;});
+    [engine._dimLines,engine._selectionGlows,engine._layerGhosts,engine._angleHelpers,engine._netHelpers,[engine._rulerLine,engine._rulerLabel,engine._ghostMesh,engine._highlightMesh,engine._hoverGlowMesh].filter(Boolean)].forEach(function(list){(list || []).forEach(function(o){saved.hidden.push([o,o.visible]);o.visible=false;});});
+    engine._showcase = saved; engine.isLocked=false;engine._touchActive=false;engine._entryAnim=null;engine._viewPresetAnim=null;
+    engine._touchLookId=null;engine._touchLookStart=null;engine._touchMoveId=null;engine._touchMoveStart=null;engine._touchMoveVec={x:0,z:0};
+    if(engine.velocity)engine.velocity.set(0,0,0);
+    Object.keys(engine.moveState || {}).forEach(function(key){engine.moveState[key]=false;});
+    Object.keys(engine.lookState || {}).forEach(function(key){engine.lookState[key]=false;});
+    var center=box.getCenter(new THREE.Vector3()),radius=Math.max(0.8,box.getSize(new THREE.Vector3()).length()/2);
+    // Presentation objects belong to this session only. They never become blocks,
+    // material overrides, pick targets, or printable geometry.
+    function disposeStudioLook() {
+      var studio=saved.studio;if(!studio)return;
+      saved.studio=null;
+      engine.scene.background=studio.background;engine.scene.fog=studio.fog;
+      studio.hidden.forEach(function(entry){entry[0].visible=entry[1];});
+      studio.effects.forEach(function(entry){entry[0].enabled=entry[1];});
+      if(studio.group.parent)studio.group.parent.remove(studio.group);
+      studio.resources.forEach(function(resource){if(resource && resource.dispose)resource.dispose();});
+      studio.lights.forEach(function(light){if(light.shadow){if(light.shadow.map)light.shadow.map.dispose();if(light.shadow.mapPass)light.shadow.mapPass.dispose();}});
+      saved.look='meadow';
+    }
+    function studioColor(hex){return new THREE.Color(hex).convertSRGBToLinear();}
+    function suspendStudioBloom(studio){
+      var passes=engine.composer && engine.composer.passes;if(!passes || !THREE.UnrealBloomPass)return;
+      for(var i=0;i<passes.length;i++){
+        var pass=passes[i];if(!(pass instanceof THREE.UnrealBloomPass))continue;
+        var known=false;for(var j=0;j<studio.effects.length;j++)if(studio.effects[j][0]===pass){known=true;break;}
+        if(!known)studio.effects.push([pass,pass.enabled]);pass.enabled=false;
+      }
+    }
+    function createStudioLook() {
+      var studio={background:engine.scene.background,fog:engine.scene.fog,hidden:[],resources:[],lights:[],effects:[],group:new THREE.Group()};
+      studio.group.name='gwe-studio-stage';studio.group.userData.gwDecorative=true;
+      var selectedMeshes=selected.measurement.blocks.map(function(p){return engine.blocks[keyFor(p)];});
+      var selectedIds={};selectedMeshes.forEach(function(mesh){selectedIds[mesh.id]=true;});
+      // Isolate the creation while retaining each exact visibility for Meadow.
+      engine.scene.children.slice().forEach(function(object){
+        if(selectedIds[object.id] || object===camera)return;
+        studio.hidden.push([object,object.visible]);object.visible=false;
+      });
+      saved.studio=studio;suspendStudioBloom(studio);
+      var ivory=studioColor(0xf1eee8),floorY=box.min.y-0.015;
+      engine.scene.background=ivory;
+      engine.scene.fog=new THREE.Fog(ivory,55,145);
+      var floorGeometry=new THREE.PlaneGeometry(600,600);
+      var floorMaterial=new THREE.MeshStandardMaterial({color:studioColor(0xc6c3c0),roughness:0.98,metalness:0});
+      var floor=new THREE.Mesh(floorGeometry,floorMaterial);floor.name='gwe-studio-floor';
+      floor.rotation.x=-Math.PI/2;floor.position.set(center.x,floorY,center.z);floor.receiveShadow=true;
+      floor.raycast=function(){};studio.floor=floor;studio.group.add(floor);studio.resources.push(floorGeometry,floorMaterial);
+      // A restrained contact shadow keeps Saver grounded when shadow maps are off.
+      var contactCanvas=document.createElement('canvas');contactCanvas.width=contactCanvas.height=128;
+      var contactContext=contactCanvas.getContext('2d');
+      var gradient=contactContext.createRadialGradient(64,64,9,64,64,64);
+      gradient.addColorStop(0,'rgba(61,48,31,0.7)');gradient.addColorStop(0.45,'rgba(61,48,31,0.4)');gradient.addColorStop(1,'rgba(61,48,31,0)');
+      contactContext.fillStyle=gradient;contactContext.fillRect(0,0,128,128);
+      var contactTexture=new THREE.CanvasTexture(contactCanvas);contactTexture.encoding=THREE.sRGBEncoding;
+      var contactGeometry=new THREE.PlaneGeometry(Math.max(1.8,(box.max.x-box.min.x)*1.25+0.8),Math.max(1.8,(box.max.z-box.min.z)*1.25+0.8));
+      var contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false});
+      var contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.name='gwe-studio-contact-shadow';contact.rotation.x=-Math.PI/2;
+      contact.position.set(center.x,floorY+0.004,center.z);contact.raycast=function(){};studio.group.add(contact);
+      studio.resources.push(contactGeometry,contactMaterial,contactTexture);
+      floor.onBeforeRender=function(){suspendStudioBloom(studio);contactMaterial.opacity=engine.renderer.shadowMap.enabled?0.07:0.28;};
+      var studioRadius=Math.max(2,radius),target=new THREE.Object3D();target.position.copy(center);studio.group.add(target);
+      var key=new THREE.DirectionalLight(0xfff1df,1.1);key.name='gwe-studio-key';
+      key.position.set(center.x-studioRadius*1.1,center.y+studioRadius*2,center.z+studioRadius*1.6);key.target=target;key.castShadow=true;
+      key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=key.shadow.camera.bottom=-studioRadius*1.4;key.shadow.camera.right=key.shadow.camera.top=studioRadius*1.4;
+      key.shadow.camera.near=0.1;key.shadow.camera.far=studioRadius*6+10;key.shadow.bias=-0.00035;key.shadow.normalBias=0.025;
+      var fill=new THREE.DirectionalLight(0xe8efff,0.22);fill.name='gwe-studio-fill';fill.position.set(center.x+studioRadius*2,center.y+studioRadius,center.z-studioRadius);fill.target=target;
+      var rim=new THREE.DirectionalLight(0xffffff,0.25);rim.name='gwe-studio-rim';rim.position.set(center.x-studioRadius,center.y+studioRadius,center.z-studioRadius*2);rim.target=target;
+      var hemi=new THREE.HemisphereLight(0xfffaef,0x9b907c,0.6);hemi.name='gwe-studio-ambient';
+      studio.lights=[key,fill,rim,hemi];studio.lights.forEach(function(light){studio.group.add(light);});
+      engine.scene.add(studio.group);saved.look='studio';
+    }
+    engine.disposeShowcaseLook=disposeStudioLook;
+    engine.setShowcaseLook=function(look){
+      if(!engine._showcase || (look!=='meadow' && look!=='studio'))return;
+      if((saved.look || 'meadow')===look)return;
+      try{if(look==='studio')createStudioLook();else disposeStudioLook();}
+      catch(error){disposeStudioLook();engine.fitShowcase();patchGeometryState(ctx,{showcaseLook:'meadow'});announce(ctx,'Studio could not open. Your creation is still available in Meadow.','error');return;}
+      engine.fitShowcase();patchGeometryState(ctx,{showcaseLook:look});
+    };
+
+    var perspectiveDirection=new THREE.Vector3(1.25,0.72,1.55).normalize(),direction=perspectiveDirection.clone();
+    var corners=[];
+    [box.min.x,box.max.x].forEach(function(x){[box.min.y,box.max.y].forEach(function(y){[box.min.z,box.max.z].forEach(function(z){corners.push(new THREE.Vector3(x,y,z).sub(center));});});});
+    engine.setShowcaseView=function(view){
+      if(!engine._showcase || ['perspective','front','side','top'].indexOf(view)===-1)return;
+      saved.view=view;
+      if(view==='front')direction.set(0,0,1);
+      else if(view==='side')direction.set(1,0,0);
+      else if(view==='top')direction.set(0,1,0);
+      else direction.copy(perspectiveDirection);
+      engine.fitShowcase();patchGeometryState(ctx,{showcaseView:view});
+    };
+    engine.rotateShowcase=function(step){
+      if(!engine._showcase || !isFinite(step))return;
+      if(saved.view!=='perspective')direction.copy(perspectiveDirection);
+      saved.view='perspective';direction.applyAxisAngle(new THREE.Vector3(0,1,0),step*Math.PI/6);
+      engine.fitShowcase();patchGeometryState(ctx,{showcaseView:'perspective'});
+    };
+    engine.fitShowcase=function(){
+      camera.fov=42;camera.updateProjectionMatrix();
+      camera.up.set(0,saved.view==='top'?0:1,saved.view==='top'?-1:0);
+      var canvas=engine.renderer.domElement,width=canvas.clientWidth || canvas.width || 800,height=canvas.clientHeight || canvas.height || 600;
+      // Fit every bounding corner, including perspective depth, inside the clear
+      // area between the caption, view controls and orbit buttons.
+      var tangent=Math.tan(camera.fov*Math.PI/360),safeX=Math.max(0.35,(width-128)/width),safeY=Math.max(0.25,(height-320)/height);
+      var right=new THREE.Vector3().crossVectors(camera.up,direction).normalize(),viewUp=new THREE.Vector3().crossVectors(direction,right).normalize();
+      var distance=radius*0.4+0.5;
+      corners.forEach(function(point){var depth=point.dot(direction);distance=Math.max(distance,depth+Math.abs(point.dot(right))/(tangent*camera.aspect*safeX),depth+Math.abs(point.dot(viewUp))/(tangent*safeY));});
+      distance*=1.08;
+      camera.far=Math.max(saved.far,distance+radius*2+10);camera.updateProjectionMatrix();
+      if(saved.fog && engine.scene.fog){engine.scene.fog.near=Math.max(saved.fog.near,distance+radius);engine.scene.fog.far=Math.max(saved.fog.far,engine.scene.fog.near+Math.max(80,radius));}
+      if(saved.studio && saved.studio.floor){
+        // Every visible point before full fog is at most this distance from the
+        // camera. Add the camera-to-creation distance to bound both floor axes.
+        // This keeps the perimeter beyond the fog at any aspect or view angle,
+        // without adding triangles or changing any printable geometry.
+        var fogDepth=engine.scene.fog && isFinite(engine.scene.fog.far)?engine.scene.fog.far:camera.far;
+        var fogCornerDistance=fogDepth*Math.sqrt(1+tangent*tangent*(1+camera.aspect*camera.aspect));
+        var floorHalf=Math.max(300,distance+fogCornerDistance+radius+10);
+        saved.studio.floor.scale.set(floorHalf/300,floorHalf/300,1);
+      }
+      camera.position.copy(center).addScaledVector(direction,distance);
+      camera.lookAt(center);if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);camera.updateMatrixWorld(true);
+    };
+    engine.endShowcase=function(){
+      var previous=engine._showcase;if(!previous)return;
+      disposeStudioLook();
+      camera.position.copy(previous.position);camera.quaternion.copy(previous.quaternion);camera.up.copy(previous.up);camera.fov=previous.fov;camera.far=previous.far;camera.updateProjectionMatrix();
+      if(previous.fog && engine.scene.fog){engine.scene.fog.near=previous.fog.near;engine.scene.fog.far=previous.fog.far;}
+      if(engine.euler)engine.euler.setFromQuaternion(camera.quaternion);
+      previous.hidden.forEach(function(entry){entry[0].visible=entry[1];});
+      engine._showcase=null;engine.fitShowcase=null;engine.rotateShowcase=null;engine.endShowcase=null;engine.setShowcaseLook=null;engine.setShowcaseView=null;engine.disposeShowcaseLook=null;
+      patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});focusWorldSurface(30);
+    };
+    engine.fitShowcase();
+    patchGeometryState(ctx,{showcaseActive:true,showcaseLook:'meadow',showcaseView:'perspective',sandboxDockCollapsed:true});
+    setTimeout(function(){var button=document.getElementById('gwe-showcase-close');if(button)button.focus();},30);
+    announce(ctx,'Showcase view. Your creation is framed for viewing. Press Escape to return to building.','success');
+  }
+  function saveShowcaseImage(ctx) {
+    var engine=window[ENGINE_KEY];if(!engine || !engine.renderer)return;
+    try {
+      if(engine.composer && engine._postFxEnabled!==false)engine.composer.render();else engine.renderer.render(engine.scene,engine.camera);
+      engine.renderer.domElement.toBlob(function(blob){if(blob)downloadBlob(blob,'geometry-world-creation.png');else announce(ctx,'The image could not be captured.','error');},'image/png');
+    }catch(error){announce(ctx,'The image could not be captured. Try again after the scene finishes loading.','error');}
+  }
+
   function measureSelectedBuild(ctx) {
     var selected = aimedStudentMeasurement(ctx, true);
     if (!selected) return;
+    selected.engine._builderSelection = { blocks: selected.measurement.blocks.slice() };
+    patchGeometryState(ctx, { measureResult:selected.measurement, builderPanel:'build', hudPanel:'' });
+    var dockBody = typeof document !== 'undefined' && document.querySelector('.gwe-builder-body');
+    if (dockBody) dockBody.scrollTop = 0;
     announce(ctx, 'Measured ' + selected.measurement.count + ' connected student block' + (selected.measurement.count === 1 ? '' : 's') + '.', 'success');
   }
   function openSelectedBuildInPrintLab(ctx) {
-    var selected = aimedStudentMeasurement(ctx, false);
+    var selected = selectionMeasurement(window[ENGINE_KEY]) || aimedStudentMeasurement(ctx, false);
     if (!selected) return;
     var eng = selected.engine;
-    var measurement = eng.measureStructure(selected.gp.x, selected.gp.y, selected.gp.z);
+    var measurement = selected.measurement;
     if (!measurement || measurement.isComplete === false) { announce(ctx, 'The selected build could not be measured completely.', 'error'); return; }
     var bundle;
     try { bundle = buildGeometryWorldStl(eng, measurement.blocks, { title: 'Geometry World selected build' }); }
     catch (error) { announce(ctx, error && error.message ? error.message : 'The selected build could not be prepared.', 'error'); return; }
+    eng._builderSelection = { blocks:measurement.blocks.slice() };
+    var projectId = 'gw-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+    var context = printContext(ctx);
+    window.__alloGeometryWorldReturnProject = captureProject(ctx, eng, projectId);
     window.__alloPrintLabPendingHandoff = {
       schema: 'alloflow-print-source/1',
-      id: 'gw-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+      id: projectId, projectId: projectId, coordinateSystem: 'z-up',
       sourceTool: 'geometryWorld', format: 'STL',
       bytes: new Uint8Array(bundle.buffer),
       sourceName: 'geometry-world-selected-build.stl',
       title: 'Geometry World build - ' + bundle.blockCount + ' blocks',
-      description: 'Created from one connected Geometry World student build. Virtual block materials are appearance labels; choose the physical filament in Print Lab.',
-      unitMm: HANDOFF_UNIT_MM,
+      description: 'Created from the selected Geometry World student blocks. Virtual block materials are appearance labels; choose the physical filament in Print Lab.',
+      unitMm: printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:context.aiDisclosure || '',
       sourceModel: bundle.sourceModel,
       summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount, shapedCount: bundle.shapedCount, dimensions: bundle.dimensions }
     };
@@ -586,6 +881,7 @@
   function restorePendingEditableBuild(ctx, engine) {
     var pending = window.__alloGeometryWorldPendingBuild;
     if (!pending) return false;
+    if (restoreProject(ctx, engine, pending)) { delete window.__alloGeometryWorldPendingBuild; return true; }
     var source = pending.sourceModel;
     var blocks = source && source.schema === 'alloflow-geometry-world-build/1' && Array.isArray(source.blocks) ? source.blocks : null;
     delete window.__alloGeometryWorldPendingBuild;
@@ -624,7 +920,9 @@
       if (!existed && engine.blocks[targetKey]) placedCount += 1;
     });
     if (!placedCount) { announce(ctx, 'The returning build could not be placed in the sandbox.', 'error'); return true; }
-    patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [] });
+    var returningContext = pending.printContext || {};
+    engine._builderSelection = {blocks:clean.map(function(b){return {x:b.x+offsetX,y:b.y+offsetY,z:b.z+offsetZ};})};
+    patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: '', builderPanel:'build', builderPrintContext:{unitMm:printUnit(returningContext.unitMm),aiUse:returningContext.aiUse || 'NONE',aiDisclosure:String(returningContext.aiDisclosure || '').slice(0,500)}, measureResult: null, measureHistory: [] });
     if (engine.logEvent) engine.logEvent('print_lab_return', { blocks: placedCount, requestedBlocks: requestedCount, truncated: requestedCount > placedCount });
     announce(ctx, 'Editable build returned from Print Lab with ' + placedCount + ' block' + (placedCount === 1 ? '' : 's') + '. It is centered one block above the sandbox floor.' + (requestedCount > placedCount ? ' The world safety limit prevented ' + (requestedCount - placedCount) + ' additional block' + (requestedCount - placedCount === 1 ? '' : 's') + ' from being restored.' : ''), requestedCount > placedCount ? 'info' : 'success');
     focusWorldSurface(50);
@@ -655,7 +953,9 @@
     printVolumeSentence: printVolumeSentence,
     defaultPrintEnvelope: defaultPrintEnvelope,
     sanitizeSourceBlock: sanitizeSourceBlock,
-    restorePendingEditableBuild: restorePendingEditableBuild
+    restorePendingEditableBuild: restorePendingEditableBuild,
+    captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement,
+    openSelectedBuildInPrintLab:openSelectedBuildInPrintLab, worldToStl:worldToStl, printUnit:printUnit
   };
 
   // Placement note (2026-09-06): the launcher and the dock start below the
@@ -669,20 +969,21 @@
     var style = document.createElement('style');
     style.id = 'allo-geometryworld-builder-css';
     style.textContent = [
-      '.gwe-free-build-launch{position:absolute;top:118px;right:12px;z-index:44;display:inline-flex;min-height:44px;align-items:center;gap:8px;padding:9px 14px;border:1px solid rgba(103,232,249,.7);border-radius:14px;background:linear-gradient(135deg,rgba(8,145,178,.96),rgba(79,70,229,.96));box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:900;cursor:pointer;backdrop-filter:blur(12px)}',
-      '.gwe-free-build-launch small{font-size:9px;font-weight:700;opacity:.82}.gwe-free-build-launch:hover{transform:translateY(-1px);box-shadow:0 18px 42px rgba(8,145,178,.24)}',
-      '#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-measure-card{right:calc(12px + min(326px,calc(100% - 24px)) + 10px)!important;width:min(430px,calc(100% - 24px - min(326px,calc(100% - 24px)) - 22px))!important}',
-      '.gwe-builder-dock{position:absolute;top:118px;right:12px;z-index:43;box-sizing:border-box;width:min(326px,calc(100% - 24px));max-height:calc(100% - 130px);overflow:auto;border:1px solid rgba(103,232,249,.48);border-radius:18px;background:linear-gradient(155deg,rgba(8,47,73,.96),rgba(15,23,42,.96) 55%,rgba(49,46,129,.94));box-shadow:0 22px 60px rgba(2,6,23,.58),inset 0 1px 0 rgba(255,255,255,.08);color:#f8fafc;backdrop-filter:blur(16px) saturate(125%)}',
-      '.gwe-builder-dock[data-collapsed="true"]{width:auto}.gwe-builder-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border-bottom:1px solid rgba(103,232,249,.18)}.gwe-builder-title{display:flex;min-width:0;align-items:center;gap:9px}.gwe-builder-icon{display:grid;width:34px;height:34px;flex:0 0 auto;place-items:center;border:1px solid rgba(103,232,249,.45);border-radius:11px;background:rgba(14,116,144,.34);font-size:18px}.gwe-builder-eyebrow{color:#67e8f9;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.gwe-builder-name{margin-top:1px;color:#fff;font-size:13px;font-weight:900}.gwe-collapse{display:grid;min-width:38px;min-height:38px;place-items:center;border:1px solid rgba(148,163,184,.35);border-radius:10px;background:rgba(15,23,42,.64);color:#e2e8f0;font-size:15px;cursor:pointer}',
-      '.gwe-builder-body{display:flex;flex-direction:column;gap:11px;padding:12px 13px 13px}.gwe-builder-intro{margin:0;color:#cbd5e1;font-size:10px;line-height:1.5}.gwe-selection{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gwe-selection-card{min-width:0;padding:8px 9px;border:1px solid rgba(148,163,184,.2);border-radius:11px;background:rgba(15,23,42,.54)}.gwe-selection-label{display:block;color:#94a3b8;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.gwe-selection-value{display:block;margin-top:3px;overflow:hidden;color:#f8fafc;font-size:10px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}',
-      '.gwe-measure-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gwe-metric{padding:7px 5px;border:1px solid rgba(103,232,249,.18);border-radius:10px;background:rgba(8,47,73,.35);text-align:center}.gwe-metric strong{display:block;color:#fff;font-size:12px}.gwe-metric span{color:#a5f3fc;font-size:8px;font-weight:800;text-transform:uppercase}.gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gwe-builder-actions button{min-height:44px;padding:8px 9px;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(15,23,42,.72);color:#f8fafc;font-size:10px;font-weight:900;cursor:pointer}.gwe-builder-actions .gwe-primary{grid-column:1/-1;border-color:#67e8f9;background:linear-gradient(135deg,#0891b2,#4f46e5);font-size:11px}.gwe-builder-actions button:hover{filter:brightness(1.12)}.gwe-print-ready[data-fit] .gwe-print-ready-basis{margin:6px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.gwe-builder-note{margin:0;padding-top:8px;border-top:1px solid rgba(148,163,184,.15);color:#bae6fd;font-size:9px;line-height:1.45}',
-      '.gwe-recovery{padding:10px;border:1px solid rgba(103,232,249,.36);border-radius:12px;background:rgba(8,47,73,.34)}.gwe-recovery[data-state="error"]{border-color:rgba(251,113,133,.55);background:rgba(76,5,25,.34)}.gwe-recovery strong{display:block;color:#fff;font-size:11px}.gwe-recovery p{margin:4px 0 0;color:#cffafe;font-size:9px;line-height:1.5}.gwe-recovery[data-state="error"] p{color:#ffe4e6}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.gwe-recovery-actions button{min-height:40px;padding:7px;border:1px solid rgba(148,163,184,.42);border-radius:10px;background:rgba(15,23,42,.82);color:#fff;font-size:9px;font-weight:900;cursor:pointer}.gwe-recovery-actions .gwe-replace{border-color:#fbbf24;background:#92400e}',
-      '.gwe-print-ready{padding:9px 10px;border:1px solid rgba(52,211,153,.38);border-radius:11px;background:rgba(6,78,59,.3)}.gwe-print-ready[data-fit="false"]{border-color:rgba(251,191,36,.48);background:rgba(120,53,15,.28)}.gwe-print-ready-label{display:block;color:#6ee7b7;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.gwe-print-ready[data-fit="false"] .gwe-print-ready-label{color:#fde68a}.gwe-print-ready strong{display:block;margin-top:3px;color:#fff;font-size:13px}.gwe-print-ready p{margin:4px 0 0;color:#d1fae5;font-size:9px;line-height:1.45}.gwe-print-ready[data-fit="false"] p{color:#fef3c7}',
-      '.gwe-backdrop{position:absolute;inset:0;z-index:210;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.78);backdrop-filter:blur(10px)}.gwe-launcher{box-sizing:border-box;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;border:1px solid rgba(103,232,249,.52);border-radius:24px;background:radial-gradient(circle at 15% 0,rgba(8,145,178,.25),transparent 38%),linear-gradient(150deg,#0f172a,#1e1b4b);box-shadow:0 30px 100px rgba(2,6,23,.82);color:#f8fafc}.gwe-launcher-hero{padding:24px 24px 17px;border-bottom:1px solid rgba(148,163,184,.17)}.gwe-launcher-kicker{margin:0;color:#67e8f9;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.gwe-launcher h2{margin:6px 0 0;color:#fff;font-size:25px;line-height:1.12}.gwe-launcher-subtitle{max-width:620px;margin:9px 0 0;color:#cbd5e1;font-size:12px;line-height:1.55}.gwe-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 24px}.gwe-feature{padding:14px;border:1px solid rgba(148,163,184,.2);border-radius:15px;background:rgba(15,23,42,.58)}.gwe-feature-icon{font-size:22px}.gwe-feature strong{display:block;margin-top:7px;color:#fff;font-size:12px}.gwe-feature p{margin:5px 0 0;color:#cbd5e1;font-size:10px;line-height:1.45}.gwe-reset-note{margin:0 24px;padding:11px 12px;border:1px solid rgba(251,191,36,.36);border-radius:12px;background:rgba(120,53,15,.22);color:#fde68a;font-size:10px;line-height:1.5}.gwe-launcher-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:16px 24px 22px}.gwe-launcher-actions button{min-height:44px;padding:9px 14px;border:1px solid rgba(148,163,184,.4);border-radius:12px;background:#1e293b;color:#f8fafc;font-size:11px;font-weight:900;cursor:pointer}.gwe-launcher-actions .gwe-open{border-color:#67e8f9;background:linear-gradient(135deg,#0891b2,#4f46e5)}',
-      '#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-toolbar{border-bottom-color:rgba(103,232,249,.34)!important;box-shadow:0 10px 38px rgba(8,145,178,.12)}#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-brand-mark{border-color:rgba(103,232,249,.55);background:linear-gradient(135deg,rgba(8,145,178,.48),rgba(79,70,229,.34))}',
-      '.theme-contrast .gwe-builder-dock,[data-stem-theme="contrast"] .gwe-builder-dock,.theme-contrast .gwe-launcher,[data-stem-theme="contrast"] .gwe-launcher{border:2px solid #00ffff;background:#000;color:#fff}.theme-contrast .gwe-builder-dock button,[data-stem-theme="contrast"] .gwe-builder-dock button,.theme-contrast .gwe-launcher button,[data-stem-theme="contrast"] .gwe-launcher button{border:2px solid #00ff00;background:#000;color:#00ff00}',
-      '@media(max-width:800px){.gwe-free-build-launch{top:108px;right:7px}.gwe-builder-dock{top:108px;right:7px;max-height:min(46vh,calc(100% - 118px))}#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-measure-card{right:6px!important;width:calc(100% - 12px)!important}.gwe-launcher{border-radius:18px}.gwe-feature-grid{grid-template-columns:1fr;padding:13px 16px}.gwe-launcher-hero{padding:19px 16px 14px}.gwe-reset-note{margin:0 16px}.gwe-launcher-actions{padding:14px 16px 18px}}@media(max-width:520px){.gwe-builder-dock{left:7px;right:7px;width:auto}.gwe-builder-dock[data-collapsed="true"]{left:auto}.gwe-builder-actions{grid-template-columns:1fr}.gwe-builder-actions .gwe-primary{grid-column:auto}.gwe-launcher h2{font-size:21px}.gwe-launcher-actions{align-items:stretch;flex-direction:column}.gwe-launcher-actions button{width:100%}}',
-      '@media(prefers-reduced-motion:reduce){.gwe-free-build-launch,.gwe-builder-dock,.gwe-launcher,.gwe-builder-dock button,.gwe-launcher button{transition:none!important;animation:none!important}}'
+      ".gwe-free-build-launch{position:absolute;top:118px;right:12px;z-index:44;display:inline-flex;min-height:48px;align-items:center;gap:9px;padding:10px 15px;border:1px solid #d4e8ca66;border-radius:15px;background:#173b35;color:#f5f0e5;box-shadow:0 8px 24px #112d2b33,inset 0 1px #ffffff12;font-size:13px;font-weight:750;cursor:pointer}.gwe-free-build-launch small{color:#d4e8ca;font-size:11px;font-weight:500}.gwe-free-build-launch:hover{background:#244c42}",
+      ".gwe-builder-dock{position:absolute;top:118px;right:12px;z-index:43;display:flex;flex-direction:column;box-sizing:border-box;width:min(346px,calc(100% - 24px));max-height:calc(100% - 130px);overflow:hidden;border:1px solid #9ab4a65e;border-radius:20px;background:#112d2bf5;box-shadow:0 18px 48px #0b211f38,inset 0 1px #ffffff0d;color:#f5f0e5;backdrop-filter:blur(16px)}.gwe-builder-dock[data-collapsed=\"true\"]{width:auto}.gwe-builder-head{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px 12px;background:#173b35;border-bottom:1px solid #c5d9cd22}.gwe-builder-title{display:flex;min-width:0;align-items:center;gap:11px}.gwe-builder-icon{display:grid;width:40px;height:40px;flex:0 0 auto;place-items:center;border:1px solid #d4e8ca42;border-radius:12px;background:#d4e8ca0c;color:#d4e8ca}.gwe-builder-eyebrow{color:#b8cdbf;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase}.gwe-builder-name{margin-top:3px;color:#f5f0e5;font-size:16px;font-weight:750;letter-spacing:-.025em}.gwe-collapse{display:grid;min-width:44px;min-height:44px;place-items:center;border:1px solid #a4bbaa55;border-radius:12px;background:#112d2b66;color:#f5f0e5;font-size:15px;font-weight:650;cursor:pointer}.gwe-collapse:hover{background:#2b5044}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-head{padding:6px}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-icon{border:0;background:transparent}",
+      ".gwe-workflow{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:6px;list-style:none;margin:0;padding:11px 16px 0;color:#b8cdbf}.gwe-workflow li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600}.gwe-workflow li+li:before{content:\"\";display:block;width:13px;height:1px;margin-right:3px;background:#9cb8a94d}.gwe-workflow span{display:grid;place-items:center;width:20px;height:20px;border:1px solid #9cb8a95e;border-radius:50%;font-size:10px}.gwe-workflow li[aria-current=\"step\"]{color:#f5f0e5}.gwe-workflow li[aria-current=\"step\"] span{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}",
+      ".gwe-builder-body{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:15px;padding:15px;overflow:auto;overscroll-behavior:contain;scrollbar-color:#658576 #173b35;scrollbar-width:thin}.gwe-builder-intro{margin:0;color:#c5d6ca;font-size:12px;line-height:1.6}.gwe-section-title{margin:0 0 8px;color:#f5f0e5;font-size:13px;font-weight:700;letter-spacing:-.01em}.gwe-selection{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-selection-card{min-width:0;padding:10px 11px;border:1px solid #aac4b329;border-radius:12px;background:#d4e8ca07}.gwe-selection-label{display:block;color:#b5cabb;font-size:11px;font-weight:500}.gwe-selection-value{display:block;margin-top:5px;overflow:hidden;color:#f5f0e5;font-size:12px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}.gwe-measure-summary{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:8px}.gwe-metric{min-width:0;padding:12px 6px;border:1px solid #b4cdb42b;border-radius:12px;background:#d4e8ca0a;text-align:center}.gwe-metric strong{display:block;color:#f5f0e5;font-size:20px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.04em}.gwe-metric:last-child strong{font-size:17px;line-height:24px}.gwe-metric span{display:block;margin-top:4px;color:#b8cdbf;font-size:11px;font-weight:500}",
+      ".gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-builder-actions button{min-width:0;min-height:44px;padding:9px 10px;border:1px solid #a1bea44f;border-radius:12px;background:#1c4037;color:#f5f0e5;font-size:12px;font-weight:650;line-height:1.3;cursor:pointer}.gwe-builder-actions button:hover{background:#2a5042;border-color:#c1d6b97d}.gwe-builder-actions button:disabled{opacity:.55;cursor:wait}.gwe-builder-actions .gwe-primary{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}.gwe-builder-actions .gwe-primary:hover{background:#e3efdc;border-color:#e3efdc}.gwe-builder-quick-actions{flex:0 0 auto;padding:11px 15px 14px;border-bottom:1px solid #b9d1bf26;background:#112d2b}.gwe-builder-quick-actions button{min-height:48px;font-size:12px}.gwe-builder-actions .gwe-showcase-action{background:#f5f0e5;color:#173b35;border-color:#f5f0e5}.gwe-builder-actions .gwe-showcase-action:hover{background:#fffaf0}.gwe-builder-actions .gwe-clear-selection{grid-column:1/-1;justify-self:start;min-height:36px;padding:4px 2px;border:0;background:transparent;color:#bacfc0;font-weight:500;text-decoration:underline;text-underline-offset:3px}.gwe-builder-actions .gwe-clear-selection:hover{color:#fff}.gwe-builder-note{margin:0;color:#bfd2c4;font-size:12px;line-height:1.6}.gwe-builder-note[data-gwe-not-student]{padding:10px;border:1px solid #d9b27588;border-radius:10px;background:#4d3d21;color:#fff0cc}",
+      ".gwe-print-ready{padding:13px;border:1px solid #aecda447;border-radius:14px;background:#244c3b66}.gwe-print-ready[data-fit=\"false\"]{border-color:#d7ae6988;background:#4d3d21}.gwe-print-ready-heading{display:flex;gap:8px;justify-content:space-between;align-items:center}.gwe-print-ready-label{color:#c8dec0;font-size:11px;font-weight:600}.gwe-fit-badge{flex:0 0 auto;padding:4px 7px;border-radius:6px;background:#d4e8ca;color:#173b35;font-size:10px;font-weight:750}.gwe-print-ready[data-fit=\"false\"] .gwe-fit-badge{background:#f1d094;color:#3b2e19}.gwe-print-ready strong{display:block;margin-top:8px;color:#f5f0e5;font-size:19px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.gwe-print-ready p{margin:7px 0 0;color:#d3e1d0;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] p{color:#fae8c3}.gwe-print-ready .gwe-print-scale{font-size:11px;color:#b9ceb7}.gwe-print-ready[data-fit=\"false\"] .gwe-print-scale{color:#fae8c3}.gwe-details{border-top:1px solid #c2d7bb30}.gwe-print-ready .gwe-details{margin-top:11px}.gwe-details summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:8px;list-style:none;color:#e2ebdc;font-size:12px;font-weight:600;cursor:pointer}.gwe-details summary::-webkit-details-marker{display:none}.gwe-details summary:after{content:\"+\";font-size:19px;font-weight:400}.gwe-details[open]>summary:after{content:\"−\"}.gwe-details .gwe-print-ready-basis{margin:7px 0 0;color:#c4d8be;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] .gwe-details .gwe-print-ready-basis{color:#fae8c3}.gwe-details .gwe-builder-note{margin-top:8px}.gwe-connection-check{padding:12px 13px;border:1px solid #abc69b40;border-radius:12px;background:#d4e8ca08}.gwe-connection-check[data-connected=\"false\"]{border-color:#d9b27588;background:#4d3d21}.gwe-connection-check strong{color:#e5eddb;font-size:13px;font-weight:650}.gwe-connection-check p{margin:6px 0 0;color:#c6d7c6;font-size:12px;line-height:1.6}.gwe-connection-check[data-connected=\"false\"] p{color:#fae8c3}.gwe-workspace-options{padding-top:2px}.gwe-workspace-options>.gwe-builder-actions{padding:2px 0 8px}",
+      ".gwe-recovery{padding:12px;border:1px solid #a9c7b069;border-radius:12px;background:#234b3c}.gwe-recovery[data-state=\"error\"]{border-color:#eab1a0;background:#552d29}.gwe-recovery strong{display:block;color:#fff5e6;font-size:13px}.gwe-recovery p{margin:6px 0 0;color:#deead7;font-size:12px;line-height:1.6}.gwe-recovery[data-state=\"error\"] p{color:#ffe4da}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gwe-recovery-actions button{min-height:44px;padding:8px;border:1px solid #c6d7b965;border-radius:10px;background:#173b35;color:#f5f0e5;font-size:12px;font-weight:650;cursor:pointer}.gwe-recovery-actions .gwe-replace{background:#f1d094;border-color:#f1d094;color:#3b2e19}",
+      ".gwe-backdrop{position:absolute;inset:0;z-index:210;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:20px;background:#0b231ec4;backdrop-filter:blur(8px)}.gwe-launcher{box-sizing:border-box;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;border:1px solid #fff9ebad;border-radius:26px;background:#f5f0e5;box-shadow:0 28px 90px #0b211f70;color:#173b35}.gwe-launcher-hero{position:relative;overflow:hidden;padding:30px 28px 24px;border-bottom:1px solid #173b351c;background:linear-gradient(115deg,#f5f0e5 60%,#e4e9d7)}.gwe-launcher-kicker{position:relative;margin:0;color:#526a52;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}.gwe-launcher h2{position:relative;max-width:540px;margin:10px 0 0;color:#173b35;font-size:30px;font-weight:750;letter-spacing:-.04em;line-height:1.15}.gwe-launcher-subtitle{position:relative;max-width:575px;margin:13px 0 0;color:#526458;font-size:14px;line-height:1.65}.gwe-launcher-art{position:absolute;top:-10px;right:-20px;width:200px;height:200px;color:#73876d;opacity:.15;transform:rotate(-8deg);pointer-events:none}.gwe-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:22px 28px}.gwe-feature{padding:16px 14px;border:1px solid #58724b26;border-radius:15px;background:#fffaf044}.gwe-feature-icon{display:grid;width:30px;height:30px;place-items:center;border:1px solid #5b785144;border-radius:50%;color:#526a43;font-size:12px;font-weight:700}.gwe-feature strong{display:block;margin-top:13px;color:#173b35;font-size:14px;font-weight:750;letter-spacing:-.015em}.gwe-feature p{margin:8px 0 0;color:#576458;font-size:12px;line-height:1.65}.gwe-reset-note{margin:0 28px;padding:13px 14px;border:1px solid #a886503b;border-radius:12px;background:#eae0c666;color:#66552f;font-size:12px;line-height:1.6}.gwe-launcher-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;padding:22px 28px 26px}.gwe-launcher-actions button{min-height:46px;padding:10px 15px;border:1px solid #173b3544;border-radius:12px;background:#fffaf066;color:#173b35;font-size:12px;font-weight:650;cursor:pointer}.gwe-launcher-actions button:hover{background:#e5e9d7}.gwe-launcher-actions .gwe-open{border-color:#173b35;background:#173b35;color:#f5f0e5}.gwe-launcher-actions .gwe-open:hover{background:#2a5042}.gwe-builder-dock :is(button,summary):focus-visible,.gwe-launcher button:focus-visible,.gwe-free-build-launch:focus-visible{outline:3px solid #e8c884;outline-offset:2px}.gwe-launcher button:focus-visible{outline-color:#406647}",
+      "#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-inventory-panel{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"build\"] .gw-measure-card{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:calc(12px + min(346px,calc(100% - 24px)) + 10px)!important;width:min(430px,calc(100% - 24px - min(346px,calc(100% - 24px)) - 22px))!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-dock{top:auto;bottom:184px;max-height:64px;z-index:152}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-icon{display:none}",
+      "@media(max-width:800px){.gwe-free-build-launch{top:108px;right:7px}.gwe-builder-dock{top:auto;bottom:16px;right:7px;max-height:42%}.gwe-builder-dock[data-collapsed=\"true\"]{bottom:184px;left:auto;max-height:64px}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-builder-icon{display:none}.gwe-builder-head{padding:10px 13px}.gwe-builder-quick-actions{padding:9px 13px 11px}.gwe-workflow{padding:9px 14px 0}.gwe-builder-body{padding:13px;gap:13px}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"]:has(.gwe-builder-dock[data-collapsed=\"false\"]) :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-controls){visibility:hidden}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:6px!important;width:calc(100% - 12px)!important;max-height:calc(100% - 270px)!important;overflow:auto!important;top:8px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud{top:8px;bottom:auto!important;left:8px;max-width:calc(100% - 90px);z-index:21}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-coordinate-hud summary{min-height:32px;display:flex;align-items:center;cursor:pointer;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar{left:8px!important;right:8px!important;width:auto!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;max-width:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-action-bar button{min-height:44px;flex-shrink:0;font-size:12px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gwe-builder-dock[data-collapsed=\"true\"]{left:50%;right:auto;transform:translateX(-50%);bottom:197px;width:auto}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gw-action-bar{left:8px!important;right:auto!important;width:140px!important;bottom:262px!important;flex-wrap:wrap!important;justify-content:flex-start!important;gap:4px!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-touch-active=\"true\"] .gw-measure-card{max-height:calc(100% - 542px)!important}.gwe-backdrop{padding:12px}.gwe-launcher{border-radius:20px}.gwe-launcher-hero{padding:23px 20px 20px}.gwe-launcher h2{font-size:26px}.gwe-feature-grid{padding:17px 20px}.gwe-reset-note{margin:0 20px}.gwe-launcher-actions{padding:18px 20px 20px}}",
+      "@media(max-width:520px){.gwe-builder-dock{left:7px;right:7px;width:auto}.gwe-builder-dock[data-collapsed=\"true\"]{left:auto}.gwe-builder-name{font-size:16px}.gwe-workflow{justify-content:space-around}.gwe-feature-grid{grid-template-columns:1fr;gap:9px}.gwe-feature{display:grid;grid-template-columns:30px 1fr;column-gap:12px;padding:12px}.gwe-feature-icon{grid-row:1/3}.gwe-feature strong{margin:0;font-size:13px}.gwe-feature p{margin:5px 0 0;font-size:12px}.gwe-launcher h2{font-size:25px}.gwe-launcher-subtitle{font-size:13px}.gwe-launcher-actions{display:grid;grid-template-columns:1fr 1fr}.gwe-launcher-actions button:first-child{grid-column:1/-1}.gwe-launcher-actions .gwe-open{grid-column:2}.gwe-reset-note{font-size:12px}}",
+      ".theme-contrast .gwe-builder-dock,[data-stem-theme=\"contrast\"] .gwe-builder-dock,.theme-contrast .gwe-launcher,[data-stem-theme=\"contrast\"] .gwe-launcher{border:2px solid #00ffff;background:#000;color:#fff}.theme-contrast :is(.gwe-builder-head,.gwe-builder-quick-actions,.gwe-launcher-hero,.gwe-selection-card,.gwe-metric,.gwe-print-ready,.gwe-connection-check,.gwe-feature,.gwe-reset-note),[data-stem-theme=\"contrast\"] :is(.gwe-builder-head,.gwe-builder-quick-actions,.gwe-launcher-hero,.gwe-selection-card,.gwe-metric,.gwe-print-ready,.gwe-connection-check,.gwe-feature,.gwe-reset-note){background:#000;border-color:#00ffff}.theme-contrast :is(.gwe-builder-dock,.gwe-launcher) :is(p,span,strong,h2,summary,.gwe-section-title,.gwe-builder-name,.gwe-builder-eyebrow),[data-stem-theme=\"contrast\"] :is(.gwe-builder-dock,.gwe-launcher) :is(p,span,strong,h2,summary,.gwe-section-title,.gwe-builder-name,.gwe-builder-eyebrow){color:#fff}.theme-contrast :is(.gwe-builder-dock,.gwe-launcher) button,[data-stem-theme=\"contrast\"] :is(.gwe-builder-dock,.gwe-launcher) button{border:2px solid #00ff00;background:#000;color:#00ff00}.theme-contrast .gwe-fit-badge,[data-stem-theme=\"contrast\"] .gwe-fit-badge{background:#000;border:1px solid #00ffff}.theme-contrast .gwe-workflow li[aria-current=\"step\"] span,[data-stem-theme=\"contrast\"] .gwe-workflow li[aria-current=\"step\"] span{background:#000;border-color:#00ffff}.theme-contrast .gwe-launcher-art,[data-stem-theme=\"contrast\"] .gwe-launcher-art{display:none}@media(prefers-reduced-motion:reduce){.gwe-free-build-launch,.gwe-builder-dock,.gwe-launcher,.gwe-builder-dock button,.gwe-launcher button{transition:none!important;animation:none!important}}"
+      ,'.gw-root .gwe-showcase[role="dialog"]{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;z-index:205!important}.gwe-showcase{position:absolute;inset:0;z-index:205;background:linear-gradient(180deg,rgba(4,18,27,.18),transparent 22%,transparent 74%,rgba(4,18,27,.24));display:flex;align-items:flex-end;justify-content:center;padding:24px;box-sizing:border-box}.gwe-showcase-orbit{position:absolute;top:50%;width:44px;height:44px;border:1px solid #d3e5df99;border-radius:50%;background:#0c2438dd;color:#fff;font-size:25px;cursor:pointer;box-shadow:0 6px 20px #06192733}.gwe-showcase-orbit-left{left:20px}.gwe-showcase-orbit-right{right:20px}.gwe-showcase-orbit:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.gwe-showcase-caption{position:absolute;top:26px;left:28px;color:#fff;text-shadow:0 2px 16px #102b40}.gwe-showcase-caption span{font-size:10px;letter-spacing:.22em;font-weight:800}.gwe-showcase-caption strong{display:block;margin-top:6px;font-size:28px;font-weight:800;letter-spacing:-.03em}.gwe-showcase-tools{display:flex;gap:8px;padding:7px;border:1px solid #ffffff55;border-radius:16px;background:#0c2438e8;box-shadow:0 12px 36px #06192755;backdrop-filter:blur(12px)}.gwe-showcase-tools button{min-height:44px;padding:10px 18px;border:1px solid #a5cad055;border-radius:10px;background:transparent;color:#fff;font-size:13px;font-weight:800;cursor:pointer}.gwe-showcase-actions button:last-child{background:#d4e8ca;color:#173b35}.gwe-showcase-tools button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}#geoworld-fs-workspace[data-showcase-active="true"] .gw-toolbar{visibility:hidden}#geoworld-fs-workspace[data-showcase-active="true"] .gwe-builder-dock,#geoworld-fs-workspace[data-showcase-active="true"] .gw-hotbar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-action-bar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-shape-tray,#geoworld-fs-workspace[data-showcase-active="true"] .gw-coordinate-hud,#geoworld-fs-workspace[data-showcase-active="true"] .gw-touch-controls,#geoworld-fs-workspace[data-showcase-active="true"] .gw-crosshair,#geoworld-fs-workspace[data-showcase-active="true"] .gw-measure-card,#geoworld-fs-workspace[data-showcase-active="true"] .gw-viewport-control{visibility:hidden!important}@media(max-width:520px){.gwe-showcase{padding:16px}.gwe-showcase-caption{top:20px;left:20px}.gwe-showcase-caption strong{font-size:24px}}'
+      ,".gwe-showcase-looks{display:inline-flex;gap:3px;margin-top:14px;padding:4px;border:1px solid #c8ded466;border-radius:999px;background:#0c2438dc;box-shadow:0 6px 18px #102b4022;text-shadow:none}.gwe-showcase-looks button{min-height:44px;min-width:92px;padding:8px 18px;border:0;border-radius:999px;background:transparent;color:#e5f0ec;font-size:12px;font-weight:800;cursor:pointer}.gwe-showcase-looks button[aria-pressed=\"true\"]{background:#d5f2e8;color:#123c39}.gwe-showcase-looks button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.gw-root[data-showcase-active=\"true\"][data-showcase-look=\"studio\"]{background:#f1eee8!important}.gwe-showcase[data-look=\"studio\"]{background:linear-gradient(180deg,rgba(241,238,232,.15),transparent 24%,transparent 78%,rgba(86,68,44,.08))}.gwe-showcase[data-look=\"studio\"] button:focus-visible{outline-color:#245049}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-caption{color:#3d372e;text-shadow:none}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks{border-color:#8e7c5e44;background:#faf7f1ed;box-shadow:0 5px 16px #69523714}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button{color:#665c4d}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button[aria-pressed=\"true\"]{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-looks{margin-top:12px}.gwe-showcase-looks button{min-width:88px;padding:8px 16px}}"
+      ,".gwe-showcase-tools{flex-direction:column;gap:6px;max-width:100%;background:#112d2bef;border-color:#c6d7bd55}.gwe-showcase-actions{display:flex;gap:8px}.gwe-showcase-actions button{flex:1 1 auto;white-space:nowrap}.gwe-showcase-views{display:grid;grid-template-columns:1.65fr 1fr 1fr 1fr;gap:3px;padding:3px;border-radius:11px;background:#f5f0e509}.gwe-showcase-views button{min-width:0;min-height:44px;padding:7px 8px;border:0;border-radius:8px;color:#cfddc8;font-size:11px;font-weight:650;white-space:nowrap}.gwe-showcase-views button[aria-pressed=\"true\"]{background:#d4e8ca;color:#173b35}.gwe-showcase-views button:hover{box-shadow:inset 0 0 0 1px #bfd2b555}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools{background:#faf7f1ed;border-color:#8e7c5e44;box-shadow:0 10px 32px #69523721}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools button{color:#245049;border-color:#8e7c5e44}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views{background:#2450490a}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views button[aria-pressed=\"true\"],.gwe-showcase[data-look=\"studio\"] .gwe-showcase-actions button:last-child{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-tools{width:min(296px,100%);box-sizing:border-box;padding:6px}.gwe-showcase-actions button{padding:9px 10px;font-size:12px}.gwe-showcase-views button{padding:6px 4px}}.theme-contrast .gwe-showcase-tools,[data-stem-theme=\"contrast\"] .gwe-showcase-tools{background:#000!important;border:2px solid #00ffff!important}.theme-contrast .gwe-showcase-tools button,[data-stem-theme=\"contrast\"] .gwe-showcase-tools button{color:#00ff00!important;border:1px solid #00ff00!important;background:#000!important}.theme-contrast .gwe-showcase-views button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gwe-showcase-views button[aria-pressed=\"true\"]{background:#00ff00!important;color:#000!important}"
     ].join('');
     document.head.appendChild(style);
   }
@@ -695,6 +996,13 @@
     var first = controls[0], last = controls[controls.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+
+  function studioCubeMark(h) {
+    return h('svg', {viewBox:'0 0 32 32', width:'100%', height:'100%', fill:'none', 'aria-hidden':'true', focusable:'false'},
+      h('path', {d:'M16 4 27 10.5v12L16 29 5 22.5v-12L16 4Z', stroke:'currentColor', strokeWidth:1.4, strokeLinejoin:'round'}),
+      h('path', {d:'M5 10.5 16 17l11-6.5M16 17v12M10.5 7.25l11 6.5', stroke:'currentColor', strokeWidth:1.4, strokeLinejoin:'round'})
+    );
   }
 
   function installBuilderEnhancement() {
@@ -720,6 +1028,34 @@
       var _editableError = React.useState(''), editableError = _editableError[0], setEditableError = _editableError[1];
       var _editableBusy = React.useState(false), editableBusy = _editableBusy[0], setEditableBusy = _editableBusy[1];
 
+      var liveBuilderCtx = React.useRef(ctx); liveBuilderCtx.current = ctx;
+      React.useEffect(function () {
+        var previousEngine=null, signature='', outline=null;
+        function clearOutline(){if(outline){if(outline.parent)outline.parent.remove(outline);outline.geometry.dispose();outline.material.dispose();outline=null;}}
+        function refresh(){
+          var eng=window[ENGINE_KEY];
+          if(eng && !eng._showcase && (liveBuilderCtx.current.toolData.geometryWorld || {}).showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
+          if(outline)outline.visible=!(eng && eng._showcase);
+          if(eng!==previousEngine){if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();clearOutline();signature='';previousEngine=eng;}
+          var selected=selectionMeasurement(eng);
+          if(!selected){clearOutline();if(signature){signature='';patchGeometryState(liveBuilderCtx.current,{builderPrintCheck:null});}return;}
+          var m=selected.measurement;
+          var next=m.blocks.map(function(p){var u=eng.blocks[keyFor(p)].userData;return keyFor(p)+':'+u.shape+':'+u.rotation+':'+u.blockType;}).sort().join('|');
+          if(next===signature)return;
+          signature=next;eng._builderSelection={blocks:m.blocks.slice()};
+          var check=null;
+          try{var bundle=buildGeometryWorldStl(eng,m.blocks);check={components:bundle.connectedComponents,triangles:bundle.triangleCount,nonManifoldEdges:bundle.topology.nonManifoldEdges,openEdges:bundle.topology.openEdges};}catch(error){check={error:error.message};}
+          if(window.THREE && eng.scene){
+            clearOutline();var box=new window.THREE.Box3();m.blocks.forEach(function(p){box.expandByObject(eng.blocks[keyFor(p)]);});
+            outline=new window.THREE.Box3Helper(box,check && (check.components>1 || check.nonManifoldEdges) ? 0xfbbf24 : 0x22d3ee);
+            outline.material.depthTest=false;outline.material.transparent=true;outline.material.opacity=0.85;outline.renderOrder=998;outline.visible=!eng._showcase;eng.scene.add(outline);
+          }
+          patchGeometryState(liveBuilderCtx.current,{measureResult:m,builderPrintCheck:check});
+        }
+        var timer=setInterval(refresh,250);refresh();
+        return function(){clearInterval(timer);if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();clearOutline();};
+      },[]);
+
       React.useEffect(function () { return function () { editableReadTokenRef.current += 1; }; }, []);
 
       React.useEffect(function () {
@@ -734,7 +1070,7 @@
             return;
           }
           attempts += 1;
-          if (attempts < 30) timer = setTimeout(restore, 100);
+          if (attempts < 1200) timer = setTimeout(restore, 100);
         }
         restore();
         return function () { cancelled = true; if (timer) clearTimeout(timer); };
@@ -744,12 +1080,13 @@
       var engine = window[ENGINE_KEY];
       var material = BLOCK_TYPES[Math.max(0, Math.min(BLOCK_TYPES.length - 1, Number(data.selectedBlock) || 0))];
       var shape = BLOCK_SHAPES[Math.max(0, Math.min(BLOCK_SHAPES.length - 1, Number(data.selectedShape) || 0))];
+      var currentPrintUnit = printUnit(printContext(ctx).unitMm);
       var measured = data.measureResult && data.measureResult.isComplete !== false ? data.measureResult : null;
       // M measures whatever the crosshair rests on, the ground included. The
       // sandbox floor is a 25 x 25 x 1 'structure' that would otherwise be quoted
       // as a 125 x 125 x 5 mm print that fits, when Send would refuse it.
       var measuredIsStudentBuild = !!(measured && measurementIsStudentBuild(engine, measured));
-      var printEnvelope = measuredIsStudentBuild ? defaultPrintEnvelope(measured, storedPrinterProfile(ctx)) : null;
+      var printEnvelope = measuredIsStudentBuild ? defaultPrintEnvelope(measured, storedPrinterProfile(ctx), currentPrintUnit) : null;
       var placed = engine && isFinite(engine.blocksPlaced) ? engine.blocksPlaced : (Number(data.blocksPlaced) || 0);
       var launcherOpen = !!data.showSandboxLauncher;
       var collapsed = !!data.sandboxDockCollapsed;
@@ -820,43 +1157,83 @@
       },
         h('div', { className: 'gwe-builder-head' },
           h('div', { className: 'gwe-builder-title' },
-            h('span', { className: 'gwe-builder-icon', 'aria-hidden': 'true' }, '\uD83E\uDDF1'),
+            h('span', { className: 'gwe-builder-icon', 'aria-hidden': 'true' }, studioCubeMark(h)),
             !collapsed && h('div', null, h('div', { className: 'gwe-builder-eyebrow' }, 'Sandbox mode'), h('div', { className: 'gwe-builder-name' }, 'Free Build Studio'))
           ),
-          h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { patchGeometryState(ctx, { sandboxDockCollapsed: !collapsed }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? '\u25C0' : '\u25B6')
+          h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { patchGeometryState(ctx, { sandboxDockCollapsed: !collapsed, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Build' : '\u2212')
+        ),
+        !collapsed && h('ol', {className:'gwe-workflow', 'aria-label':'Creation workflow'},
+          h('li', {'aria-current': measuredIsStudentBuild ? undefined : 'step'}, h('span', {'aria-hidden':'true'}, '1'), 'Select'),
+          h('li', {'aria-current': measuredIsStudentBuild ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '2'), 'Inspect'),
+          h('li', null, h('span', {'aria-hidden':'true'}, '3'), 'Print Lab')
+        ),
+        !collapsed && h('div', {className:'gwe-builder-actions gwe-builder-quick-actions'},
+          h('button',{type:'button','aria-label':'Select and measure aimed build',onClick:function(){measureSelectedBuild(ctx);}},'Select build'),
+          h('button',{type:'button',className:'gwe-primary','aria-label':'Send selected build to Print Lab',onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Send to Print Lab')
         ),
         !collapsed && h('div', { className: 'gwe-builder-body' },
-          h('p', { className: 'gwe-builder-intro' }, 'Build freely, then aim the crosshair at one connected creation to measure it or continue in Print Lab.'),
-          h('div', { className: 'gwe-selection', 'aria-label': 'Current block choices' },
-            h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Material'), h('span', { className: 'gwe-selection-value' }, material.emoji + ' ' + material.name)),
-            h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Shape / rotation'), h('span', { className: 'gwe-selection-value' }, shape.emoji + ' ' + shape.name + ' - ' + ((Number(data.blockRotation) || 0) * 90) + '\u00B0'))
-          ),
-          h('div', { className: 'gwe-measure-summary', 'aria-label': 'Build summary' },
-            h('div', { className: 'gwe-metric' }, h('strong', null, placed), h('span', null, 'Placed')),
-            h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.count : '-'), h('span', null, 'Selected')),
-            h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.L + '\u00D7' + measured.W + '\u00D7' + measured.H : '-'), h('span', null, 'Bounds'))
+          h('p', { className: 'gwe-builder-intro' }, measuredIsStudentBuild
+            ? 'Your outlined creation stays selected as you look around. Inspect it here, or continue in Print Lab.'
+            : 'Aim at a block you placed, then choose Select build to inspect your creation.'),
+          h('section', {'aria-label':'Your creation'},
+            h('h3', {className:'gwe-section-title'}, 'Your creation'),
+            h('div', { className: 'gwe-measure-summary', 'aria-label': 'Build summary' },
+              h('div', { className: 'gwe-metric' }, h('strong', null, placed), h('span', null, 'Placed')),
+              h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.count : '\u2014'), h('span', null, 'Selected')),
+              h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.L + '\u00D7' + measured.W + '\u00D7' + measured.H : '\u2014'), h('span', null, 'Block bounds'))
+            )
           ),
           measured && !measuredIsStudentBuild && h('p', { className: 'gwe-builder-note', 'data-gwe-not-student': 'true', role: 'status' },
             'That measurement was the ground or a lesson structure. Aim at a block you placed to size a print.'),
-          printEnvelope && h('div', { className: 'gwe-print-ready', 'data-fit': printEnvelope.fits ? 'true' : 'false', role: 'status' },
-            h('span', { className: 'gwe-print-ready-label' }, 'Print Lab block envelope'),
-            h('strong', null, printEnvelope.label),
-            h('p', null, printEnvelope.fits
-              ? 'Fits the ' + printEnvelope.profileLabel + ' printer profile at ' + HANDOFF_UNIT_MM + ' mm per block. Advisory preflight is still required.'
-              : 'The ' + listDimensions(printEnvelope.over) + (printEnvelope.over.length === 1 ? ' dimension is' : ' dimensions are') + ' larger than the ' + printEnvelope.profileLabel + ' printer profile at ' + HANDOFF_UNIT_MM + ' mm per block. Reduce the build or choose a smaller scale in Print Lab.'),
-            h('p', { className: 'gwe-print-ready-basis' }, printEnvelope.usingSavedProfile
-              ? 'Measured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.'
-              : 'Measured from whole blocks against Print Lab\u2019s default printer profile. Set a school printer in Print Lab to check against the real bed.'),
-            printVolumeSentence(measured) && h('p', { className: 'gwe-print-ready-basis', 'data-gwe-print-volume': 'true' }, printVolumeSentence(measured))
+          measured && h('div', { className: 'gwe-builder-actions', 'aria-label':'Inspect selected creation' },
+            h('button',{type:'button',className:'gwe-showcase-action',onClick:function(){showcaseBuild(ctx);}},'Showcase creation'),
+            h('button', {type:'button', onClick:function(){patchGeometryState(ctx,{builderPanel:'measure',sandboxDockCollapsed:true,hudPanel:''});}}, 'Explore measurements'),
+            engine && engine._builderSelection && h('button', {type:'button',className:'gwe-clear-selection', onClick:function(){engine._builderSelection=null;patchGeometryState(ctx,{measureResult:null,builderPanel:'build'});}}, 'Clear selection')
           ),
-          h('div', { className: 'gwe-builder-actions' },
-            h('button', { type: 'button', onClick: function () { measureSelectedBuild(ctx); } }, '\uD83D\uDCCF Measure aimed build'),
-            h('button', { type: 'button', onClick: function () { saveEditableWorld(ctx); } }, '\uD83D\uDCBE Save editable world'),
-            h('button', { type: 'button', disabled: editableBusy, onClick: function () { if (editableInputRef.current) editableInputRef.current.click(); } }, editableBusy ? 'Checking file...' : '\uD83D\uDCC2 Open editable world'),
-            h('input', { ref: editableInputRef, type: 'file', accept: '.json,application/json', onChange: chooseEditableWorld, style: { display: 'none' }, tabIndex: -1, 'aria-hidden': 'true' }),
-            h('button', { type: 'button', className: 'gwe-primary', onClick: function () { openSelectedBuildInPrintLab(ctx); } }, '\uD83D\uDDA8\uFE0F Send selected build to Print Lab'),
-            h('button', { type: 'button', onClick: returnToLessons }, '\uD83D\uDCD8 Choose guided lesson'),
-            h('button', { type: 'button', onClick: openLauncher, 'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'data-gwe-focus-return': 'sandbox-dock' }, '\u2728 Start a fresh sandbox')
+          printEnvelope && h('section', { className: 'gwe-print-ready', 'data-fit': printEnvelope.fits ? 'true' : 'false', 'aria-label':'Print Lab block envelope' },
+            h('div', {className:'gwe-print-ready-heading'},
+              h('span', { className: 'gwe-print-ready-label' }, 'Print Lab block envelope'),
+              h('span', {className:'gwe-fit-badge'}, printEnvelope.fits ? 'Fits profile' : 'Review size')
+            ),
+            h('strong', {role:'status'}, printEnvelope.label),
+            h('p', {className:'gwe-print-scale'}, currentPrintUnit + ' mm per block \u00B7 ' + printEnvelope.profileLabel),
+            h('details', {className:'gwe-details', open:printEnvelope.fits ? undefined : true},
+              h('summary', null, 'Printer profile & scale'),
+              h('p', null, printEnvelope.fits
+                ? 'Fits the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Advisory preflight is still required.'
+                : 'The ' + listDimensions(printEnvelope.over) + (printEnvelope.over.length === 1 ? ' dimension is' : ' dimensions are') + ' larger than the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Reduce the build or choose a smaller scale in Print Lab.'),
+              h('p', { className: 'gwe-print-ready-basis' }, printEnvelope.usingSavedProfile
+                ? 'Measured from whole blocks against the printer profile saved in Print Lab. Print Lab measures the exported mesh, so a build made of wedges can report a slightly smaller envelope there.'
+                : 'Measured from whole blocks against Print Lab\u2019s default printer profile. Set a school printer in Print Lab to check against the real bed.'),
+              printVolumeSentence(measured, currentPrintUnit) && h('p', { className: 'gwe-print-ready-basis', 'data-gwe-print-volume': 'true' }, printVolumeSentence(measured, currentPrintUnit)),
+              h('p', { className: 'gwe-builder-note' }, 'Print Lab scale: ' + currentPrintUnit + ' mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.')
+            )
+          ),
+          data.builderPrintCheck && h('div', {className:'gwe-connection-check', role:'status', 'data-connected':data.builderPrintCheck.components===1 && !data.builderPrintCheck.nonManifoldEdges ? 'true':'false'},
+            h('strong',null,data.builderPrintCheck.error ? 'Check this selection' : data.builderPrintCheck.components>1 ? data.builderPrintCheck.components+' separate pieces' : data.builderPrintCheck.nonManifoldEdges ? 'Touching edges need review' : 'One joined piece'),
+            h('p',null,data.builderPrintCheck.error || (data.builderPrintCheck.components>1 ? 'Some shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.' : data.builderPrintCheck.nonManifoldEdges ? 'Some surfaces meet only along an edge. Add a connecting block or review the highlighted creation in Print Lab.' : 'The selected shapes share surfaces. Print Lab will check the exported mesh and physical scale.'))
+          ),
+          h('section', {'aria-label':'Current block choices'},
+            h('h3', {className:'gwe-section-title'}, 'Building with'),
+            h('div', { className: 'gwe-selection' },
+              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Material'), h('span', { className: 'gwe-selection-value' }, material.emoji + ' ' + material.name)),
+              h('div', { className: 'gwe-selection-card' }, h('span', { className: 'gwe-selection-label' }, 'Shape / rotation'), h('span', { className: 'gwe-selection-value' }, shape.emoji + ' ' + shape.name + ' - ' + ((Number(data.blockRotation) || 0) * 90) + '\u00B0'))
+            )
+          ),
+          h('section', {'aria-label':'Keep your work'},
+            h('h3', {className:'gwe-section-title'}, 'Keep your work'),
+            h('div', { className: 'gwe-builder-actions' },
+              h('button', { type: 'button', onClick: function () { saveEditableWorld(ctx); } }, '\uD83D\uDCBE Save editable world'),
+              h('button', { type: 'button', disabled: editableBusy, onClick: function () { if (editableInputRef.current) editableInputRef.current.click(); } }, editableBusy ? 'Checking file...' : '\uD83D\uDCC2 Open editable world'),
+              h('input', { ref: editableInputRef, type: 'file', accept: '.json,application/json', onChange: chooseEditableWorld, style: { display: 'none' }, tabIndex: -1, 'aria-hidden': 'true' })
+            )
+          ),
+          h('details', {className:'gwe-details gwe-workspace-options'},
+            h('summary', null, 'Workspace options'),
+            h('div', { className: 'gwe-builder-actions' },
+              h('button', { type: 'button', onClick: returnToLessons }, '\uD83D\uDCD8 Choose guided lesson'),
+              h('button', { type: 'button', onClick: openLauncher, 'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'data-gwe-focus-return': 'sandbox-dock' }, '\u2728 Start a fresh sandbox')
+            )
           ),
           editableError && h('div', { className: 'gwe-recovery', 'data-state': 'error', role: 'alert' }, h('strong', null, 'File not opened'), h('p', null, editableError)),
           editablePreview && h('section', { className: 'gwe-recovery', 'data-state': 'preview', 'aria-labelledby': 'gwe-recovery-title' },
@@ -867,8 +1244,7 @@
               h('button', { type: 'button', onClick: cancelEditablePreview }, 'Cancel'),
               h('button', { type: 'button', className: 'gwe-replace', onClick: confirmEditableRestore }, 'Replace current sandbox')
             )
-          ),
-          h('p', { className: 'gwe-builder-note' }, 'Print Lab starts at ' + HANDOFF_UNIT_MM + ' mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.')
+          )
         )
       ));
 
@@ -878,16 +1254,17 @@
           className: 'gwe-launcher', tabIndex: -1, onKeyDown: function (event) { trapDialogKeys(event, closeLauncher); }
         },
           h('div', { className: 'gwe-launcher-hero' },
-            h('p', { className: 'gwe-launcher-kicker' }, 'Geometry World - Build & Create'),
+            h('div', {className:'gwe-launcher-art', 'aria-hidden':'true'}, studioCubeMark(h)),
+            h('p', { className: 'gwe-launcher-kicker' }, 'Geometry World / Free Build Studio'),
             h('h2', { id: 'gwe-launcher-title' }, 'Open a blank Free Build Sandbox'),
-            h('p', { id: 'gwe-launcher-desc', className: 'gwe-launcher-subtitle' }, 'Use the same Geometry World controls in an uncluttered 25 x 25 workspace. Your cubes, slabs, diagonal halves, quarter wedges, rotations, measurements, undo/redo, and camera tools all carry over.')
+            h('p', { id: 'gwe-launcher-desc', className: 'gwe-launcher-subtitle' }, 'A clear 25 x 25 workspace for your next idea. Build with familiar shapes and materials, refine every detail, then bring one creation into Print Lab.')
           ),
           h('div', { className: 'gwe-feature-grid' },
-            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '\uD83E\uDDF1'), h('strong', null, 'Build your way'), h('p', null, 'Mix block shapes and visual materials, rotate pieces, and revise with undo and redo.')),
-            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '\uD83D\uDCCF'), h('strong', null, 'Measure connected work'), h('p', null, 'Aim at one creation to see its block count and bounding dimensions without selecting the whole world.')),
-            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '\uD83D\uDDA8\uFE0F'), h('strong', null, 'Continue in Print Lab'), h('p', null, 'Send only the selected build locally, preview its real geometry, set scale, study materials, and run advisory preflight.'))
+            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '01'), h('strong', null, 'Build your way'), h('p', null, 'Combine cubes, slabs, and wedges. Rotate pieces and revise freely with undo and redo.')),
+            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '02'), h('strong', null, 'Inspect your creation'), h('p', null, 'Select one connected build, explore its measurements, or frame it beautifully in Showcase.')),
+            h('article', { className: 'gwe-feature' }, h('span', { className: 'gwe-feature-icon', 'aria-hidden': 'true' }, '03'), h('strong', null, 'Continue in Print Lab'), h('p', null, 'Preview the selected geometry, choose its physical scale and material, then run advisory preflight.'))
           ),
-          h('p', { className: 'gwe-reset-note', role: 'note' }, '\u26A0\uFE0F Opening the blank sandbox replaces the world currently shown. Save an editable JSON copy first if you want to return to it later.'),
+          h('p', { className: 'gwe-reset-note', role: 'note' }, 'Opening the blank sandbox replaces the world currently shown. Save an editable JSON copy first if you want to return to it later.'),
           h('div', { className: 'gwe-launcher-actions' },
             h('button', { type: 'button', onClick: function () { saveEditableWorld(ctx); } }, 'Save current world JSON'),
             h('button', { type: 'button', onClick: closeLauncher }, 'Cancel'),
@@ -896,9 +1273,29 @@
         )
       ));
 
+      if(data.showcaseActive) additions.push(h('section', {key:'gwe-showcase',className:'gwe-showcase','data-look':data.showcaseLook || 'meadow','data-view':data.showcaseView || 'perspective',role:'dialog','aria-modal':'true','aria-label':'Showcase creation',onKeyDown:function(event){if(event.key==='ArrowLeft' || event.key==='ArrowRight'){event.preventDefault();var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(event.key==='ArrowLeft' ? -1:1);}trapDialogKeys(event,function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();});event.stopPropagation();}},
+        h('div',{className:'gwe-showcase-caption'},h('span',null,'GEOMETRY WORLD'),h('strong',null,'Made by you.'),
+          h('div',{className:'gwe-showcase-looks',role:'group','aria-label':'Scene look'},
+            ['meadow','studio'].map(function(look){return h('button',{key:look,type:'button','aria-pressed':(data.showcaseLook || 'meadow')===look,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.setShowcaseLook)eng.setShowcaseLook(look);}},look==='meadow'?'Meadow':'Studio');})
+          )
+        ),
+        [-1,1].map(function(step){var label=step<0 ? 'Rotate view left':'Rotate view right';return h('button',{key:label,type:'button',className:'gwe-showcase-orbit gwe-showcase-orbit-'+(step<0 ? 'left':'right'),'aria-label':label,title:label,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(step);}},step<0 ? '\u21B6':'\u21B7');}),
+        h('div',{className:'gwe-showcase-tools'},
+          h('div',{className:'gwe-showcase-views',role:'group','aria-label':'Camera view'},
+            ['perspective','front','side','top'].map(function(view){return h('button',{key:view,type:'button','aria-pressed':(data.showcaseView || 'perspective')===view,onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.setShowcaseView)eng.setShowcaseView(view);}},view.charAt(0).toUpperCase()+view.slice(1));})
+          ),
+          h('div',{className:'gwe-showcase-actions'},
+          h('button',{id:'gwe-showcase-close',type:'button',onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();}},'Back to building'),
+          h('button',{type:'button',onClick:function(){saveShowcaseImage(ctx);}},'Save image')
+          )
+        )
+      ));
       var children = React.Children.toArray(base.props.children).concat(additions);
       return React.cloneElement(base, {
         className: (base.props.className || '') + ' gwe-enhanced',
+        'data-builder-panel': data.builderPanel === 'measure' && data.measureResult ? 'measure' : 'build',
+        'data-showcase-active': data.showcaseActive ? 'true':'false',
+        'data-showcase-look': data.showcaseLook || 'meadow',
         'data-geometry-mode': isSandbox ? 'sandbox' : 'lesson'
       }, children);
     };

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "benchmark": "document-remediation-quality-performance",
+  "corpusId": "mixed-education-v1",
+  "mode": "local",
+  "startedAt": "2026-09-08T10:36:07.723Z",
+  "completedAt": "2026-09-08T10:36:56.266Z",
+  "interruption": null,
+  "interruptionDetails": null,
+  "configuration": {
+    "mode": "local",
+    "trials": 1,
+    "timeoutMs": 180000,
+    "budgetMs": 210000
+  },
+  "versions": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "architecture": "arm64",
+    "gitCommit": "423c8af6d14ee1e11b51a0683393dab2d542a835",
+    "files": {
+      "agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py": "caa6804b43a94933493a1dbdd3cb958b2ee9f47fced59e3ee5fc91b1beb69900",
+      "agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs": "3234436d5c046ec62d4b019dd11c49e0f47aaf911741ec3d37174753896fdef6",
+      "desktop/mcp/alloflow-remediation-mcp-stdio.cjs": "9427256d9cba8265a2401102576b3a9d7d52a710a31d1bd3617e40c38f41b110",
+      "desktop/mcp/remediation_headless_driver.cjs": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61",
+      "desktop/mcp/remediation_verification.cjs": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2",
+      "doc_pipeline_source.jsx": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+      "doc_pipeline_module.js": "a611e6299e7589c1597604c1d403f5e3d3e218409a832a8d688c5cc5e8ac0496",
+      "view_pdf_audit_source.jsx": "64ee948449cd5feac6d33342dc3c6f3c543dff119ded1e5d3da32ee43aace807",
+      "view_pdf_audit_module.js": "b3e499c57dc57e2423b572ded5fcee3474f5d79394f1da38362d3a501d3dc87a",
+      "accessibility_evidence_module.js": "bdc31055e61b1ac89206a4abca8f72eec6861ded696a1345f46ce6c7277c42c2",
+      "dev-tools/benchmark_document_remediation.cjs": "29636e957b932a0f3f0b09b24ef77a8c35bf2e95890edf6e618e4ed8bc9ebd99",
+      "dev-tools/remediation_benchmark_corpus.cjs": "58c5c272b1ee05c6bbfe0a868e9a6ce02e77d23f179b098b64cdd74e0e4e47fe"
+    },
+    "promptBundleSha256": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+    "implementationSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+    "modelConfiguration": {
+      "provider": "Gemini via local MCP",
+      "model": "gemini-3-flash-preview",
+      "fallbackModel": "gemini-2.5-flash-lite",
+      "note": "Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed."
+    }
+  },
+  "manifestSha256": "7b19e71f60bbdf2d4f203393b9853bcdd304e53e15f22cdc181007f755618387",
+  "cases": [
+    {
+      "id": "scripted-pipeline",
+      "documentKind": "integration-fixture",
+      "backend": "mcp-selftest",
+      "calibrationCaseId": null
+    }
+  ],
+  "summary": {
+    "plannedTrials": 1,
+    "completedTrials": 1,
+    "passed": 1,
+    "failed": 0
+  },
+  "aggregates": [
+    {
+      "caseId": "scripted-pipeline",
+      "groupId": "scripted-pipeline:d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a:{\"model\":\"built-in-selftest\",\"provider\":\"scripted\"}",
+      "implementationSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+      "model": {
+        "provider": "scripted",
+        "model": "built-in-selftest"
+      },
+      "trials": 1,
+      "passed": 1,
+      "failed": 0,
+      "allTiming": {
+        "count": 1,
+        "medianMs": 47772.842,
+        "p95Ms": 47772.842,
+        "minMs": 47772.842,
+        "maxMs": 47772.842
+      },
+      "completedTiming": {
+        "count": 1,
+        "medianMs": 47772.842,
+        "p95Ms": 47772.842,
+        "minMs": 47772.842,
+        "maxMs": 47772.842
+      },
+      "readiness": {
+        "unavailable": 1
+      },
+      "preservation": {
+        "passed-for-tested-scope": 1
+      },
+      "calls": {
+        "total": 11,
+        "observedTrials": 1,
+        "missingTrials": 0
+      },
+      "retries": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 1
+      },
+      "rejections": {
+        "total": null,
+        "observedTrials": 0,
+        "missingTrials": 1
+      }
+    }
+  ],
+  "trials": [
+    {
+      "caseId": "scripted-pipeline",
+      "documentKind": "integration-fixture",
+      "backend": "mcp-selftest",
+      "trial": 1,
+      "status": "completed",
+      "durationMs": 47772.842,
+      "exitCode": 0,
+      "passed": true,
+      "quality": {
+        "readiness": "unavailable",
+        "preservation": "passed-for-tested-scope",
+        "checksPassed": true,
+        "evidenceScope": "Scripted built-in integration fixture; no human-quality calibration or live-model accuracy measurement.",
+        "beforeScore": 85,
+        "afterScore": 96
+      },
+      "metrics": {
+        "calls": 11,
+        "retries": null,
+        "rejections": null,
+        "planInternalTokenRecall": null
+      },
+      "versions": {
+        "source": null,
+        "plan": null,
+        "fixtureDefinitionSha256": null,
+        "implementationSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+        "implementationAfterSha256": "d303e7e8e385a80fb9445ee940a1527a27f0edfd8004825b9638650b6e7aee8a",
+        "promptBundleSha256": "7261335b96fd8da8b629b149c8dfafdf016083cd74144fbdcbda91833e1fdcd3",
+        "sourceDrift": false,
+        "inputProblems": []
+      },
+      "model": {
+        "provider": "scripted",
+        "model": "built-in-selftest"
+      },
+      "evidence": {
+        "result": "trials/scripted-pipeline/trial-01/result.json",
+        "execution": "trials/scripted-pipeline/trial-01/execution.json",
+        "stdout": "trials/scripted-pipeline/trial-01/stdout.log",
+        "stderr": "trials/scripted-pipeline/trial-01/stderr.log",
+        "artifacts": null
+      }
+    }
+  ],
+  "limitations": [
+    "Trials are serial and cold-process; OS caches and load are not controlled.",
+    "Median is the middle value (mean of middle pair); p95 is nearest rank. Small samples are smoke evidence, not performance guarantees.",
+    "Failed and timeout durations remain in allTiming; completedTiming excludes transport failures and timeouts.",
+    "Absent model/retry/rejection metrics are null and counted as missing, never inferred as zero.",
+    "Portable token recall is plan-internal; scripted checks do not establish real-model quality. No independent human labels are supplied.",
+    "Configured model identifiers and prompt/source hashes are recorded; providers may revise a model behind the same identifier.",
+    "Raw local evidence and artifacts can contain document content. Live mode sends selected source documents through the existing configured provider."
+  ]
+}

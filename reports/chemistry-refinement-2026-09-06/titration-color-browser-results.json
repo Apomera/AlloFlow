@@ -1,0 +1,94 @@
+{
+  "checks": [
+    "Guide follows all four indicator palettes, universal indicator, live additions, and redox units; sample values and equivalence use the actual model. Keyboard show/hide preserves experiment state.",
+    "Ripples remain fixed during static inspection, disappear in the settled pose, stop after a 2D addition, and respect lab/system reduced motion.",
+    "Context loss retains the color guide and functional additions in 2D."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "preset": "sa_sb",
+      "width": 1200,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "sa_sb",
+      "width": 1200,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "sa_sb",
+      "width": 360,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "sa_sb",
+      "width": 360,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "sa_sb",
+      "width": 320,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "sa_sb",
+      "width": 320,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 1200,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 1200,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 360,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 360,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 320,
+      "view": "3D bench",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "preset": "redox_kmno4",
+      "width": 320,
+      "view": "2D diagram",
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

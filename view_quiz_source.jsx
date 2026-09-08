@@ -3516,7 +3516,43 @@ var _lazyIcon = function (name) {
     }
     return <div data-presentation-question-type={type} className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{p.index + 1}</div><div className="flex-grow"><div className="text-xs uppercase tracking-wider font-black text-teal-800 mb-1">{_quizPresentationTypeLabel(type)}</div><h3 className="text-2xl font-bold text-slate-800 leading-tight">{renderText(q.question || '')}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{renderText(q.question_en)}</p>}</div></div><div className="ml-0 md:ml-14">{body}<div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">{q.factCheck && <button type="button" onClick={p.onToggleExplanation} className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-400 text-slate-700">{p.showExplanation ? 'Hide explanation' : 'Show explanation'}</button>}<button type="button" onClick={p.onToggleAnswer} aria-expanded={showAnswer} className={'text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (showAnswer ? 'bg-slate-200 text-slate-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100')}>{showAnswer ? <Eye size={14} /> : <MousePointerClick size={14} />}{showAnswer ? 'Hide answer guide' : 'Reveal answer guide'}</button></div>{showAnswer && <div className="mt-4 p-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-950" role="status">{answerGuide}</div>}{p.showExplanation && q.factCheck && <div className="mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700">{typeof p.renderFormattedText === 'function' ? p.renderFormattedText(q.factCheck) : q.factCheck}</div>}</div></div>;
   }
+  function _quizCreateAuthoringRequests(readProps) {
+    var requests = new Map();
+    function snapshot(props) { return JSON.stringify([props.generatedContent, props.inputText || '', props.gradeLevel || '', !!props.isTeacherMode]); }
+    return {
+      begin: function (key) {
+        var props = readProps();
+        var signature = snapshot(props);
+        var existing = requests.get(key);
+        if (existing && existing.signature === signature) return null;
+        var request = { key: key, signature: signature };
+        requests.set(key, request);
+        return request;
+      },
+      current: function (request) { return !!request && requests.get(request.key) === request && request.signature === snapshot(readProps()); },
+      end: function (request) {
+        if (!request || requests.get(request.key) !== request) return false;
+        requests.delete(request.key);
+        return true;
+      },
+      clear: function () { requests.clear(); }
+    };
+  }
   function QuizView(props) {
+    var authoringPropsRef = React.useRef(props);
+    authoringPropsRef.current = props;
+    var authoringRequestsRef = React.useRef(null);
+    if (!authoringRequestsRef.current) authoringRequestsRef.current = _quizCreateAuthoringRequests(function () { return authoringPropsRef.current; });
+    var authoringRequests = authoringRequestsRef.current;
+    React.useEffect(function () {
+      authoringRequests.clear();
+      setRegeneratingQuestions({});
+      setRepairingAssessment(false);
+      setIsRefiningQuizImage({});
+      setIsImprovingDistractor({});
+      setIsBulkImproving(false);
+      return function () { authoringRequests.clear(); };
+    }, [props.generatedContent && props.generatedContent.id, props.isTeacherMode]);
     var t = props.t;
     var isTeacherMode = props.isTeacherMode;
     var isParentMode = props.isParentMode;
@@ -3543,6 +3579,8 @@ var _lazyIcon = function (name) {
     var setRepairingAssessment = repairingState[1];
     async function regenerateAssessmentQuestion(questionIdx, question) {
       if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;
+      var request = authoringRequests.begin('question:' + questionIdx);
+      if (!request) return;
       setRegeneratingQuestions(function (previous) {
         var next = Object.assign({}, previous);
         next[questionIdx] = true;
@@ -3556,12 +3594,14 @@ var _lazyIcon = function (name) {
         var parsed = _quizExtractJson(raw);
         var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
         if (!replacement || typeof replacement !== 'object') throw new Error('The AI did not return a valid question.');
+        if (!authoringRequests.current(request)) return;
         replacement.type = type;
         props.handleQuizQuestionAction(questionIdx, 'replace', replacement);
         if (typeof props.addToast === 'function') props.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
       } catch (error) {
-        if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
+        if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
       } finally {
+        if (!authoringRequests.end(request)) return;
         setRegeneratingQuestions(function (previous) {
           var next = Object.assign({}, previous);
           delete next[questionIdx];
@@ -3571,6 +3611,8 @@ var _lazyIcon = function (name) {
     }
     async function repairAssessmentQuality() {
       if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function') return;
+      var request = authoringRequests.begin('repair');
+      if (!request) return;
       setRepairingAssessment(true);
       try {
         var requestedMix = assessmentAudit.requestedMix || assessmentAudit.actualMix;
@@ -3585,11 +3627,13 @@ var _lazyIcon = function (name) {
         var parsed = _quizExtractJson(raw);
         var questions = parsed && Array.isArray(parsed.questions) ? parsed.questions : null;
         if (!questions || questions.length === 0) throw new Error('The AI did not return a repaired assessment.');
+        if (!authoringRequests.current(request)) return;
         props.handleQuizQuestionAction(0, 'replace-all', { questions: questions });
         if (typeof props.addToast === 'function') props.addToast('Assessment repaired. Review the quality panel before sharing.', 'success');
       } catch (error) {
-        if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Assessment repair failed.', 'error');
+        if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Assessment repair failed.', 'error');
       } finally {
+        if (!authoringRequests.end(request)) return;
         setRepairingAssessment(false);
       }
     }
@@ -3874,6 +3918,8 @@ var _lazyIcon = function (name) {
         if (typeof addToast === 'function') addToast(t('toasts.image_edit_unavailable_callgeminiimageedit_provide'), 'error');
         return;
       }
+      var request = authoringRequests.begin('image:' + key);
+      if (!request) return;
       setIsRefiningQuizImage(function (prev) {
         var next = Object.assign({}, prev);
         next[key] = true;
@@ -3886,12 +3932,13 @@ var _lazyIcon = function (name) {
         var styleClause = styleHint ? ' Required visual style: ' + styleHint + '.' : '';
         var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity).' + styleClause + ' Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
         var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
+        if (!authoringRequests.current(request)) return;
         if (typeof handleQuizImageRefine === 'function') {
           handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
         }
         setQuizImageRefineInputs(function (prev) {
           var next = Object.assign({}, prev);
-          delete next[key];
+          if (next[key] === instruction) delete next[key];
           return next;
         });
         setRefineOpen(function (prev) {
@@ -3901,8 +3948,9 @@ var _lazyIcon = function (name) {
         });
         if (typeof addToast === 'function') addToast(t('toasts.image_refined'), 'success');
       } catch (err) {
-        if (typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
+        if (authoringRequests.current(request) && typeof addToast === 'function') addToast(err && err.message || 'Refine failed — try again.', 'error');
       } finally {
+        if (!authoringRequests.end(request)) return;
         setIsRefiningQuizImage(function (prev) {
           var next = Object.assign({}, prev);
           delete next[key];
@@ -3919,6 +3967,8 @@ var _lazyIcon = function (name) {
       if (typeof props.callGemini !== 'function' || typeof handleQuizChange !== 'function') return;
       var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
       if (!q) return;
+      var request = authoringRequests.begin('distractor:' + key);
+      if (!request) return;
       setIsImprovingDistractor(function (prev) {
         var next = Object.assign({}, prev);
         next[key] = true;
@@ -3931,11 +3981,13 @@ var _lazyIcon = function (name) {
         var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
         newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
         if (!newText) throw new Error('Empty rewrite');
+        if (!authoringRequests.current(request)) return;
         handleQuizChange(qIdx, 'option', newText, optIdx);
         if (typeof addToast === 'function') addToast(t('toasts.distractor_rewritten'), 'success');
       } catch (err) {
-        if (typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
+        if (authoringRequests.current(request) && typeof addToast === 'function') addToast(err && err.message || 'Rewrite failed.', 'error');
       } finally {
+        if (!authoringRequests.end(request)) return;
         setIsImprovingDistractor(function (prev) {
           var next = Object.assign({}, prev);
           delete next[key];
@@ -3974,6 +4026,8 @@ var _lazyIcon = function (name) {
         if (typeof addToast === 'function') addToast(t('toasts.weak_distractors_improve'), 'info');
         return;
       }
+      var request = authoringRequests.begin('bulk-distractors');
+      if (!request) return;
       setIsBulkImproving(true);
       setIsImprovingDistractor(function (prev) {
         var next = Object.assign({}, prev);
@@ -3987,7 +4041,7 @@ var _lazyIcon = function (name) {
       var results = await Promise.all(tasks.map(function (task) {
         var q = generatedContent.data.questions[task.qIdx];
         var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n' + 'QUESTION: "' + (q.question || '') + '"\n' + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n' + 'CURRENT WEAK DISTRACTOR: "' + task.currentDistractor + '"\n' + 'WHY IT IS WEAK: "' + task.reason + '"\n\n' + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
-        return Promise.resolve(props.callGemini(prompt, false)).then(function (raw) {
+        return Promise.resolve().then(function () { return props.callGemini(prompt, false); }).then(function (raw) {
           var newText = raw && typeof raw === 'object' && raw.text ? raw.text : String(raw || '');
           newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
           if (!newText) return {
@@ -4006,6 +4060,11 @@ var _lazyIcon = function (name) {
           };
         });
       }));
+      if (!authoringRequests.current(request)) {
+        if (authoringRequests.end(request)) { setIsBulkImproving(false); setIsImprovingDistractor({}); }
+        return;
+      }
+      authoringRequests.end(request);
       var updates = results.filter(function (r) {
         return r.ok;
       }).map(function (r) {

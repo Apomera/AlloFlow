@@ -475,7 +475,11 @@ describe('generation and export contracts', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     expect(anti).toContain('const [memoryAidIncludeVisuals, setMemoryAidIncludeVisuals] = useState(true);');
     expect(anti).toContain('const [memoryAidIncludeHookFacts, setMemoryAidIncludeHookFacts] = useState(false);');
-    expect(anti).toContain('memoryAidIncludeVisuals, setMemoryAidIncludeVisuals,');
+    const sidebar = readFileSync(resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8');
+    expect(sidebar).toContain('memoryAidIncludeVisuals, setMemoryAidIncludeVisuals,');
+    const sidebarProps = anti.slice(anti.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"'), anti.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"') + 14000);
+    expect(sidebarProps).toMatch(/\bmemoryAidIncludeVisuals\b/);
+    expect(sidebarProps).toMatch(/\bsetMemoryAidIncludeVisuals\b/);
     expect((anti.match(/\bmemoryAidIncludeHookFacts\b/g) || []).length).toBeGreaterThanOrEqual(5);
     const helpers = readFileSync(resolve(process.cwd(), 'generation_helpers_source.jsx'), 'utf8');
     expect(helpers).toContain("'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts',");

@@ -38,9 +38,9 @@ const { normalize, evaluate, optionsFor, responseProgress, OUTLINE_GAMES, CAPABI
 
 // Every gameType string the app actually reports a completion for.
 const emittedGameTypes = new Set(
-  [...games.matchAll(/onGameComplete\(\s*['"`]([a-zA-Z0-9]+)/g)].map(m => m[1])
+  [...games.matchAll(/onGameComplete(?:\?\.)?\(\s*['"`]([a-zA-Z0-9]+)/g)].map(m => m[1])
     .concat([...games.matchAll(/gameKey=["']([a-zA-Z0-9]+)["']/g)].map(m => m[1]))
-    .concat([...renderers.matchAll(/onGameComplete\(\s*['"`]([a-zA-Z0-9]+)/g)].map(m => m[1]))
+    .concat([...renderers.matchAll(/onGameComplete(?:\?\.)?\(\s*['"`]([a-zA-Z0-9]+)/g)].map(m => m[1]))
 );
 
 describe('anti-rot: the composer can only offer goals the app can actually prove', () => {
@@ -75,7 +75,7 @@ describe('capability registry: the offer is derived from the resource', () => {
   it('a glossary offers its word games', () => {
     const opts = optionsFor({ id: 'g1', type: 'glossary', title: 'Terms' });
     const gameTypes = opts.filter(o => o.kind === 'game').map(o => o.gameType);
-    expect(gameTypes).toEqual(['crossword', 'memory', 'matching', 'bingo', 'wordScramble']);
+    expect(gameTypes).toEqual(['crossword', 'memory', 'matching', 'bingo', 'wordScramble', 'definitionDetective']);
   });
   it('an outline offers the ONE game its structureType actually renders', () => {
     const venn = optionsFor({ id: 'o1', type: 'outline', title: 'Compare', data: { structureType: 'Venn Diagram' } });

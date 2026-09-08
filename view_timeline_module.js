@@ -47,6 +47,18 @@ function TimelineView(props) {
   // Shared description field for a timeline picture (edit mode). One
   // multi-field write per change: handleTimelineChange accepts an object.
   const [altBusyIdx, setAltBusyIdx] = React.useState(null);
+  const [altStatus, setAltStatus] = React.useState(null);
+  const altRequestRef = React.useRef(null);
+  const altLiveRef = React.useRef(props);
+  altLiveRef.current = props;
+  React.useEffect(() => {
+    altRequestRef.current = null;
+    setAltBusyIdx(null);
+    setAltStatus(null);
+    return () => {
+      altRequestRef.current = null;
+    };
+  }, [props.generatedContent && props.generatedContent.id]);
   const renderTimelineAltField = (item, idx) => {
     const Field = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ImageAltField;
     const A = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText;
@@ -55,10 +67,21 @@ function TimelineView(props) {
     const stale = !!(A && item.altHash && A.hashImage(item.image) !== item.altHash);
     const regenerate = async () => {
       const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
-      if (!A || !vision) return;
+      if (!A || !vision || altRequestRef.current) return;
+      const resource = props.generatedContent;
+      const request = {
+        resourceId: resource.id,
+        snapshot: JSON.stringify(resource),
+        itemSnapshot: JSON.stringify(item)
+      };
+      altRequestRef.current = request;
       setAltBusyIdx(idx);
+      setAltStatus({
+        idx,
+        message: 'Generating the picture description…'
+      });
       try {
-        const [r] = await A.draftAlts([{
+        const [result] = await A.draftAlts([{
           id: idx,
           dataUrl: item.image,
           context: item.event || item.content
@@ -66,33 +89,69 @@ function TimelineView(props) {
           language: props.leveledTextLanguage,
           callGeminiVision: vision
         });
-        if (r) change(idx, {
-          alt: r.decorative ? '' : r.alt,
-          altSource: r.source,
-          decorative: r.decorative === true,
+        if (altRequestRef.current !== request) return;
+        const latest = altLiveRef.current;
+        if (JSON.stringify(latest.generatedContent) !== request.snapshot || latest.leveledTextLanguage !== props.leveledTextLanguage) {
+          setAltStatus({
+            idx,
+            message: 'The sequence changed. Generate a description again for the updated picture.'
+          });
+          return;
+        }
+        if (!result || result.decorative !== true && (typeof result.alt !== 'string' || !result.alt.trim())) throw new Error('Empty picture description');
+        latest.handleTimelineChange(idx, {
+          alt: result.decorative ? '' : result.alt,
+          altSource: result.source,
+          decorative: result.decorative === true,
           altHash: A.hashImage(item.image)
         });
+        setAltStatus({
+          idx,
+          message: 'Picture description updated.'
+        });
+      } catch (error) {
+        if (altRequestRef.current === request) setAltStatus({
+          idx,
+          message: 'Could not generate a picture description. Try again.'
+        });
       } finally {
-        setAltBusyIdx(null);
+        if (altRequestRef.current === request) {
+          altRequestRef.current = null;
+          setAltBusyIdx(null);
+        }
       }
     };
-    return React.createElement(Field, {
+    return /*#__PURE__*/React.createElement("div", null, React.createElement(Field, {
       id: 'timeline-alt-' + idx,
       t: props.t,
       value: item.alt || '',
       source: stale ? 'stale' : item.altSource || '',
       decorative: item.decorative === true,
       busy: altBusyIdx === idx,
-      onChange: value => change(idx, {
-        alt: value,
-        altSource: 'author',
-        altHash: A ? A.hashImage(item.image) : ''
-      }),
-      onDecorativeChange: flag => change(idx, {
-        decorative: flag
-      }),
+      onChange: value => {
+        altRequestRef.current = null;
+        setAltBusyIdx(null);
+        setAltStatus(null);
+        change(idx, {
+          alt: value,
+          altSource: 'author',
+          altHash: A ? A.hashImage(item.image) : ''
+        });
+      },
+      onDecorativeChange: flag => {
+        altRequestRef.current = null;
+        setAltBusyIdx(null);
+        setAltStatus(null);
+        change(idx, {
+          decorative: flag
+        });
+      },
       onRegenerate: regenerate
-    });
+    }), altStatus && altStatus.idx === idx && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "text-xs text-slate-700 mt-1"
+    }, altStatus.message));
   };
   // Pure data refs
   var t = props.t;

@@ -1,0 +1,100 @@
+{
+  "tests": {
+    "total": 692,
+    "passed": 692,
+    "failed": 0
+  },
+  "baseline": {
+    "failed": 17,
+    "cause": "Pre-existing CRLF-sensitive source assertions; fixed by normalizing line endings in the scene test reader."
+  },
+  "visual": {
+    "light": {
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "01-machines-lever",
+        "02-machines-pulley",
+        "02b-machines-wheel-axle",
+        "03-machines-screw",
+        "03b-machines-wedge",
+        "04-machines-k2",
+        "05-build-trebuchet",
+        "06-build-ballista",
+        "07-build-onager",
+        "08-range-fresh",
+        "field-engine"
+      ]
+    },
+    "dark": {
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "01-machines-lever",
+        "02-machines-pulley",
+        "02b-machines-wheel-axle",
+        "03-machines-screw",
+        "03b-machines-wedge",
+        "04-machines-k2",
+        "05-build-trebuchet",
+        "06-build-ballista",
+        "07-build-onager",
+        "08-range-fresh",
+        "field-engine"
+      ]
+    },
+    "contrast": {
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "01-machines-lever",
+        "02-machines-pulley",
+        "02b-machines-wheel-axle",
+        "03-machines-screw",
+        "03b-machines-wedge",
+        "04-machines-k2",
+        "05-build-trebuchet",
+        "06-build-ballista",
+        "07-build-onager",
+        "08-range-fresh",
+        "field-engine"
+      ]
+    },
+    "contrast-final": {
+      "ready": {
+        "tool": true,
+        "three": true,
+        "orbit": true,
+        "orbitViewer": true,
+        "voxel": true
+      },
+      "errors": [],
+      "overflow": false,
+      "shots": [
+        "03b-machines-wedge"
+      ]
+    }
+  },
+  "sourceMirrorMatches": true
+}

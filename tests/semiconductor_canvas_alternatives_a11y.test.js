@@ -86,8 +86,8 @@ describe('descriptions carry live values, not just titles', () => {
     const qw = label({ subtool: 'qwell', qwWidth: 5, qwDepth: 0.3 });
     expect(qw).toMatch(/GaAs\/AlGaAs/);
     expect(qw).toMatch(/5 nanometres wide/);
-    // Ground state for a 5 nm GaAs well is about 0.225 eV.
-    expect(qw).toMatch(/n=1 at 0\.2\d\d eV/);
+    // Finite 0.3 eV barriers lower the ground state below the ~0.225 eV infinite-well value.
+    expect(qw).toMatch(/n=1 at 0\.0\d\d eV/);
   });
 
   it("Moore's Law reports the selected year, the chip and the prediction", () => {

@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "meaningful-image-accessibility-report.json",
+    "accessibleHtml": "meaningful-image-accessible.html",
+    "privacyReceipt": "meaningful-image-privacy-receipt.json",
+    "taggedPdf": null
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-09-08T04:12:41Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "meaningful-image.pdf",
+    "bytes": 622,
+    "kind": "pdf",
+    "sha256": "9db850fc640829bf6a7704b0b1f518bb8b44b4d3d8b235c963bffa8bec2c8686"
+  },
+  "systemWideNetworkUseVerified": false
+}

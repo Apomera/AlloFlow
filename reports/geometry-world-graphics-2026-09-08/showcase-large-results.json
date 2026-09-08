@@ -1,0 +1,73 @@
+{
+  "scope": "Actual WebGL, portrait viewport, real Select build and Showcase controls",
+  "errors": [],
+  "fixture": {
+    "studentBlocks": 129
+  },
+  "before": {
+    "far": 200,
+    "fog": {
+      "near": 55,
+      "far": 145
+    }
+  },
+  "touchHandler": {
+    "level": "Real canvas handler with a synthetic stale-touch payload",
+    "cleared": {
+      "lookId": null,
+      "lookStart": null,
+      "moveId": null,
+      "moveStart": null,
+      "vector": {
+        "x": 0,
+        "z": 0
+      }
+    },
+    "before": [
+      -0.16276767998822744,
+      0.32786043083366007,
+      0.05745448769158172,
+      0.9288235581039676
+    ],
+    "after": [
+      -0.16276767998822744,
+      0.32786043083366007,
+      0.05745448769158172,
+      0.9288235581039676
+    ]
+  },
+  "frame": {
+    "selectedBlocks": 129,
+    "vertices": 3096,
+    "extrema": {
+      "x": [
+        -0.6085665430896492,
+        0.7311723825632117
+      ],
+      "y": [
+        -0.10010566578702086,
+        0.0830970758291075
+      ],
+      "z": [
+        0.9998274950757734,
+        0.9999191982083072
+      ]
+    },
+    "maxVertexDistance": 453.8131398719457,
+    "far": 551.2565001663481,
+    "fog": {
+      "near": 476.7526243138073,
+      "far": 556.7526243138072
+    },
+    "profile": "balanced",
+    "aspect": 0.48081841432225064
+  },
+  "restored": {
+    "far": 200,
+    "fog": {
+      "near": 55,
+      "far": 145
+    }
+  },
+  "passed": true
+}

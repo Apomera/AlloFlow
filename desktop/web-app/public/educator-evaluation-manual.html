@@ -44,7 +44,7 @@
   }
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
+body{margin:0;background:var(--bg);overflow-wrap:anywhere;color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
 .wrap{max-width:860px;margin:0 auto;padding:32px 22px 80px;}
 .banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
 h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
@@ -56,15 +56,15 @@ li{margin:0 0 7px;}
 strong{font-weight:700;color:var(--ink);}
 a{color:var(--accent);}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
-code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+code{overflow-wrap:anywhere;background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
 pre{overflow:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:calc(12.5px * var(--fs));line-height:1.5;}
-pre code{border:0;padding:0;background:transparent;}
+pre code{overflow-wrap:normal;border:0;padding:0;background:transparent;}
 table{border-collapse:collapse;width:100%;margin:0;font-size:calc(14.5px * var(--fs));background:var(--panel);}
 th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
 th{background:var(--th);font-weight:700;color:var(--ink);}
 caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
 .tablewrap{overflow-x:auto;margin:0 0 18px;}
-.tablewrap:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px;}
+.tablewrap:focus-visible,pre:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
 blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:calc(14.5px * var(--fs));}
@@ -207,8 +207,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>21 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 35 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed September 2, 2026</span><span class="dot" aria-hidden="true"></span>
-<span>prints to about 20 pages</span>
+<span>reviewed September 8, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>printable with your preferred paper size and margins</span>
 </p>
 
 <div class="start">
@@ -342,7 +342,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="tour">3. A Tour of the Workspace</h2>
 <p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, which human step needs attention next, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/02-overview.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation Overview in simulated data. A Practice one complete fictional evaluation card shows zero of ten steps, final release not recorded, next owner Evaluator, and a Start rehearsal with Teacher 08 button. Below it, Coming due and Needs your attention show dated work and direct next-step links.">
+<img src="educator-evaluation-manual-assets/02-overview.jpg" width="1180" height="900" loading="lazy" alt="Evaluation Overview in simulated data. A Practice one complete fictional evaluation card shows zero of ten steps, final release not recorded, next owner Evaluator, and a Start rehearsal with Teacher 08 button. Below it, Coming due and Needs your attention show dated work and direct next-step links.">
 <figcaption>The current Overview begins with the fictional full-cycle practice card, then the due-date bands and evaluator-owned next-action queue.</figcaption>
 </figure>
 <ul>
@@ -358,6 +358,11 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>A <strong>Manual</strong> link sits in the header on every tab, so this document is always one click away from wherever you are working.</p>
 <p>Directly above the tabs, one status row shows which kind of workspace you are in (private on-device, simulated data, or an educator response packet), whether the latest change is saved, and any notice from the last action with its own Dismiss. Choose <strong>Details</strong> to expand the sentence about where records live; the row stays compact otherwise.</p>
 <p>A footer runs along the bottom of every screen as a standing reminder of the design commitments: no AI scoring, evidence and judgments stay separate, and published records are append-only.</p>
+<h3>Find the record that needs attention</h3>
+<p>On <strong>Overview</strong>, <strong>Find your next record</strong> filters the action list and roster. Search a name, staff code, assignment, building, or evaluator; narrow by <strong>Next step owner</strong> or <strong>Cycle due</strong>. Due-date filters include past due, today through fourteen calendar days, fifteen to thirty days, and open cycles with no due date. Finalized cycles do not count as overdue work.</p>
+<p>The matching count reports the filtered educators. Completion charts still cover every active educator you are allowed to access, and filtering does not change the selected educator or any saved record. Use <strong>Clear filters</strong> to restore the list; keyboard focus returns to search.</p>
+<figure><img src="educator-evaluation-manual-assets/20-worklist.jpg" width="1180" height="900" loading="lazy" alt="The fictional evaluator overview with Search educators, Next step owner, and Cycle due filters, a matching-educator count, and the Needs your attention action list. Completion totals remain based on the full authorized active roster."><figcaption>Find work by educator, responsibility, or due date. Opening a next step selects the educator and the relevant formal observation, SPM, or visit.</figcaption></figure>
+<p><strong>Needs your attention</strong> lists evaluator-owned work by cycle due date. Select the action itself to open its relevant record, including when another observation or a locked SPM is also present. <strong>Complete final evaluation</strong> moves to the annual rating composer. These shortcuts navigate; they do not publish, approve, sign, or finalize a record.</p>
 <h3>What the tool deliberately does not do</h3>
 <ul>
 <li>It does not score anyone. Every rating is entered by a person, and the software performs arithmetic only.</li>
@@ -383,6 +388,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>An unlisted educator does not stop the visit.</strong> Choose <em>+ New educator</em> under the educator menu to add a name and staff code from inside the form; complete the rest of the profile on Staff later.</li>
 </ul>
 
+<p><strong>Review each saved visit separately.</strong> The publication privacy checkbox belongs to the selected draft and its current content. Switching visits or receiving changed content clears that checkbox. Read the new draft and check it again before publishing. The same boundary applies when you arrive through an Overview shortcut.</p>
 <h2 id="cycle">5. The Formal Observation Cycle</h2>
 <p>Formal observations walk a ten-step tracker in order, and the tool will not let steps be skipped silently. The tracker across the top of the record always shows where you are.</p>
 <figure>
@@ -412,10 +418,17 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h3>The educator statement</h3>
 <p>At any point before finalization, the educator can attach a statement in their own words. It is theirs: no evaluator can edit it, it appears verbatim under "In your own words," and it <strong>leads</strong> the released summary, ahead of any ratings. This mirrors the contractual right to attach a memorandum to a personnel record. Once the record is finalized, the statement is frozen with it.</p>
 
+<h3>SPM / SLO: proposal, results, and lock</h3>
+<p>Use <strong>SPM / SLO record</strong> to choose among the selected educator's plans. Each option names its date, status, version, and goal. The screen opens unfinished work first unless you followed a shortcut to a specific record. Locked plans remain available for review. Switching educators changes the available records; it does not expose another educator's plans in the educator view.</p>
+<p>The <strong>SPM / SLO progress</strong> guide shows five stages: <strong>Prepare proposal</strong>, <strong>Review proposal</strong>, <strong>Submit results</strong>, <strong>Rate and lock</strong>, and <strong>Locked record</strong>. The owner label identifies whose turn it is. A returned proposal goes back to preparation and shows the return reason below. On a narrow screen, focus the guide and use the arrow keys to scroll through its stages. The guide describes the saved workflow; the form controls carry out each action.</p>
+<figure><img src="educator-evaluation-manual-assets/22-spm-workflow.jpg" width="1180" height="1000" loading="lazy" alt="The fictional educator SPM screen with a plan-record chooser, a five-stage progress guide, an Educator's turn label, and a returned proposal requiring revision. An earlier locked plan is also available through the chooser."><figcaption>Select the intended plan, follow the current stage, and review the return reason before resubmitting. Existing locked records remain read-only.</figcaption></figure>
+<p><strong>Changing plans with unfinished edits:</strong> if a save was refused, the recovery notice keeps those edits with their original plan. You can review another record and return to retry, copy, or discard the unsaved edits. A successful retry is required before advancing that plan. Changing records does not submit or approve anything.</p>
+<ol><li><strong>Educator:</strong> draft the goal, baseline, measures, and planned actions, then submit the plan.</li><li><strong>Evaluator:</strong> review the submission. Return it with a reason when changes are needed, or review and approve its current version.</li><li><strong>Educator:</strong> revise and resubmit a returned plan. After approval, enter year-end results and reflection and submit them for review.</li><li><strong>Evaluator:</strong> enter a human-selected rating and written rationale, review the lock effect, then lock the record. The locked SPM and its annual LEA rating are saved together.</li><li><strong>Annual review:</strong> review eligible published or locked evidence alongside the annual judgments. Finishing a formal observation or locking an SPM does not automatically finalize the annual record.</li></ol>
+<p>After a published walkthrough or finalized formal record, authorized work in other parts of the cycle can continue. Private pre-conference notes remain hidden from educators. Finalizing the annual cycle closes current-cycle edits; annual rollover is the route to the next year.</p>
 <h2 id="frameworks">6. Framework Profiles</h2>
 <p>Choose the profile on the Setup tab. Every record permanently remembers which framework and weights it was scored under, so changing profiles mid-year never rewrites old scores.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/06-setup.jpg" width="1280" height="720" loading="lazy" alt="Setup tab headed Setup, sources, and sharing, opening with a Record Path Setup card titled Choose what happens after you create a record. Three numbered paths sit side by side: Private on-device, marked Selected with no deployment; Principal-managed Drive with a Choose principal helper button; and District portal with a Choose district portal button. The footer links Maine DOE Educator Effectiveness and PEPG Rule Chapter 180, reflecting the Maine default">
+<img src="educator-evaluation-manual-assets/06-setup.jpg" width="1770" height="1200" loading="lazy" alt="Setup tab headed Setup, sources, and sharing, opening with a Record Path Setup card titled Choose what happens after you create a record. Three numbered paths sit side by side: Private on-device, marked Selected with no deployment; Principal-managed Drive with a Choose principal helper button; and District portal with a Choose district portal button. The footer links Maine DOE Educator Effectiveness and PEPG Rule Chapter 180, reflecting the Maine default">
 <figcaption>Workspace setup and the framework picker, with the official references for whichever profile is active.</figcaption>
 </figure>
 <h3>Pennsylvania Act 13 (Danielson 2021)</h3>
@@ -478,6 +491,10 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>Every record is stamped with the framework and weights that were in force when it was created. If your district changes frameworks, or you switch profiles to compare, the tool recalculates nothing retroactively: a record scored under Pennsylvania Act 13 keeps its Act 13 math forever, and a Maine record keeps its Maine math. This is why a trend line stays trustworthy across a policy change, and it is also why two records in the same list can be scored differently on purpose.</p>
 
 <h2 id="educator">8. For Educators Being Evaluated</h2>
+<h3>Your next step follows your own work</h3>
+<p>The <strong>Your next step</strong> card prioritizes work the educator can do: pre-observation materials, reflection, acknowledgment, a returned SPM plan, or year-end results. An evaluator's concurrent task does not hide these actions. When only evaluator work remains, the card says no action is required from you right now. Real local educator preview remains read-only; the fictional workspace allows role switching for rehearsal.</p>
+<figure><img src="educator-evaluation-manual-assets/21-educator-next-step.jpg" width="1180" height="900" loading="lazy" alt="A fictional educator overview showing a returned SPM plan as Your next step, with a Your turn label and a button to revise and resubmit, even though a formal observation also has evaluator work remaining."><figcaption>The educator sees their own next action and opens the corresponding record. Acknowledgment records receipt, not agreement.</figcaption></figure>
+
 <p>There are two deliberately different educator perspectives. In a private on-device workspace, <strong>Educator preview</strong> lets the evaluator inspect visibility but cannot change a real record. In the district portal, an educator signing in with their managed district account gets editable educator-owned steps and their own set of tabs, scoped to them alone. Colleagues' records are never visible.</p>
 <figure>
 <img src="educator-evaluation-manual-assets/08-teacher-view.jpg" width="1770" height="1200" loading="lazy" alt="Read-only Educator preview in a real private on-device workspace. A blue banner states that changes are blocked because local role switching is not authentication. Teacher 03's My evaluation page is visible, but the statement field and Save statement button are disabled and direct the educator to a response packet or authenticated portal.">
@@ -510,7 +527,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Verify before real records.</strong> Run <code>verifyDeploymentIdentity()</code>, then test the URL as an administrator, an assigned evaluator, an assigned educator, an unlisted same-domain account, and a personal Gmail account. The last two must receive Access unavailable; each permitted account must see only its authorized scope.</li>
 <li><strong>Register the reviewed URL.</strong> Re-run the setup wrapper with the exact <code>webAppUrl</code> included, remove the wrapper again, and give staff only that reviewed <code>/exec</code> link. Google sign-in and server assignments, not possession of the link, decide access.</li>
 </ol>
-<pre aria-label="District portal one-time setup wrapper"><code>function runDistrictSetupOnce() {
+<pre tabindex="0" role="region" aria-label="District portal one-time setup wrapper"><code>function runDistrictSetupOnce() {
   return setupEvaluationRepository({
     allowedDomain: 'example.k12.pa.us',
     bootstrapAdmin: 'principal@example.k12.pa.us',
@@ -655,6 +672,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p><strong>Walkthrough observation (2026-08-09)</strong><br>The discussion-norms anchor chart is doing real work; students referenced it without prompting. Worth sharing at a team meeting.</p>
 <h4>Your overall rating, in plain language</h4>
 <p>Overall score: 2.69 out of 3, which is the "Distinguished" performance band. Bands are fixed statewide cut points: 2.50 and above is Distinguished, 1.50–2.49 Proficient, 0.50–1.49 Needs Improvement, below 0.50 Failing.</p>
+<div class="tablewrap">
 <table>
 <tr><th scope="col">Component</th><th scope="col">Weight</th><th scope="col">What it measures</th></tr>
 <tr><td>Observation &amp; Practice</td><td>70%</td><td>Your observed practice across the four domains below.</td></tr>
@@ -662,6 +680,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <tr><td>Teacher-Specific Data</td><td>10%</td><td>The measures selected for your role and assignment.</td></tr>
 <tr><td>LEA Selected Measure / SPM</td><td>10%</td><td>The measures selected for your role and assignment.</td></tr>
 </table>
+</div>
 <p>Your final score is the weighted average of these components — each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.</p>
 <p class="cut">[ a domain-by-domain table follows, giving each rating in plain language ]</p>
 <h4>Growth focus</h4>
@@ -825,6 +844,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 <li><strong>Deploy privately and save the link.</strong> Choose <strong>Deploy → New deployment → Web app</strong>, set <strong>Execute as: Me</strong> and <strong>Who has access: Only myself</strong>, review the account and scopes, then paste the URL ending in <code>/exec</code> into Setup. Preview <code>/dev</code> links are rejected.</li>
 <li><strong>Run the deployment check.</strong> Open that exact saved URL and select <strong>Run deployment check</strong>. It must show helper version 3, the expected managed email/domain, and Drive API v3. Changing the URL or copying updated source clears the recorded confirmation.</li>
 </ol>
+<p><strong>Storage is checked before sharing.</strong> The helper verifies the managed folder path and its private, owner-only access before writing evaluation content. Duplicate matching folders, unexpected recipients, or incomplete permission information block verified sharing. A successful share checks the entire file permission list, including the intended recipient, role, and any expiry. Ask the deployment owner to resolve unexpected access rather than creating a workaround folder.</p>
 <h3>Share and revoke one packet</h3>
 <ol>
 <li>In Evaluation <strong>Reports &amp; audit</strong>, export and locally preview one <strong>Educator packet (.html)</strong>.</li>
@@ -833,7 +853,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 <li>Enter and retype the educator's exact district email. The domain is locked to the verified account. Leave <strong>Viewer</strong> selected unless district procedure specifically needs Drive comments; those comments do not import into Evaluation. Choose an optional end date only after confirming tenant support.</li>
 <li>Confirm policy and choose <strong>Review; do not share yet</strong>. Inspect packet id and issue time, educator, folder, exact recipient, role, access end, and notification. Editing any field invalidates this snapshot.</li>
 <li>Choose <strong>Confirm and share this packet</strong>. A success message means Drive was re-read and the exact recipient, role, and expiration were proved. Google Drive is asked to email the recipient. Tell the educator to <strong>download the shared .html file and open it in a browser</strong>; Drive preview shows markup.</li>
-<li>Use <strong>Filed packets and live access status</strong> to re-read current permissions. Choose <strong>Revoke this live access</strong> for an active row. Success appears only after Drive proves every matching permission is absent. If an error names a recovery file, open that exact Drive link immediately and remove access manually.</li>
+<li>Use <strong>Filed packets and live access status</strong> to re-read current permissions. Choose <strong>Revoke this live access</strong> for an active row. Success appears only after Drive proves no non-owner permissions remain. If an error names a recovery file, open that exact Drive link immediately and remove access manually.</li>
 </ol>
 <p><strong>Updates:</strong> replace all three source files, save, then choose <strong>Deploy → Manage deployments → Edit → New version</strong>. Reopen the same <code>/exec</code> link and run the check again. Editing source without creating a new version does not update the deployed helper.</p>
 <blockquote><p><strong>Custody boundary.</strong> The <em>AlloFlow Evaluations</em> folder is a principal-owned working store, not automatic records management. Move or copy the year folder into the district's authorized system at the required handoff point, document that handoff, and transfer project/folder ownership before the principal account changes.</p></blockquote>
@@ -854,6 +874,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 </dl>
 
 <h2 id="troubleshooting">21. Troubleshooting</h2>
+<ul><li><strong>The overview action list is empty:</strong> clear the search, owner, and due-date filters. An empty filtered list does not mean the roster or records were deleted; check the matching count and selected educator.</li><li><strong>A privacy checkbox cleared:</strong> the selected walkthrough or its content changed. Review that record before checking it again.</li><li><strong>Refresh moved an older deployment back to another record:</strong> update the district portal package. The current portal retains the selected educator and tab for the same verified actor when that educator remains authorized; an identity or assignment change uses the newly authorized view.</li><li><strong>The packet helper reports unexpected access or unverified cleanup:</strong> inspect the exact recovery file and managed folder with the deployment owner. Additional recipients must be resolved before sharing or revocation can be reported as verified.</li></ul>
 <ul>
 <li><strong>“Changes are not saved” or a save-failed banner:</strong> stop editing, choose <strong>Retry save</strong>, then <strong>Download emergency backup</strong>. Check browser storage/privacy settings and available space. Do not close until you have an authorized recovery copy.</li>
 <li><strong>A damaged local workspace was detected:</strong> download the raw damaged value first. Retry storage or ask IT/data support to inspect that copy. Use the two-confirmation fresh-start action only after preserving it.</li>
@@ -1131,7 +1152,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 </script>
 
 <footer>
-<p>AlloFlow Educator Growth &amp; Evaluation. User manual, August 2026. Screenshots and the example summary use fictional data; nothing in them represents real personnel. This manual describes how the tool behaves and is not legal or contractual advice. Your district plan, collective bargaining agreement, and state law govern evaluation practice.</p>
+<p>AlloFlow Educator Growth &amp; Evaluation. User manual, September 2026. Screenshots and the example summary use fictional data; nothing in them represents real personnel. This manual describes how the tool behaves and is not legal or contractual advice. Your district plan, collective bargaining agreement, and state law govern evaluation practice.</p>
 </footer>
 </main>
 </body>

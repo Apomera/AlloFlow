@@ -1,0 +1,61 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > opens a named modal alert dialog with safe initial focus and background isolation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > contains focus, cancels on Escape, and restores the invoking control
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > requires explicit confirmation before clearing and announces completion
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > confirms removal from a substantial circuit and restores focus nearby
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_confirmation_dialog_a11y.test.js > Circuit Lab accessible confirmations > removes native confirmation APIs and preserves deploy parity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_learning.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > uses the actual single-variable model for loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > retains wrong predictions for feedback and rejects invalid choices
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > isolates saved evidence from later edits and from the lesson templates
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > explains an inactive source without calling it a broken loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > distinguishes series blockers and tiny meter current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > does not describe an open parallel branch as a globally broken circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > prioritizes low-resistance and LED overcurrent paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_learning.test.js > Guided circuit investigations > keeps parts and supply controls before the schematic and its inspector
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··········
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  06:48:48
+   Duration  5.20s (transform 73ms, setup 77ms, import 133ms, tests 1.50s, environment 3.05s)
+

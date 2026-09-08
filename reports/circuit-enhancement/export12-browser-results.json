@@ -1,0 +1,16 @@
+{
+  "errors": [],
+  "axeViolations": [],
+  "pngWidth": 1280,
+  "pngHeight": 1268,
+  "checks": [
+    "keyboard PNG download",
+    "valid PNG dimensions",
+    "view and solver history unchanged",
+    "close-up export",
+    "canvas failure message",
+    "successful retry",
+    "390px layout",
+    "empty export disabled"
+  ]
+}

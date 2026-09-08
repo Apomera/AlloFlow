@@ -1,0 +1,20 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "torsion-ballista",
+    "torsion-onager",
+    "torsion-onager-zero",
+    "torsion-ballista-release",
+    "torsion-onager-release",
+    "torsion-ballista-field",
+    "torsion-onager-field"
+  ]
+}

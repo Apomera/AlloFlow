@@ -2964,12 +2964,30 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   };
   const [showLocalStats, setShowLocalStats] = useState(false);
   const [bossDifficulty, setBossDifficulty] = useState(bossStats?.difficulty || "normal");
+  useEffect(() => {
+    setBossDifficulty(bossStats?.difficulty || "normal");
+  }, [bossStats?.difficulty, activeSessionCode]);
+  const bossBattleEnded = mode === "boss-battle" && ["boss-defeated", "class-defeated", "battle-complete"].includes(phase);
+  const bossPacingLocked = quizBusy || bossBattleEnded || phase === "answering";
+  const bossIdentity = [appId2, activeSessionCode, quizState.activityId, mode, bossStats?.battleId || "legacy"].join(":");
+  const bossIdentityRef = useRef(bossIdentity);
+  bossIdentityRef.current = bossIdentity;
+  const bossVisualRequestRef = useRef(0);
+  useEffect(() => {
+    setBossGmDraft(null);
+    setBossGmPrompt("");
+    return () => {
+      bossVisualRequestRef.current++;
+    };
+  }, [bossIdentity]);
   const [bossGmPrompt, setBossGmPrompt] = useState("");
   const [bossGmDraft, setBossGmDraft] = useState(null);
   const [bossGmBusy, setBossGmBusy] = useState(false);
   const normalizedBossPhase = String(bossStats?.phaseName || "watchful").trim().toLowerCase().replace(/\s+/g, "_");
   const bossPhaseId = ["watchful", "enraged", "final_form"].includes(normalizedBossPhase) ? normalizedBossPhase : "watchful";
-  const bossPhaseLabel = t(`concept_quest.boss_phase_${bossPhaseId}`);
+  const bossPhaseKey = `concept_quest.boss_phase_${bossPhaseId}`;
+  const translatedBossPhase = t(bossPhaseKey);
+  const bossPhaseLabel = translatedBossPhase && translatedBossPhase !== bossPhaseKey ? translatedBossPhase : { watchful: "Watchful", enraged: "Enraged", final_form: "Final form" }[bossPhaseId];
   const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState(() => {
     const seeded = {};
     const qs = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions : [];
@@ -3095,6 +3113,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const unscoredReceiptCount = validReceiptUids.filter((uid) => !Object.prototype.hasOwnProperty.call(responses || {}, uid)).length;
   const percentage = totalStudents > 0 ? Math.min(100, Math.round(answeredCount / totalStudents * 100)) : 0;
   const quizLiveAggregators = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.QuizLiveAggregators : null;
+  const battleQuestionCount = (generatedContent?.data?.questions || []).filter((item) => quizLiveAggregators?.presentationQuestionIsGameScorable ? quizLiveAggregators.presentationQuestionIsGameScorable(item) : Array.isArray(item?.options) && item.options.includes(item.correctAnswer)).length;
   const rawLiveScoringPolicy = scoringPolicy || generatedContent?.data?.scoringPolicy || {};
   const liveScoringPolicy = quizLiveAggregators && typeof quizLiveAggregators.normalizeLiveScoringPolicy === "function" ? quizLiveAggregators.normalizeLiveScoringPolicy(rawLiveScoringPolicy) : {
     accuracy: rawLiveScoringPolicy?.accuracy !== false,
@@ -3177,7 +3196,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     )), /* @__PURE__ */ React.createElement("div", { className: "text-right min-w-[50px]" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, stat.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-mono" }, stat.percent, "%")))
   ))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-100 flex justify-between items-center gap-3 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600 uppercase tracking-wider" }, t("quiz.total_responses"), unscoredReceiptCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 normal-case tracking-normal font-medium text-amber-700" }, unscoredReceiptCount, " submitted, unscored (peer connection unavailable)")), /* @__PURE__ */ React.createElement("span", { className: "font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100" }, liveQuestionSummary.respondentCount)));
   const generateBossAsset = async () => {
-    if (bossStats?.image || bossStats?.isGenerating) return;
+    if (bossStats?.image || bossStats?.isGenerating || typeof onGenerateImage !== "function") return;
     try {
       const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
       await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
@@ -3212,6 +3231,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   };
   const triggerBossVisualUpdate = async (currentImageUrl, status) => {
     if (!onRefineImage || !currentImageUrl) return;
+    const identity = bossIdentityRef.current;
+    const request = ++bossVisualRequestRef.current;
     try {
       const rawBase64 = currentImageUrl.split(",")[1];
       let prompt = "";
@@ -3221,7 +3242,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         prompt = "Edit this pixel art character to look like it is taking damage, flinching, glowing red, or in pain. Keep the style consistent.";
       }
       const newImage = await onRefineImage(prompt, rawBase64);
-      if (newImage) {
+      if (newImage && bossIdentityRef.current === identity && bossVisualRequestRef.current === request) {
         const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
         await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
       }
@@ -3230,7 +3251,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handleStartQuestion = async () => {
-    if (quizBusy || quizWriteRef.current || phase === "answering" || !question || ["boss-defeated", "class-defeated", "closed"].includes(phase)) return;
+    if (quizBusy || quizWriteRef.current || phase === "answering" || !question || ["boss-defeated", "class-defeated", "battle-complete", "closed"].includes(phase)) return;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     try {
       await writeQuiz(sessionRef, { "quizState.roundId": Date.now().toString(36) + Math.random().toString(36).slice(2, 8), "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 });
@@ -3239,7 +3260,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handleBossPacingAdjustment = async (kind) => {
-    if (mode !== "boss-battle" || !bossStats) return;
+    if (mode !== "boss-battle" || !bossStats || bossPacingLocked || quizWriteRef.current || !["rally", "soften", "intensify"].includes(kind)) return;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     const updates = {};
     if (kind === "rally") updates["quizState.bossStats.classHP"] = Math.min(bossStats.classMaxHP || 100, (bossStats.classHP ?? 100) + 10);
@@ -3247,11 +3268,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     if (kind === "intensify") updates["quizState.bossStats.currentHP"] = Math.min(bossStats.maxHP, (bossStats.currentHP ?? bossStats.maxHP) + Math.round((bossStats.maxHP || 1e3) * 0.05));
     updates["quizState.bossStats.gmEvent"] = null;
     updates["quizState.bossStats.gmEventKey"] = `boss_event_${kind}`;
-    try {
-      await updateDoc(sessionRef, updates);
-    } catch (error) {
-      warnLog("Boss pacing adjustment failed:", error);
-    }
+    await writeQuiz(sessionRef, updates);
   };
   const normalizeBossGmDraft = (draft = {}) => ({
     title: String(draft.title || t("concept_quest.boss_draft_default_title")).replace(/[<>]/g, "").trim().slice(0, 100),
@@ -3265,21 +3282,23 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       createBossGmDraft();
       return;
     }
+    if (bossGmBusy) return;
+    const identity = bossIdentity;
     setBossGmBusy(true);
     try {
       const prompt = `Draft one short, classroom-safe teacher GM event for an educational Class-vs-Monsters battle about ${generatedContent?.meta || "the lesson"}. Teacher direction: "${bossGmPrompt || "Create a dramatic concept-based event."}". Return only JSON: {"title":"...","description":"...","effect":"narrative|rally|expose|intensify","amount":1-10}. rally helps class HP; expose lowers monster HP; intensify raises monster HP. Never decide individual student outcomes.`;
       const response = await callGemini(prompt, true);
       const jsonText = String(response || "").replace(/```json\s*/gi, "").replace(/```/g, "").trim();
-      setBossGmDraft(normalizeBossGmDraft(JSON.parse(jsonText)));
+      if (bossIdentityRef.current === identity) setBossGmDraft(normalizeBossGmDraft(JSON.parse(jsonText)));
     } catch (error) {
       warnLog("Boss GM draft failed:", error);
-      createBossGmDraft();
+      if (bossIdentityRef.current === identity) createBossGmDraft();
     } finally {
       setBossGmBusy(false);
     }
   };
   const publishBossGmDraft = async () => {
-    if (!bossGmDraft) return;
+    if (!bossGmDraft || bossPacingLocked || quizWriteRef.current) return;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     const draft = normalizeBossGmDraft(bossGmDraft);
     const updates = { "quizState.bossStats.gmEvent": `${draft.title}: ${draft.description}`, "quizState.bossStats.gmEventKey": null };
@@ -3287,12 +3306,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const hpDelta = Math.round((bossStats?.maxHP || 1e3) * (draft.amount / 100));
     if (draft.effect === "expose") updates["quizState.bossStats.currentHP"] = Math.max(1, (bossStats?.currentHP ?? bossStats?.maxHP) - hpDelta);
     if (draft.effect === "intensify") updates["quizState.bossStats.currentHP"] = Math.min(bossStats?.maxHP, (bossStats?.currentHP ?? bossStats?.maxHP) + hpDelta);
-    try {
-      await updateDoc(sessionRef, updates);
+    if (await writeQuiz(sessionRef, updates)) {
       setBossGmDraft(null);
       setBossGmPrompt("");
-    } catch (error) {
-      warnLog("Boss GM event publish failed:", error);
     }
   };
   const handleRevealResults = async () => {
@@ -3323,28 +3339,28 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (!grade || grade.evaluable !== true || grade.unscored === true) return null;
         return typeof grade.scoreFraction === "number" ? Math.max(0, Math.min(1, grade.scoreFraction)) : grade.isCorrect === true ? 1 : 0;
       };
-      if (mode === "boss-battle" && liveQuestionSummary.gameScorable) {
+      if (mode === "boss-battle" && liveQuestionSummary.gameScorable && !(scoredAnsweredCount === 0 && unscoredReceiptCount > 0)) {
         const evaluatedResponses = Object.values(responses || {}).map(gradeLiveResponse).filter((grade) => grade.evaluable);
         const correctCount = evaluatedResponses.filter((grade) => grade.isCorrect === true).length;
         const totalResponses = evaluatedResponses.length;
         const earnedCredit = evaluatedResponses.reduce((sum, grade) => sum + (accuracyWeightForGrade(grade) || 0), 0);
-        const eligibleCount = Math.max(totalStudents, totalResponses, 1);
+        const eligibleCount = Math.max(totalStudents - unscoredReceiptCount, totalResponses, 1);
         const wrongCredit = Math.max(0, eligibleCount - earnedCredit);
         const bossMaxHP = bossStats?.maxHP || 1e3;
-        const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
+        const quizLength = Math.max(1, battleQuestionCount);
         const perQuestionBudget = bossMaxHP / quizLength;
         const answerAccuracy = earnedCredit / eligibleCount;
         const baseDamage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
         const masteryStreak = answerAccuracy >= 0.7 ? (bossStats?.masteryStreak || 0) + 1 : 0;
         const comboBonus = masteryStreak >= 3 ? Math.round(perQuestionBudget * 0.15) : 0;
-        const damage = baseDamage + comboBonus;
+        const damage = Math.min(bossStats?.currentHP ?? bossMaxHP, baseDamage + comboBonus);
         const currentHP = bossStats?.currentHP ?? bossMaxHP;
         const newHP = Math.max(0, currentHP - damage);
         const remainingBossPercent = newHP / bossMaxHP;
         const bossPhaseName = remainingBossPercent <= 0.33 ? "final_form" : remainingBossPercent <= 0.66 ? "enraged" : "watchful";
         const difficultyMultiplier = bossStats?.difficulty === "easy" ? 0.5 : bossStats?.difficulty === "hard" ? 1.5 : 1;
         const baseClassDamage = Math.ceil(wrongCredit / eligibleCount * 25);
-        const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
+        const classDamage = Math.min(bossStats?.classHP ?? 100, Math.round(baseClassDamage * difficultyMultiplier));
         const currentClassHP = bossStats?.classHP ?? 100;
         const newClassHP = Math.max(0, currentClassHP - classDamage);
         updatePayload["quizState.bossStats.currentHP"] = newHP;
@@ -3356,6 +3372,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         updatePayload["quizState.bossStats.phaseName"] = bossPhaseName;
         updatePayload["quizState.bossStats.roundFeedback"] = {
           accuracy: Math.round(answerAccuracy * 100),
+          scoredResponses: totalResponses,
+          excludedReceipts: unscoredReceiptCount,
           masteryStreak,
           comboBonus,
           explanation: question?.explanation || question?.rationale || ""
@@ -3375,20 +3393,29 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         };
         const existingLog = bossStats?.battleLog || [];
         updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
-        const isLastQuestion = currentQuestionIndex >= quizLength - 1;
+        const isLastQuestion = currentQuestionIndex >= (generatedContent?.data?.questions?.length || 1) - 1;
         if (newHP <= 0) {
           updatePayload["quizState.phase"] = "boss-defeated";
+          updatePayload["quizState.bossStats.endReason"] = "boss-health";
         } else if (newClassHP <= 0) {
           updatePayload["quizState.phase"] = "class-defeated";
+          updatePayload["quizState.bossStats.endReason"] = "class-health";
         } else if (isLastQuestion && totalResponses === 0) {
           updatePayload["quizState.phase"] = "class-defeated";
         } else if (isLastQuestion) {
           const bossPct = newHP / bossMaxHP;
           const classPct = newClassHP / (bossStats?.classMaxHP || 100);
           updatePayload["quizState.phase"] = classPct >= bossPct ? "boss-defeated" : "class-defeated";
+          updatePayload["quizState.bossStats.endReason"] = "questions-complete";
         }
-        if (damage > 0 && bossStats?.image) {
-          triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? "defeated" : "hurt");
+      } else if (mode === "boss-battle") {
+        updatePayload["quizState.bossStats.lastDamage"] = 0;
+        updatePayload["quizState.bossStats.lastClassDamage"] = 0;
+        updatePayload["quizState.bossStats.roundFeedback"] = { scoringPaused: true, explanation: unscoredReceiptCount > 0 && scoredAnsweredCount === 0 ? "Participation arrived without answer content. No health was lost. Reopen this question after students reconnect to score their answers." : "This item is for discussion or teacher review. Battle health is unchanged." };
+        if (!liveQuestionSummary.gameScorable && currentQuestionIndex >= (generatedContent?.data?.questions?.length || 1) - 1) {
+          const hasScoredRounds = (bossStats?.battleLog || []).some((entry) => entry.totalResponses > 0);
+          updatePayload["quizState.phase"] = !hasScoredRounds ? "battle-complete" : (bossStats?.classHP ?? 100) / (bossStats?.classMaxHP || 100) >= (bossStats?.currentHP ?? 1e3) / (bossStats?.maxHP || 1e3) ? "boss-defeated" : "class-defeated";
+          updatePayload["quizState.bossStats.endReason"] = hasScoredRounds ? "questions-complete" : "no-scored-items";
         }
       } else if (mode === "team-showdown" && liveQuestionSummary.gameScorable) {
         const currentScores = sessionData.quizState.teamScores || {};
@@ -3423,17 +3450,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
           };
         });
       }
-      try {
-        await writeQuiz(sessionRef, updatePayload);
-      } catch (e) {
-        warnLog("Firestore sync failed:", e);
+      const saved = await writeQuiz(sessionRef, updatePayload);
+      if (saved && bossIdentityRef.current === bossIdentity && updatePayload["quizState.bossStats.lastDamage"] > 0 && bossStats?.image) {
+        triggerBossVisualUpdate(bossStats.image, updatePayload["quizState.phase"] === "boss-defeated" ? "defeated" : "hurt");
       }
     } catch (e) {
       warnLog("Unhandled error in handleRevealResults:", e);
     }
   };
   const handleNextQuestion = async () => {
-    if (phase === "answering" || quizWriteRef.current) return;
+    if (phase === "answering" || bossBattleEnded || quizWriteRef.current) return;
     try {
       const nextIdx = currentQuestionIndex + 1;
       if (nextIdx >= generatedContent?.data.questions.length) return;
@@ -3450,7 +3476,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handlePrevQuestion = async () => {
-    if (phase === "answering" || quizWriteRef.current) return;
+    if (phase === "answering" || bossBattleEnded || quizWriteRef.current) return;
     try {
       const prevIdx = currentQuestionIndex - 1;
       if (prevIdx < 0) return;
@@ -3474,7 +3500,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       const q = generatedContent?.data?.questions?.[idx];
       return q && (q.question || q.text) || "";
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest text-white/70 mb-2" }, t("quiz.boss.debrief_title") || "Battle debrief \u2014 accuracy by question"), log.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-2 mb-1", title: qText(e.questionIndex) }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white/80 w-7 shrink-0" }, "Q", (e.questionIndex ?? i) + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${e.accuracy >= 70 ? "bg-emerald-400" : e.accuracy >= 40 ? "bg-amber-400" : "bg-rose-500"}`, style: { width: `${Math.max(4, e.accuracy)}%` } })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white w-9 text-right shrink-0" }, e.accuracy, "%"), log.length > 1 && e === worst && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0", title: t("quiz.boss.debrief_reteach_title") || "Lowest accuracy \u2014 a reteach candidate" }, t("quiz.boss.debrief_reteach") || "reteach?"))));
+    return /* @__PURE__ */ React.createElement("div", { className: "mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest text-white/70 mb-2" }, t("quiz.boss.debrief_title") || "Battle debrief \u2014 accuracy by question"), log.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-2 mb-1", title: qText(e.questionIndex) }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white/80 w-7 shrink-0" }, "Q", (e.questionIndex ?? i) + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${e.accuracy >= 70 ? "bg-emerald-400" : e.accuracy >= 40 ? "bg-amber-400" : "bg-rose-500"}`, style: { width: `${Math.max(4, e.accuracy)}%` } })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white w-9 text-right shrink-0" }, e.accuracy, "%"), log.length > 1 && e === worst && e.accuracy < 70 && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0", title: t("quiz.boss.debrief_reteach_title") || "Lowest accuracy \u2014 a reteach candidate" }, t("quiz.boss.debrief_reteach") || "reteach?"))));
   };
   const handleEndQuiz = async () => {
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
@@ -3482,19 +3508,24 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       addToast?.(t("quiz.session_ended_success") || "Session ended successfully.", "success");
     }
   };
-  const handleModeChange = async (e, nextDifficulty = bossDifficulty) => {
-    if (phase === "answering" || answeredCount > 0 || quizWriteRef.current) return;
+  const handleModeChange = async (e, nextDifficulty = bossDifficulty, restart = false) => {
+    if (quizWriteRef.current || !restart && (phase === "answering" || answeredCount > 0) || restart && !bossBattleEnded) return;
     const newMode = e.target.value;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     const updates = { "quizState.phase": "idle", "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} };
+    if (restart) {
+      updates["quizState.currentQuestionIndex"] = 0;
+      updates["quizState.roundId"] = "battle-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
     if (newMode === "boss-battle") {
-      const qCount = generatedContent?.data.questions.length;
+      const qCount = Math.max(1, battleQuestionCount);
       const sCount = Math.max(1, totalStudents);
       const baseHP = qCount * sCount * 10;
       const hpMultiplier = nextDifficulty === "easy" ? 0.5 : nextDifficulty === "hard" ? 1.5 : 1;
       const maxHP = Math.round(baseHP * hpMultiplier);
       const existingImage = bossStats?.image || null;
       updates["quizState.bossStats"] = {
+        battleId: "battle-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
         maxHP,
         currentHP: maxHP,
         classHP: 100,
@@ -3509,16 +3540,15 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         masteryStreak: 0,
         lastComboBonus: 0,
         phaseName: "watchful",
-        roundFeedback: null
+        roundFeedback: null,
+        gmEvent: null,
+        gmEventKey: null,
+        endReason: null
       };
-      if (!existingImage) {
-        setTimeout(generateBossAsset, 100);
-      }
     }
-    try {
-      await writeQuiz(sessionRef, updates);
-    } catch (e2) {
-      warnLog("Firestore sync failed:", e2);
+    if (await writeQuiz(sessionRef, updates)) {
+      setBossDifficulty(nextDifficulty);
+      if (newMode === "boss-battle" && !bossStats?.image) generateBossAsset();
     }
   };
   const handleScoringPolicyChange = async (e) => {
@@ -3583,13 +3613,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), mode === "boss-battle" && /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      "aria-label": "Battle difficulty",
       value: bossDifficulty,
-      onChange: (e) => {
-        setBossDifficulty(e.target.value);
-        handleModeChange({ target: { value: "boss-battle" } }, e.target.value);
-      },
-      disabled: !["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0,
+      onChange: (e) => handleModeChange({ target: { value: "boss-battle" } }, e.target.value),
+      disabled: quizBusy || (!["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0),
       className: `text-xs font-bold px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${bossDifficulty === "easy" ? "bg-emerald-600 border-emerald-500 text-white" : bossDifficulty === "hard" ? "bg-red-600 border-red-500 text-white" : "bg-amber-500 border-amber-400 text-white"} ${!["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0 ? "opacity-60 cursor-not-allowed" : ""}`,
       title: !["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0 ? t("quiz.boss.difficulty_locked") : t("quiz.boss.select_difficulty")
     },
@@ -3904,7 +3931,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-sky-500 text-sky-800 hover:bg-sky-100"}`
     },
     "+ \u{1F9ED} Misconception rule"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, "Reveal results before moving to another question. Responses stay available until then."), phase === "answering" ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, "Reveal results before moving to another question. Responses stay available until then."), bossBattleEnded ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-sm text-indigo-900" }, "Review the battle below. Restart begins at question 1 with full health and a new battle history."), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: quizBusy, onClick: () => handleModeChange({ target: { value: "boss-battle" } }, bossStats?.difficulty || "normal", true), className: "min-h-11 w-full rounded-lg bg-indigo-700 px-4 py-3 font-bold text-white disabled:opacity-50" }, "Restart battle")) : phase === "answering" ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -3923,7 +3950,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       type: "button",
       "aria-label": phase === "revealed" ? t("quiz.restart_question") : t("quiz.start_question"),
       onClick: handleStartQuestion,
-      disabled: quizBusy || !question || ["boss-defeated", "class-defeated", "closed"].includes(phase),
+      disabled: quizBusy || !question || ["boss-defeated", "class-defeated", "battle-complete", "closed"].includes(phase),
       "data-help-key": "quiz_start_question_btn",
       className: "w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
     },
@@ -3936,7 +3963,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       type: "button",
       onClick: handlePrevQuestion,
       "data-help-key": "quiz_prev_question_btn",
-      disabled: quizBusy || phase === "answering" || currentQuestionIndex === 0,
+      disabled: quizBusy || bossBattleEnded || phase === "answering" || currentQuestionIndex === 0,
       className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
@@ -3948,13 +3975,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       type: "button",
       onClick: handleNextQuestion,
       "data-help-key": "quiz_next_question_btn",
-      disabled: quizBusy || phase === "answering" || currentQuestionIndex >= generatedContent?.data?.questions?.length - 1,
+      disabled: quizBusy || bossBattleEnded || phase === "answering" || currentQuestionIndex >= generatedContent?.data?.questions?.length - 1,
       className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     t("common.next"),
     " ",
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "-rotate-90", size: 16 })
-  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? scoredAnsweredCount > 0 ? renderAnalytics() : unscoredReceiptCount > 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "text-amber-800 flex flex-col items-center gap-2 h-full justify-center text-center max-w-sm" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold" }, unscoredReceiptCount, " submitted, unscored"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-amber-700" }, "Their peer connection was unavailable, so AlloFlow recorded participation without storing answer content.")) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: true }), /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4 animate-bounce motion-reduce:animate-none" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"), renderBattleDebrief())), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."), renderBattleDebrief())), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake motion-reduce:animate-none" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? scoredAnsweredCount > 0 ? renderAnalytics() : unscoredReceiptCount > 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "text-amber-800 flex flex-col items-center gap-2 h-full justify-center text-center max-w-sm" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold" }, unscoredReceiptCount, " submitted, unscored"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-amber-700" }, "Their peer connection was unavailable, so AlloFlow recorded participation without storing answer content.")) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative" }, bossBattleEnded && /* @__PURE__ */ React.createElement("section", { "aria-label": "Battle result", className: "mb-5 w-full rounded-xl border border-indigo-300 bg-slate-900 p-5 text-center text-white" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black", role: "status" }, phase === "boss-defeated" ? "Class victory!" : phase === "battle-complete" ? "Battle complete" : "A chance to regroup"), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-200" }, bossStats.endReason === "no-scored-items" ? "This quiz had no scored battle rounds. Discuss the responses together." : bossStats.endReason === "questions-complete" ? "All questions are complete. The result compares the percentage of health remaining; ties favor the class." : phase === "boss-defeated" ? "The class defeated the monster together." : "Review the explanations, discuss a strategy, and try another battle."), renderBattleDebrief()), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake motion-reduce:animate-none" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
     "img",
     {
       loading: "lazy",
@@ -3963,17 +3990,27 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       className: "w-48 h-48 object-contain pixelated drop-shadow-xl",
       style: { imageRendering: "pixelated" }
     }
-  ) : /* @__PURE__ */ React.createElement("div", { className: "w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10" }, bossStats.isGenerating ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-red-500" }) : "\u{1F47E}"), phase === "revealed" && bossStats.lastDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] motion-reduce:animate-none ${bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "text-yellow-500 text-6xl" : "text-red-600 text-4xl"}` }, bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "\u{1F4A5} " : "", "-", bossStats.lastDamage)), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-800 uppercase tracking-widest mb-2" }, bossStats.name || t("quiz.boss.default_name")), /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-red-100 px-2 py-1 text-red-800" }, t("concept_quest.boss_phase", { phase: bossPhaseLabel })), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-yellow-100 px-2 py-1 text-yellow-900" }, t("concept_quest.boss_mastery_streak", { count: bossStats.masteryStreak || 0 })), bossStats.lastComboBonus > 0 && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-purple-100 px-2 py-1 text-purple-800" }, "\u26A1 ", t("concept_quest.boss_combo_bonus", { bonus: bossStats.lastComboBonus }))), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex flex-wrap justify-center gap-2", "aria-label": t("concept_quest.boss_pacing_aria") }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("rally"), className: "min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_rally_class_hp")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("soften"), className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_expose_weakness")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("intensify"), className: "min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800" }, t("concept_quest.boss_intensify_monster"))), /* @__PURE__ */ React.createElement("details", { className: "mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-black text-purple-900" }, "\u{1F3B2} ", t("concept_quest.boss_event_workshop")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-purple-700" }, t("concept_quest.ai_draft_notice")), /* @__PURE__ */ React.createElement("textarea", { value: bossGmPrompt, onChange: (event) => setBossGmPrompt(event.target.value), rows: 2, placeholder: t("concept_quest.boss_event_placeholder"), className: "mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" }), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBossGmDraft, className: "min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800" }, t("concept_quest.manual_draft")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossGmBusy, onClick: generateBossGmDraft, className: "min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50" }, bossGmBusy ? t("concept_quest.boss_drafting") : t("concept_quest.ai_draft"))), bossGmDraft && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, t("concept_quest.draft_title_label"), /* @__PURE__ */ React.createElement("input", { value: bossGmDraft.title, onChange: (event) => setBossGmDraft({ ...bossGmDraft, title: event.target.value }), className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs font-bold text-slate-700" }, t("concept_quest.description"), /* @__PURE__ */ React.createElement("textarea", { value: bossGmDraft.description, onChange: (event) => setBossGmDraft({ ...bossGmDraft, description: event.target.value }), rows: 2, className: "mt-1 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-900" }, t("concept_quest.boss_effect"), " ", /* @__PURE__ */ React.createElement("strong", null, t(`concept_quest.boss_effect_${bossGmDraft.effect}`)), " \xB7 ", t("concept_quest.boss_strength", { amount: bossGmDraft.amount })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBossGmDraft(null), className: "min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold" }, t("concept_quest.discard")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: publishBossGmDraft, className: "min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white" }, t("concept_quest.boss_publish_event"))))), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && bossStats.currentHP / bossStats.maxHP < 0.25 ? "border-red-500 animate-pulse motion-reduce:animate-none" : "border-slate-400"}` }, /* @__PURE__ */ React.createElement(
+  ) : /* @__PURE__ */ React.createElement("div", { className: "w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10" }, bossStats.isGenerating ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-red-500" }) : "\u{1F47E}"), phase === "revealed" && bossStats.lastDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] motion-reduce:animate-none ${bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "text-yellow-500 text-6xl" : "text-red-600 text-4xl"}` }, bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "\u{1F4A5} " : "", "-", bossStats.lastDamage)), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-800 uppercase tracking-widest mb-2" }, bossStats.name || t("quiz.boss.default_name")), /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-red-100 px-2 py-1 text-red-800" }, t("concept_quest.boss_phase", { phase: bossPhaseLabel })), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-yellow-100 px-2 py-1 text-yellow-900" }, t("concept_quest.boss_mastery_streak", { count: bossStats.masteryStreak || 0 })), bossStats.lastComboBonus > 0 && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-purple-100 px-2 py-1 text-purple-800" }, "\u26A1 ", t("concept_quest.boss_combo_bonus", { bonus: bossStats.lastComboBonus }))), /* @__PURE__ */ React.createElement("p", { className: "mb-3 max-w-sm text-center text-xs text-slate-600" }, phase === "answering" ? "Reveal results before changing battle health or publishing an event." : bossBattleEnded ? "Battle finished. Restart to change health or publish another event." : "Correct answers help the class attack. Strong rounds build a combo. Pacing controls apply between questions."), unscoredReceiptCount > 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 max-w-sm rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" }, unscoredReceiptCount, " participation-only submission(s). These are excluded from damage calculations."), phase === "revealed" && bossStats.roundFeedback?.scoringPaused && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 max-w-sm rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-950" }, bossStats.roundFeedback.explanation), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex flex-wrap justify-center gap-2", "aria-label": t("concept_quest.boss_pacing_aria") }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossPacingLocked, onClick: () => handleBossPacingAdjustment("rally"), className: "disabled:opacity-50 disabled:cursor-not-allowed min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_rally_class_hp")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossPacingLocked, onClick: () => handleBossPacingAdjustment("soften"), className: "disabled:opacity-50 disabled:cursor-not-allowed min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_expose_weakness")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossPacingLocked, onClick: () => handleBossPacingAdjustment("intensify"), className: "disabled:opacity-50 disabled:cursor-not-allowed min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800" }, t("concept_quest.boss_intensify_monster"))), /* @__PURE__ */ React.createElement("details", { className: "mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-black text-purple-900" }, "\u{1F3B2} ", t("concept_quest.boss_event_workshop")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-purple-700" }, t("concept_quest.ai_draft_notice")), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Teacher event direction", maxLength: 500, value: bossGmPrompt, onChange: (event) => setBossGmPrompt(event.target.value), rows: 2, placeholder: t("concept_quest.boss_event_placeholder"), className: "mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" }), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBossGmDraft, className: "min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800" }, t("concept_quest.manual_draft")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossGmBusy, onClick: generateBossGmDraft, className: "min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50" }, bossGmBusy ? t("concept_quest.boss_drafting") : t("concept_quest.ai_draft"))), bossGmDraft && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, t("concept_quest.draft_title_label"), /* @__PURE__ */ React.createElement("input", { value: bossGmDraft.title, onChange: (event) => setBossGmDraft({ ...bossGmDraft, title: event.target.value }), className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs font-bold text-slate-700" }, t("concept_quest.description"), /* @__PURE__ */ React.createElement("textarea", { value: bossGmDraft.description, onChange: (event) => setBossGmDraft({ ...bossGmDraft, description: event.target.value }), rows: 2, className: "mt-1 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-900" }, t("concept_quest.boss_effect"), " ", /* @__PURE__ */ React.createElement("strong", null, t(`concept_quest.boss_effect_${bossGmDraft.effect}`)), " \xB7 ", t("concept_quest.boss_strength", { amount: bossGmDraft.amount })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBossGmDraft(null), className: "min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold" }, t("concept_quest.discard")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossPacingLocked, onClick: publishBossGmDraft, className: "disabled:opacity-50 disabled:cursor-not-allowed min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white" }, t("concept_quest.boss_publish_event"))))), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && bossStats.currentHP / bossStats.maxHP < 0.25 ? "border-red-500 animate-pulse motion-reduce:animate-none" : "border-slate-400"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
+      role: "progressbar",
+      "aria-label": "Monster health",
+      "aria-valuemin": 0,
+      "aria-valuemax": bossStats.maxHP || 1,
+      "aria-valuenow": Math.min(bossStats.maxHP || 1, Math.max(0, bossStats.currentHP || 0)),
       className: `h-full transition-all motion-reduce:transition-none duration-1000 ease-out ${bossStats.currentHP / bossStats.maxHP < 0.25 ? "bg-gradient-to-r from-red-700 to-red-500" : "bg-gradient-to-r from-red-600 to-orange-500"}`,
-      style: { width: `${bossStats.currentHP / bossStats.maxHP * 100}%` }
+      style: { width: `${Math.min(100, Math.max(0, bossStats.currentHP / (bossStats.maxHP || 1) * 100))}%` }
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" }, Math.round(bossStats.currentHP), " / ", bossStats.maxHP, " ", t("quiz.hp"))), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-sm bg-slate-300 h-6 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2" }, /* @__PURE__ */ React.createElement(
     "div",
     {
+      role: "progressbar",
+      "aria-label": "Class health",
+      "aria-valuemin": 0,
+      "aria-valuemax": bossStats.classMaxHP || 100,
+      "aria-valuenow": Math.min(bossStats.classMaxHP || 100, Math.max(0, bossStats.classHP ?? 100)),
       className: "h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all motion-reduce:transition-none duration-1000 ease-out",
-      style: { width: `${(bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100}%` }
+      style: { width: `${Math.min(100, Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100))}%` }
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" }, t("quiz.boss.class_hp"), ": ", Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), phase === "revealed" && bossStats.lastClassDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-orange-600 font-bold text-sm mb-2 animate-pulse motion-reduce:animate-none" }, t("quiz.boss.counter_attack_msg", { damage: bossStats.lastClassDamage })), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-center" }, (bossStats.classHP ?? 100) <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-600 font-black text-2xl animate-bounce motion-reduce:animate-none" }, t("quiz.boss.class_defeat_msg")) : bossStats.currentHP <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-green-600 font-black text-2xl animate-bounce motion-reduce:animate-none" }, t("quiz.boss.victory_msg")) : bossStats.lastDamage > 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-500 font-bold" }, t("quiz.boss.attack_msg", { damage: bossStats.lastDamage })) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 font-bold" }, t("quiz.boss.miss_msg")))) : mode === "team-showdown" ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-center gap-4 w-full h-48 pb-2 border-b-2 border-slate-200" }, ["Red", "Blue", "Green", "Yellow"].map((team) => {
     const score = teamScores?.[team] || 0;
@@ -3992,7 +4029,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         style: { height: `${height}%` }
       }
     ), /* @__PURE__ */ React.createElement("span", { className: "mt-2 text-xs font-bold uppercase text-slate-600" }, t(`quiz.teams.${team.toLowerCase()}`)), phase === "revealed" && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce motion-reduce:animate-none whitespace-nowrap z-10" }, "+", sessionData.quizState.lastRoundStats[team].points));
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), phase === "revealed" && !liveQuestionSummary.unscored && liveAnswerGuide && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, liveAnswerGuide)))));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), (phase === "revealed" || bossBattleEnded) && !liveQuestionSummary.unscored && liveAnswerGuide && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, liveAnswerGuide)))));
 });
 const calculateAnalyticsMetrics = (dashboardData) => {
   if (!dashboardData || !Array.isArray(dashboardData) || dashboardData.length === 0) {

@@ -1,0 +1,227 @@
+[
+  {
+    "id": "sv-term-1",
+    "kind": "term",
+    "file": "sv-term-1.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "One child holds a soft mallet above a red drum while another child watches nearby.",
+    "altHash": "img-g2r-896db81f"
+  },
+  {
+    "id": "sv-term-2",
+    "kind": "term",
+    "file": "sv-term-2.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A fingertip touches a guitar string above the sound hole; faint positions above and below suggest movement.",
+    "altHash": "img-cjj-90f8d883"
+  },
+  {
+    "id": "sv-term-3",
+    "kind": "term",
+    "file": "sv-term-3.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A red hand drum with a cream drumhead sits beside a soft-headed wooden mallet.",
+    "altHash": "img-aqb-fd309a5b"
+  },
+  {
+    "id": "sv-term-4",
+    "kind": "term",
+    "file": "sv-term-4.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "Six parallel strings run across an acoustic guitar sound hole from its bridge toward the neck.",
+    "altHash": "img-hrr-f241d0b4"
+  },
+  {
+    "id": "sv-term-5",
+    "kind": "term",
+    "file": "sv-term-5.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A child holds a soft mallet against a drumhead, with two white curved motion cues nearby.",
+    "altHash": "img-c3j-bb52ceb5"
+  },
+  {
+    "id": "sv-term-6",
+    "kind": "term",
+    "file": "sv-term-6.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A hand holds a soft mallet against a red drumhead, with two small pale curved motion cues nearby.",
+    "altHash": "img-85r-3c06e973"
+  },
+  {
+    "id": "sv-term-7",
+    "kind": "term",
+    "file": "sv-term-7.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A child in profile has hair tucked back so one ear is clearly visible.",
+    "altHash": "img-cd3-5dce47d7"
+  },
+  {
+    "id": "sv-term-8",
+    "kind": "term",
+    "file": "sv-term-8.webp",
+    "width": 400,
+    "height": 400,
+    "alt": "A teacher points toward a hand drum while two children watch; blank paper and a pencil lie nearby.",
+    "altHash": "img-i7v-d865b271"
+  },
+  {
+    "id": "sv-anchor-1",
+    "kind": "anchor",
+    "file": "sv-anchor-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two panels show hands at a drumhead and a hand plucking a guitar string.",
+    "altHash": "img-dhn-7b3dbf06"
+  },
+  {
+    "id": "sv-anchor-2",
+    "kind": "anchor",
+    "file": "sv-anchor-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A child with closed lips gently places two fingertips against the front of their throat.",
+    "altHash": "img-9x3-b4cb3f11"
+  },
+  {
+    "id": "sv-anchor-3",
+    "kind": "anchor",
+    "file": "sv-anchor-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "Two panels show a child tapping a red drum with a mallet, then resting a hand on its top with the mallet set aside.",
+    "altHash": "img-con-7bf64cf1"
+  },
+  {
+    "id": "sv-sort-1",
+    "kind": "sort",
+    "file": "sv-sort-1.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A hand holds a soft mallet against a red drumhead, with three short motion cues beside the mallet.",
+    "altHash": "img-7dn-94ca3ebb"
+  },
+  {
+    "id": "sv-sort-2",
+    "kind": "sort",
+    "file": "sv-sort-2.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A hand gently plucks one of the strings above an acoustic guitar sound hole.",
+    "altHash": "img-b5j-5b5fc2f7"
+  },
+  {
+    "id": "sv-sort-3",
+    "kind": "sort",
+    "file": "sv-sort-3.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A child with closed lips rests two fingertips lightly against the front of their throat.",
+    "altHash": "img-9az-02f2aeb4"
+  },
+  {
+    "id": "sv-sort-4",
+    "kind": "sort",
+    "file": "sv-sort-4.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "An open hand rests on a red drumhead while a soft mallet lies beside the drum.",
+    "altHash": "img-873-5ee143d1"
+  },
+  {
+    "id": "sv-sort-5",
+    "kind": "sort",
+    "file": "sv-sort-5.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A relaxed hand lies across the strings above an acoustic guitar sound hole.",
+    "altHash": "img-byf-1cd81755"
+  },
+  {
+    "id": "sv-sort-6",
+    "kind": "sort",
+    "file": "sv-sort-6.webp",
+    "width": 320,
+    "height": 320,
+    "alt": "A seated child has slightly parted lips and relaxed hands resting in their lap.",
+    "altHash": "img-bs7-b92f9eca"
+  },
+  {
+    "id": "sv-lesson-1",
+    "kind": "lesson",
+    "file": "sv-lesson-1.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Two panels show the same child touching their throat with two fingertips, then lowering their hand.",
+    "altHash": "img-ufr-9fdd6f26"
+  },
+  {
+    "id": "sv-lesson-2",
+    "kind": "lesson",
+    "file": "sv-lesson-2.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "Hands hold a small drum and a soft mallet touching its head; pale curved cues appear beside the drum.",
+    "altHash": "img-mvv-61c986c0"
+  },
+  {
+    "id": "sv-lesson-3",
+    "kind": "lesson",
+    "file": "sv-lesson-3.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A hand plucks a guitar string with faint neighboring positions drawn to suggest motion.",
+    "altHash": "img-v73-be921650"
+  },
+  {
+    "id": "sv-lesson-4",
+    "kind": "lesson",
+    "file": "sv-lesson-4.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A child watches a small brass handbell held nearby by an adult hand.",
+    "altHash": "img-p07-05c5187b"
+  },
+  {
+    "id": "sv-lesson-5",
+    "kind": "lesson",
+    "file": "sv-lesson-5.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A teacher taps a red drum while one child watches and another rests fingertips against its side.",
+    "altHash": "img-16s7-430da3ad"
+  },
+  {
+    "id": "sv-lesson-6",
+    "kind": "lesson",
+    "file": "sv-lesson-6.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A red hand drum, soft mallet, blank sheet of paper, and pencil are arranged on a wooden table.",
+    "altHash": "img-fen-9df61bfd"
+  },
+  {
+    "id": "sv-lesson-7",
+    "kind": "lesson",
+    "file": "sv-lesson-7.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A teacher and children watch a thin tissue strip hanging from a stand near a small speaker.",
+    "altHash": "img-u9n-80102652"
+  },
+  {
+    "id": "sv-lesson-8",
+    "kind": "lesson",
+    "file": "sv-lesson-8.webp",
+    "width": 720,
+    "height": 720,
+    "alt": "A child draws the outline of a drum on paper beside a small red drum.",
+    "altHash": "img-vrb-553d3103"
+  }
+]

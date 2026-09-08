@@ -1,0 +1,136 @@
+{
+  "slug": "decimal_place_value_grade5",
+  "status": "planned",
+  "assets": [
+    {
+      "id": "dpv-term-1",
+      "target": "dpv-glossary.data[0].image",
+      "prompt": "Show Decimal using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-2",
+      "target": "dpv-glossary.data[1].image",
+      "prompt": "Show Digit using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-3",
+      "target": "dpv-glossary.data[2].image",
+      "prompt": "Show Point using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-4",
+      "target": "dpv-glossary.data[3].image",
+      "prompt": "Show Tenth using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-5",
+      "target": "dpv-glossary.data[4].image",
+      "prompt": "Show Hundredth using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-6",
+      "target": "dpv-glossary.data[5].image",
+      "prompt": "Show Thousandth using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-7",
+      "target": "dpv-glossary.data[6].image",
+      "prompt": "Show Equivalent using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-8",
+      "target": "dpv-glossary.data[7].image",
+      "prompt": "Show Compare using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-term-9",
+      "target": "dpv-glossary.data[8].image",
+      "prompt": "Show Unit using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "dpv-anchor-1",
+      "target": "dpv-anchor.data.sections[0].iconUrl",
+      "prompt": "Equal whole bars partitioned into tenths and hundredths; exact divisions required"
+    },
+    {
+      "id": "dpv-anchor-2",
+      "target": "dpv-anchor.data.sections[1].iconUrl",
+      "prompt": "Two equal whole bars with six tenths and forty-five hundredths shaded"
+    },
+    {
+      "id": "dpv-anchor-3",
+      "target": "dpv-anchor.data.sections[2].iconUrl",
+      "prompt": "Equal whole grids showing six tenths and six hundredths"
+    },
+    {
+      "id": "dpv-sort-1",
+      "target": "dpv-sort.data.items[0].image",
+      "prompt": "Illustrate this exact card: 0.50. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-sort-2",
+      "target": "dpv-sort.data.items[1].image",
+      "prompt": "Illustrate this exact card: 0.500. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-sort-3",
+      "target": "dpv-sort.data.items[2].image",
+      "prompt": "Illustrate this exact card: 0.05. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-sort-4",
+      "target": "dpv-sort.data.items[3].image",
+      "prompt": "Illustrate this exact card: 0.499. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-sort-5",
+      "target": "dpv-sort.data.items[4].image",
+      "prompt": "Illustrate this exact card: 0.51. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-sort-6",
+      "target": "dpv-sort.data.items[5].image",
+      "prompt": "Illustrate this exact card: 0.605. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "dpv-lesson-1",
+      "target": "future native image resource panel 1",
+      "prompt": "Equal whole bars partitioned into tenths and hundredths; exact divisions required"
+    },
+    {
+      "id": "dpv-lesson-2",
+      "target": "future native image resource panel 2",
+      "prompt": "Two equal whole bars with six tenths and forty-five hundredths shaded"
+    },
+    {
+      "id": "dpv-lesson-3",
+      "target": "future native image resource panel 3",
+      "prompt": "Equal whole grids showing six tenths and six hundredths"
+    },
+    {
+      "id": "dpv-lesson-4",
+      "target": "future native image resource panel 4",
+      "prompt": "Illustrate a correct example: Each place to the right has a unit one tenth as large."
+    },
+    {
+      "id": "dpv-lesson-5",
+      "target": "future native image resource panel 5",
+      "prompt": "Compare two cases from the reading without adding claims."
+    },
+    {
+      "id": "dpv-lesson-6",
+      "target": "future native image resource panel 6",
+      "prompt": "Show the materials or examples for this task: A craft team has ribbon lengths of 0.6 m, 0.45 m, 0.605 m, and 0.56 m. It needs an order from shortest to longest."
+    },
+    {
+      "id": "dpv-lesson-7",
+      "target": "future native image resource panel 7",
+      "prompt": "Show a learner recording evidence for: How can we order the ribbons and prove the order using place value?"
+    },
+    {
+      "id": "dpv-lesson-8",
+      "target": "future native image resource panel 8",
+      "prompt": "Show the limits of the model discussed in the reading."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "added audio follows preview speed",
+    "whole-preview mute survives source gain updates",
+    "buffering and seeking pause added audio",
+    "source removal retains added audio",
+    "rejected playback retries without page errors",
+    "normal-speed silent narration",
+    "stop saves actual recorded audio",
+    "cancel preserves previous narration",
+    "pause and take switching finalize safely",
+    "microphone denial and late permission cancellation",
+    "microphone tracks released",
+    "mobile controls fit",
+    "narration survives draft recovery",
+    "standalone clip Stop and cleanup before narration"
+  ],
+  "errors": [],
+  "sourceSha256": "0eaaf4298f1c40f3e590713e661df51e1935d3f140190e69b65aa4c7a0126090"
+}

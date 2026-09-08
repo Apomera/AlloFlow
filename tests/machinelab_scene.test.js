@@ -10,7 +10,8 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 // exist, and the pure pieces of the scene (terrain, sky presets) behave.
 
 const FILE = 'stem_lab/stem_tool_machinelab.js';
-const source = () => fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
+// Source assertions must work in Windows CRLF checkouts as well as LF checkouts.
+const source = () => fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8').replace(/\r\n/g, '\n');
 const BANDS = ['k2', 'g35', 'g68', 'g912'];
 
 function state(o = {}) {
@@ -621,7 +622,7 @@ describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the
 
   it('reletters a label in place rather than building a texture per slider drag', () => {
     const src = source();
-    expect(src).toContain('function makeLabelSprite(THREE, scale, tint, through) {');
+    expect(src).toContain('function makeLabelSprite(THREE, scale, tint, through, outline) {');
     expect(src).toContain('if (this.text === text) return;');
     expect(src).toContain('tex.needsUpdate = true;');
   });
@@ -1598,7 +1599,7 @@ describe('Siege Field wave 32: one heap, no clipping', () => {
   it('draws the settled heap in the Target Wall bay, on build and on every tick', () => {
     const src = source();
     const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
-    expect(wall).toContain("var restB = m.rubbleRest ? m.rubbleRest[b.col + '_' + b.row] : null;");
+    expect(wall).toContain("var restB = (data.rubbleRest || m.rubbleRest || {})[b.col + '_' + b.row];");
     expect(wall).toContain("var restT = data.rubbleRest ? data.rubbleRest[b.col + '_' + b.row] : null;");
     expect(wall).toContain('x = restB[0]; y = restB[1]; z = restB[2]; sc = restB[6];');
     expect(wall).toContain('x = restT[0]; y = restT[1]; z = restT[2]; sc = restT[6];');

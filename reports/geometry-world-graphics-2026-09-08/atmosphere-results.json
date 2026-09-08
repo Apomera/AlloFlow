@@ -1,0 +1,237 @@
+{
+  "scope": "Actual local React/WebGL tool in the existing minimal host, at device pixel ratio 2",
+  "checks": {
+    "compositor": {
+      "passes": 3,
+      "lastIsShaderPass": true,
+      "hasScenePass": true,
+      "dpr": 2,
+      "composerDpr": 2,
+      "pass": true
+    },
+    "quality": [
+      {
+        "tier": "balanced",
+        "rendererDpr": 1.5,
+        "composerDpr": 1.5,
+        "maxPixelRatio": 1.5,
+        "shadows": true,
+        "postFx": false,
+        "pass": true
+      },
+      {
+        "tier": "saver",
+        "rendererDpr": 1,
+        "composerDpr": 1,
+        "maxPixelRatio": 1,
+        "shadows": false,
+        "postFx": false,
+        "pass": true
+      },
+      {
+        "tier": "detail",
+        "rendererDpr": 2,
+        "composerDpr": 2,
+        "maxPixelRatio": 2,
+        "shadows": true,
+        "postFx": true,
+        "pass": true
+      }
+    ],
+    "presets": [
+      {
+        "name": "sunset",
+        "actualSun": [
+          -0.9540336765054369,
+          0.15643446504023084,
+          -0.2556325531717269
+        ],
+        "skySun": [
+          -0.9540336765054371,
+          0.15643446504023087,
+          -0.25563255317172695
+        ],
+        "agreement": 0.9999999999999999,
+        "sunSpriteAgreement": 0.9999999999999999,
+        "sunIntensity": 0.8,
+        "sky": [
+          0.94,
+          0.31,
+          0.16000000000000003
+        ],
+        "fog": [
+          0.86,
+          0.38,
+          0.26
+        ],
+        "near": 42,
+        "far": 112,
+        "skyUsesOutputEncoding": true,
+        "pass": true
+      },
+      {
+        "name": "night",
+        "actualSun": [
+          -0.3596699001693255,
+          0.6946583704589973,
+          -0.622966541046498
+        ],
+        "skySun": [
+          -0.35966990016932554,
+          0.6946583704589973,
+          -0.622966541046498
+        ],
+        "agreement": 1,
+        "sunSpriteAgreement": 1,
+        "sunIntensity": 0.21999999999999997,
+        "sky": [
+          0.07000000000000006,
+          0.09,
+          0.28
+        ],
+        "fog": [
+          0.07999999999999996,
+          0.09999999999999998,
+          0.26
+        ],
+        "near": 32,
+        "far": 95,
+        "skyUsesOutputEncoding": true,
+        "pass": true
+      },
+      {
+        "name": "day",
+        "actualSun": [
+          0.37470950522068514,
+          0.848048096156426,
+          0.37470950522068497
+        ],
+        "skySun": [
+          0.3747095052206852,
+          0.8480480961564262,
+          0.374709505220685
+        ],
+        "agreement": 1.0000000000000002,
+        "sunSpriteAgreement": 1,
+        "sunIntensity": 1.05,
+        "sky": [
+          0.31,
+          0.66,
+          0.98
+        ],
+        "fog": [
+          0.55,
+          0.79,
+          0.98
+        ],
+        "near": 55,
+        "far": 145,
+        "skyUsesOutputEncoding": true,
+        "pass": true
+      }
+    ],
+    "colorParity": {
+      "direct": [
+        [
+          166,
+          210,
+          239,
+          255
+        ],
+        [
+          165,
+          208,
+          238,
+          255
+        ],
+        [
+          164,
+          208,
+          238,
+          255
+        ],
+        [
+          165,
+          208,
+          238,
+          255
+        ],
+        [
+          166,
+          210,
+          239,
+          255
+        ]
+      ],
+      "composed": [
+        [
+          167,
+          210,
+          239,
+          255
+        ],
+        [
+          165,
+          209,
+          238,
+          255
+        ],
+        [
+          163,
+          208,
+          238,
+          255
+        ],
+        [
+          165,
+          209,
+          238,
+          255
+        ],
+        [
+          167,
+          210,
+          239,
+          255
+        ]
+      ],
+      "maxChannelDeltas": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "medianDelta": 1,
+      "wholeFrame": {
+        "calls": 1515,
+        "triangles": 14844,
+        "lines": 5193,
+        "textures": 23
+      },
+      "pass": true
+    },
+    "lessonReset": {
+      "currentEnvironment": "day",
+      "sky": [
+        0.31,
+        0.66,
+        0.98
+      ],
+      "fog": [
+        0.55,
+        0.79,
+        0.98
+      ],
+      "sunIntensity": 1.05,
+      "transitionComplete": true,
+      "pass": true
+    },
+    "shaders": {
+      "errors": [],
+      "pass": true
+    }
+  },
+  "errors": [],
+  "passed": true
+}

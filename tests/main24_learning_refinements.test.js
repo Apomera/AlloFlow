@@ -178,7 +178,7 @@ function dbqProps(id, responses = {}) {
   return {
     generatedContent: { id, type: 'dbq', data: { title: 'Test DBQ', documents: [{ id: 'A', title: 'Source A', excerpt: 'A historical excerpt.', sourcingQuestions: ['Who wrote it?'], analysisQuestions: [] }], rubric: [] } },
     studentResponses: { [id]: responses },
-    handleStudentInput: vi.fn(), handleScoreUpdate: vi.fn(), callGemini: async () => JSON.stringify({ overallRating: 'proficient' }),
+    handleStudentInput: vi.fn(), handleScoreUpdate: vi.fn(), callGemini: async () => JSON.stringify({ overallRating: 'proficient', reliabilityRating: 'somewhat reliable' }),
     cleanJson: text => text, addToast: vi.fn(), t, gradeLevel: '5th Grade', isTeacherMode: false
   };
 }

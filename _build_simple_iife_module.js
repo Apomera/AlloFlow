@@ -24,11 +24,11 @@
  *   5. Syntax-checks the output
  */
 
-const { execSync } = require('child_process');
+const { Script } = require('vm');
 const fs = require('fs');
 const path = require('path');
 
-function build({ name, guardKey, footer = '', logTag }) {
+function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile }) {
   const ROOT = __dirname;
   const SOURCE = path.join(ROOT, name + '_source.jsx');
   const OUTPUT = path.join(ROOT, name + '_module.js');
@@ -49,19 +49,19 @@ ${source.trim()}
 ${footer ? footer.trim() + '\n' : ''}})();
 `;
 
-  fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+  writeFile(OUTPUT, outputCode, 'utf-8');
   try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
       fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    writeFile(DEPLOY_OUT, outputCode, 'utf-8');
   } catch (e) {
     console.warn('[' + tag + '] Could not sync to desktop/web-app/public/:', e.message);
   }
 
   // Syntax check — catches unbalanced template literals / stray syntax
   try {
-    execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' });
+    new Script(outputCode, { filename: OUTPUT });
   } catch (e) {
     console.error('[' + tag + '] Syntax check failed:');
     console.error((e.stderr && e.stderr.toString()) || e.message);
@@ -74,3 +74,9 @@ ${footer ? footer.trim() + '\n' : ''}})();
 }
 
 module.exports = { build };
+
+function writeBuildFile(file, contents, encoding) {
+  const temporary = file + ".build-" + process.pid + ".tmp";
+  try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, file); }
+  finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+}

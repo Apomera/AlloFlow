@@ -1,0 +1,19 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "workshop-windlass-ready",
+    "workshop-windlass-lift",
+    "workshop-windlass-large",
+    "workshop-screw-ready",
+    "workshop-screw-press",
+    "workshop-screw-coarse"
+  ]
+}

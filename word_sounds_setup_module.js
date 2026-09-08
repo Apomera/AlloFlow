@@ -546,7 +546,7 @@ function createWordSoundsCore() {
     return validSoundBoard(board, word, pool) ? board : null;
   };
   const difficultyDecision = (history, activity, support = {}) => {
-    const rows = (history || []).filter((h) => h && h.activity === activity && !h.practiceOnly && h.activity !== "letter_tracing" && h.taskKind !== "word_matching" && !!h.aacAssisted === !!support.aacAssisted && (h.mode || "sound_only") === (support.mode || "sound_only"));
+    const rows = (history || []).filter((h) => h && h.activity === activity && !h.practiceOnly && h.activity !== "letter_tracing" && h.taskKind !== "word_matching" && !h.answerExposed && !!h.aacAssisted === !!support.aacAssisted && (h.mode || "sound_only") === (support.mode || "sound_only"));
     let band = 0, block = [], reason = "starting", changes = 0;
     const bands = ["easy", "medium", "hard"];
     for (const h of rows) {
@@ -576,6 +576,19 @@ function createWordSoundsCore() {
     const wordMatching = !imageAvailable || answerRevealed;
     return { taskKind: wordMatching ? "word_matching" : "picture_supported_cloze", cluesShown: wordMatching ? ["printed_answer"] : ["picture"], fallbackReason: !imageAvailable ? "missing_target_image" : answerRevealed ? "answer_revealed" : null, independentReading: false, answerExposed: wordMatching };
   };
+  const phonemeLabels = (phonemes) => [...new Set((Array.isArray(phonemes) ? phonemes : []).map((value) => {
+    const label = typeof value === "string" ? value : value && typeof value === "object" ? [value.grapheme, value.phoneme, value.ipa].find((v) => typeof v === "string" && v.trim()) : "";
+    return typeof label === "string" && !/^\[object /i.test(label.trim()) ? label.normalize("NFC").trim().toLowerCase() : "";
+  }).filter(Boolean))];
+  const responseEvidence = ({ showWordText = false, showLetterHints = false, alwaysShowText = false, taskEvidence = {} } = {}) => {
+    const textSupported = !!(showWordText || showLetterHints || alwaysShowText || taskEvidence.textSupported || taskEvidence.answerExposed);
+    const cluesShown = [.../* @__PURE__ */ new Set([
+      ...taskEvidence.cluesShown || [],
+      ...showWordText || alwaysShowText ? ["printed_word"] : [],
+      ...showLetterHints ? ["printed_sound_labels"] : []
+    ])];
+    return { ...taskEvidence, textSupported, cluesShown, mode: textSupported || taskEvidence.taskKind ? "visual" : "sound_only" };
+  };
   const profileCheck = (text, profile) => {
     if (!profile || !Array.isArray(profile.taughtPatterns) || !profile.taughtPatterns.length) return { status: "not_configured", untaughtWords: [] };
     const known = new Set(unique(profile.knownWords));
@@ -592,7 +605,7 @@ function createWordSoundsCore() {
     const unknown = unique(String(text || "").normalize("NFC").match(/[\p{L}\p{M}]+/gu) || []).filter((w) => !canRead(w));
     return { status: unknown.length ? "review" : "within_taught_spellings", untaughtWords: unknown };
   };
-  return { VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, difficultyDecision, textEvidence, profileCheck, knownWords: Object.keys(EDGES) };
+  return { VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
 }
 const WS_CORE = createWordSoundsCore();
 const WORD_FAMILY_PRESETS = new Proxy({}, {

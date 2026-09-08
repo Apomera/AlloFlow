@@ -120,6 +120,21 @@ describe('Universe guided timeline and topic navigation', () => {
     expect(state.sceneMotion).toBe('animated');
   });
 
+  it('toggles illustrative structure guides without moving time or changing scene motion', async () => {
+    await mount({ cosmicTime: 13.8, sceneMotion: 'still' });
+    const guide = () => byLabel('Show illustrative matter halos and connections');
+    expect(guide().getAttribute('aria-pressed')).toBe('true');
+    expect(guide().getAttribute('aria-describedby')).toBe('universe-model-note');
+    await click(guide());
+    expect(state.showStructureGuides).toBe(false);
+    expect(host.querySelector('[data-universe-canvas]').dataset.structureGuides).toBe('false');
+    expect(state.cosmicTime).toBe(13.8);
+    expect(state.sceneMotion).toBe('still');
+    await click(guide());
+    expect(state.showStructureGuides).toBe(true);
+    expect(host.querySelector('[data-universe-canvas]').dataset.structureGuides).toBe('true');
+  });
+
   it('saves mission-specific evidence even when a different thread is selected', async () => {
     await mount({activeCosmicMission: 'first-light', cosmicEvidenceThread: 'lensing'});
     const save = [...host.querySelectorAll('button')].find(b => b.textContent === 'Save mission example');

@@ -20,6 +20,7 @@ describe('document pipeline generated artifacts', function () {
         '_build_doc_pipeline_module.js',
         '_build_simple_iife_module.js',
         'doc_pipeline_source.jsx',
+        'remediation_review_helpers.js',
       ]) copyFileSync(join(ROOT, name), join(scratch, name));
 
       execFileSync(process.execPath, [join(scratch, '_build_doc_pipeline_module.js')], {

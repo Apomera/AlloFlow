@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "viewportWidths": [
+    1280,
+    390
+  ],
+  "checks": [
+    "prediction and evidence saved",
+    "photon threshold",
+    "3D keyboard rotation",
+    "tetrahedral isolation",
+    "bond toggle",
+    "dopant selection",
+    "2D restoration",
+    "bias presets",
+    "concept feedback",
+    "15 workspaces and four modes",
+    "pause",
+    "mobile overflow"
+  ],
+  "errors": []
+}

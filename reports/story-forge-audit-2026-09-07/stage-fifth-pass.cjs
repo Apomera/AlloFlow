@@ -1,0 +1,1 @@
+const fs=require('fs');const original=fs.writeFileSync;fs.writeFileSync=function(file,...args){return original.call(fs,file==='story_forge_source.jsx'?'reports/story-forge-audit-2026-09-07/fifth-pass-source.pending.jsx':file,...args);};require('./fifth-pass.cjs');

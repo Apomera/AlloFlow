@@ -1,0 +1,17 @@
+{
+  "uniqueTests": 603,
+  "passed": 603,
+  "files": 55,
+  "fullRun": {
+    "passed": 599,
+    "failed": 4,
+    "failures": "Four timeouts"
+  },
+  "targetedRerun": {
+    "passed": 27,
+    "failed": 0,
+    "testTimeoutMs": 20000,
+    "hookTimeoutMs": 20000
+  },
+  "notes": "Full run and targeted timeout rerun retained separately. No test assertions or application code changed between runs."
+}

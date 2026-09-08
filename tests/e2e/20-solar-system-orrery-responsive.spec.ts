@@ -33,6 +33,19 @@ test('keeps the Orrery free of horizontal overflow at 320px and 736px', async ({
       wrap.style.width = `${nextWidth}px`;
       const wrapBox = wrap.getBoundingClientRect();
       const overflowing = [...wrap.querySelectorAll<HTMLElement>('*')]
+        // The visual key deliberately scrolls inside its own bounded region.
+        // Match the all-tabs check below: clipped descendants are not page overflow.
+        .filter((element) => {
+          let ancestor = element.parentElement;
+          while (ancestor && ancestor !== wrap) {
+            const style = getComputedStyle(ancestor);
+            const rect = ancestor.getBoundingClientRect();
+            if ((style.overflowX === 'auto' || style.overflowX === 'scroll')
+                && rect.left >= wrapBox.left - 1 && rect.right <= wrapBox.right + 1) return false;
+            ancestor = ancestor.parentElement;
+          }
+          return true;
+        })
         .map((element) => ({
           tag: element.tagName.toLowerCase(),
           id: element.id,
@@ -947,7 +960,7 @@ test('aligns Hohmann geometry evidence with outward and inward transfers', async
   const canvas = page.locator('canvas[role="img"]').first();
   await expect(evidence).toContainText('depart Earth at perihelion');
   await expect(evidence).toContainText('arrive at Mars at aphelion');
-  await expect(evidence).toContainText('speed up at departure, then brake at arrival');
+  await expect(evidence).toContainText('speed up at departure, then speed up again');
   await expect(canvas).toHaveAttribute('aria-describedby', 'orrery-transfer-evidence');
   await expect(page.locator('th').filter({ hasText: '(km/s)' })).toHaveCount(3);
   await expect(page.getByRole('columnheader', { name: 'Transit time (days / yr)', exact: true })).toBeVisible();
@@ -959,7 +972,7 @@ test('aligns Hohmann geometry evidence with outward and inward transfers', async
   }))).toEqual({ from: 'mars', to: 'earth' });
   await expect(evidence).toContainText('depart Mars at aphelion');
   await expect(evidence).toContainText('arrive at Earth at perihelion');
-  await expect(evidence).toContainText('brake at departure, then speed up at arrival');
+  await expect(evidence).toContainText('brake at departure, then brake again');
 
   await harness.destroy(page);
 });
@@ -1351,6 +1364,8 @@ test('keeps comparison distance and speed evidence live', async ({ page }) => {
   expect(comparisonOrder.comparisonBeforeEvidence).toBe(true);
   await expect(page.locator('#orrery-compare-interpretation')).toContainText('Earth is currently');
   await expect(page.locator('#orrery-compare-interpretation')).toContainText('Kepler III: Mars has the larger orbit and the longer period.');
+  // The canvas intentionally suspends its clock outside the viewport.
+  await page.locator('canvas[role="application"]').scrollIntoViewIfNeeded();
   const beforeDistance = await page.locator('#orrery-live-compare-primary-distance').textContent();
   const beforeSpeed = await page.locator('#orrery-live-compare-primary-speed').textContent();
 
@@ -1358,10 +1373,8 @@ test('keeps comparison distance and speed evidence live', async ({ page }) => {
     const ctx = (window as any).__ctx;
     ctx.updateMulti('solarSystem', { orr_speed: 1, orr_paused: false });
   });
-  await page.waitForTimeout(350);
-
-  expect(await page.locator('#orrery-live-compare-primary-distance').textContent()).not.toBe(beforeDistance);
-  expect(await page.locator('#orrery-live-compare-primary-speed').textContent()).not.toBe(beforeSpeed);
+  await expect.poll(() => page.locator('#orrery-live-compare-primary-distance').textContent()).not.toBe(beforeDistance);
+  await expect.poll(() => page.locator('#orrery-live-compare-primary-speed').textContent()).not.toBe(beforeSpeed);
   await expect(page.locator('#orrery-live-compare-secondary-distance')).toBeVisible();
   await expect(page.locator('#orrery-live-compare-secondary-speed')).toBeVisible();
 
@@ -1381,6 +1394,7 @@ test('keeps comparison interpretation synchronized as worlds move', async ({ pag
     },
   }, undefined, { expectCanvas: false });
 
+  await page.locator('canvas[role="application"]').scrollIntoViewIfNeeded();
   const interpretation = page.locator('#orrery-compare-interpretation');
   const initialInterpretation = await interpretation.textContent();
   expect(initialInterpretation).toContain('Earth is currently farther from the Sun than Halley');

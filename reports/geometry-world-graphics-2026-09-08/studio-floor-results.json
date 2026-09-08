@@ -1,0 +1,65 @@
+{
+  "scope": "Studio floor perimeter beyond full fog in real WebGL",
+  "errors": [],
+  "consoleErrors": [],
+  "checks": {
+    "frames": [
+      {
+        "view": "perspective",
+        "viewport": [
+          1440,
+          900
+        ],
+        "floorSize": 600,
+        "triangles": 2,
+        "fogFar": 145,
+        "minimumMargin": 140.53071917253604,
+        "cameraInside": true
+      },
+      {
+        "view": "top",
+        "viewport": [
+          1440,
+          900
+        ],
+        "floorSize": 600,
+        "triangles": 2,
+        "fogFar": 145,
+        "minimumMargin": 204.33177667438565,
+        "cameraInside": true
+      },
+      {
+        "view": "perspective",
+        "viewport": [
+          390,
+          844
+        ],
+        "floorSize": 600,
+        "triangles": 2,
+        "fogFar": 145,
+        "minimumMargin": 197.71787110259186,
+        "cameraInside": true
+      },
+      {
+        "view": "top",
+        "viewport": [
+          390,
+          844
+        ],
+        "floorSize": 600,
+        "triangles": 2,
+        "fogFar": 145,
+        "minimumMargin": 244.33971491986466,
+        "cameraInside": true
+      }
+    ],
+    "fixture": {
+      "hash": "4320e16c857d3aa501d4035ce761621748cd45e75d65d9417947f9263cb2fb1a",
+      "triangles": 634,
+      "selected": 150
+    },
+    "geometryUnchanged": true,
+    "exactCameraRestore": true
+  },
+  "pass": true
+}

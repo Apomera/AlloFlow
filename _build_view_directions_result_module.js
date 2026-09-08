@@ -60,8 +60,10 @@ if (require.main === module) {
     process.exit(1);
   }
   const output = buildDirectionsResultModule(fs.readFileSync(SOURCE, 'utf8'));
-  fs.writeFileSync(OUTPUT, output, 'utf8');
+  fs.writeFileSync(OUTPUT + '.tmp', output, 'utf8');
+  fs.renameSync(OUTPUT + '.tmp', OUTPUT);
   fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });
-  fs.writeFileSync(PUBLIC, output, 'utf8');
+  fs.writeFileSync(PUBLIC + '.tmp', output, 'utf8');
+  fs.renameSync(PUBLIC + '.tmp', PUBLIC);
   console.log('Built view_directions_result_module.js and public mirror (' + Buffer.byteLength(output) + ' bytes)');
 }

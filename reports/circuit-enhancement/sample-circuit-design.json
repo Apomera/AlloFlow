@@ -1,0 +1,18 @@
+{
+  "format": "circuit-design-v1",
+  "circuit": {
+    "mode": "series",
+    "voltage": 9,
+    "components": [
+      {
+        "type": "resistor",
+        "value": 470
+      },
+      {
+        "type": "led",
+        "reversed": false,
+        "ledColor": "#ef4444"
+      }
+    ]
+  }
+}

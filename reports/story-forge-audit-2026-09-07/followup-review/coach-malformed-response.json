@@ -1,0 +1,9 @@
+{
+  "scenario": "Show vs Tell returns a valid JSON object with tellings as an object",
+  "componentStillMounted": false,
+  "errors": [
+    "showTellResult.tellings.map is not a function",
+    "showTellResult.tellings.map is not a function",
+    "showTellResult.tellings.map is not a function"
+  ]
+}

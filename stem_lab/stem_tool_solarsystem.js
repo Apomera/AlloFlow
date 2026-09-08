@@ -1244,7 +1244,7 @@ const d = labToolData.solarSystem || {};
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
               '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{position:relative;top:auto;left:auto;right:auto;bottom:auto;max-width:none;margin:8px 10px 66px;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
-              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
+              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox,.solar-cosmos [data-drone-survey-tracking=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
               '@media(max-width:640px){.solar-cosmos .rover-hud{top:8px!important;left:8px!important;width:min(220px,calc(100% - 160px))!important;max-width:none!important;max-height:154px!important;overflow:hidden!important;padding:8px 10px!important;border-radius:10px!important}.solar-cosmos .rover-hud #hud-mode{font-size:10px!important;margin-bottom:3px!important}.solar-cosmos .rover-hud #hud-world-context,.solar-cosmos .rover-hud #hud-notable,.solar-cosmos .rover-hud #hud-shortcuts,.solar-cosmos .rover-hud #hud-ocean-panel,.solar-cosmos .rover-hud #hud-atmo-panel{display:none!important}.solar-cosmos .rover-hud #hud-simple-row{gap:1px 6px!important;margin-bottom:3px!important;padding-top:3px!important;font-size:9px!important}.solar-cosmos .rover-hud #hud-science-focus{padding-top:3px!important;margin-bottom:0!important}.solar-cosmos .rover-hud #hud-science-focus>div:nth-child(2){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.solar-cosmos .rover-hud #hud-science-reading{font-size:9px!important}.solar-cosmos [data-drone-fullscreen-toggle],.solar-cosmos [data-rover-sound-toggle],.solar-cosmos [data-drone-compass]{top:8px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important}.solar-cosmos [data-drone-compass]{right:8px!important}.solar-cosmos [data-drone-fullscreen-toggle]{right:56px!important;font-size:20px!important}.solar-cosmos [data-rover-sound-toggle]{right:104px!important;font-size:18px!important}.solar-cosmos [data-drone-depth-gauge]{top:60px!important;right:8px!important;width:24px!important;height:142px!important}.solar-cosmos [data-drone-action-dock]{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.solar-cosmos [data-drone-action-dock] button{min-height:44px!important;padding:4px 2px!important;flex-direction:column!important;justify-content:center!important;gap:1px!important;border-radius:9px!important;font-size:9px!important}.solar-cosmos [data-drone-action-dock] kbd{display:none!important}.solar-cosmos [data-drone-map-panel]{right:8px!important;bottom:64px!important;width:112px!important;padding:4px!important}.solar-cosmos [data-drone-minimap]{position:relative!important;right:auto!important;bottom:auto!important;width:100%!important;height:auto!important}.solar-cosmos #rover-traverse-panel{left:8px!important;right:8px!important;bottom:60px!important;width:auto!important;max-height:calc(100% - 128px)!important;padding:0!important;overflow:auto!important;border-radius:10px!important}.solar-cosmos #rover-traverse-panel[data-collapsed="true"]{right:auto!important;width:min(220px,calc(100% - 132px))!important;overflow:hidden!important}.solar-cosmos #rover-traverse-toggle{display:flex!important}.solar-cosmos #rover-traverse-details{padding:0 10px 10px}.solar-cosmos #rover-traverse-panel[data-collapsed="true"] #rover-traverse-details{display:none!important}}',
               '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:168px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker]{display:none!important}.solar-cosmos [data-drone-sound-caption]{display:none!important}.solar-cosmos [data-drone-navigation-card]{left:8px!important;bottom:120px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:calc(100% - 300px)!important;overflow:auto!important;padding:8px!important;font-size:10px!important;pointer-events:auto!important}.solar-cosmos [data-drone-navigation-card]>div:first-child{font-size:11px!important}.solar-cosmos #hud-sonar{left:8px!important;bottom:64px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:50px!important;overflow:hidden!important;padding:4px 6px!important}}',
                '@media(prefers-reduced-motion:reduce){.solar-cosmos svg[viewBox],.solar-cosmos .solar-world-thumb,.solar-cosmos .solar-season-bar,.solar-cosmos .solar-moon-moving,.solar-cosmos .solar-moon-phase-disk,.solar-cosmos .solar-evidence-fill,.solar-cosmos .solar-evidence-node,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]){transition:none!important}.solar-cosmos .solar-season-sun,.solar-cosmos .solar-season-beam,.solar-cosmos .solar-signal-line,.solar-cosmos .solar-signal-pulse,.solar-cosmos .solar-drop-ball{animation:none!important}.solar-cosmos .solar-signal-pulse{left:90%;opacity:1}.solar-cosmos .solar-drop-ball{top:146px}.solar-cosmos .solar-evidence-node[data-current="true"],.solar-cosmos .solar-evidence-node[data-recommended="true"]{transform:none}.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:none}}'
@@ -6623,6 +6623,35 @@ const d = labToolData.solarSystem || {};
     return { x: r * Math.cos(nu), y: r * Math.sin(nu), r: r, nu: nu, E: E };
   }
 
+  // One common x/y scale preserves eccentricity; mean anomaly measures elapsed time.
+  function orbitRhythmPoint(body, time) {
+    var phase = ((time / body.T) % 1 + 1) % 1;
+    var pos = orbitalPos(body.a, body.e, TAU * phase);
+    return { x: 160 + 92 * body.e + pos.x * 92 / body.a, y: 120 - pos.y * 92 / body.a };
+  }
+  function orbitRhythmGeometry(body) {
+    var marks = [], sectors = [];
+    for (var k = 0; k < 12; k++) marks.push(orbitRhythmPoint(body, body.T * k / 12));
+    [0, Math.PI].forEach(function(startM) {
+      var startE = solveKepler(startM, body.e), endE = solveKepler(startM + TAU / 12, body.e);
+      var points = [{ x: 160 + 92 * body.e, y: 120 }];
+      // Sample eccentric anomaly densely, so even a highly eccentric comet's
+      // short perihelion passage has a smooth, accurate swept boundary.
+      for (var j = 0; j <= 128; j++) {
+        var E = startE + (endE - startE) * j / 128;
+        points.push({ x: 160 + 92 * Math.cos(E), y: 120 - 92 * Math.sqrt(1 - body.e * body.e) * Math.sin(E) });
+      }
+      sectors.push(points);
+    });
+    return { marks: marks, sectors: sectors };
+  }
+  function orbitRhythmStep(time, period, direction) {
+    var phase = ((time / period) % 1 + 1) % 1;
+    var next = ((phase + direction / 12) % 1 + 1) % 1;
+    if (next < 1e-9 || next > 1 - 1e-9) next = 0;
+    return next * period;
+  }
+
   /** Human-readable orbital phase for live readouts and accessible fallbacks */
   function orbitPhaseLabel(body, time) {
     if (!body || !body.T) return null;
@@ -6680,7 +6709,28 @@ const d = labToolData.solarSystem || {};
     var dv2 = Math.abs(v2 - vt2) / 1000;
     var transit = PI * Math.sqrt(Math.pow(at, 3) / mu); // seconds
     var transitYrs = transit / (365.25 * 86400);
-    return { dv1: dv1, dv2: dv2, dvTotal: dv1 + dv2, transitYrs: transitYrs };
+    return { dv1: dv1, dv2: dv2, dvTotal: dv1 + dv2, signedDv1: (vt1 - v1) / 1000, signedDv2: (v2 - vt2) / 1000, transitYrs: Math.abs(a2 - a1) < 1e-9 ? 0 : transitYrs };
+  }
+
+  // Circular, coplanar heliocentric rendezvous. All angular rates use the
+  // same gravitational parameter as the transfer duration, not rounded periods.
+  function transferRendezvous(a1, a2, progress, offsetDegrees) {
+    var f = Math.max(0, Math.min(1, Number(progress) || 0));
+    var at = (a1 + a2) / 2, e = Math.abs(a2 - a1) / (a1 + a2);
+    var outward = a2 > a1, same = Math.abs(a2 - a1) < 1e-9;
+    var transit = same ? 0 : PI * Math.sqrt(Math.pow(at * AU_KM * 1000, 3) / (G_SI * M_SUN));
+    var n1 = Math.sqrt(G_SI * M_SUN / Math.pow(a1 * AU_KM * 1000, 3));
+    var n2 = Math.sqrt(G_SI * M_SUN / Math.pow(a2 * AU_KM * 1000, 3));
+    var idealPhase = same ? 0 : Math.atan2(Math.sin(PI - n2 * transit), Math.cos(PI - n2 * transit));
+    var phase = idealPhase + (same ? 0 : (Number(offsetDegrees) || 0) * PI / 180);
+    var elapsed = transit * f;
+    var raw = orbitalPos(at, e, (outward ? 0 : PI) + PI * f);
+    var ship = same ? { x: a1, y: 0, r: a1 } : { x: raw.x * (outward ? 1 : -1), y: raw.y * (outward ? 1 : -1), r: raw.r };
+    var origin = { x: a1 * Math.cos(n1 * elapsed), y: a1 * Math.sin(n1 * elapsed) };
+    var destination = { x: a2 * Math.cos(phase + n2 * elapsed), y: a2 * Math.sin(phase + n2 * elapsed) };
+    return { ship: ship, origin: origin, destination: destination, idealPhase: idealPhase,
+      departurePhase: phase, elapsedDays: elapsed / 86400, transitDays: transit / 86400,
+      separation: Math.hypot(ship.x - destination.x, ship.y - destination.y), same: same };
   }
 
   /** Synodic period in years */
@@ -8417,6 +8467,13 @@ const d = labToolData.solarSystem || {};
             if (liveBody) {
               var livePos = orbitalPos(liveBody.a, liveBody.e, (TAU * t / liveBody.T) % TAU);
               var liveSpeed = visViva(livePos.r, liveBody.a);
+              var rhythmMarker = document.getElementById("orrery-rhythm-marker");
+              if (rhythmMarker) {
+                var rhythmPoint = orbitRhythmPoint(liveBody, t);
+                rhythmMarker.setAttribute("cx", rhythmPoint.x);
+                rhythmMarker.setAttribute("cy", rhythmPoint.y);
+              }
+              setLiveText("orrery-rhythm-reading", "Now: " + fmt(livePos.r, 3) + " AU from the Sun · " + fmt(liveSpeed, 2) + " km/s");
               var livePhase = orbitPhaseLabel(liveBody, t);
               setLiveText("orrery-live-distance", fmt(livePos.r, 3) + " AU");
               setLiveText("orrery-live-speed", fmt(liveSpeed, 2) + " km/s");
@@ -9871,6 +9928,54 @@ const d = labToolData.solarSystem || {};
     var timelineMarkIsActive = function(mark) {
       return timelineMarkIsActiveAt(mark, scrubPhase);
     };
+    var rhythmPanel = null;
+    if (scrubBody) {
+      var rhythm = orbitRhythmGeometry(scrubBody);
+      var rhythmNow = orbitRhythmPoint(scrubBody, timeRef.current);
+      var rhythmPeriSpeed = visViva(scrubBody.a * (1 - scrubBody.e), scrubBody.a);
+      var rhythmApoSpeed = visViva(scrubBody.a * (1 + scrubBody.e), scrubBody.a);
+      var rhythmStepStyle = { minHeight: "44px", padding: "8px 12px", borderRadius: "8px", border: "1px solid " + border, background: cardBg, color: fg, fontSize: "12px", fontWeight: 700, cursor: "pointer", boxShadow: shadowSm };
+      var rhythmWarm = isDark ? "#fbbf24" : "#92400e";
+      var rhythmCool = isDark ? "#7dd3fc" : "#075985";
+      var rhythmPath = function(points) { return points.map(function(point, index) { return (index ? "L" : "M") + point.x.toFixed(4) + " " + point.y.toFixed(4); }).join(" ") + " Z"; };
+      rhythmPanel = h("section", {
+        "data-orrery-rhythm": scrubBody.id, "aria-label": "Orbit rhythm for " + scrubBody.name,
+        style: { display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center", padding: "16px", borderRadius: "14px", border: "1px solid " + border, background: isDark ? "linear-gradient(130deg, #101d35, #111827)" : "linear-gradient(130deg, #eff6ff, #ffffff)", minWidth: 0 }
+      },
+        h("div", { style: { flex: "1 1 250px", minWidth: 0, maxWidth: "360px" } },
+          h("svg", { viewBox: "0 0 320 248", role: "img", "aria-labelledby": "orrery-rhythm-title", "aria-describedby": "orrery-rhythm-desc", style: { width: "100%", display: "block" } },
+            h("title", { id: "orrery-rhythm-title" }, scrubBody.name + ": equal time, changing speed"),
+            h("desc", { id: "orrery-rhythm-desc" }, "Twelve dots mark equal time intervals. The Sun is at one focus. The shaded regions after perihelion and aphelion each cover one twelfth of the orbital period and have equal area. The outlined marker follows the current simulation time."),
+            h("line", { x1: 58, y1: 120, x2: 262, y2: 120, stroke: mutedFg, strokeOpacity: 0.35, strokeDasharray: "3 5" }),
+            rhythm.sectors.map(function(points, index) { return h("path", { key: "sector-" + index, "data-rhythm-sector": index, d: rhythmPath(points), fill: index ? rhythmCool : rhythmWarm, fillOpacity: 0.2, stroke: index ? rhythmCool : rhythmWarm, strokeWidth: 1.2 }); }),
+            h("ellipse", { cx: 160, cy: 120, rx: 92, ry: 92 * Math.sqrt(1 - scrubBody.e * scrubBody.e), fill: "none", stroke: mutedFg, strokeWidth: 1.5 }),
+            rhythm.marks.map(function(point, index) { return h("circle", { key: "moment-" + index, "data-rhythm-moment": index, cx: point.x, cy: point.y, r: 3, fill: index === 0 ? rhythmWarm : index === 6 ? rhythmCool : fg }); }),
+            h("circle", { cx: 160 + 92 * scrubBody.e, cy: 120, r: 12, fill: rhythmWarm, fillOpacity: 0.12 }),
+            h("circle", { cx: 160 + 92 * scrubBody.e, cy: 120, r: 5, fill: rhythmWarm }),
+            h("text", { x: 160 + 92 * scrubBody.e, y: 143, fill: fg, textAnchor: "middle", fontSize: 11 }, "Sun"),
+            h("circle", { id: "orrery-rhythm-marker", cx: rhythmNow.x, cy: rhythmNow.y, r: 7, fill: cardBg, stroke: accent, strokeWidth: 3 }),
+            h("text", { x: 60, y: 231, fill: rhythmCool, textAnchor: "middle", fontSize: 11, fontWeight: 700 }, "Aphelion"),
+            h("text", { x: 260, y: 231, fill: rhythmWarm, textAnchor: "middle", fontSize: 11, fontWeight: 700 }, "Perihelion")
+          )
+        ),
+        h("div", { style: { flex: "2 1 240px", minWidth: 0 } },
+          h("div", { style: { fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: accent } }, "Orbit rhythm"),
+          h("h3", { style: { margin: "5px 0 8px", fontSize: "19px", fontWeight: 800, color: fg } }, "Same time. Different distance."),
+          h("p", { style: { fontSize: "12px", lineHeight: 1.6, color: fg, margin: "0 0 10px" } }, "Each gap between dots represents " + fmt(scrubPeriod * 365.25 / 12, 1) + " Earth days: 1/12 of " + scrubBody.name + "’s orbit. Wider spacing means faster travel. Both shaded regions sweep out equal areas."),
+          h("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "12px", marginBottom: "10px" } },
+            h("strong", { style: { color: rhythmWarm } }, "Closest: " + fmt(rhythmPeriSpeed, 2) + " km/s"),
+            h("strong", { style: { color: rhythmCool } }, "Farthest: " + fmt(rhythmApoSpeed, 2) + " km/s")
+          ),
+          h("p", { id: "orrery-rhythm-reading", "aria-live": paused ? "polite" : "off", style: { fontSize: "12px", color: fg, fontVariantNumeric: "tabular-nums" } }, "Now: " + fmt(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, 3) + " AU from the Sun · " + fmt(visViva(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, scrubBody.a), 2) + " km/s"),
+          h("div", { role: "group", "aria-label": "Equal-time orbit steps", style: { display: "flex", flexWrap: "wrap", gap: "8px" } },
+            btn("← Back 1/12", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, -1)); }, { "aria-label": "Step backward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle }),
+            btn("Forward 1/12 →", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, 1)); }, { "aria-label": "Step forward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle })
+          ),
+          h("p", { style: { fontSize: "11px", lineHeight: 1.5, color: mutedFg, margin: "10px 0 0" } }, (scrubBody.e < 0.03 ? "This orbit is nearly circular, so the spacing is nearly even. Try Mercury to see a stronger change. " : "Compare the spacing near the closest and farthest points. ") + "Steps pause the shared clock and wrap around one orbit. Shape is preserved; markers are enlarged. This is an orbit-plane model, not a dated sky map."),
+          h("a", { href: "https://science.nasa.gov/solar-system/orbits-and-keplers-laws/", target: "_blank", rel: "noopener noreferrer", style: { display: "inline-block", marginTop: "8px", fontSize: "11px", color: accent, textDecoration: "underline" } }, "Explore Kepler’s laws · NASA")
+        )
+      );
+    }
     var playbackBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
     var playbackSeconds = playbackBody ? playbackBody.T / Math.max(speed, 0.001) : 0;
     var formatPlaybackDuration = function(seconds) {
@@ -10176,7 +10281,8 @@ const d = labToolData.solarSystem || {};
       orbitStage,
       h("p", { id: "orrery-model-scale-note", role: "note", style: { margin: "-4px 2px 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, modelScaleNote),
       h("span", { id: "orrery-hover-summary", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, ""),
-      bodyInfoCard
+      bodyInfoCard,
+      rhythmPanel
     );
   }
 
@@ -11215,6 +11321,152 @@ const d = labToolData.solarSystem || {};
   /* ====================================================================
    *  10. TRANSFERS TAB
    * ==================================================================== */
+  function advanceTransferFlight(progress, elapsedMs) {
+    // A suspended/background canvas must not catch up in one visible jump.
+    return Math.min(1, progress + (elapsedMs >= 0 && elapsedMs <= 250 ? elapsedMs / 12000 : 0));
+  }
+
+  function TransferFlight(props) {
+    var from = props.fromBody, to = props.toBody;
+    var flight = React.useRef({ progress: 0, offset: 0, playing: false, stamp: null, uiAt: null }).current;
+    var redraw = React.useState(0)[1];
+    var pathRef = React.useRef(null);
+    if (!pathRef.current) {
+      pathRef.current = [];
+      for (var pathIndex = 0; pathIndex <= 96; pathIndex++) pathRef.current.push(transferRendezvous(from.a, to.a, pathIndex / 96, 0).ship);
+    }
+    var current = transferRendezvous(from.a, to.a, flight.progress, flight.offset);
+    function changeFlight(patch) {
+      Object.assign(flight, patch); flight.stamp = null; flight.uiAt = null;
+      redraw(function(value) { return value + 1; });
+    }
+    function flightReading(model) {
+      if (model.same) return "Choose two different planets to plan a transfer.";
+      var text = "Day " + fmt(model.elapsedDays, 1) + " of " + fmt(model.transitDays, 1) + " · separation " + fmt(model.separation, 3) + " AU";
+      if (flight.progress >= 1) text += Math.abs(flight.offset) < 0.001 ? " · Rendezvous: positions meet in this ideal model." : " · Miss: the destination is elsewhere. Reset the launch alignment and compare.";
+      else text += flight.progress === 0 ? " · Departure burn" : " · Coasting: engine off";
+      return text;
+    }
+    var buttonStyle = { minHeight: "44px", padding: "8px 12px", borderRadius: "8px", border: "1px solid " + border, background: cardBg, color: fg, fontSize: "12px", fontWeight: 700, cursor: "pointer" };
+    var canvas = h(stableType('CanvasPanel', CanvasPanel), {
+      key: "rendezvous-map", width: 560, height: 440, responsive: true, responsiveMinHeight: 320, responsiveMaxHeight: 440,
+      panZoom: false, reduceMotion: reduceMotion,
+      ariaLabel: "Hohmann transfer visualization from " + from.name + " to " + to.name + ". Moving planets and a spacecraft demonstrate a timed rendezvous. Use the flight progress and launch alignment controls below.",
+      ariaDescribedBy: "orrery-transfer-evidence", redrawKey: from.id + "-" + to.id,
+      draw: function(ctx, cv, st, timestamp) {
+        if (flight.playing && !reduceMotion && !current.same) {
+          var elapsed = flight.stamp === null ? 0 : timestamp - flight.stamp;
+          flight.progress = advanceTransferFlight(flight.progress, elapsed);
+          if (flight.progress >= 1) { flight.playing = false; redraw(function(value) { return value + 1; }); }
+        }
+        flight.stamp = timestamp;
+        var model = transferRendezvous(from.a, to.a, flight.progress, flight.offset);
+        var w = st.viewportWidth || 560, ht = st.viewportHeight || 440;
+        var cx = w / 2, cy = ht / 2 + 12;
+        var scale = Math.max(20, Math.min(w - 90, ht - 130) / 2) / Math.max(from.a, to.a);
+        function sx(point) { return cx + point.x * scale; }
+        function sy(point) { return cy - point.y * scale; }
+        ctx.clearRect(0, 0, w, ht);
+        var background = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        background.addColorStop(0, "#162741"); background.addColorStop(1, "#070d1a");
+        ctx.fillStyle = background; ctx.fillRect(0, 0, w, ht);
+        for (var star = 0; star < 56; star++) {
+          ctx.fillStyle = star % 3 ? "#52637d" : "#8d9db7";
+          ctx.fillRect(((star * 137.3 + 31) % 557) / 557 * w, ((star * 73.7 + 13) % 439) / 439 * ht, 1, 1);
+        }
+        ctx.font = "800 12px sans-serif"; ctx.fillStyle = "#e2e8f0";
+        ctx.fillText("RENDEZVOUS FLIGHT", 14, 23);
+        ctx.font = "11px sans-serif"; ctx.fillStyle = "#a9bdd8";
+        ctx.fillText(model.same ? "Choose a destination" : "Day " + fmt(model.elapsedDays, 0) + " / " + fmt(model.transitDays, 0) + " · " + (flight.progress >= 1 ? "Arrival" : flight.progress > 0 ? "Coast" : "Departure"), 14, 42);
+        [from, to].forEach(function(body, index) {
+          ctx.beginPath(); ctx.arc(cx, cy, body.a * scale, 0, TAU);
+          ctx.strokeStyle = index ? "#7dd3fc" : "#a5b4fc"; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+          ctx.setLineDash(index ? [3, 5] : []); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+        });
+        var sun = ctx.createRadialGradient(cx, cy, 1, cx, cy, 22);
+        sun.addColorStop(0, "rgba(255,218,94,0.65)"); sun.addColorStop(1, "rgba(255,190,30,0)");
+        ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(cx, cy, 22, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#fde68a"; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, TAU); ctx.fill();
+        ctx.font = "11px sans-serif"; ctx.fillText("Sun", cx - 10, cy + 22);
+        if (!model.same) {
+          ctx.beginPath(); pathRef.current.forEach(function(point, index) { if (index) ctx.lineTo(sx(point), sy(point)); else ctx.moveTo(sx(point), sy(point)); });
+          ctx.strokeStyle = "#9a743e"; ctx.lineWidth = 2; ctx.setLineDash([4, 5]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.beginPath();
+          for (var trail = 0; trail <= Math.floor(flight.progress * 96); trail++) {
+            var point = pathRef.current[trail]; if (trail) ctx.lineTo(sx(point), sy(point)); else ctx.moveTo(sx(point), sy(point));
+          }
+          ctx.lineTo(sx(model.ship), sy(model.ship)); ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 3; ctx.stroke();
+          // The endpoint arrows show signed Sun-frame impulses, not exhaust.
+          [from.a, -to.a].forEach(function(x, index) {
+            var px = cx + x * scale, py = cy;
+            var dy = (to.a > from.a ? 1 : -1) * (index ? 1 : -1);
+            ctx.strokeStyle = "#fbbf24"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(px, py + dy * 13); ctx.lineTo(px, py + dy * 38); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(px - 4, py + dy * 31); ctx.lineTo(px, py + dy * 38); ctx.lineTo(px + 4, py + dy * 31); ctx.stroke();
+            ctx.fillStyle = "#fbbf24"; ctx.font = "700 11px sans-serif"; ctx.fillText(String(index + 1), px + 10, py + dy * 26);
+          });
+        }
+        function drawPlanet(point, color, letter) {
+          var px = sx(point), py = sy(point);
+          ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 10;
+          ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
+          ctx.fillStyle = "#e2e8f0"; ctx.font = "700 11px sans-serif"; ctx.fillText(letter, px + 9, py - 9);
+        }
+        drawPlanet(model.origin, "#a5b4fc", "A"); drawPlanet(model.destination, "#7dd3fc", "B");
+        if (flight.progress >= 1 && Math.abs(flight.offset) > 0.001 && !model.same) {
+          ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(model.destination), sy(model.destination));
+          ctx.strokeStyle = "#fb7185"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+        }
+        if (!model.same) {
+          var nearby = transferRendezvous(from.a, to.a, flight.progress < 0.999 ? flight.progress + 0.001 : flight.progress - 0.001, flight.offset).ship;
+          var direction = flight.progress < 0.999 ? 1 : -1;
+          var heading = Math.atan2(-(nearby.y - model.ship.y) * direction, (nearby.x - model.ship.x) * direction);
+          ctx.save(); ctx.translate(sx(model.ship), sy(model.ship)); ctx.rotate(heading);
+          ctx.fillStyle = "#60a5fa"; ctx.fillRect(-4, -13, 7, 8); ctx.fillRect(-4, 5, 7, 8);
+          ctx.strokeStyle = "#bae6fd"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, 10); ctx.stroke();
+          ctx.fillStyle = "#f8fafc"; ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -4); ctx.lineTo(-5, 4); ctx.closePath(); ctx.fill();
+          ctx.restore();
+          if (flight.progress >= 1 && Math.abs(flight.offset) < 0.001) {
+            ctx.strokeStyle = "#6ee7b7"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(sx(model.ship), sy(model.ship), 17, 0, TAU); ctx.stroke();
+          }
+        }
+        ctx.font = "11px sans-serif"; ctx.fillStyle = "#b8c7dc";
+        ctx.fillText("Orbit-plane model · distances share one scale", 14, ht - 15);
+        cv.dataset.transferProgress = flight.progress.toFixed(5);
+        cv.dataset.transferSeparation = model.separation.toFixed(8);
+        cv.dataset.transferPlaying = String(flight.playing);
+        if (flight.uiAt === null || timestamp - flight.uiAt >= 180) {
+          flight.uiAt = timestamp;
+          var reading = document.getElementById("orrery-transfer-flight-reading");
+          if (reading) reading.textContent = flightReading(model);
+          var progressInput = document.getElementById("orrery-transfer-progress");
+          if (progressInput) { progressInput.value = String(flight.progress * 100); progressInput.setAttribute("aria-valuetext", fmt(flight.progress * 100, 0) + "% of flight; day " + fmt(model.elapsedDays, 1)); }
+        }
+      }
+    });
+    return h("section", { "data-transfer-flight": from.id + "-" + to.id, "aria-label": "Transfer rendezvous experiment", style: { flex: "1 1 480px", minWidth: 0, maxWidth: "100%", padding: "10px", borderRadius: "14px", border: "1px solid " + border, background: cardBg, boxSizing: "border-box" } },
+      canvas,
+      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", margin: "9px 0", fontSize: "12px", color: fg } },
+        h("span", null, "A · " + from.name), h("span", null, "B · " + to.name), h("span", null, "White craft · amber trail"), h("span", null, "1 · departure burn; 2 · arrival burn")),
+      h("p", { id: "orrery-transfer-flight-reading", role: "status", "aria-live": flight.playing ? "off" : "polite", style: { fontSize: "12px", lineHeight: 1.5, color: fg, minHeight: "36px" } }, flightReading(current)),
+      h("div", { role: "group", "aria-label": "Transfer flight playback", style: { display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "10px" } },
+        btn(flight.playing ? "Pause flight" : flight.progress >= 1 ? "Replay flight" : "Play flight", false, function() { changeFlight({ playing: !flight.playing, progress: flight.progress >= 1 ? 0 : flight.progress }); }, { "aria-pressed": flight.playing, disabled: current.same || reduceMotion, style: Object.assign({}, buttonStyle, { opacity: current.same || reduceMotion ? 0.5 : 1 }) }),
+        [0, 0.5, 1].map(function(value, index) { return btn(["Departure", "Midflight", "Arrival"][index], false, function() { changeFlight({ progress: value, playing: false }); }, { key: "flight-stage-" + index, disabled: current.same, "aria-label": "Show transfer " + ["departure", "midflight", "arrival"][index], style: buttonStyle }); })
+      ),
+      h("label", { htmlFor: "orrery-transfer-progress", style: { display: "block", fontSize: "12px", color: fg } }, "Flight progress"),
+      h("input", { id: "orrery-transfer-progress", type: "range", min: 0, max: 100, step: 0.1, value: flight.progress * 100, disabled: current.same, "aria-valuetext": fmt(flight.progress * 100, 0) + "% of flight; day " + fmt(current.elapsedDays, 1), onChange: function(ev) { changeFlight({ progress: Number(ev.target.value) / 100, playing: false }); }, style: { width: "100%", minHeight: "32px", accentColor: accent } }),
+      h("div", { style: { padding: "10px", marginTop: "9px", borderRadius: "9px", background: isDark ? "#111c30" : "#edf4ff", color: fg } },
+        h("strong", { style: { fontSize: "13px" } }, "Aim where the destination will be"),
+        h("p", { style: { fontSize: "12px", lineHeight: 1.5, margin: "6px 0" } }, current.same ? "The same planet is selected twice; there is no transfer to simulate." : "At departure, B should be " + fmt(Math.abs(current.idealPhase * 180 / PI), 1) + "° " + (current.idealPhase >= 0 ? "ahead of" : "behind") + " A along the direction of travel. Try changing its starting angle, then inspect Arrival."),
+        h("label", { htmlFor: "orrery-transfer-offset", style: { fontSize: "12px", display: "block" } }, "Launch alignment offset: " + (flight.offset > 0 ? "+" : "") + flight.offset + "°"),
+        h("input", { id: "orrery-transfer-offset", type: "range", min: -90, max: 90, step: 5, value: flight.offset, disabled: current.same, "aria-valuetext": flight.offset + " degrees from the rendezvous alignment", onChange: function(ev) { changeFlight({ offset: Number(ev.target.value), playing: false }); }, style: { width: "100%", minHeight: "32px", accentColor: accent } }),
+        btn("Align for rendezvous", false, function() { changeFlight({ offset: 0, playing: false }); }, { disabled: current.same, style: buttonStyle })
+      ),
+      h("p", { style: { color: mutedFg, fontSize: "11px", lineHeight: 1.5, margin: "10px 0 0" } }, (reduceMotion ? "Reduced motion: use the slider or stage buttons. " : "Playback compresses the trip into 12 seconds and pauses offscreen. ") + "Circular, coplanar orbits; markers enlarged. No launch dates, planetary gravity, or capture orbit are modeled. A positional rendezvous still requires the arrival velocity change shown in the budget."),
+      h("a", { href: "https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/", target: "_blank", rel: "noopener noreferrer", style: { fontSize: "11px", display: "inline-block", marginTop: "8px", color: accent, textDecoration: "underline" } }, "How transfer trajectories work · NASA")
+    );
+  }
+
   function buildTransfersTab() {
     var planets = OB.filter(function(b) { return b.type === "planet"; });
     var fromBody = OB.filter(function(b) { return b.id === tr_from; })[0] || OB[2];
@@ -11226,8 +11478,8 @@ const d = labToolData.solarSystem || {};
     var transferOutward = toBody.a > fromBody.a;
     var transferDeparturePoint = sameTransferOrbit ? "the shared circular orbit" : (transferOutward ? "perihelion" : "aphelion");
     var transferArrivalPoint = sameTransferOrbit ? "the shared circular orbit" : (transferOutward ? "aphelion" : "perihelion");
-    var transferBurnInsight = sameTransferOrbit ? "Same-radius route: no net speed change is needed." : (transferOutward ? "Outward route: speed up at departure, then brake at arrival." : "Inward route: brake at departure, then speed up at arrival.");
-    var transferEvidenceText = "Transfer geometry: depart " + fromBody.name + " at " + transferDeparturePoint + " (r = " + fmt(fromBody.a, 3) + " AU) and arrive at " + toBody.name + " at " + transferArrivalPoint + " (r = " + fmt(toBody.a, 3) + " AU). The amber half-ellipse meets both circular orbits at those endpoints. " + transferBurnInsight;
+    var transferBurnInsight = sameTransferOrbit ? "Same-radius route: no net speed change is needed." : (transferOutward ? "Outward route: speed up at departure, then speed up again to match the outer circular orbit." : "Inward route: brake at departure, then brake again to match the inner circular orbit.");
+    var transferEvidenceText = sameTransferOrbit ? "The same planet is selected for departure and arrival. No transfer path, transit time, or burn is needed; choose a different destination to explore a rendezvous." : "Transfer geometry: depart " + fromBody.name + " at " + transferDeparturePoint + " (r = " + fmt(fromBody.a, 3) + " AU) and arrive at " + toBody.name + " at " + transferArrivalPoint + " (r = " + fmt(toBody.a, 3) + " AU). The amber half-ellipse meets both circular orbits at those endpoints. " + transferBurnInsight;
 
     var fromButtons = planets.map(function(p) {
       return btn(p.emoji + " " + p.name, tr_from === p.id, function() { upd("orr_trf", p.id); }, { key: "tf-" + p.id, "aria-pressed": tr_from === p.id });
@@ -11236,118 +11488,8 @@ const d = labToolData.solarSystem || {};
       return btn(p.emoji + " " + p.name, tr_to === p.id, function() { upd("orr_trt", p.id); }, { key: "tt-" + p.id, "aria-pressed": tr_to === p.id });
     });
 
-    // ── Hohmann transfer orbit visualization canvas ──
-    var TW = 500, TH = 500;
-    var transferCanvas = h(stableType('CanvasPanel', CanvasPanel), {
-      key: "transfer-cv",
-      width: TW,
-      height: TH,
-      panZoom: false,
-      ariaLabel: "Hohmann transfer visualization from " + fromBody.name + " to " + toBody.name + ". Two circular orbits and a transfer ellipse show departure and arrival burns. " + transferBurnInsight,
-      ariaDescribedBy: "orrery-transfer-evidence",
-      redrawKey: tr_from + "-" + tr_to,
-      draw: function(ctx) {
-        ctx.clearRect(0, 0, TW, TH);
-        ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
-        ctx.fillRect(0, 0, TW, TH);
-
-        var cx = TW / 2, cy = TH / 2;
-        var r1_au = Math.min(fromBody.a, toBody.a);
-        var r2_au = Math.max(fromBody.a, toBody.a);
-        var maxR = r2_au * 1.3;
-        var scale = (TW / 2 - 40) / maxR;
-
-        // Sun glow
-        var sunGlow = ctx.createRadialGradient(cx, cy, 2, cx, cy, 20);
-        sunGlow.addColorStop(0, "rgba(255,220,50,0.5)");
-        sunGlow.addColorStop(1, "rgba(255,180,20,0)");
-        ctx.beginPath(); ctx.arc(cx, cy, 20, 0, TAU); ctx.fillStyle = sunGlow; ctx.fill();
-        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, TAU); ctx.fillStyle = "#ffee88"; ctx.fill();
-
-        // Departure orbit (circular)
-        ctx.beginPath(); ctx.arc(cx, cy, fromBody.a * scale, 0, TAU);
-        ctx.strokeStyle = fromBody.color + "88"; ctx.lineWidth = 2; ctx.stroke();
-
-        // Arrival orbit (circular)
-        ctx.beginPath(); ctx.arc(cx, cy, toBody.a * scale, 0, TAU);
-        ctx.strokeStyle = toBody.color + "88"; ctx.lineWidth = 2; ctx.stroke();
-
-        // Transfer ellipse
-        var a_t = (fromBody.a + toBody.a) / 2;
-        var e_t = Math.abs(toBody.a - fromBody.a) / (toBody.a + fromBody.a);
-        var b_t = a_t * Math.sqrt(1 - e_t * e_t);
-        var c_t = a_t * e_t;
-        // The departure point is always the right-hand endpoint and the
-        // arrival point the left-hand endpoint; shifting the ellipse center
-        // keeps those endpoints on the correct circular-orbit radii for both
-        // outward and inward transfers.
-        var outward = toBody.a > fromBody.a;
-        var transferCenterX = cx + (outward ? -c_t : c_t) * scale;
-        ctx.beginPath();
-        ctx.setLineDash([6, 4]);
-        ctx.ellipse(transferCenterX, cy, a_t * scale, b_t * scale, 0, 0, PI);
-        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 2.5; ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Transfer arc (solid, the actual path taken)
-        ctx.beginPath();
-        ctx.ellipse(transferCenterX, cy, a_t * scale, b_t * scale, 0, 0, PI);
-        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 3;
-        ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
-
-        // Departure planet
-        var dep_x = cx + fromBody.a * scale;
-        var dep_y = cy;
-        ctx.beginPath(); ctx.arc(dep_x, dep_y, 8, 0, TAU);
-        var dGrad = ctx.createRadialGradient(dep_x - 2, dep_y - 2, 0, dep_x, dep_y, 8);
-        dGrad.addColorStop(0, "#fff"); dGrad.addColorStop(0.3, fromBody.color); dGrad.addColorStop(1, fromBody.color);
-        ctx.fillStyle = dGrad; ctx.fill();
-
-        // Arrival planet (at opposite side)
-        var arr_x = cx - toBody.a * scale;
-        var arr_y = cy;
-        ctx.beginPath(); ctx.arc(arr_x, arr_y, 8, 0, TAU);
-        var aGrad = ctx.createRadialGradient(arr_x - 2, arr_y - 2, 0, arr_x, arr_y, 8);
-        aGrad.addColorStop(0, "#fff"); aGrad.addColorStop(0.3, toBody.color); aGrad.addColorStop(1, toBody.color);
-        ctx.fillStyle = aGrad; ctx.fill();
-
-        // Burn arrows
-        // dv1 arrow at departure
-        var arrLen1 = clamp(transfer.dv1 * 5, 15, 60);
-        ctx.beginPath(); ctx.moveTo(dep_x, dep_y - 12); ctx.lineTo(dep_x, dep_y - 12 - arrLen1);
-        ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 3; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(dep_x, dep_y - 12 - arrLen1);
-        ctx.lineTo(dep_x - 5, dep_y - 12 - arrLen1 + 8); ctx.lineTo(dep_x + 5, dep_y - 12 - arrLen1 + 8);
-        ctx.closePath(); ctx.fillStyle = "#22c55e"; ctx.fill();
-
-        // dv2 arrow at arrival
-        var arrLen2 = clamp(transfer.dv2 * 5, 15, 60);
-        ctx.beginPath(); ctx.moveTo(arr_x, arr_y + 12); ctx.lineTo(arr_x, arr_y + 12 + arrLen2);
-        ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 3; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(arr_x, arr_y + 12 + arrLen2);
-        ctx.lineTo(arr_x - 5, arr_y + 12 + arrLen2 - 8); ctx.lineTo(arr_x + 5, arr_y + 12 + arrLen2 - 8);
-        ctx.closePath(); ctx.fillStyle = "#ef4444"; ctx.fill();
-
-        // Labels
-        ctx.font = "bold 12px sans-serif";
-        ctx.fillStyle = fromBody.color; ctx.fillText(fromBody.name, dep_x - 20, dep_y + 22);
-        ctx.fillStyle = toBody.color; ctx.fillText(toBody.name, arr_x - 15, arr_y - 14);
-        ctx.fillStyle = "#f59e0b"; ctx.fillText("Transfer orbit", cx - 35, cy - a_t * scale * 0.3);
-
-        // dv labels
-        ctx.font = "11px sans-serif";
-        ctx.fillStyle = "#22c55e"; ctx.fillText("\u0394v\u2081 = " + fmt(transfer.dv1, 2) + " km/s", dep_x + 12, dep_y - 20 - arrLen1 / 2);
-        ctx.fillStyle = "#ef4444"; ctx.fillText("\u0394v\u2082 = " + fmt(transfer.dv2, 2) + " km/s", arr_x + 12, arr_y + 20 + arrLen2 / 2);
-
-        // Legend
-        ctx.font = "11px sans-serif"; ctx.fillStyle = fg;
-        ctx.fillText("Transit: " + (transfer.transitYrs < 1 ? fmt(transfer.transitYrs * 365.25, 0) + " days" : fmt(transfer.transitYrs, 2) + " yr"), 12, TH - 30);
-        ctx.fillText("Total \u0394v: " + fmt(transfer.dvTotal, 2) + " km/s", 12, TH - 14);
-
-        // Habitable zone ring
-        ctx.beginPath(); ctx.arc(cx, cy, 0.75 * scale, 0, TAU);
-        ctx.strokeStyle = "#22c55e33"; ctx.lineWidth = (1.7 - 0.75) * scale; ctx.stroke();
-      }
+    var transferCanvas = h(stableType('TransferFlight', TransferFlight), {
+      key: "transfer-flight-" + fromBody.id + "-" + toBody.id, fromBody: fromBody, toBody: toBody
     });
 
     // Swap button
@@ -11394,13 +11536,14 @@ const d = labToolData.solarSystem || {};
             ),
             h("div", { key: "td", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
               h("div", null, "\u0394v\u2081 (departure: " + (sameTransferOrbit ? "no net change" : (transferOutward ? "speed up" : "brake")) + "): " + fmt(transfer.dv1, 3) + " km/s"),
-              h("div", null, "\u0394v\u2082 (arrival: " + (sameTransferOrbit ? "no net change" : (transferOutward ? "brake" : "speed up")) + "): " + fmt(transfer.dv2, 3) + " km/s"),
+              h("div", null, "\u0394v\u2082 (arrival: " + (sameTransferOrbit ? "no net change" : (transferOutward ? "speed up" : "brake")) + "): " + fmt(transfer.dv2, 3) + " km/s"),
               h("div", { style: { fontWeight: 700, fontSize: "14px", marginTop: "4px" } }, "Total \u0394v: " + fmt(transfer.dvTotal, 3) + " km/s"),
               h("div", null, "Transit time: " + (transfer.transitYrs < 1
                 ? fmt(transfer.transitYrs * 365.25, 1) + " days"
                 : fmt(transfer.transitYrs, 3) + " years")),
-              h("div", null, "Synodic period: " + (synodic === Infinity ? "\u221e" : fmt(synodic, 2) + " yr") + " (launch window interval)")
+              h("div", null, "Synodic period: " + (synodic === Infinity ? "not applicable" : fmt(synodic, 2) + " yr") + " (approximate window spacing)")
             )
+            ,h("p", { key: "frame-note", style: { fontSize: "11px", lineHeight: 1.5, color: mutedFg } }, "These burns change velocity relative to the Sun. Arrival circularization here is not a capture burn around the destination planet. The budget omits launch from the surface, planetary escape/capture, inclination changes, and course corrections.")
           ], { marginBottom: "12px" })
         )
       ),
@@ -15907,6 +16050,24 @@ const d = labToolData.solarSystem || {};
                           return sum / maxAmp;
                         };
 
+                        var oceanSceneryResources = new Set();
+                        var oceanSceneryObjects = [];
+                        function ownOceanResource(resource) { oceanSceneryResources.add(resource); return resource; }
+                        function addOceanScenery(object) { scene.add(object); oceanSceneryObjects.push(object); return object; }
+                        // Merge repeated organic branches once, then instance or reuse the result.
+                        function oceanMergeGeometry(parts) {
+                          var geometry = new THREE.BufferGeometry();
+                          parts = parts.map(function(part) { if (!part.index) return part; var flat = part.toNonIndexed(); part.dispose(); return flat; });
+                          ['position', 'normal', 'uv'].forEach(function(name) {
+                            var length = 0; parts.forEach(function(part) { length += part.attributes[name].array.length; });
+                            var data = new Float32Array(length), offset = 0;
+                            parts.forEach(function(part) { data.set(part.attributes[name].array, offset); offset += part.attributes[name].array.length; });
+                            geometry.setAttribute(name, new THREE.BufferAttribute(data, name === 'uv' ? 2 : 3));
+                          });
+                          parts.forEach(function(part) { part.dispose(); });
+                          geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+                          return ownOceanResource(geometry);
+                        }
                         // Store terrain reference for rover ground-following
                         var _terrainMesh = null;
                         var _terrainHeightAt = function(x, z) { return 0; }; // will be overridden for rocky planets
@@ -15944,104 +16105,136 @@ const d = labToolData.solarSystem || {};
                             posArr[vi + 2] = h;
                           }
                           terrainGeo.computeVertexNormals();
-                          // Ocean floor texture (sandy with dark patches)
-                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 512; tCv.height = 512;
-                          var tCx = tCv.getContext('2d');
-                          for (var ty = 0; ty < 512; ty++) {
-                            for (var tx = 0; tx < 512; tx++) {
-                              var n = fbm(tx * 0.8, ty * 0.8, 3, 2.5, 0.5) * 0.5 + 0.5;
-                              var sand = 0.65 + n * 0.15;
-                              var cr = Math.round((0.55 * sand + 0.1) * 180);
-                              var cg = Math.round((0.50 * sand + 0.15) * 160);
-                              var cb = Math.round((0.35 * sand + 0.25) * 140);
-                              var speck = (Math.random() - 0.5) * 8;
-                              tCx.fillStyle = 'rgb(' + Math.max(0, Math.min(255, cr + speck)) + ',' + Math.max(0, Math.min(255, cg + speck)) + ',' + Math.max(0, Math.min(255, cb + speck)) + ')';
-                              tCx.fillRect(tx, ty, 1, 1);
-                            }
+                          // Tileable sediment ripples: sRGB reflectance and a separate linear height map.
+                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = tCv.height = 512;
+                          var tCx = tCv.getContext('2d'), sandPixels = tCx.createImageData(512, 512);
+                          var sandBumpCanvas = document.createElement('canvas'); sandBumpCanvas.setAttribute('aria-hidden', 'true'); sandBumpCanvas.width = sandBumpCanvas.height = 512;
+                          var sandBumpContext = sandBumpCanvas.getContext('2d'), sandBumpPixels = sandBumpContext.createImageData(512, 512);
+                          for (var ty = 0; ty < 512; ty++) for (var tx = 0; tx < 512; tx++) {
+                            var u = tx / 512 * Math.PI * 2, v = ty / 512 * Math.PI * 2;
+                            var ripple = Math.pow(0.5 + 0.5 * Math.sin(u * 24 + Math.sin(v * 3) * 0.7 + Math.sin(v * 7 + u) * 0.25), 5);
+                            var patch = Math.cos(u * 3 + Math.sin(v)) * Math.cos(v * 2) * 13;
+                            var grain = Math.sin(tx * 127.1 + ty * 311.7) * 43758.5453; grain = grain - Math.floor(grain) - 0.5;
+                            var p = (ty * 512 + tx) * 4, shade = patch + ripple * 9 + grain * 10;
+                            sandPixels.data[p] = 137 + shade; sandPixels.data[p + 1] = 132 + shade; sandPixels.data[p + 2] = 112 + shade; sandPixels.data[p + 3] = 255;
+                            var relief = 85 + ripple * 95 + grain * 18;
+                            sandBumpPixels.data[p] = sandBumpPixels.data[p + 1] = sandBumpPixels.data[p + 2] = relief; sandBumpPixels.data[p + 3] = 255;
                           }
-                          var terrainTex = new THREE.CanvasTexture(tCv);
-                          terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(12, 12);
-                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.92, metalness: 0.1, flatShading: true });
-                          var terrain = new THREE.Mesh(terrainGeo, terrainMat);
+                          tCx.putImageData(sandPixels, 0, 0); sandBumpContext.putImageData(sandBumpPixels, 0, 0);
+                          var terrainTex = ownOceanResource(new THREE.CanvasTexture(tCv));
+                          terrainTex.encoding = THREE.sRGBEncoding;
+                          var sandBumpTexture = ownOceanResource(new THREE.CanvasTexture(sandBumpCanvas));
+                          [terrainTex, sandBumpTexture].forEach(function(texture) {
+                            texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(8, 8);
+                            try { texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e) {}
+                          });
+                          var terrainMat = ownOceanResource(new THREE.MeshStandardMaterial({ map: terrainTex, bumpMap: sandBumpTexture, bumpScale: 0.065, roughness: 0.98, metalness: 0, flatShading: false }));
+                          ownOceanResource(terrainGeo);
+                          var terrain = new THREE.Mesh(terrainGeo, terrainMat); terrain.name = 'ocean-seafloor';
                           terrain.rotation.x = -Math.PI / 2;
-                          terrain.position.y = -25; // ocean floor is deep below start
-                          scene.add(terrain);
+                          terrain.position.y = -25;
+                          addOceanScenery(terrain); terrain.updateMatrixWorld(true);
                           _terrainMesh = terrain;
-                          var _terrainRay = new THREE.Raycaster();
+                          // Match the rendered a-b-d / b-c-d triangles even before the first frame.
+                          // Initialization-time raycasts previously used a stale unrotated matrix.
+                          var oceanPositions = terrainGeo.attributes.position.array;
                           _terrainHeightAt = function(x, z) {
-                            _terrainRay.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
-                            var hits = _terrainRay.intersectObject(_terrainMesh);
-                            return hits.length > 0 ? hits[0].point.y : -25;
+                            if (!isFinite(x) || !isFinite(z)) return -25;
+                            var gx = (Math.max(-125, Math.min(125, x)) + 125) * 0.6;
+                            var gz = (Math.max(-125, Math.min(125, z)) + 125) * 0.6;
+                            var ix = Math.min(149, Math.floor(gx)), iz = Math.min(149, Math.floor(gz));
+                            var fx = gx - ix, fz = gz - iz, a = iz * 151 + ix;
+                            var h00 = oceanPositions[a * 3 + 2], h10 = oceanPositions[(a + 1) * 3 + 2];
+                            var h01 = oceanPositions[(a + 151) * 3 + 2], h11 = oceanPositions[(a + 152) * 3 + 2];
+                            return -25 + (fx + fz <= 1 ? h00 + fx * (h10 - h00) + fz * (h01 - h00) : h11 + (1 - fx) * (h01 - h11) + (1 - fz) * (h10 - h11));
                           };
+                          canvasEl.dataset.droneOceanScenery = 'sediment-garden';
 
-                          // Coral formations (with bioluminescent glow)
-                          var coralColors = [0xff6b8a, 0xff8c42, 0xffd166, 0x06d6a0, 0x8338ec, 0xf72585];
+                          // Three reusable coral silhouettes, with seeded clusters and ground-level bases.
+                          // This is an illustrative habitat montage, not a surveyed ecological community.
                           var coralLights = [];
-                          for (var ci = 0; ci < 40; ci++) {
-                            var coralType = ci % 3;
-                            var cGeo, cMat;
-                            var cColor = coralColors[ci % coralColors.length];
-                            if (coralType === 0) {
-                              // Branch coral
-                              cGeo = new THREE.ConeGeometry(0.3 + Math.random() * 0.5, 1.5 + Math.random() * 2, 5 + Math.floor(Math.random() * 4));
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.7, metalness: 0.1, flatShading: true, emissive: cColor, emissiveIntensity: 0.15 });
-                            } else if (coralType === 1) {
-                              // Fan coral
-                              cGeo = new THREE.PlaneGeometry(1 + Math.random() * 1.5, 1.5 + Math.random() * 2, 3, 3);
-                              var cPos = cGeo.attributes.position.array;
-                              for (var cpv = 0; cpv < cPos.length; cpv += 3) { cPos[cpv + 2] = Math.random() * 0.2; }
-                              cGeo.computeVertexNormals();
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.6, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: cColor, emissiveIntensity: 0.12 });
-                            } else {
-                              // Brain/mound coral
-                              // Same non-indexed hazard as the surface boulders: the old
-                              // per-vertex Y scale split every shared corner vertically.
-                              cGeo = __alloRockDeform(
-                                new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.8, 1),
-                                Math.random() * 100,
-                                0.62
-                              );
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.8, metalness: 0.05, flatShading: true, emissive: cColor, emissiveIntensity: 0.1 });
-                            }
-                            var coral = new THREE.Mesh(cGeo, cMat);
-                            var ccx = (Math.random() - 0.5) * 160, ccz = (Math.random() - 0.5) * 160;
-                            var ccy = _terrainHeightAt(ccx, ccz);
-                            coral.position.set(ccx, ccy + 0.5, ccz);
-                            coral.rotation.set(Math.random() * 0.3, Math.random() * Math.PI * 2, Math.random() * 0.3);
-                            scene.add(coral);
-                            // Every 5th coral gets a small point light for visible bioluminescent glow
-                            if (ci % 5 === 0) {
-                              var clGlow = new THREE.PointLight(cColor, 0.3, 4);
-                              clGlow.position.set(ccx, ccy + 1.2, ccz);
-                              clGlow._coralPhase = Math.random() * Math.PI * 2;
-                              scene.add(clGlow);
-                              coralLights.push(clGlow);
-                            }
+                          var oceanSeed = 73129;
+                          function oceanRandom() { oceanSeed = (Math.imul(oceanSeed, 1664525) + 1013904223) >>> 0; return oceanSeed / 4294967296; }
+                          function coralLimb(parts, ax, ay, az, bx, by, bz, radius) {
+                            var start = new THREE.Vector3(ax, ay, az), end = new THREE.Vector3(bx, by, bz);
+                            var direction = end.clone().sub(start);
+                            var geometry = new THREE.CylinderGeometry(radius * 0.55, radius, direction.length(), 6);
+                            geometry.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize())));
+                            var mid = start.add(end).multiplyScalar(0.5); geometry.translate(mid.x, mid.y, mid.z); parts.push(geometry);
                           }
-
-                          // Kelp forests (tall swaying columns)
-                          var kelpGroup = [];
-                          for (var ki = 0; ki < 25; ki++) {
-                            var kx = (Math.random() - 0.5) * 140, kz = (Math.random() - 0.5) * 140;
-                            var ky = _terrainHeightAt(kx, kz);
-                            var kHeight = 4 + Math.random() * 8;
-                            var kGeo = new THREE.CylinderGeometry(0.06, 0.1, kHeight, 4);
-                            var kMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.7, transparent: true, opacity: 0.8 });
-                            var kelp = new THREE.Mesh(kGeo, kMat);
-                            kelp.position.set(kx, ky + kHeight * 0.5, kz);
-                            kelp._kelpPhase = Math.random() * Math.PI * 2;
-                            kelp._kelpBaseX = kx;
-                            scene.add(kelp);
-                            kelpGroup.push(kelp);
-                            // Kelp leaves (flat planes along the stalk)
-                            for (var kl = 0; kl < 3; kl++) {
-                              var leafGeo = new THREE.PlaneGeometry(0.6, 0.3);
-                              var leafMat = new THREE.MeshStandardMaterial({ color: 0x40916c, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
-                              var leaf = new THREE.Mesh(leafGeo, leafMat);
-                              leaf.position.set(kx + (Math.random() - 0.5) * 0.3, ky + kHeight * (0.3 + kl * 0.25), kz + (Math.random() - 0.5) * 0.3);
-                              leaf.rotation.set(Math.random() * 0.5, Math.random() * Math.PI * 2, Math.random() * 0.5);
-                              scene.add(leaf);
+                          var branchParts = [], fanParts = [];
+                          coralLimb(branchParts, 0, 0, 0, 0, 1.7, 0, 0.105);
+                          for (var arm = 0; arm < 7; arm++) {
+                            var angle = arm * 2.39996, startY = 0.35 + arm * 0.16;
+                            var bx = Math.cos(angle) * 0.65, bz = Math.sin(angle) * 0.65;
+                            coralLimb(branchParts, 0, startY, 0, bx, startY + 0.5, bz, 0.067);
+                            coralLimb(branchParts, bx, startY + 0.5, bz, bx * 1.14, startY + 0.96, bz * 1.14, 0.040);
+                            coralLimb(branchParts, bx * 0.72, startY + 0.36, bz * 0.72, bx * 0.7 - bz * 0.4, startY + 0.8, bz * 0.7 + bx * 0.4, 0.031);
+                          }
+                          coralLimb(fanParts, 0, 0, 0, 0, 0.48, 0, 0.085);
+                          for (var frond = 0; frond < 9; frond++) {
+                            var a = (frond - 4) * 0.26, tipX = Math.sin(a) * 1.12, tipY = 0.45 + Math.cos(a) * 1.4;
+                            coralLimb(fanParts, 0, 0.4, 0, tipX, tipY, Math.sin(a * 2) * 0.10, 0.038);
+                            [-1, 1].forEach(function(side) { coralLimb(fanParts, tipX * 0.66, 0.4 + (tipY - 0.4) * 0.66, 0, tipX + side * 0.17, tipY + 0.12, 0.06, 0.022); });
+                          }
+                          var coralGeometries = [oceanMergeGeometry(branchParts), oceanMergeGeometry(fanParts), ownOceanResource(__alloRockDeform(new THREE.DodecahedronGeometry(0.9, 2), 43, 0.62))];
+                          coralGeometries.forEach(function(geometry) { geometry.computeBoundingBox(); geometry.translate(0, -geometry.boundingBox.min.y, 0); geometry.computeBoundingBox(); geometry.computeBoundingSphere(); });
+                          var coralMaterial = ownOceanResource(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, metalness: 0 }));
+                          var coralPalette = [0xad776d, 0xc49a72, 0xaaa284, 0x628e86, 0x8f849d, 0xb77e91];
+                          var oceanDummy = new THREE.Object3D(), oceanColor = new THREE.Color();
+                          var coralPerType = rockySurfaceLowPower ? 10 : 18;
+                          coralGeometries.forEach(function(geometry, type) {
+                            var colonies = new THREE.InstancedMesh(geometry, coralMaterial, coralPerType);
+                            colonies.name = 'ocean-coral-' + ['branch', 'fan', 'mound'][type]; colonies.frustumCulled = false;
+                            for (var colony = 0; colony < coralPerType; colony++) {
+                              var cluster = colony % 3, centers = [[-9, -13], [14, -8], [-17, 12]];
+                              var cx = colony < 12 ? centers[cluster][0] + (oceanRandom() - 0.5) * 12 : (oceanRandom() - 0.5) * 120;
+                              var cz = colony < 12 ? centers[cluster][1] + (oceanRandom() - 0.5) * 12 : (oceanRandom() - 0.5) * 120;
+                              var colonyScale = 0.6 + oceanRandom() * 0.85;
+                              oceanDummy.position.set(cx, _terrainHeightAt(cx, cz) - 0.015, cz);
+                              oceanDummy.rotation.set(0, oceanRandom() * Math.PI * 2, 0); oceanDummy.scale.setScalar(colonyScale); oceanDummy.updateMatrix();
+                              colonies.setMatrixAt(colony, oceanDummy.matrix); colonies.setColorAt(colony, oceanColor.setHex(coralPalette[(colony + type * 2) % coralPalette.length]));
                             }
+                            colonies.instanceMatrix.needsUpdate = true; addOceanScenery(colonies);
+                          });
+                          var pebbleGeometry = ownOceanResource(__alloRockDeform(new THREE.DodecahedronGeometry(1, 0), 27, 0.72));
+                          pebbleGeometry.scale(1, 0.45, 0.85); pebbleGeometry.computeBoundingBox(); pebbleGeometry.translate(0, -pebbleGeometry.boundingBox.min.y, 0);
+                          var pebbleMaterial = ownOceanResource(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.98, metalness: 0 }));
+                          var oceanPebbles = new THREE.InstancedMesh(pebbleGeometry, pebbleMaterial, rockySurfaceLowPower ? 180 : 420);
+                          oceanPebbles.name = 'ocean-seafloor-stones'; oceanPebbles.frustumCulled = false;
+                          for (var stone = 0; stone < oceanPebbles.count; stone++) {
+                            var sx = (oceanRandom() - 0.5) * 100, sz = (oceanRandom() - 0.5) * 100;
+                            var stoneScale = 0.10 + oceanRandom() * 0.35;
+                            oceanDummy.position.set(sx, _terrainHeightAt(sx, sz) - 0.025, sz);
+                            oceanDummy.rotation.set(0, oceanRandom() * Math.PI * 2, 0); oceanDummy.scale.setScalar(stoneScale); oceanDummy.updateMatrix();
+                            oceanPebbles.setMatrixAt(stone, oceanDummy.matrix);
+                            oceanPebbles.setColorAt(stone, oceanColor.setHSL(0.12 + oceanRandom() * 0.05, 0.08, 0.19 + oceanRandom() * 0.14));
+                          }
+                          oceanPebbles.instanceMatrix.needsUpdate = true; addOceanScenery(oceanPebbles);
+
+                          // Kelp ribbons and stalks share one rooted transform, so leaves cannot drift away.
+                          var kelpGroup = [];
+                          var kelpStemGeometry = ownOceanResource(new THREE.CylinderGeometry(0.010, 0.016, 1, 6).translate(0, 0.5, 0));
+                          var kelpLeafParts = [];
+                          for (var blade = 0; blade < 6; blade++) {
+                            var ribbon = new THREE.PlaneGeometry(0.11, 0.26, 1, 12), ribbonPositions = ribbon.attributes.position;
+                            for (var ri = 0; ri < ribbonPositions.count; ri++) {
+                              var ribbonT = Math.max(0, Math.min(1, (ribbonPositions.getY(ri) + 0.13) / 0.26));
+                              ribbonPositions.setXYZ(ri, ribbonPositions.getX(ri) * (0.05 + Math.pow(Math.sin(Math.PI * ribbonT), 0.7)), ribbonT * 0.26, Math.sin(ribbonT * Math.PI) * 0.028);
+                            }
+                            ribbon.computeVertexNormals(); ribbon.rotateZ((blade % 2 ? -1 : 1) * 0.85); ribbon.rotateY(blade * 1.7); ribbon.translate(0, 0.14 + blade * 0.14, 0); kelpLeafParts.push(ribbon);
+                          }
+                          var kelpLeafGeometry = oceanMergeGeometry(kelpLeafParts);
+                          var kelpStemMaterial = ownOceanResource(new THREE.MeshStandardMaterial({ color: 0x405c43, roughness: 0.9 }));
+                          var kelpLeafMaterial = ownOceanResource(new THREE.MeshStandardMaterial({ color: 0x567b50, roughness: 0.83, side: THREE.DoubleSide }));
+                          for (var ki = 0; ki < (rockySurfaceLowPower ? 14 : 25); ki++) {
+                            var kx = (oceanRandom() - 0.5) * 100, kz = (oceanRandom() - 0.5) * 100;
+                            var kelp = new THREE.Group(); kelp.name = 'ocean-kelp-root';
+                            kelp.position.set(kx, _terrainHeightAt(kx, kz), kz); kelp.scale.setScalar(4 + oceanRandom() * 6);
+                            kelp._kelpPhase = oceanRandom() * Math.PI * 2;
+                            kelp.add(new THREE.Mesh(kelpStemGeometry, kelpStemMaterial));
+                            var kelpLeaves = new THREE.Mesh(kelpLeafGeometry, kelpLeafMaterial); kelpLeaves.name = 'ocean-kelp-leaves'; kelp.add(kelpLeaves);
+                            addOceanScenery(kelp); kelpGroup.push(kelp);
                           }
 
                           // Hydrothermal vent (near the trench)
@@ -16077,19 +16270,8 @@ const d = labToolData.solarSystem || {};
                           causticLight.position.set(0, 15, 0);
                           scene.add(causticLight);
 
-                          // ── Animated caustic light pattern on seafloor ──
-                          var causticCv = document.createElement('canvas'); causticCv.setAttribute('aria-hidden', 'true'); causticCv.width = 256; causticCv.height = 256;
-                          var causticCtx2 = causticCv.getContext('2d');
-                          var causticTex = new THREE.CanvasTexture(causticCv);
-                          causticTex.wrapS = causticTex.wrapT = THREE.RepeatWrapping;
-                          causticTex.repeat.set(6, 6);
-                          var causticPlane = new THREE.Mesh(
-                            new THREE.PlaneGeometry(120, 120),
-                            new THREE.MeshBasicMaterial({ map: causticTex, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending })
-                          );
-                          causticPlane.rotation.x = -Math.PI / 2;
-                          causticPlane.position.y = -24.5; // just above seafloor
-                          scene.add(causticPlane);
+                          // Sediment shading lives on the seabed itself. The old flat caustic
+                          // plane intersected this uneven floor and exposed saw-toothed edges.
 
                           // ── Shark silhouette (distant, cruising) ──
                           var sharkGroup = new THREE.Group();
@@ -19779,6 +19961,17 @@ const d = labToolData.solarSystem || {};
                         // ── Environment Scanner (G key) ──
                         var scannerActive = false;
                         var scannerCooldown = 0;
+                        var scannerReadyAt = 0;
+                        function refreshScannerCooldown() {
+                          scannerCooldown = Math.max(0, (scannerReadyAt - performance.now()) * 0.06);
+                        }
+                        function beginDroneScan() {
+                          refreshScannerCooldown();
+                          if (scannerCooldown > 0 || _descentPhase === 0) return false;
+                          scannerReadyAt = performance.now() + 5000;
+                          scannerCooldown = 300;
+                          return true;
+                        }
                         var previousScanSnapshot = null;
                         var scanHistory = [];
                         var scanSequence = 0;
@@ -19927,8 +20120,8 @@ const d = labToolData.solarSystem || {};
                         }
 
                         function doEnvironmentScan() {
-                          if (scannerCooldown > 0) return;
-                          scannerCooldown = 300; // ~5 sec cooldown
+                          if (!beginDroneScan()) return;
+                          startSampleSurvey();
                           scannerOverlay.style.opacity = '1';
                           var sweep = document.getElementById('scan-sweep');
                           if (sweep) { sweep.style.left = '0'; requestAnimationFrame(function() { sweep.style.left = '100%'; }); }
@@ -20236,6 +20429,13 @@ const d = labToolData.solarSystem || {};
                           geologyCaption.textContent = geologyPalette.label + '. Illustrative scenery; appearance alone does not identify a mineral or prove past water.';
                           roverCameraBar.appendChild(geologyCaption);
                         }
+                        if (isOcean) {
+                          var oceanCaption = document.createElement('div');
+                          oceanCaption.setAttribute('data-drone-ocean-caption', 'true'); oceanCaption.setAttribute('role', 'note');
+                          oceanCaption.style.cssText = 'grid-column:1/-1;color:#bfd6e7;font-size:11px;line-height:1.5;padding-top:4px';
+                          oceanCaption.textContent = __alloT('stem.solarsystem.ocean_scenery_illustration', 'Illustrative ocean habitats, with compressed depths and distances.');
+                          roverCameraBar.appendChild(oceanCaption);
+                        }
                         var surveyControls = document.createElement('div');
                         surveyControls.setAttribute('data-drone-survey-controls', 'true');
                         surveyControls.setAttribute('role', 'group');
@@ -20295,6 +20495,113 @@ const d = labToolData.solarSystem || {};
                         roverCameraBar.appendChild(photoControls);
                         roverCameraBar.appendChild(cameraHelp);
 
+                        // Spatial survey locates authored markers; it does not infer composition.
+                        var sampleSurveyRange = 32;
+                        var sampleSurveyTargets = [], sampleSurveyTarget = null;
+                        var sampleSurveyStarted = 0, sampleSurveySweeping = false, sampleSurveyRadius = 0;
+                        var sampleSurveyOrigin = new THREE.Vector3();
+                        var sampleSurveyLastRadius = -1;
+                        var sampleSurveyUiAt = 0, sampleSurveyPanel = null, sampleSurveySummary = null, sampleSurveyGuidance = null;
+                        var sampleSurveyFind = null, sampleSurveyNext = null, sampleSurveyClear = null;
+                        var sampleSurveyPulse = null, sampleSurveyMarkers = [], sampleSurveyResources = new Set();
+                        var sampleSurveySegments = rockySurfaceLowPower ? 64 : 96;
+                        var sampleSurveyPulsePositions = null;
+                        function surveyAvailableOrbs() { return isGas ? (gasAtmo ? gasAtmo.sampleOrbs : []) : (typeof geoSampleOrbs !== 'undefined' ? geoSampleOrbs : []); }
+                        function startSampleSurvey() {
+                          if (isOcean || !sampleSurveyPanel || sampleOperation || sampleReadyOrb) return;
+                          sampleSurveyOrigin.copy(playerPos);
+                          sampleSurveyTargets = surveyAvailableOrbs().filter(function(orb) { return !orb._collected && sampleSurveyOrigin.distanceTo(orb.position) <= sampleSurveyRange; });
+                          sampleSurveyTargets.sort(function(a, b) { return sampleSurveyOrigin.distanceToSquared(a.position) - sampleSurveyOrigin.distanceToSquared(b.position); });
+                          sampleSurveyTargets = sampleSurveyTargets.slice(0, 3);
+                          sampleSurveyTarget = sampleSurveyTargets[0] || null;
+                          sampleSurveyStarted = performance.now(); sampleSurveySweeping = true; sampleSurveyUiAt = 0; sampleSurveyLastRadius = -1;
+                          sampleSurveyPanel.dataset.surveyState = 'scanning';
+                          sampleSurveySummary.textContent = 'Survey sweep started. Looking for nearby training markers.';
+                          sampleSurveyPulse.visible = true;
+                          updateSampleSurvey();
+                        }
+                        function findSurveySamples() { if (beginDroneScan()) startSampleSurvey(); }
+                        function selectNextSurveySample() {
+                          var available = sampleSurveyTargets.filter(function(orb) { return !orb._collected; });
+                          if (!available.length) return;
+                          sampleSurveyTarget = available[(available.indexOf(sampleSurveyTarget) + 1) % available.length];
+                          sampleSurveyPanel.dataset.surveyState = 'tracking';
+                          sampleSurveySummary.textContent = 'Tracking training marker: ' + sampleSurveyTarget._sampleData.name + '.';
+                          sampleSurveyUiAt = 0; updateSampleSurvey();
+                        }
+                        function clearSurveySample() {
+                          sampleSurveyTarget = null; sampleSurveyTargets = []; sampleSurveySweeping = false;
+                          sampleSurveyPulse.visible = false; sampleSurveyMarkers.forEach(function(marker) { marker.visible = false; });
+                          sampleSurveyPanel.dataset.surveyState = 'idle';
+                          sampleSurveySummary.textContent = 'Tracking cleared. Find samples to start another survey.';
+                          sampleSurveyUiAt = 0; updateSampleSurvey();
+                        }
+                        function updateSampleSurvey() {
+                          if (!sampleSurveyPanel) return;
+                          var surveyNow = performance.now();
+                          if (sampleSurveySweeping) {
+                            var surveyProgress = Math.min(1, (surveyNow - sampleSurveyStarted) / 2200);
+                            sampleSurveyRadius = droneReduceMotion ? sampleSurveyRange : Math.max(0.4, sampleSurveyRange * surveyProgress);
+                            sampleSurveyPulse.material.opacity = droneReduceMotion ? 0.62 : 0.72 * (1 - surveyProgress * 0.7);
+                            // Fill one retained ribbon buffer. Surface rings follow the actual height grid.
+                            if (sampleSurveyRadius !== sampleSurveyLastRadius) {
+                            var surveyOffset = 0, surveyCircles = isGas ? 3 : 1;
+                            for (var surveyCircle = 0; surveyCircle < surveyCircles; surveyCircle++) {
+                              for (var surveySegment = 0; surveySegment < sampleSurveySegments; surveySegment++) {
+                                for (var surveyCorner = 0; surveyCorner < 6; surveyCorner++) {
+                                  var surveyNextAngle = surveyCorner === 2 || surveyCorner === 3 || surveyCorner === 5;
+                                  var surveyOuter = surveyCorner === 1 || surveyCorner === 4 || surveyCorner === 5;
+                                  var surveyAngle = (surveySegment + (surveyNextAngle ? 1 : 0)) * Math.PI * 2 / sampleSurveySegments;
+                                  var surveyRadius = sampleSurveyRadius + (surveyOuter ? 0.16 + sampleSurveyRadius * 0.008 : 0);
+                                  var surveyA = Math.cos(surveyAngle) * surveyRadius, surveyB = Math.sin(surveyAngle) * surveyRadius;
+                                  var surveyX = sampleSurveyOrigin.x + (surveyCircle === 2 ? 0 : surveyA);
+                                  var surveyZ = sampleSurveyOrigin.z + (surveyCircle === 1 ? 0 : surveyB);
+                                  if (!isGas) { surveyX = Math.max(-125, Math.min(125, surveyX)); surveyZ = Math.max(-125, Math.min(125, surveyZ)); }
+                                  var surveyY = isGas ? sampleSurveyOrigin.y + (surveyCircle === 0 ? 0 : surveyCircle === 1 ? surveyB : surveyA) : _terrainHeightAt(surveyX, surveyZ) + 0.12;
+                                  sampleSurveyPulsePositions[surveyOffset++] = surveyX; sampleSurveyPulsePositions[surveyOffset++] = surveyY; sampleSurveyPulsePositions[surveyOffset++] = surveyZ;
+                                }
+                              }
+                            }
+                            sampleSurveyPulse.geometry.attributes.position.needsUpdate = true; sampleSurveyLastRadius = sampleSurveyRadius;
+                            }
+                            if (surveyProgress >= 1) {
+                              sampleSurveySweeping = false; sampleSurveyPulse.visible = false;
+                              sampleSurveyPanel.dataset.surveyState = sampleSurveyTarget ? 'tracking' : 'empty';
+                              sampleSurveySummary.textContent = sampleSurveyTarget ? sampleSurveyTargets.length + ' contact' + (sampleSurveyTargets.length === 1 ? '' : 's') + '. Tracking training marker: ' + sampleSurveyTarget._sampleData.name + '.' : 'No training markers in range. Travel to another area and scan again.';
+                            }
+                          }
+                          if (sampleSurveyTarget && sampleSurveyTarget._collected) {
+                            sampleSurveySummary.textContent = 'Tracked sample collected and saved to your evidence journal.';
+                            sampleSurveyPanel.dataset.surveyState = 'collected'; sampleSurveyTarget = null; sampleSurveyUiAt = 0;
+                          }
+                          canvasEl.parentElement.setAttribute('data-drone-survey-tracking', String(!!sampleSurveyTarget));
+                          sampleSurveyMarkers.forEach(function(marker, index) {
+                            var orb = sampleSurveyTargets[index];
+                            marker.visible = !!(orb && !orb._collected && (!sampleSurveySweeping || sampleSurveyOrigin.distanceTo(orb.position) <= sampleSurveyRadius));
+                            if (!marker.visible) return;
+                            marker.position.copy(orb.position);
+                            marker.material.color.setHex(orb === sampleSurveyTarget ? 0xffb000 : 0x22d3ee);
+                            marker.scale.setScalar(orb === sampleSurveyTarget ? 1.15 : 0.82);
+                          });
+                          if (surveyNow < sampleSurveyUiAt) return;
+                          sampleSurveyUiAt = surveyNow + 180;
+                          var sampleSurveyBusy = !!(sampleOperation || sampleReadyOrb);
+                          sampleSurveyFind.disabled = scannerCooldown > 0 || sampleSurveyBusy || _descentPhase === 0;
+                          sampleSurveyFind.textContent = scannerCooldown > 0 ? 'Recharging ' + Math.ceil(scannerCooldown / 60) + 's' : 'Find samples';
+                          sampleSurveyNext.disabled = sampleSurveyBusy || sampleSurveySweeping || sampleSurveyTargets.filter(function(orb) { return !orb._collected; }).length < (sampleSurveyTarget ? 2 : 1);
+                          sampleSurveyClear.disabled = sampleSurveyBusy || (!sampleSurveyTargets.length && !sampleSurveySweeping);
+                          [sampleSurveyFind,sampleSurveyNext,sampleSurveyClear].forEach(function(button) { button.style.opacity = button.disabled ? '0.5' : '1'; button.style.cursor = button.disabled ? 'default' : 'pointer'; });
+                          if (sampleSurveySweeping) { sampleSurveyGuidance.textContent = 'Surveying a ' + Math.round(sampleSurveyRange * scaleFactor) + ' m radius in the scene model.'; return; }
+                          if (!sampleSurveyTarget) { sampleSurveyGuidance.textContent = 'Find a marker, choose a contact, approach, then collect (F).'; return; }
+                          var surveyDistance = playerPos.distanceTo(sampleSurveyTarget.position);
+                          var surveyDx = sampleSurveyTarget.position.x - playerPos.x, surveyDz = sampleSurveyTarget.position.z - playerPos.z;
+                          var surveyBearing = Math.atan2(-surveyDx, -surveyDz) - yaw;
+                          surveyBearing = Math.atan2(Math.sin(surveyBearing), Math.cos(surveyBearing));
+                          var surveyDirection = Math.abs(surveyBearing) < Math.PI / 6 ? 'ahead' : Math.abs(surveyBearing) > Math.PI * 5 / 6 ? 'behind' : surveyBearing > 0 ? 'left' : 'right';
+                          var surveyHeight = Math.round((sampleSurveyTarget.position.y - playerPos.y) * scaleFactor);
+                          sampleSurveyGuidance.textContent = sampleSurveyTarget._sampleData.name + ' · ' + Math.round(surveyDistance * scaleFactor) + ' m · ' + surveyDirection + (isGas && Math.abs(surveyHeight) > 10 ? ' · ' + Math.abs(surveyHeight) + ' m ' + (surveyHeight > 0 ? 'above' : 'below') : '') + (surveyDistance < 2 ? ' · Within reach: collect (F).' : ' · Move closer to collect.');
+                        }
+
                         // One transactional sampling operation shared by rover, sub and probe.
                         // Rewards and evidence remain in the original inventory paths and can
                         // only be claimed once, after the tool has sealed its specimen.
@@ -20334,6 +20641,46 @@ const d = labToolData.solarSystem || {};
                         function openColonyHabitatMission() { if (typeof setStemLabTool === 'function') setStemLabTool('spaceColony'); }
                         colonyMissionButton.addEventListener('click',openColonyHabitatMission);
                         sampleControls.appendChild(colonyMissionButton);
+                        if (!isOcean) {
+                          sampleSurveyPanel = document.createElement('section'); sampleSurveyPanel.setAttribute('aria-label', 'Sample survey');
+                          sampleSurveyPanel.setAttribute('data-drone-sample-survey', 'true'); sampleSurveyPanel.dataset.surveyState = 'idle';
+                          sampleSurveyPanel.style.cssText = 'display:grid;gap:5px;min-width:0;padding:9px;border:1px solid #34516a;border-radius:9px;background:#0b2032';
+                          var surveyButtons = document.createElement('div'); surveyButtons.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap';
+                          [['Find samples',findSurveySamples],['Next contact',selectNextSurveySample],['Clear target',clearSurveySample]].forEach(function(spec,index) {
+                            var button = document.createElement('button'); button.type = 'button'; button.textContent = spec[0];
+                            button.style.cssText = 'min-height:44px;padding:6px 10px;border:1px solid #64748b;border-radius:7px;background:#164e63;color:#e0f2fe;font:700 12px system-ui;cursor:pointer';
+                            button.addEventListener('click',spec[1]); surveyButtons.appendChild(button);
+                            if (index === 0) sampleSurveyFind = button; else if (index === 1) sampleSurveyNext = button; else sampleSurveyClear = button;
+                          });
+                          sampleSurveySummary = document.createElement('div'); sampleSurveySummary.setAttribute('role','status'); sampleSurveySummary.setAttribute('data-survey-summary','true');
+                          sampleSurveySummary.style.cssText = 'font:650 12px/1.45 system-ui;color:#bae6fd;overflow-wrap:anywhere';
+                          sampleSurveySummary.textContent = 'Find nearby training markers to plan your next collection.';
+                          sampleSurveyGuidance = document.createElement('div'); sampleSurveyGuidance.setAttribute('data-survey-guidance','true'); sampleSurveyGuidance.style.cssText = 'font:12px/1.45 system-ui;color:#e2e8f0;overflow-wrap:anywhere';
+                          var surveyNote = document.createElement('div'); surveyNote.style.cssText = 'font:11px/1.4 system-ui;color:#b7c9da';
+                          surveyNote.textContent = 'Highlights authored sample markers, not hidden materials. G also records an environment scan.';
+                          sampleSurveyPanel.appendChild(surveyButtons); sampleSurveyPanel.appendChild(sampleSurveySummary); sampleSurveyPanel.appendChild(sampleSurveyGuidance); sampleSurveyPanel.appendChild(surveyNote); sampleStation.appendChild(sampleSurveyPanel);
+                          sampleSurveyPulsePositions = new Float32Array(sampleSurveySegments * 6 * 3 * (isGas ? 3 : 1));
+                          var surveyPulseGeometry = new THREE.BufferGeometry(); surveyPulseGeometry.setAttribute('position',new THREE.BufferAttribute(sampleSurveyPulsePositions,3).setUsage(THREE.DynamicDrawUsage));
+                          var surveyPulseMaterial = new THREE.MeshBasicMaterial({color:0x38bdf8,transparent:true,opacity:0.65,side:THREE.DoubleSide,depthWrite:false,toneMapped:false});
+                          sampleSurveyPulse = new THREE.Mesh(surveyPulseGeometry,surveyPulseMaterial); sampleSurveyPulse.name = 'drone-survey-pulse'; sampleSurveyPulse.frustumCulled = false; sampleSurveyPulse.visible = false; scene.add(sampleSurveyPulse);
+                          sampleSurveyResources.add(surveyPulseGeometry); sampleSurveyResources.add(surveyPulseMaterial);
+                          var surveyBracketPositions = [];
+                          [-1,1].forEach(function(x) { [-1,1].forEach(function(y) { [-1,1].forEach(function(z) {
+                            for (var axis = 0; axis < 3; axis++) {
+                              var center = [x*0.65,y*0.65,z*0.65], size = [0.035,0.035,0.035]; center[axis] *= 0.8; size[axis] = 0.26;
+                              var box = new THREE.BoxGeometry(size[0],size[1],size[2]); box.translate(center[0],center[1],center[2]);
+                              var flat = box.toNonIndexed(), vertices = flat.attributes.position.array;
+                              for (var vertex = 0; vertex < vertices.length; vertex++) surveyBracketPositions.push(vertices[vertex]);
+                              flat.dispose(); box.dispose();
+                            }
+                          }); }); });
+                          var surveyBracketGeometry = new THREE.BufferGeometry(); surveyBracketGeometry.setAttribute('position',new THREE.Float32BufferAttribute(surveyBracketPositions,3)); sampleSurveyResources.add(surveyBracketGeometry);
+                          for (var markerIndex = 0; markerIndex < 3; markerIndex++) {
+                            var markerMaterial = new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:0.95,depthWrite:false,toneMapped:false}); sampleSurveyResources.add(markerMaterial);
+                            var surveyMarker = new THREE.Mesh(surveyBracketGeometry,markerMaterial); surveyMarker.name = 'drone-survey-contact'; surveyMarker.visible = false; scene.add(surveyMarker); sampleSurveyMarkers.push(surveyMarker);
+                          }
+                          updateSampleSurvey();
+                        }
                         sampleStation.appendChild(sampleControls); sampleStation.appendChild(sampleStatus); sampleStation.appendChild(sampleProgress); sampleStation.appendChild(sampleNote);
                         roverCameraBar.appendChild(sampleStation);
                         var sampleOverlay = document.createElement('div');
@@ -20395,7 +20742,11 @@ const d = labToolData.solarSystem || {};
                           if (_descentPhase === 0) { setSampleStatus('idle','Wait for vehicle deployment, then approach a specimen.'); return; }
                           var orbs = isOcean ? oceanAtmo.sampleOrbs : isGas ? gasAtmo.sampleOrbs : geoSampleOrbs;
                           var nearest = null, distance = 2;
-                          orbs.forEach(function(orb) { var d = playerPos.distanceTo(orb.position); if (!orb._collected && d < distance) { distance = d; nearest = orb; } });
+                          if (sampleSurveyTarget && !sampleSurveyTarget._collected) {
+                            if (playerPos.distanceTo(sampleSurveyTarget.position) >= 2) { setSampleStatus('idle','Tracked specimen is out of reach. Follow its guidance, or clear the target to collect another specimen.'); return; }
+                            nearest = sampleSurveyTarget;
+                          }
+                          if (!nearest) orbs.forEach(function(orb) { var d = playerPos.distanceTo(orb.position); if (!orb._collected && d < distance) { distance = d; nearest = orb; } });
                           if (!nearest) { setSampleStatus('idle','No specimen in reach. Move closer to a glowing marker, then collect (F).'); return; }
                           sampleOperation = {orb:nearest,method:sampleMethod.value,elapsed:0,phase:''};
                           sampleReadyOrb = null; sampleProgress.value = 0; sampleCancelButton.disabled = false; sampleMethod.disabled = true; sampleStartButton.disabled = true;
@@ -20518,7 +20869,7 @@ const d = labToolData.solarSystem || {};
                           try {
                             droneRender();
                             // Preserve the whole frame and bound the session image footprint.
-                            var snapshot = document.createElement('canvas');
+                            var snapshot = document.createElement('canvas'); snapshot.setAttribute('aria-hidden', 'true');
                             var imageScale = Math.min(1, 1280 / canvasEl.width, 1280 / canvasEl.height);
                             snapshot.width = Math.max(1, Math.round(canvasEl.width * imageScale));
                             snapshot.height = Math.max(1, Math.round(canvasEl.height * imageScale));
@@ -22770,8 +23121,7 @@ const d = labToolData.solarSystem || {};
                             // Kelp swaying
                             if (typeof kelpGroup !== 'undefined') {
                               kelpGroup.forEach(function(k) {
-                                k.position.x = k._kelpBaseX + Math.sin(tick3d * 0.008 + k._kelpPhase) * 0.3;
-                                k.rotation.z = Math.sin(tick3d * 0.006 + k._kelpPhase) * 0.08;
+                                k.rotation.z = droneReduceMotion ? 0 : Math.sin(tick3d * 0.006 + k._kelpPhase) * 0.035;
                               });
                             }
 
@@ -22856,25 +23206,6 @@ const d = labToolData.solarSystem || {};
                                 }
                               }
                               ventSmokeMesh.geometry.attributes.position.needsUpdate = true;
-                            }
-
-                            // Animated caustic pattern (redraw every 10 frames)
-                            if (typeof causticCtx2 !== 'undefined' && tick3d % 10 === 0 && playerPos.y > -8) {
-                              causticCtx2.clearRect(0, 0, 256, 256);
-                              causticCtx2.fillStyle = 'rgba(100,200,255,0.3)';
-                              for (var cci = 0; cci < 25; cci++) {
-                                var ccx2 = 128 + Math.sin(tick3d * 0.008 + cci * 1.7) * 80 + Math.cos(tick3d * 0.005 + cci * 2.3) * 40;
-                                var ccy2 = 128 + Math.cos(tick3d * 0.006 + cci * 1.3) * 80 + Math.sin(tick3d * 0.009 + cci * 1.9) * 40;
-                                var ccr2 = 15 + Math.sin(tick3d * 0.01 + cci * 3) * 10;
-                                causticCtx2.beginPath();
-                                causticCtx2.arc(ccx2, ccy2, ccr2, 0, Math.PI * 2);
-                                causticCtx2.fill();
-                              }
-                              causticTex.needsUpdate = true;
-                              // Fade caustics with depth
-                              causticPlane.material.opacity = Math.max(0, 0.15 - Math.abs(playerPos.y) * 0.006);
-                              causticPlane.position.x = playerPos.x;
-                              causticPlane.position.z = playerPos.z;
                             }
 
                             // Shark cruising in large circle
@@ -23435,7 +23766,8 @@ const d = labToolData.solarSystem || {};
                           if (tick3d % 10 === 0) { checkNavCompletion(); updatePlotterRouteProgress(); checkBadges(); }
 
                           // Scanner + photo cooldowns
-                          if (scannerCooldown > 0) scannerCooldown--;
+                          refreshScannerCooldown();
+                          updateSampleSurvey();
 
 
                           // Pluto geyser particle animation
@@ -23950,6 +24282,10 @@ const d = labToolData.solarSystem || {};
                           }
                           geologyMaterials.forEach(function (material) { material.dispose(); });
                           geologyMaterials.length = 0;
+                          oceanSceneryObjects.forEach(function(object) { scene.remove(object); if (object.isInstancedMesh && object.dispose) object.dispose(); });
+                          oceanSceneryObjects.length = 0;
+                          oceanSceneryResources.forEach(function(resource) { resource.dispose(); }); oceanSceneryResources.clear();
+                          delete canvasEl.dataset.droneOceanScenery;
                           vehicleDetailMeshes.forEach(function(mesh) { mesh.parent.remove(mesh); mesh.geometry.dispose(); });
                           vehicleDetailMeshes.length = 0;
                           vehicleDetailMaterials.forEach(function(material) { material.dispose(); });
@@ -23992,6 +24328,13 @@ const d = labToolData.solarSystem || {};
                           sampleStartButton.removeEventListener('click',startDroneSampling);
                           sampleCancelButton.removeEventListener('click',cancelDroneSampling);
                           colonyMissionButton.removeEventListener('click',openColonyHabitatMission);
+                          if (sampleSurveyPanel) {
+                            sampleSurveyFind.removeEventListener('click',findSurveySamples); sampleSurveyNext.removeEventListener('click',selectNextSurveySample); sampleSurveyClear.removeEventListener('click',clearSurveySample);
+                            scene.remove(sampleSurveyPulse); sampleSurveyMarkers.forEach(function(marker) { scene.remove(marker); });
+                            sampleSurveyResources.forEach(function(resource) { resource.dispose(); }); sampleSurveyResources.clear();
+                            sampleSurveyTargets = []; sampleSurveyTarget = null; sampleSurveyMarkers = []; sampleSurveyPanel = null;
+                          }
+                          if (canvasEl.parentElement) canvasEl.parentElement.removeAttribute('data-drone-survey-tracking');
                           sampleStation.remove(); sampleOverlay.remove(); scene.remove(sampleRig);
                           if (canvasEl.parentElement) canvasEl.parentElement.removeAttribute('data-drone-sampling-active');
                           var sampleGeometries = new Set(), sampleMaterials = new Set();

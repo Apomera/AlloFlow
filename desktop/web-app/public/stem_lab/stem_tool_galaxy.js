@@ -166,6 +166,24 @@ window.StemLab = window.StemLab || {
     return geometry;
   }
 
+  // Unwrap shell light along the arc and gently disturb its outline once at creation.
+  function galaxyShapeNebulaShell(geometry, phase) {
+    var positions = geometry.attributes && geometry.attributes.position;
+    var uv = geometry.attributes && geometry.attributes.uv, parameters = geometry.parameters;
+    if (!positions || !uv || !parameters) return geometry;
+    var segments = parameters.thetaSegments, rows = parameters.phiSegments;
+    for (var i = 0; i < positions.count; i++) {
+      var along = (i % (segments + 1)) / segments, across = Math.floor(i / (segments + 1)) / rows;
+      var angle = parameters.thetaStart + along * parameters.thetaLength;
+      var ripple = 1 + 0.026 * Math.sin(angle * 5 + phase) + 0.013 * Math.sin(angle * 11 - phase * 0.7);
+      positions.array[i * 3] *= ripple; positions.array[i * 3 + 1] *= ripple;
+      uv.array[i * 2] = along; uv.array[i * 2 + 1] = across;
+    }
+    positions.needsUpdate = true; uv.needsUpdate = true;
+    geometry.computeBoundingSphere();
+    return geometry;
+  }
+
   // One cached photosphere texture is shared by the 2-D stellar stages.
   // Grain is generated at startup rather than allocating gradients every frame.
   var galaxyPhotosphereTexture = null;
@@ -880,6 +898,8 @@ if (!window._galaxyHasLoadedOnce) {
           // 1.5-solar-mass star was labelled "A-type White" beside a displayed 7,000 K,
           // which is an F star. (M_DWARF_LIMIT already sits within 0.006 of the 3700 K
           // M/K crossing, so it serves as that boundary unchanged.)
+          // Coronal-loop visibility is a rendering threshold, separate from spectral classification.
+          var CORONAL_LOOP_MAX_MASS = 1.4;
           var CLASS_MAX_K = 0.87, CLASS_MAX_G = 1.10, CLASS_MAX_F = 1.62, CLASS_MAX_A = 2.36, CLASS_MAX_B = 16.2;
 
           // neb.type is compared (Dark, Emission) as well as shown, so it stays a machine
@@ -3383,7 +3403,16 @@ if (!window._galaxyHasLoadedOnce) {
                   pts.push(new THREE.Vector3(Math.cos(angle) * radius, y + 0.006, Math.sin(angle) * radius * zScale));
                 }
                 var streamGeo = new THREE.BufferGeometry().setFromPoints(pts);
-                var streamMat = new THREE.LineBasicMaterial({ color: si % 3 === 1 ? 0xf0abfc : si % 3 === 2 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0.035 + si * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+                // Periodic light variation keeps the closed seam continuous while quieting full guide-like rings.
+                var streamColors = new Float32Array((segments + 1) * 3);
+                for (var streamVertex = 0; streamVertex <= segments; streamVertex++) {
+                  var streamAngle = streamVertex / segments * Math.PI * 2;
+                  var streamLight = 0.08 + 0.72 * Math.pow(0.5 + 0.5 * Math.cos(streamAngle * 3 + si * 1.7), 3);
+                  streamLight *= 0.8 + 0.2 * Math.cos(streamAngle * 7 - si * 0.63);
+                  streamColors[streamVertex * 3] = streamColors[streamVertex * 3 + 1] = streamColors[streamVertex * 3 + 2] = streamLight;
+                }
+                streamGeo.setAttribute('color', new THREE.BufferAttribute(streamColors, 3));
+                var streamMat = new THREE.LineBasicMaterial({ vertexColors: true, color: si % 3 === 1 ? 0xf0abfc : si % 3 === 2 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0.035 + si * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
                 streamMat.userData = { baseOpacity: streamMat.opacity, phase: Math.random() * Math.PI * 2 };
                 var streamLine = new THREE.Line(streamGeo, streamMat);
                 streamLine.userData = { drift: (si % 2 ? -1 : 1) * (0.00008 + si * 0.000012) };
@@ -3413,9 +3442,9 @@ if (!window._galaxyHasLoadedOnce) {
                     var ridgeAngle = spiralPatternAngle(ridgeArm, ridgeRadius, strandOffset + ridgeFeather);
                     ridgePoints.push(new THREE.Vector3(Math.cos(ridgeAngle) * ridgeRadius, 0.003 + (ridgeStrand % 2 ? -1 : 1) * 0.0018 + Math.sin(ridgeT * Math.PI * 3 + ridgeArm) * 0.0012, Math.sin(ridgeAngle) * ridgeRadius));
                   }
-                  var ridgeMaterial = new THREE.LineBasicMaterial({ color: ridgeStrand % 3 === 0 ? 0xbfdbfe : ridgeStrand % 3 === 1 ? 0xf9a8d4 : 0xffedd5, transparent: true, opacity: 0.028 + (ridgeStrands - ridgeStrand) * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+                  var ridgeMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: ridgeStrand % 3 === 0 ? 0xbfdbfe : ridgeStrand % 3 === 1 ? 0xf9a8d4 : 0xffedd5, transparent: true, opacity: 0.028 + (ridgeStrands - ridgeStrand) * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
                   ridgeMaterial.userData = { baseOpacity: ridgeMaterial.opacity, phase: ridgeArm * 1.4 + ridgeStrand * 0.72 };
-                  var ridgeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ridgePoints), ridgeMaterial); ridgeLine.renderOrder = 3; spiralRidgeGroup.add(ridgeLine); spiralRidgeMaterials.push(ridgeMaterial);
+                  var ridgeLine = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(ridgePoints), ridgePoints.length, ridgeArm * 1.4 + ridgeStrand * 0.72), ridgeMaterial); ridgeLine.renderOrder = 3; spiralRidgeGroup.add(ridgeLine); spiralRidgeMaterials.push(ridgeMaterial);
                 }
               }
               var spurCount = ridgeArmCount * (resolvedQuality === 'cinematic' ? 9 : resolvedQuality === 'high' ? 7 : 4);
@@ -3428,9 +3457,9 @@ if (!window._galaxyHasLoadedOnce) {
                   var spurAngle = parentAngle - 0.018 + spurT * (0.1 + (spurIndex % 3) * 0.024) + Math.sin(spurT * Math.PI) * 0.012;
                   spurPoints.push(new THREE.Vector3(Math.cos(spurAngle) * spurRadius, 0.005 + Math.sin(spurT * Math.PI) * 0.0025, Math.sin(spurAngle) * spurRadius));
                 }
-                var spurMaterial = new THREE.LineBasicMaterial({ color: spurIndex % 4 === 0 ? 0xf0abfc : spurIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0.025 + (spurIndex % 5) * 0.004, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+                var spurMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: spurIndex % 4 === 0 ? 0xf0abfc : spurIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0.025 + (spurIndex % 5) * 0.004, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
                 spurMaterial.userData = { baseOpacity: spurMaterial.opacity, phase: spurIndex * 0.83 };
-                var spurLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(spurPoints), spurMaterial); spurLine.renderOrder = 3; spiralSpurGroup.add(spurLine); spiralSpurMaterials.push(spurMaterial);
+                var spurLine = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(spurPoints), spurPoints.length, spurIndex * 0.83), spurMaterial); spurLine.renderOrder = 3; spiralSpurGroup.add(spurLine); spiralSpurMaterials.push(spurMaterial);
               }
             })();
             var sparkleGroup = new THREE.Group(); sparkleGroup.name = 'stellarGlints'; sparkleGroup.renderOrder = 3; armGroup.add(sparkleGroup);
@@ -3439,7 +3468,7 @@ if (!window._galaxyHasLoadedOnce) {
             var chromaticHaloMode = 1, haloScatteringMode = 1;
             var stellarWindBowShockGroup = new THREE.Group(); stellarWindBowShockGroup.name = 'stellarWindBowShocks'; stellarWindBowShockGroup.visible = false; armGroup.add(stellarWindBowShockGroup);
             var stellarWindBowShocks = [], bowShockMode = 1;
-            var sparkleTex = null, chromaticHaloTex = null;
+            var sparkleTex = null, chromaticHaloTex = null, bowShockTex = null, gasPlumeTextures = [];
 
             (function () {
               var softCv = document.createElement('canvas'); softCv.setAttribute('aria-hidden', 'true'); softCv.width = 64; softCv.height = 64;
@@ -3667,8 +3696,44 @@ if (!window._galaxyHasLoadedOnce) {
               var chromaticCv = document.createElement('canvas'); chromaticCv.setAttribute('aria-hidden', 'true'); chromaticCv.width = 192; chromaticCv.height = 192;
               var chromaticCtx = upscaleGalaxyCanvas(chromaticCv, chromaticCv.getContext('2d'));
               [{ x: 91, stops: ['rgba(96,165,250,0.34)', 'rgba(96,165,250,0.12)', 'rgba(96,165,250,0.04)'] }, { x: 96, stops: ['rgba(255,255,255,0.46)', 'rgba(255,255,255,0.18)', 'rgba(255,255,255,0.055)'] }, { x: 101, stops: ['rgba(251,113,133,0.3)', 'rgba(251,113,133,0.11)', 'rgba(251,113,133,0.038)'] }].forEach(function (channel) { var channelGlow = chromaticCtx.createRadialGradient(channel.x, 96, 0, channel.x, 96, 78); channelGlow.addColorStop(0, channel.stops[0]); channelGlow.addColorStop(0.16, channel.stops[1]); channelGlow.addColorStop(0.56, channel.stops[2]); channelGlow.addColorStop(1, 'rgba(0,0,0,0)'); chromaticCtx.fillStyle = channelGlow; chromaticCtx.fillRect(12, 12, 168, 168); });
-              chromaticCtx.strokeStyle = 'rgba(255,255,255,0.18)'; chromaticCtx.lineWidth = 1.5; chromaticCtx.beginPath(); chromaticCtx.arc(96, 96, 58, 0, Math.PI * 2); chromaticCtx.stroke();
-              chromaticHaloTex = tuneGalaxyTexture(new THREE.CanvasTexture(chromaticCv));
+              var opticalRing = chromaticCtx.createRadialGradient(96, 96, 52, 96, 96, 65);
+              opticalRing.addColorStop(0, 'rgba(255,255,255,0)'); opticalRing.addColorStop(0.4, 'rgba(255,255,255,0.028)');
+              opticalRing.addColorStop(0.7, 'rgba(255,255,255,0.02)'); opticalRing.addColorStop(1, 'rgba(255,255,255,0)');
+              chromaticCtx.fillStyle = opticalRing; chromaticCtx.fillRect(0, 0, 192, 192);
+              galaxyFeatherCloud(chromaticCtx, chromaticCv, 0.64);
+              chromaticHaloTex = tuneGalaxyTexture(new THREE.CanvasTexture(chromaticCv)); chromaticHaloTex.name = 'galaxySoftOpticalHalo';
+
+              // Emitting gas has its own structure instead of inheriting a star's optical ring.
+              gasPlumeTextures = [true, false].map(function (jet) {
+                var plumeCanvas = document.createElement('canvas'); plumeCanvas.setAttribute('aria-hidden', 'true'); plumeCanvas.width = plumeCanvas.height = 128;
+                var plumeContext = plumeCanvas.getContext('2d'), plumePixels = plumeContext.getImageData(0, 0, 128, 128);
+                for (var py = 0; py < 128; py++) for (var px = 0; px < 128; px++) {
+                  var u = (px + 0.5 - 64) / 64, v = (py + 0.5 - 64) / 64;
+                  var axis = u + Math.sin(v * 8) * (jet ? 0.035 : 0.12);
+                  var light = jet ? Math.exp(-axis * axis * 8) * Math.pow(Math.max(0, 1 - v * v), 1.4) * (0.56 + 0.18 * Math.pow(Math.cos(v * 13), 2)) : Math.exp(-(axis * axis * 2 + v * v) * 2.1) * (0.52 + 0.14 * Math.sin(v * 9 + u * 4));
+                  var offset = (py * 128 + px) * 4;
+                  plumePixels.data[offset] = plumePixels.data[offset + 1] = plumePixels.data[offset + 2] = 255;
+                  plumePixels.data[offset + 3] = Math.round(255 * light);
+                }
+                plumeContext.putImageData(plumePixels, 0, 0);
+                galaxyCloudGrain(plumeContext, plumeCanvas, jet ? 1039 : 1091, jet ? 0.22 : 0.42);
+                galaxyFeatherCloud(plumeContext, plumeCanvas, 0.62);
+                var plumeTexture = tuneGalaxyTexture(new THREE.CanvasTexture(plumeCanvas)); plumeTexture.name = jet ? 'galaxyProtostellarJet' : 'galaxyPlanetaryLobe'; return plumeTexture;
+              });
+              if (galaxyType !== 'elliptical') {
+                var windCanvas = document.createElement('canvas'); windCanvas.setAttribute('aria-hidden', 'true'); windCanvas.width = 128; windCanvas.height = 64;
+                var windContext = windCanvas.getContext('2d'), windPixels = windContext.getImageData(0, 0, 128, 64);
+                for (var wy = 0; wy < 64; wy++) for (var wx = 0; wx < 128; wx++) {
+                  var along = wx / 127, across = wy / 63;
+                  var taper = wx === 0 || wx === 127 || wy === 0 || wy === 63 ? 0 : Math.pow(Math.sin(along * Math.PI), 1.2) * Math.pow(Math.sin(across * Math.PI), 0.8);
+                  var ridge = across - 0.5 - Math.sin(along * 15) * 0.045;
+                  var windLight = taper * (0.4 + 0.6 * Math.exp(-ridge * ridge * 85));
+                  var windOffset = (wy * 128 + wx) * 4;
+                  windPixels.data[windOffset] = windPixels.data[windOffset + 1] = windPixels.data[windOffset + 2] = 255; windPixels.data[windOffset + 3] = Math.round(255 * windLight);
+                }
+                windContext.putImageData(windPixels, 0, 0);
+                bowShockTex = tuneGalaxyTexture(new THREE.CanvasTexture(windCanvas)); bowShockTex.name = 'galaxyStellarWindShock';
+              }
 
               var flareCv = document.createElement('canvas'); flareCv.setAttribute('aria-hidden', 'true'); flareCv.width = 192; flareCv.height = 192;
               var flareCtx = flareCv.getContext('2d');
@@ -3684,12 +3749,13 @@ if (!window._galaxyHasLoadedOnce) {
               for (var fr = 0; fr < 18; fr++) {
                 flareCtx.rotate(Math.PI * 2 / 18);
                 var fg = flareCtx.createLinearGradient(0, 0, 86, 0);
-                fg.addColorStop(0, 'rgba(255,255,255,0.32)');
+                fg.addColorStop(0, 'rgba(255,255,255,0.15)');
                 fg.addColorStop(1, 'rgba(255,255,255,0)');
                 flareCtx.strokeStyle = fg; flareCtx.lineWidth = fr % 3 === 0 ? 3 : 1.3;
                 flareCtx.beginPath(); flareCtx.moveTo(10, 0); flareCtx.lineTo(86, 0); flareCtx.stroke();
               }
-              var flareTex = tuneGalaxyTexture(new THREE.CanvasTexture(flareCv));
+              galaxyFeatherCloud(flareCtx, flareCv, 0.62);
+              var flareTex = tuneGalaxyTexture(new THREE.CanvasTexture(flareCv)); flareTex.name = 'galaxyCoreRadiance';
               coreFlare = new THREE.Sprite(new THREE.SpriteMaterial({ map: flareTex, transparent: true, opacity: visualGlow.core, depthWrite: false, blending: THREE.AdditiveBlending, rotation: 0 }));
               var coreFlareScaleX = galaxyType === 'elliptical' ? 0.34 : 0.58, coreFlareScaleY = galaxyType === 'elliptical' ? 0.2 : 0.24;
               coreFlare.scale.set(coreFlareBaseScaleX, coreFlareBaseScaleY, 1);
@@ -3706,12 +3772,17 @@ if (!window._galaxyHasLoadedOnce) {
               barGrad.addColorStop(0.5, 'rgba(255,255,255,0.66)');
               barGrad.addColorStop(0.64, 'rgba(244,114,182,0.12)');
               barGrad.addColorStop(1, 'rgba(255,255,255,0)');
-              barCtx.fillStyle = barGrad; barCtx.fillRect(0, 18, 384, 12);
+              barCtx.fillStyle = barGrad; barCtx.fillRect(0, 0, 384, 48);
+              barCtx.save(); barCtx.globalCompositeOperation = 'destination-in';
+              var barCrossFade = barCtx.createLinearGradient(0, 0, 0, 48);
+              barCrossFade.addColorStop(0, 'rgba(255,255,255,0)'); barCrossFade.addColorStop(0.18, 'rgba(255,255,255,0)'); barCrossFade.addColorStop(0.5, 'rgba(255,255,255,1)'); barCrossFade.addColorStop(0.82, 'rgba(255,255,255,0)'); barCrossFade.addColorStop(1, 'rgba(255,255,255,0)');
+              barCtx.fillStyle = barCrossFade; barCtx.fillRect(0, 0, 384, 48); barCtx.restore();
               var barCore = barCtx.createRadialGradient(192, 24, 0, 192, 24, 40);
               barCore.addColorStop(0, 'rgba(255,246,209,0.55)');
               barCore.addColorStop(1, 'rgba(255,255,255,0)');
               barCtx.fillStyle = barCore; barCtx.fillRect(144, 0, 96, 48);
-              var barTex = tuneGalaxyTexture(new THREE.CanvasTexture(barCv));
+              galaxyFeatherCloud(barCtx, barCv, 0.64);
+              var barTex = tuneGalaxyTexture(new THREE.CanvasTexture(barCv)); barTex.name = 'galaxySoftBarLight';
               (galaxyType === 'barredSpiral' ? [0, 1] : []).forEach(function (barIdx) {
                 var barMat = new THREE.MeshBasicMaterial({ map: barTex, transparent: true, opacity: barIdx ? 0.16 : 0.24, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                 var barSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), barMat);
@@ -3769,8 +3840,9 @@ if (!window._galaxyHasLoadedOnce) {
               var bowShockCount = galaxyType === 'elliptical' ? 0 : Math.min(luminousCandidates.length, resolvedQuality === 'cinematic' ? 34 : resolvedQuality === 'high' ? 22 : 12);
               for (var bowShockIndex = 0; bowShockIndex < bowShockCount; bowShockIndex++) {
                 var windStar = luminousCandidates[bowShockIndex], windLuminosity = Math.max(0.5, windStar.luminosity || 1), bowShockScale = 0.014 + Math.min(0.024, Math.sqrt(windLuminosity) * 0.0045);
-                var bowShockMaterial = new THREE.MeshBasicMaterial({ color: bowShockIndex % 5 === 0 ? 0xf9a8d4 : bowShockIndex % 3 === 0 ? 0xfde68a : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                var bowShockMaterial = new THREE.MeshBasicMaterial({ map: bowShockTex, color: bowShockIndex % 5 === 0 ? 0xf9a8d4 : bowShockIndex % 3 === 0 ? 0xfde68a : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                 var bowShock = new THREE.Mesh(new THREE.RingGeometry(0.72, 1, resolvedQuality === 'cinematic' ? 72 : 48, 1, -0.92, 1.84), bowShockMaterial);
+                galaxyShapeNebulaShell(bowShock.geometry, bowShockIndex * 1.17);
                 bowShock.position.set(windStar.x, windStar.y + 0.0025, windStar.z); bowShock.scale.set(bowShockScale * 0.72, bowShockScale, bowShockScale);
                 bowShock.userData = { baseOpacity: 0.09 + Math.min(0.14, windLuminosity * 0.012), baseScale: bowShockScale, phase: bowShockIndex * 1.17, upstreamAngle: Math.atan2(windStar.z, windStar.x) + Math.PI * 0.5, luminosity: windLuminosity };
                 setLuminousOverlayOrbitData(bowShock, windStar); bowShock.renderOrder = 7; stellarWindBowShockGroup.add(bowShock); stellarWindBowShocks.push(bowShock);
@@ -4141,7 +4213,7 @@ if (!window._galaxyHasLoadedOnce) {
               fountainParticleMaterial = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 }, uPointScale: { value: renderer.getPixelRatio() * (resolvedQuality === 'cinematic' ? 5.8 : resolvedQuality === 'high' ? 4.8 : 4.1) } }, vertexShader: ['attribute float aHeight;','attribute float aPhase;','attribute float aDirection;','attribute float aSpeed;','varying vec3 vFountainColor;','varying float vFountainFade;','uniform float uTime;','uniform float uPointScale;','void main(){','float cycle=fract(aPhase+uTime*aSpeed);','float lift=sin(cycle*3.14159265);','vec3 p=position;','p.y+=aDirection*aHeight*lift;','p.xz*=1.0+cycle*cycle*0.035;','vFountainColor=color;','vFountainFade=sin(cycle*3.14159265);','vec4 mv=modelViewMatrix*vec4(p,1.0);','gl_PointSize=min(9.0,uPointScale*(58.0/max(-mv.z,1.0))*(0.65+vFountainFade*0.55));','gl_Position=projectionMatrix*mv;','}'].join('\n'), fragmentShader: ['varying vec3 vFountainColor;','varying float vFountainFade;','uniform float uOpacity;','void main(){','float d=length(gl_PointCoord-0.5)*2.0;','if(d>1.0)discard;','float core=exp(-d*d*5.6);','float halo=exp(-d*d*1.8)*0.18;','gl_FragColor=vec4(vFountainColor*(0.62+core*0.72),(core+halo)*uOpacity*(0.35+vFountainFade*0.65));','}'].join('\n'), vertexColors: true, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
               var fountainPoints = new THREE.Points(fountainGeometry, fountainParticleMaterial); fountainPoints.renderOrder = 5; fountainParticleGroup.add(fountainPoints);
               var superbubbleCapCount = resolvedQuality === 'cinematic' ? 28 : resolvedQuality === 'high' ? 18 : 10;
-              for (var superbubbleCapIndex = 0; superbubbleCapIndex < superbubbleCapCount; superbubbleCapIndex++) { var capRadiusFromCore = 0.18 + Math.pow(Math.random(), 0.76) * 0.5, capAngle = superbubbleCapIndex / superbubbleCapCount * Math.PI * 2 + Math.sin(superbubbleCapIndex * 1.3) * 0.36, capDirection = superbubbleCapIndex % 2 ? -1 : 1, capHeight = 0.1 + Math.random() * 0.18, capMaterial = new THREE.MeshBasicMaterial({ color: superbubbleCapIndex % 4 === 0 ? 0x67e8f9 : superbubbleCapIndex % 3 === 0 ? 0xf9a8d4 : 0xc4b5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), capScale = 0.016 + Math.random() * 0.018; var capShell = new THREE.Mesh(new THREE.RingGeometry(0.64, 1, resolvedQuality === 'cinematic' ? 64 : 42, 1, superbubbleCapIndex * 0.51, Math.PI * (1.1 + superbubbleCapIndex % 4 * 0.12)), capMaterial); capShell.position.set(Math.cos(capAngle) * (capRadiusFromCore + 0.025), capDirection * capHeight, Math.sin(capAngle) * (capRadiusFromCore + 0.025)); capShell.rotation.x = Math.PI * 0.5; capShell.rotation.z = superbubbleCapIndex * 0.38; capShell.scale.set(capScale, capScale, capScale); capShell.userData = { baseOpacity: 0.07 + Math.random() * 0.06, baseScale: capScale, phase: superbubbleCapIndex * 0.74, drift: (superbubbleCapIndex % 2 ? -1 : 1) * 0.00014 }; capShell.renderOrder = 5; superbubbleCapGroup.add(capShell); superbubbleCapShells.push(capShell); }
+              for (var superbubbleCapIndex = 0; superbubbleCapIndex < superbubbleCapCount; superbubbleCapIndex++) { var capRadiusFromCore = 0.18 + Math.pow(Math.random(), 0.76) * 0.5, capAngle = superbubbleCapIndex / superbubbleCapCount * Math.PI * 2 + Math.sin(superbubbleCapIndex * 1.3) * 0.36, capDirection = superbubbleCapIndex % 2 ? -1 : 1, capHeight = 0.1 + Math.random() * 0.18, capMaterial = new THREE.MeshBasicMaterial({ map: bowShockTex, color: superbubbleCapIndex % 4 === 0 ? 0x67e8f9 : superbubbleCapIndex % 3 === 0 ? 0xf9a8d4 : 0xc4b5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), capScale = 0.016 + Math.random() * 0.018; var capShell = new THREE.Mesh(new THREE.RingGeometry(0.64, 1, resolvedQuality === 'cinematic' ? 64 : 42, 1, superbubbleCapIndex * 0.51, Math.PI * (1.1 + superbubbleCapIndex % 4 * 0.12)), capMaterial); galaxyShapeNebulaShell(capShell.geometry, superbubbleCapIndex * 0.74); capShell.position.set(Math.cos(capAngle) * (capRadiusFromCore + 0.025), capDirection * capHeight, Math.sin(capAngle) * (capRadiusFromCore + 0.025)); capShell.rotation.x = Math.PI * 0.5; capShell.rotation.z = superbubbleCapIndex * 0.38; capShell.scale.set(capScale, capScale, capScale); capShell.userData = { baseOpacity: 0.07 + Math.random() * 0.06, baseScale: capScale, phase: superbubbleCapIndex * 0.74, drift: (superbubbleCapIndex % 2 ? -1 : 1) * 0.00014 }; capShell.renderOrder = 5; superbubbleCapGroup.add(capShell); superbubbleCapShells.push(capShell); }
             })();
             var openClusterMat = null, thickDiskMat = null;
             var morphologySignatureGroup = new THREE.Group(); morphologySignatureGroup.name = 'morphologySignatureStructures'; scene.add(morphologySignatureGroup);
@@ -4211,6 +4283,26 @@ if (!window._galaxyHasLoadedOnce) {
               galaxyFeatherCloud(scatteringCtx, scatteringCv, 0.62);
               var armScatteringTexture = tuneGalaxyTexture(new THREE.CanvasTexture(scatteringCv)); armScatteringTexture.name = 'galaxyArmScattering';
 
+              // Two shared filament strips soften open arcs and seamless closed gas shells.
+              // Angular/radial UVs let every shell retain its own size and thickness.
+              var nebulaShellTextures = [false, true].map(function (closed) {
+                var shellCanvas = document.createElement('canvas'); shellCanvas.setAttribute('aria-hidden', 'true'); shellCanvas.width = 128; shellCanvas.height = 64;
+                var shellContext = shellCanvas.getContext('2d'), shellImage = shellContext.getImageData(0, 0, 128, 64);
+                for (var sy = 0; sy < 64; sy++) for (var sx = 0; sx < 128; sx++) {
+                  var u = sx / 127, v = sy / 63, angle = u * Math.PI * 2;
+                  var radialFade = sy === 0 || sy === 63 ? 0 : Math.pow(Math.sin(v * Math.PI), 0.65);
+                  var endFade = closed ? 1 : sx === 0 || sx === 127 ? 0 : Math.pow(Math.sin(u * Math.PI), 0.55);
+                  var ridgeCenter = 0.46 + 0.075 * Math.sin(angle * 3) + 0.035 * Math.cos(angle * 7);
+                  var threads = 0.55 + 0.45 * Math.pow(0.5 + 0.5 * Math.cos((v - ridgeCenter) * Math.PI * 8), 5);
+                  var density = 0.78 + 0.14 * Math.sin(angle * 3) + 0.08 * Math.cos(angle * 7);
+                  var offset = (sy * 128 + sx) * 4;
+                  shellImage.data[offset] = shellImage.data[offset + 1] = shellImage.data[offset + 2] = 255;
+                  shellImage.data[offset + 3] = Math.round(255 * radialFade * endFade * threads * density);
+                }
+                shellContext.putImageData(shellImage, 0, 0);
+                var texture = tuneGalaxyTexture(new THREE.CanvasTexture(shellCanvas)); texture.name = closed ? 'galaxyClosedGasShell' : 'galaxyOpenGasShell'; return texture;
+              });
+
               // Resolved globular clusters occupy the old stellar halo.
               var clusterCv = document.createElement('canvas'); clusterCv.setAttribute('aria-hidden', 'true'); clusterCv.width = 128; clusterCv.height = 128;
               var clusterCtx = upscaleGalaxyCanvas(clusterCv, clusterCv.getContext('2d')); clusterCtx.translate(64, 64);
@@ -4265,7 +4357,7 @@ if (!window._galaxyHasLoadedOnce) {
                 var nurseryCore = new THREE.Sprite(nurseryCoreMaterial), nurseryCoreScale = nurserySize * 0.36; nurseryCore.position.set(nurseryX, nurseryY, nurseryZ); nurseryCore.scale.set(nurseryCoreScale, nurseryCoreScale, 1); nurseryCore.userData = { baseOpacity: 0.52 + (nurseryIndex % 5) * 0.06, baseScale: nurseryCoreScale, phase: nurseryIndex * 0.81 }; nurseryCore.renderOrder = 9; circumstellarNurseryGroup.add(nurseryCore); protostellarCoreSprites.push(nurseryCore);
                 var jetVectorX = Math.cos(nurseryAxis) * 0.34, jetVectorY = 0.88, jetVectorZ = Math.sin(nurseryAxis) * 0.34;
                 for (var jetSideIndex = 0; jetSideIndex < 2; jetSideIndex++) {
-                  var jetDirection = jetSideIndex ? -1 : 1, jetMaterial = new THREE.SpriteMaterial({ map: chromaticHaloTex || fineStarTex, color: nurseryIndex % 5 === 0 ? 0xf9a8d4 : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: nurseryAxis + (jetSideIndex ? Math.PI : 0) });
+                  var jetDirection = jetSideIndex ? -1 : 1, jetMaterial = new THREE.SpriteMaterial({ map: gasPlumeTextures[0], color: nurseryIndex % 5 === 0 ? 0xf9a8d4 : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: nurseryAxis + (jetSideIndex ? Math.PI : 0) });
                   var jetSprite = new THREE.Sprite(jetMaterial), jetOffset = nurserySize * 1.08; jetSprite.position.set(nurseryX + jetVectorX * jetOffset * jetDirection, nurseryY + jetVectorY * jetOffset * jetDirection, nurseryZ + jetVectorZ * jetOffset * jetDirection); jetSprite.scale.set(nurserySize * 0.34, nurserySize * 2.35, 1); jetSprite.userData = { baseOpacity: 0.1 + (nurseryIndex % 4) * 0.02, baseScaleX: nurserySize * 0.34, baseScaleY: nurserySize * 2.35, phase: nurseryIndex * 0.81 + jetSideIndex * Math.PI, drift: (jetSideIndex ? -1 : 1) * 0.00018 }; jetSprite.renderOrder = 8; protostellarJetGroup.add(jetSprite); protostellarJetSprites.push(jetSprite);
                   var shockMaterial = new THREE.SpriteMaterial({ map: fineStarTex, color: jetSideIndex ? 0xf9a8d4 : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
                   var shockKnot = new THREE.Sprite(shockMaterial), shockOffset = nurserySize * 2.28, shockScale = nurserySize * 0.31; shockKnot.position.set(nurseryX + jetVectorX * shockOffset * jetDirection, nurseryY + jetVectorY * shockOffset * jetDirection, nurseryZ + jetVectorZ * shockOffset * jetDirection); shockKnot.scale.set(shockScale, shockScale, 1); shockKnot.userData = { baseOpacity: 0.32 + (nurseryIndex % 3) * 0.07, baseScale: shockScale, phase: nurseryIndex * 0.81 + jetSideIndex * 2.1 }; shockKnot.renderOrder = 9; protostellarJetGroup.add(shockKnot); protostellarShockKnots.push(shockKnot);
@@ -4278,15 +4370,15 @@ if (!window._galaxyHasLoadedOnce) {
                 var planetaryRadius = 0.16 + Math.pow(Math.random(), 0.78) * 0.58, planetaryArm = planetaryNebulaIndex % (gType.arms || 4), planetaryAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : planetaryArm / (gType.arms || 4) * Math.PI * 2 + planetaryRadius * (gType.windTightness || 2.5) + 0.045;
                 var planetaryX = Math.cos(planetaryAngle) * planetaryRadius, planetaryY = (Math.random() - 0.5) * 0.052, planetaryZ = Math.sin(planetaryAngle) * planetaryRadius, planetaryAxis = planetaryAngle + Math.PI * (0.26 + (planetaryNebulaIndex % 7) * 0.067), planetarySize = 0.012 + Math.random() * 0.009;
                 for (var planetaryLobeSide = 0; planetaryLobeSide < 2; planetaryLobeSide++) {
-                  var planetaryDirection = planetaryLobeSide ? -1 : 1, planetaryLobeMaterial = new THREE.SpriteMaterial({ map: chromaticHaloTex || fineStarTex, color: planetaryNebulaIndex % 4 === 0 ? 0xf9a8d4 : planetaryNebulaIndex % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: planetaryAxis + Math.PI * 0.5 });
+                  var planetaryDirection = planetaryLobeSide ? -1 : 1, planetaryLobeMaterial = new THREE.SpriteMaterial({ map: gasPlumeTextures[1], color: planetaryNebulaIndex % 4 === 0 ? 0xf9a8d4 : planetaryNebulaIndex % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: planetaryAxis + Math.PI * 0.5 });
                   var planetaryLobe = new THREE.Sprite(planetaryLobeMaterial), planetaryOffset = planetarySize * 0.62;
                   planetaryLobe.position.set(planetaryX + Math.cos(planetaryAxis) * planetaryOffset * planetaryDirection, planetaryY + (planetaryLobeSide ? -1 : 1) * planetarySize * 0.08, planetaryZ + Math.sin(planetaryAxis) * planetaryOffset * planetaryDirection);
                   planetaryLobe.scale.set(planetarySize * 0.62, planetarySize * 1.85, 1); planetaryLobe.userData = { baseOpacity: 0.11 + (planetaryNebulaIndex % 5) * 0.018, baseScaleX: planetarySize * 0.62, baseScaleY: planetarySize * 1.85, phase: planetaryNebulaIndex * 0.93 + planetaryLobeSide * Math.PI, drift: (planetaryLobeSide ? -1 : 1) * 0.0002 }; planetaryLobe.renderOrder = 7; resolvedPlanetaryNebulaGroup.add(planetaryLobe); planetaryNebulaLobes.push(planetaryLobe);
                 }
                 for (var planetaryShellIndex = 0; planetaryShellIndex < 2; planetaryShellIndex++) {
-                  var planetaryShellMaterial = new THREE.MeshBasicMaterial({ color: planetaryShellIndex ? 0xf9a8d4 : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                  var planetaryShellMaterial = new THREE.MeshBasicMaterial({ map: nebulaShellTextures[0], color: planetaryShellIndex ? 0xf9a8d4 : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                   var planetaryShell = new THREE.Mesh(new THREE.RingGeometry(0.76, 1, resolvedQuality === 'cinematic' ? 64 : 40, 1, planetaryShellIndex * Math.PI + 0.24, Math.PI * 0.72), planetaryShellMaterial);
-                  planetaryShell.position.set(planetaryX, planetaryY, planetaryZ); planetaryShell.rotation.x = Math.PI * 0.5; planetaryShell.rotation.z = planetaryAxis + planetaryShellIndex * 0.22; planetaryShell.scale.set(planetarySize, planetarySize * 0.72, planetarySize); planetaryShell.userData = { baseOpacity: 0.09 + planetaryShellIndex * 0.025, baseScale: planetarySize, phase: planetaryNebulaIndex * 0.93 + planetaryShellIndex * 1.6, drift: (planetaryShellIndex ? -1 : 1) * 0.00024 }; planetaryShell.renderOrder = 8; resolvedPlanetaryNebulaGroup.add(planetaryShell); planetaryNebulaShells.push(planetaryShell);
+                  galaxyShapeNebulaShell(planetaryShell.geometry, planetaryNebulaIndex * 0.93 + planetaryShellIndex); planetaryShell.position.set(planetaryX, planetaryY, planetaryZ); planetaryShell.rotation.x = Math.PI * 0.5; planetaryShell.rotation.z = planetaryAxis + planetaryShellIndex * 0.22; planetaryShell.scale.set(planetarySize, planetarySize * 0.72, planetarySize); planetaryShell.userData = { baseOpacity: 0.09 + planetaryShellIndex * 0.025, baseScale: planetarySize, phase: planetaryNebulaIndex * 0.93 + planetaryShellIndex * 1.6, drift: (planetaryShellIndex ? -1 : 1) * 0.00024 }; planetaryShell.renderOrder = 8; resolvedPlanetaryNebulaGroup.add(planetaryShell); planetaryNebulaShells.push(planetaryShell);
                 }
                 var planetaryCoreMaterial = new THREE.SpriteMaterial({ map: fineStarTex, color: planetaryNebulaIndex % 3 === 0 ? 0xe0f2fe : 0xffffff, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
                 var planetaryCore = new THREE.Sprite(planetaryCoreMaterial), planetaryCoreScale = planetarySize * 0.34; planetaryCore.position.set(planetaryX, planetaryY, planetaryZ); planetaryCore.scale.set(planetaryCoreScale, planetaryCoreScale, 1); planetaryCore.userData = { baseOpacity: 0.58 + (planetaryNebulaIndex % 4) * 0.06, baseScale: planetaryCoreScale, phase: planetaryNebulaIndex * 0.93 }; planetaryCore.renderOrder = 9; resolvedPlanetaryNebulaGroup.add(planetaryCore); planetaryNebulaCores.push(planetaryCore);
@@ -4388,9 +4480,9 @@ if (!window._galaxyHasLoadedOnce) {
                 var remnantCenterY = remnantAnchor ? remnantAnchor.y + irregularBell(remnantAnchor.sy * 0.55) : (Math.random() - 0.5) * 0.035;
                 var remnantCenterZ = remnantAnchor ? remnantAnchor.z + irregularBell(remnantAnchor.sz * 0.78) : Math.sin(remnantAngle) * remnantRadius;
                 for (var remnantArcIndex = 0; remnantArcIndex < 3; remnantArcIndex++) {
-                  var remnantMat = new THREE.MeshBasicMaterial({ color: remnantArcIndex === 0 ? 0x7dd3fc : remnantArcIndex === 1 ? 0xf9a8d4 : 0xfde68a, transparent: true, opacity: galaxyType === 'irregular' ? 0.035 + Math.random() * 0.045 : 0.08 + Math.random() * 0.08, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                  var remnantMat = new THREE.MeshBasicMaterial({ map: nebulaShellTextures[0], color: remnantArcIndex === 0 ? 0x7dd3fc : remnantArcIndex === 1 ? 0xf9a8d4 : 0xfde68a, transparent: true, opacity: galaxyType === 'irregular' ? 0.035 + Math.random() * 0.045 : 0.08 + Math.random() * 0.08, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                   var remnantArc = new THREE.Mesh(new THREE.RingGeometry(0.78, 1, resolvedQuality === 'cinematic' ? 72 : 40, 1, remnantArcIndex * 2.05 + Math.random() * 0.3, 1.1 + Math.random() * 0.72), remnantMat);
-                  remnantArc.position.set(remnantCenterX, remnantCenterY, remnantCenterZ);
+                  galaxyShapeNebulaShell(remnantArc.geometry, remnant + remnantArcIndex * 1.7); remnantArc.position.set(remnantCenterX, remnantCenterY, remnantCenterZ);
                   remnantArc.rotation.x = Math.PI * 0.5;
                   remnantArc.rotation.z = Math.random() * Math.PI;
                   var remnantScale = galaxyType === 'irregular' ? 0.01 + Math.random() * 0.018 : 0.016 + Math.random() * 0.032;
@@ -4418,8 +4510,8 @@ if (!window._galaxyHasLoadedOnce) {
                 var ejectaFilamentMaterial = new THREE.LineBasicMaterial({ color: resolvedRemnantIndex % 4 === 0 ? 0xf9a8d4 : resolvedRemnantIndex % 3 === 0 ? 0xfde68a : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); ejectaFilamentMaterial.userData = { baseOpacity: 0.055 + (resolvedRemnantIndex % 5) * 0.012, phase: resolvedRemnantIndex * 0.91 };
                 var ejectaFilamentWeb = new THREE.LineSegments(ejectaFilamentGeometry, ejectaFilamentMaterial); ejectaFilamentWeb.renderOrder = 8; resolvedSupernovaEjectaGroup.add(ejectaFilamentWeb); supernovaEjectaFilamentMaterials.push(ejectaFilamentMaterial);
                 for (var reverseShockIndex = 0; reverseShockIndex < 2; reverseShockIndex++) {
-                  var reverseShockMaterial = new THREE.MeshBasicMaterial({ color: reverseShockIndex ? 0xf9a8d4 : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-                  var reverseShockShell = new THREE.Mesh(new THREE.RingGeometry(0.7, 1, resolvedQuality === 'cinematic' ? 72 : 48, 1, reverseShockIndex * Math.PI + 0.18, Math.PI * 0.78), reverseShockMaterial); reverseShockShell.position.set(remnantCenterX, remnantCenterY, remnantCenterZ); reverseShockShell.rotation.x = Math.PI * 0.5; reverseShockShell.rotation.z = resolvedRemnantAngle + reverseShockIndex * 0.3; var reverseShockScale = remnantInteriorSize * (0.42 + reverseShockIndex * 0.12); reverseShockShell.scale.set(reverseShockScale, reverseShockScale, reverseShockScale); reverseShockShell.userData = { baseOpacity: 0.08 + reverseShockIndex * 0.035, baseScale: reverseShockScale, phase: resolvedRemnantIndex * 0.91 + reverseShockIndex * 1.7, drift: (reverseShockIndex ? -1 : 1) * 0.00028 }; reverseShockShell.renderOrder = 9; resolvedSupernovaEjectaGroup.add(reverseShockShell); reverseShockShells.push(reverseShockShell);
+                  var reverseShockMaterial = new THREE.MeshBasicMaterial({ map: nebulaShellTextures[0], color: reverseShockIndex ? 0xf9a8d4 : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                  var reverseShockShell = new THREE.Mesh(new THREE.RingGeometry(0.7, 1, resolvedQuality === 'cinematic' ? 72 : 48, 1, reverseShockIndex * Math.PI + 0.18, Math.PI * 0.78), reverseShockMaterial); galaxyShapeNebulaShell(reverseShockShell.geometry, resolvedRemnantIndex * 0.91 + reverseShockIndex); reverseShockShell.position.set(remnantCenterX, remnantCenterY, remnantCenterZ); reverseShockShell.rotation.x = Math.PI * 0.5; reverseShockShell.rotation.z = resolvedRemnantAngle + reverseShockIndex * 0.3; var reverseShockScale = remnantInteriorSize * (0.42 + reverseShockIndex * 0.12); reverseShockShell.scale.set(reverseShockScale, reverseShockScale, reverseShockScale); reverseShockShell.userData = { baseOpacity: 0.08 + reverseShockIndex * 0.035, baseScale: reverseShockScale, phase: resolvedRemnantIndex * 0.91 + reverseShockIndex * 1.7, drift: (reverseShockIndex ? -1 : 1) * 0.00028 }; reverseShockShell.renderOrder = 9; resolvedSupernovaEjectaGroup.add(reverseShockShell); reverseShockShells.push(reverseShockShell);
                 }
                 var ejectaKnotCount = resolvedQuality === 'cinematic' ? 5 : resolvedQuality === 'high' ? 4 : 3;
                 for (var ejectaKnotIndex = 0; ejectaKnotIndex < ejectaKnotCount; ejectaKnotIndex++) {
@@ -4492,9 +4584,9 @@ if (!window._galaxyHasLoadedOnce) {
                 var shellCenterX = shellAnchor ? shellAnchor.x + irregularBell(shellAnchor.sx * 0.78) : Math.cos(shellAngle) * shellRadiusFromCore;
                 var shellCenterY = shellAnchor ? shellAnchor.y + irregularBell(shellAnchor.sy * 0.5) : (Math.random() - 0.5) * 0.026;
                 var shellCenterZ = shellAnchor ? shellAnchor.z + irregularBell(shellAnchor.sz * 0.78) : Math.sin(shellAngle) * shellRadiusFromCore;
-                var shellMat = new THREE.MeshBasicMaterial({ color: hs % 4 === 0 ? 0x7dd3fc : hs % 3 === 0 ? 0xc4b5fd : 0xfb7185, transparent: true, opacity: galaxyType === 'irregular' ? 0.035 + Math.random() * 0.045 : 0.07 + Math.random() * 0.08, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-                var shellMesh = new THREE.Mesh(new THREE.RingGeometry(0.72, 1, resolvedQuality === 'cinematic' ? 64 : 36), shellMat); shellMesh.position.set(shellCenterX, shellCenterY, shellCenterZ); shellMesh.rotation.x = Math.PI * 0.5; var shellScale = galaxyType === 'irregular' ? 0.008 + Math.random() * 0.015 : 0.013 + Math.random() * 0.026; shellMesh.scale.set(shellScale, shellScale, shellScale); shellMesh.userData = { baseOpacity: shellMat.opacity, baseScale: shellScale, phase: Math.random() * Math.PI * 2, expansion: 0.08 + Math.random() * 0.16 }; shellMesh.renderOrder = 3; gasGroup.add(shellMesh); ionizedShells.push(shellMesh);
-                if (hs % 3 === 0) { for (var emissionBand = 0; emissionBand < 2; emissionBand++) { var emissionMaterial = new THREE.MeshBasicMaterial({ color: emissionBand ? 0x67e8f9 : 0xfb7185, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var emissionArc = new THREE.Mesh(new THREE.RingGeometry(emissionBand ? 0.58 : 0.88, emissionBand ? 0.72 : 1.06, resolvedQuality === 'cinematic' ? 72 : 48, 1, shellAngle + emissionBand * 0.62, Math.PI * (1.08 + hs % 4 * 0.13)), emissionMaterial), emissionScale = shellScale * (emissionBand ? 0.78 : 1.08); emissionArc.position.copy(shellMesh.position); emissionArc.rotation.x = Math.PI * 0.5; emissionArc.rotation.z = hs * 0.37 + emissionBand * 0.44; emissionArc.scale.set(emissionScale, emissionScale, emissionScale); emissionArc.userData = { baseOpacity: emissionBand ? 0.12 : 0.095, baseScale: emissionScale, phase: shellMesh.userData.phase + emissionBand * 1.2, expansion: shellMesh.userData.expansion, drift: (emissionBand ? -1 : 1) * 0.00012 }; emissionArc.renderOrder = 5; emissionLineGroup.add(emissionArc); emissionLineRims.push(emissionArc); } }
+                var shellMat = new THREE.MeshBasicMaterial({ map: nebulaShellTextures[1], color: hs % 4 === 0 ? 0x7dd3fc : hs % 3 === 0 ? 0xc4b5fd : 0xfb7185, transparent: true, opacity: galaxyType === 'irregular' ? 0.035 + Math.random() * 0.045 : 0.07 + Math.random() * 0.08, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                var shellMesh = new THREE.Mesh(new THREE.RingGeometry(0.72, 1, resolvedQuality === 'cinematic' ? 64 : 36), shellMat); galaxyShapeNebulaShell(shellMesh.geometry, hs * 0.73); shellMesh.position.set(shellCenterX, shellCenterY, shellCenterZ); shellMesh.rotation.x = Math.PI * 0.5; var shellScale = galaxyType === 'irregular' ? 0.008 + Math.random() * 0.015 : 0.013 + Math.random() * 0.026; shellMesh.scale.set(shellScale, shellScale, shellScale); shellMesh.userData = { baseOpacity: shellMat.opacity, baseScale: shellScale, phase: Math.random() * Math.PI * 2, expansion: 0.08 + Math.random() * 0.16 }; shellMesh.renderOrder = 3; gasGroup.add(shellMesh); ionizedShells.push(shellMesh);
+                if (hs % 3 === 0) { for (var emissionBand = 0; emissionBand < 2; emissionBand++) { var emissionMaterial = new THREE.MeshBasicMaterial({ map: nebulaShellTextures[0], color: emissionBand ? 0x67e8f9 : 0xfb7185, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var emissionArc = new THREE.Mesh(new THREE.RingGeometry(emissionBand ? 0.58 : 0.88, emissionBand ? 0.72 : 1.06, resolvedQuality === 'cinematic' ? 72 : 48, 1, shellAngle + emissionBand * 0.62, Math.PI * (1.08 + hs % 4 * 0.13)), emissionMaterial), emissionScale = shellScale * (emissionBand ? 0.78 : 1.08); galaxyShapeNebulaShell(emissionArc.geometry, hs * 0.73 + emissionBand); emissionArc.position.copy(shellMesh.position); emissionArc.rotation.x = Math.PI * 0.5; emissionArc.rotation.z = hs * 0.37 + emissionBand * 0.44; emissionArc.scale.set(emissionScale, emissionScale, emissionScale); emissionArc.userData = { baseOpacity: emissionBand ? 0.12 : 0.095, baseScale: emissionScale, phase: shellMesh.userData.phase + emissionBand * 1.2, expansion: shellMesh.userData.expansion, drift: (emissionBand ? -1 : 1) * 0.00012 }; emissionArc.renderOrder = 5; emissionLineGroup.add(emissionArc); emissionLineRims.push(emissionArc); } }
               }
 
               var volumeCount = Math.round((galaxyType === 'elliptical' ? 18 : galaxyType === 'irregular' ? 38 : 58) * detailScale);
@@ -4643,7 +4735,18 @@ if (!window._galaxyHasLoadedOnce) {
               function registerMorphologyObject(object, material, baseOpacity, phase) { material.userData = material.userData || {}; material.userData.baseOpacity = baseOpacity; material.userData.phase = phase || 0; object.userData = object.userData || {}; object.userData.phase = phase || 0; morphologySignatureGroup.add(object); morphologySignatureMaterials.push(material); morphologySignatureObjects.push(object); }
               if (galaxyType === 'barredSpiral') {
                 for (var bl = 0; bl < 4; bl++) { var barLanePoints = [], barLaneSegments = resolvedQuality === 'cinematic' ? 112 : 72; for (var bli = 0; bli <= barLaneSegments; bli++) { var blf = bli / barLaneSegments, blx = (blf - 0.5) * spiralLayout.barHalfLength * 2, blBend = (bl % 2 ? -1 : 1) * (0.022 + Math.pow(Math.abs(blx), 1.7) * 0.2), blz = blBend + (bl < 2 ? -0.026 : 0.026); barLanePoints.push(new THREE.Vector3(blx, 0.009 + bl * 0.001, blz)); } var barLaneMat = new THREE.LineBasicMaterial({ color: bl < 2 ? 0x1f0b1c : 0x67e8f9, transparent: true, opacity: bl < 2 ? 0.42 : 0.12, depthWrite: false, blending: bl < 2 ? THREE.NormalBlending : THREE.AdditiveBlending }); var barLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(barLanePoints), barLaneMat); barLane.rotation.y = -spiralLayout.barAngle; barLane.renderOrder = bl < 2 ? 6 : 7; registerMorphologyObject(barLane, barLaneMat, barLaneMat.opacity, bl * 1.2); }
-                var resonanceMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var resonanceRing = new THREE.Mesh(new THREE.RingGeometry(0.31, 0.322, resolvedQuality === 'cinematic' ? 160 : 96), resonanceMat); resonanceRing.rotation.x = Math.PI * 0.5; resonanceRing.scale.set(1.42, 1.42, 0.62); resonanceRing.renderOrder = 5; registerMorphologyObject(resonanceRing, resonanceMat, 0.12, 0.8);
+                // A broad, feathered gas band keeps the resonance feature from reading as a guide ring.
+                var resonanceCanvas = document.createElement('canvas'); resonanceCanvas.setAttribute('aria-hidden', 'true'); resonanceCanvas.width = 128; resonanceCanvas.height = 32;
+                var resonanceContext = resonanceCanvas.getContext('2d'), resonancePixels = resonanceContext.getImageData(0, 0, 128, 32);
+                for (var ry = 0; ry < 32; ry++) for (var rx = 0; rx < 128; rx++) {
+                  var ru = rx / 127, rv = ry / 31, radialFade = ry === 0 || ry === 31 ? 0 : Math.pow(Math.sin(rv * Math.PI), 1.2);
+                  var angularLight = 0.58 + 0.25 * Math.cos(ru * Math.PI * 4) + 0.17 * Math.cos(ru * Math.PI * 10);
+                  var ri = (ry * 128 + rx) * 4; resonancePixels.data[ri] = resonancePixels.data[ri + 1] = resonancePixels.data[ri + 2] = 255; resonancePixels.data[ri + 3] = Math.round(255 * radialFade * angularLight * 0.7);
+                }
+                resonanceContext.putImageData(resonancePixels, 0, 0);
+                var resonanceTexture = tuneGalaxyTexture(new THREE.CanvasTexture(resonanceCanvas)); resonanceTexture.name = 'galaxyBarResonanceGas';
+                var resonanceMat = new THREE.MeshBasicMaterial({ map: resonanceTexture, color: 0x7dd3fc, transparent: true, opacity: 0.055, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                var resonanceRing = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.332, resolvedQuality === 'cinematic' ? 160 : 96), resonanceMat); galaxyShapeNebulaShell(resonanceRing.geometry, 0.8); resonanceRing.rotation.x = Math.PI * 0.5; resonanceRing.scale.set(1.42, 1.42, 0.62); resonanceRing.renderOrder = 5; registerMorphologyObject(resonanceRing, resonanceMat, 0.055, 0.8);
               } else if (galaxyType === 'grandDesign') {
                 for (var gs = 0; gs < 2; gs++) { var shockPoints = [], shockSegments = resolvedQuality === 'cinematic' ? 180 : 112; for (var gsi = 0; gsi <= shockSegments; gsi++) { var gsf = gsi / shockSegments, gsr = 0.18 + gsf * 0.78, gsa = spiralPatternAngle(gs, gsr, -0.075); shockPoints.push(new THREE.Vector3(Math.cos(gsa) * gsr, 0.012, Math.sin(gsa) * gsr)); } var shockMat = new THREE.LineBasicMaterial({ color: gs ? 0xfb7185 : 0x67e8f9, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending }); var shockLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(shockPoints), shockMat); shockLine.renderOrder = 6; registerMorphologyObject(shockLine, shockMat, 0.14, gs * 2.4); }
               } else if (galaxyType === 'elliptical') {
@@ -5035,12 +5138,17 @@ if (!window._galaxyHasLoadedOnce) {
             hotGrad.addColorStop(0.5, 'rgba(255,255,255,0.92)');
             hotGrad.addColorStop(0.7, 'rgba(125,211,252,0.22)');
             hotGrad.addColorStop(1, 'rgba(255,255,255,0)');
-            hotCtx.fillStyle = hotGrad; hotCtx.fillRect(0, 11, 96, 10);
+            hotCtx.fillStyle = hotGrad; hotCtx.fillRect(0, 0, 96, 32);
+            hotCtx.save(); hotCtx.globalCompositeOperation = 'destination-in';
+            var hotCrossFade = hotCtx.createLinearGradient(0, 0, 0, 32);
+            hotCrossFade.addColorStop(0, 'rgba(255,255,255,0)'); hotCrossFade.addColorStop(0.18, 'rgba(255,255,255,0)'); hotCrossFade.addColorStop(0.5, 'rgba(255,255,255,1)'); hotCrossFade.addColorStop(0.82, 'rgba(255,255,255,0)'); hotCrossFade.addColorStop(1, 'rgba(255,255,255,0)');
+            hotCtx.fillStyle = hotCrossFade; hotCtx.fillRect(0, 0, 96, 32); hotCtx.restore();
             var hotCore = hotCtx.createRadialGradient(48, 16, 0, 48, 16, 18);
             hotCore.addColorStop(0, 'rgba(255,247,173,0.72)');
             hotCore.addColorStop(1, 'rgba(255,255,255,0)');
             hotCtx.fillStyle = hotCore; hotCtx.fillRect(28, 0, 40, 32);
-            var hotTex = tuneGalaxyTexture(new THREE.CanvasTexture(hotCv));
+            galaxyFeatherCloud(hotCtx, hotCv, 0.62);
+            var hotTex = tuneGalaxyTexture(new THREE.CanvasTexture(hotCv)); hotTex.name = 'galaxyAccretionHighlight';
             for (var hi = 0; hi < 16; hi++) {
               var hotMat = new THREE.SpriteMaterial({ map: hotTex, transparent: true, opacity: 0.12, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: Math.random() * Math.PI });
               var hotSpot = new THREE.Sprite(hotMat);
@@ -5270,7 +5378,8 @@ if (!window._galaxyHasLoadedOnce) {
                 nCtx.restore();
               }
               galaxyCloudGrain(nCtx, nebCanvas, Math.round((neb.x + 2) * 1000), neb.type === 'Planetary' ? 0.35 : 0.75);
-              var tex = tuneGalaxyTexture(new THREE.CanvasTexture(nebCanvas));
+              galaxyFeatherCloud(nCtx, nebCanvas, 0.7);
+              var tex = tuneGalaxyTexture(new THREE.CanvasTexture(nebCanvas)); tex.name = 'galaxyNamedNebula';
 
               var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.5, depthWrite: false, blending: neb.type === 'Dark' ? THREE.NormalBlending : THREE.AdditiveBlending }));
 
@@ -5297,7 +5406,8 @@ if (!window._galaxyHasLoadedOnce) {
                   wCtx.beginPath(); wCtx.arc((Math.random() - 0.5) * 62, (Math.random() - 0.5) * 38, 2 + Math.random() * 6, 0, Math.PI * 2); wCtx.fill();
                 }
                 galaxyCloudGrain(wCtx, wCv, 97 + wi * 13 + Math.round((neb.z + 1) * 100), 0.82);
-                var wTex = tuneGalaxyTexture(new THREE.CanvasTexture(wCv));
+                galaxyFeatherCloud(wCtx, wCv, 0.68);
+                var wTex = tuneGalaxyTexture(new THREE.CanvasTexture(wCv)); wTex.name = 'galaxyNebulaWisp';
                 var wMat = new THREE.SpriteMaterial({ map: wTex, transparent: true, opacity: (neb.type === 'Planetary' ? 0.05 : 0.14) + wi * 0.025, depthWrite: false, blending: neb.type === 'Dark' ? THREE.NormalBlending : THREE.AdditiveBlending, rotation: wi * 0.8 });
                 var wSprite = new THREE.Sprite(wMat);
                 wSprite.position.set(neb.x + (Math.random() - 0.5) * neb.r * 0.75, neb.y + (Math.random() - 0.5) * neb.r * 0.34, neb.z + (Math.random() - 0.5) * neb.r * 0.75);
@@ -5319,14 +5429,19 @@ if (!window._galaxyHasLoadedOnce) {
               pillarGrad.addColorStop(0, 'rgba(9,6,17,0)'); pillarGrad.addColorStop(0.18, 'rgba(12,8,20,0.82)'); pillarGrad.addColorStop(0.72, 'rgba(24,12,31,0.94)'); pillarGrad.addColorStop(1, 'rgba(7,5,13,0)');
               pillarCtx.fillStyle = pillarGrad; pillarCtx.beginPath(); pillarCtx.moveTo(31, 12); pillarCtx.bezierCurveTo(17, 38, 29, 72, 19, 112); pillarCtx.bezierCurveTo(28, 137, 48, 151, 57, 139); pillarCtx.bezierCurveTo(49, 103, 62, 72, 49, 42); pillarCtx.bezierCurveTo(47, 26, 40, 13, 31, 12); pillarCtx.fill();
               pillarCtx.strokeStyle = 'rgba(251,191,36,0.28)'; pillarCtx.lineWidth = 2; pillarCtx.beginPath(); pillarCtx.moveTo(47, 32); pillarCtx.bezierCurveTo(54, 62, 42, 102, 54, 132); pillarCtx.stroke();
-              var pillarTex = tuneGalaxyTexture(new THREE.CanvasTexture(pillarCv));
+              galaxyCloudGrain(pillarCtx, pillarCv, 1601, 0.44);
+              galaxyFeatherCloud(pillarCtx, pillarCv, 0.78);
+              var pillarTex = tuneGalaxyTexture(new THREE.CanvasTexture(pillarCv)); pillarTex.name = 'galaxyDustPillar';
 
               var globuleCv = document.createElement('canvas'); globuleCv.setAttribute('aria-hidden', 'true'); globuleCv.width = 96; globuleCv.height = 96;
               var globuleCtx = upscaleGalaxyCanvas(globuleCv, globuleCv.getContext('2d'));
               var globuleGrad = globuleCtx.createRadialGradient(45, 50, 2, 48, 48, 44);
               globuleGrad.addColorStop(0, 'rgba(4,3,10,0.98)'); globuleGrad.addColorStop(0.52, 'rgba(11,7,18,0.9)'); globuleGrad.addColorStop(0.76, 'rgba(60,28,57,0.44)'); globuleGrad.addColorStop(1, 'rgba(0,0,0,0)'); globuleCtx.fillStyle = globuleGrad; globuleCtx.fillRect(0, 0, 96, 96);
-              globuleCtx.strokeStyle = 'rgba(253,186,116,0.2)'; globuleCtx.lineWidth = 2; globuleCtx.beginPath(); globuleCtx.arc(48, 48, 31, -1.18, 1.25); globuleCtx.stroke();
-              var globuleTex = tuneGalaxyTexture(new THREE.CanvasTexture(globuleCv));
+              var globuleRim = globuleCtx.createRadialGradient(48, 48, 26, 48, 48, 37);
+              globuleRim.addColorStop(0, 'rgba(253,186,116,0)'); globuleRim.addColorStop(0.48, 'rgba(253,186,116,0.15)'); globuleRim.addColorStop(1, 'rgba(253,186,116,0)');
+              globuleCtx.fillStyle = globuleRim; globuleCtx.fillRect(0, 0, 96, 96);
+              galaxyCloudGrain(globuleCtx, globuleCv, 1627, 0.32); galaxyFeatherCloud(globuleCtx, globuleCv, 0.72);
+              var globuleTex = tuneGalaxyTexture(new THREE.CanvasTexture(globuleCv)); globuleTex.name = 'galaxyBokGlobule';
 
               NEBULAE.forEach(function (neb, nebIndex) {
                 if (galaxyType === 'elliptical') return;
@@ -5334,8 +5449,9 @@ if (!window._galaxyHasLoadedOnce) {
                 if (!feedbackEligible) return;
                 var rimCount = resolvedQuality === 'cinematic' ? 4 : resolvedQuality === 'high' ? 3 : 2;
                 for (var rimIndex = 0; rimIndex < rimCount; rimIndex++) {
-                  var rimMat = new THREE.MeshBasicMaterial({ color: rimIndex % 2 ? 0x67e8f9 : 0xfda4af, transparent: true, opacity: 0.13 + rimIndex * 0.018, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                  var rimMat = new THREE.MeshBasicMaterial({ map: bowShockTex, color: rimIndex % 2 ? 0x67e8f9 : 0xfda4af, transparent: true, opacity: 0.13 + rimIndex * 0.018, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                   var rim = new THREE.Mesh(new THREE.RingGeometry(0.76, 1, resolvedQuality === 'cinematic' ? 96 : 56, 1, rimIndex * 1.37 + nebIndex * 0.42, 1.1 + rimIndex * 0.24), rimMat);
+                  galaxyShapeNebulaShell(rim.geometry, nebIndex * 1.1 + rimIndex * 0.9);
                   rim.position.set(neb.x, neb.y + 0.006 + rimIndex * 0.001, neb.z); rim.rotation.x = Math.PI * 0.5; rim.rotation.z = nebIndex * 0.58; var rimScale = neb.r * (1.45 + rimIndex * 0.27); rim.scale.set(rimScale, rimScale * (0.7 + rimIndex * 0.05), rimScale); rim.userData = { baseOpacity: rimMat.opacity, baseScale: rimScale, phase: nebIndex * 1.1 + rimIndex * 0.9 }; rim.renderOrder = 8; stellarFeedbackGroup.add(rim); feedbackIonizationRims.push(rim);
                 }
                 var pillarCount = resolvedQuality === 'cinematic' ? 4 : resolvedQuality === 'high' ? 3 : 2;
@@ -11479,7 +11595,7 @@ if (!window._galaxyHasLoadedOnce) {
                         ctx.beginPath(); ctx.arc(cx, cy, msR, 0, Math.PI * 2);
                         ctx.fillStyle = msBody; ctx.fill();
                         galaxyDrawPhotosphere(ctx, cx, cy, msR, tick, false);
-                        if (mass >= HYDROGEN_FUSION_LIMIT && mass < 1.4) galaxyDrawCoronalLoops(ctx, cx, cy, msR, tick, glowColor);
+                        if (mass >= HYDROGEN_FUSION_LIMIT && mass < CORONAL_LOOP_MAX_MASS) galaxyDrawCoronalLoops(ctx, cx, cy, msR, tick, glowColor);
                         // Surface noise
                         for (var sp = 0; sp < 6; sp++) {
                           var spAngle = (sp / 6) * Math.PI * 2 + tick * 0.005;

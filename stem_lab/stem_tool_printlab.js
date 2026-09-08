@@ -310,6 +310,18 @@
     try { console.warn('[Print Lab] Geometry World builder enhancement unavailable:', error && error.message ? error.message : error); } catch (_) {}
   });
 
+  function ensurePrintZip() {
+    return loadSidecar([selfAsset('../jszip/3.10.1/jszip.min.js'),selfAsset('../vendor/jszip-3.10.1.min.js')],
+      'print-lab-zip',function(){return typeof window.JSZip === 'function';},'The local package writer could not load. Individual STL and review downloads remain available.');
+  }
+  function editableGeometrySource(source) {
+    if(!source || !source.blocks || !source.blocks.length)return null;
+    var min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+    source.blocks.forEach(function(b){[b.x,b.y,b.z].forEach(function(v,k){min[k]=Math.min(min[k],v);max[k]=Math.max(max[k],v);});});
+    var value={schema:'alloflow-geometry-world/2',title:safeText(source.title,80)||'Geometry World build',coordinateSystem:'x-right,y-up,z-depth',blocks:source.blocks.map(function(b){return {x:b.x-Math.floor((min[0]+max[0])/2),y:b.y-min[1]+1,z:b.z-Math.floor((min[2]+max[2])/2),type:b.type,shape:b.shape,rotation:b.rotation};})};
+    var pure=window.StemLab.geometryWorldBuilderPure;
+    return pure && pure.normalizeEditableWorld && pure.normalizeEditableWorld(value).ok ? value : null;
+  }
   function ensurePrintRuntime() {
     return Promise.all([ensurePrintableModel(), ensurePrim3D()]);
   }
@@ -516,7 +528,14 @@
           if (!bounds) { setStatus('empty'); return; }
           var size = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
           var radius = Math.max(1, size.length() * 0.55);
-          camera.position.set(center.x + radius * 1.35, center.y + radius * 0.9, center.z + radius * 1.6);
+          var viewDirection=new THREE.Vector3(1.35,0.9,1.6).normalize();
+          function fitCamera(){
+            var vertical=camera.fov*Math.PI/360, horizontal=Math.atan(Math.tan(vertical)*camera.aspect);
+            var distance=radius/Math.sin(Math.min(vertical,horizontal))*1.08;
+            camera.position.copy(center).addScaledVector(viewDirection,distance);camera.lookAt(center);
+            if(controls){controls.target.copy(center);controls.update();}
+          }
+          fitCamera();
           camera.near = Math.max(0.01, radius / 1000); camera.far = radius * 30 + 100; camera.lookAt(center); camera.updateProjectionMatrix();
           if (THREE.OrbitControls) {
             controls = new THREE.OrbitControls(camera, canvas);
@@ -526,7 +545,7 @@
           function resize() {
             if (!renderer || !alive) return;
             var width = Math.max(1, canvas.clientWidth || 560), height = Math.max(1, canvas.clientHeight || 360);
-            renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
+            renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();fitCamera();
           }
           resize();
           if (typeof ResizeObserver === 'function') { resizeObserver = new ResizeObserver(resize); resizeObserver.observe(canvas); }
@@ -547,7 +566,7 @@
             },
             reset: function () {
               if (model) model.rotation.y = 0;
-              camera.position.set(center.x + radius * 1.35, center.y + radius * 0.9, center.z + radius * 1.6);
+              fitCamera();
               camera.lookAt(center); if (controls) { controls.target.copy(center); controls.update(); }
             }
           };
@@ -630,7 +649,7 @@
       blocks: blocks
     };
   }
-  function inspectGeometryWorldBinaryStl(bytes, triangleCount) {
+  function inspectGeometryWorldBinaryStl(bytes, triangleCount, zUp) {
     var view;
     try { view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength); } catch (_) { return null; }
     var min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -651,7 +670,7 @@
       });
     }
     function extent(axis) { return Math.round((max[axis] - min[axis]) * 10000) / 10000; }
-    return { L: extent(0), W: extent(2), H: extent(1) };
+    return zUp ? { L:extent(0), W:extent(1), H:extent(2) } : { L:extent(0), W:extent(2), H:extent(1) };
   }
   function geometryWorldSourceSummary(source, triangleCount, meshDimensions) {
     var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
@@ -827,7 +846,7 @@
     var triangleCount;
     try { triangleCount = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true); } catch (_) { return null; }
     if (!triangleCount || triangleCount > 250000 || 84 + triangleCount * 50 !== bytes.byteLength) return null;
-    var meshDimensions = inspectGeometryWorldBinaryStl(bytes, triangleCount);
+    var meshDimensions = inspectGeometryWorldBinaryStl(bytes, triangleCount, true);
     if (!meshDimensions) return null;
     var source = sanitizeGeometryWorldSource(pending.sourceModel);
     if (!source) return null;
@@ -840,7 +859,9 @@
       title: safeText(pending.title, 100) || 'Geometry World build',
       description: safeText(pending.description, 500),
       unitMm: clamp(pending.unitMm, 0.01, 1000, 5),
-      sourceModel: source,
+      sourceModel: source, projectId:safeText(pending.projectId,80),
+      aiUse:['ASSISTED','MOSTLY_AI'].indexOf(pending.aiUse)>=0 ? pending.aiUse : 'NONE',
+      aiDisclosure:safeText(pending.aiDisclosure,500),
       summary: geometryWorldSourceSummary(source, triangleCount, meshDimensions)
     };
   }
@@ -862,6 +883,7 @@
     normalizePersistedRecipe: normalizePersistedRecipe,
     readPendingRecipeHandoff: readPendingRecipeHandoff,
     readPendingArchStudioHandoff: readPendingArchStudioHandoff,
+    editableGeometrySource:editableGeometrySource,
     readPendingLocalHandoff: readPendingLocalHandoff,
     normalizePrinterProfile: normalizePrinterProfile,
     normalizePersistedPreflight: normalizePersistedPreflight,
@@ -920,7 +942,7 @@
       var _busy = React.useState(false), aiBusy = _busy[0], setAiBusy = _busy[1];
       var _title = React.useState(pendingHandoff ? pendingHandoff.title : (stored.title || '')), title = _title[0], setTitle = _title[1];
       var _description = React.useState(pendingHandoff ? pendingHandoff.description : (stored.description || '')), description = _description[0], setDescription = _description[1];
-      var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
+      var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, projectId:pendingHandoff.projectId, sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
       var _note = React.useState(stored.studentNote || ''), studentNote = _note[0], setStudentNote = _note[1];
       var _aiUse = React.useState(pendingHandoff ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
       var _aiDisclosure = React.useState(pendingHandoff ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
@@ -1094,7 +1116,9 @@
       function downloadGeometryWorldSource() {
         var source = sourceContext && sourceContext.sourceModel;
         if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce(__alloT('stem.printlab.sr_no_editable_geometry_world_source_is_available_in', 'No editable Geometry World source is available in this session.')); return; }
-        downloadBlob(new Blob([JSON.stringify(source, null, 2)], { type: 'application/json' }), 'geometry-world-editable-build.json');
+        var editable=editableGeometrySource(source);
+        if(!editable){announce('This build exceeds editable sandbox file limits. Keep its STL and the source recipe in a print package.');return;}
+        downloadBlob(new Blob([JSON.stringify(editable, null, 2)], { type: 'application/json' }), 'geometry-world-editable-build.json');
         announce(__alloT('stem.printlab.sr_downloaded_the_editable_geometry_world_block_reci', 'Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.'));
       }
 
@@ -1133,7 +1157,8 @@
         window.__alloGeometryWorldPendingBuild = {
           schema: 'alloflow-geometry-world-build/1',
           id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-          sourceModel: JSON.parse(JSON.stringify(source))
+          sourceModel: JSON.parse(JSON.stringify(source)), projectId:sourceContext.projectId,
+          printContext:{unitMm:unitMm, aiUse:aiUse, aiDisclosure:safeText(aiDisclosure,500)}
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
         announce(__alloT('stem.printlab.sr_returning_the_editable_selected_build_to_geometry', 'Returning the editable selected build to Geometry World. Physical scale and AI disclosure travel with the model. Run preflight again after editing.'));
@@ -1397,6 +1422,34 @@
         }).catch(function (error) { if (operationIsCurrent('handoff', token, startedRevision)) announce(error && error.message ? error.message : 'The handoff could not be created.'); });
       }
 
+      function downloadPrintPackage() {
+        if(!Printable || !sourceContext || sourceContext.sourceTool!=='geometryWorld' || !report || report.status==='FAIL') {chooseTab('Preflight');return;}
+        var token=beginOperation('export'), startedRevision=contextRevisionRef.current;
+        Promise.all([ensureThree(),ensurePrintZip()]).then(function(ready){
+          if(!operationIsCurrent('export',token,startedRevision))return null;
+          var THREE=ready[0], object=makeModelObject(THREE,format,recipe,fileBytes,glbRoot,unitMm);
+          if(!object)throw new Error('No model is ready to package.');
+          var buffer;try{centerAndGround(THREE,object);buffer=Printable.exportBinaryStl(THREE,object);}finally{disposeObject(object,false);}
+          if(!buffer)throw new Error('The model could not be exported.');
+          var inspection=Printable.inspectStl(buffer,1,profile);
+          if(inspection.status==='FAIL')throw new Error('The exported model needs another preflight review.');
+          return Printable.sha256Hex(buffer).then(function(hash){
+            if(!operationIsCurrent('export',token,startedRevision))return null;
+            var zip=new window.JSZip(), editable=editableGeometrySource(sourceContext.sourceModel);
+            var manifest={schema:'alloflow-print-package/1',title:safeText(title,100),description:safeText(description,500),
+              model:{file:'model.stl',sha256:hash,units:'mm',coordinateSystem:'z-up',dimensionsMm:inspection.dimensionsMm},
+              source:{tool:'geometryWorld',millimetersPerBlock:unitMm,editableFile:editable?'editable-world.json':null,recipeFile:'block-source.json'},
+              material:materialId,printerProfile:profile,preflight:inspection,aiUse:aiUse,aiDisclosure:safeText(aiDisclosure,500),
+              reviewStatus:'AWAITING_SLICER_AND_STAFF_REVIEW'};
+            zip.file('model.stl',new Uint8Array(buffer));zip.file('manifest.json',JSON.stringify(manifest,null,2));
+            zip.file('block-source.json',JSON.stringify(sourceContext.sourceModel,null,2));
+            if(editable)zip.file('editable-world.json',JSON.stringify(editable,null,2));
+            zip.file('READ-ME.txt','Geometry World print package\n\nOpen model.stl in the school slicer. Units are millimeters: import at 100% scale. The chosen '+unitMm+' mm per block is already applied.\nDimensions (width x depth x height): '+inspection.dimensionsMm.width+' x '+inspection.dimensionsMm.depth+' x '+inspection.dimensionsMm.height+' mm.\n'+(editable?'To edit the selected creation, open editable-world.json with Geometry World > Open editable world.':'The selection exceeds editable sandbox file limits; block-source.json preserves its source recipe for recovery.')+'\nmanifest.json records the STL hash, dimensions, material, printer profile and advisory checks. Review orientation, supports and the sliced layers before staff approval. This package does not start a printer.\n');
+            return zip.generateAsync({type:'blob',compression:'DEFLATE'});
+          });
+        }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');announce('Downloaded one print package with a millimeter STL, source, and review manifest.');}})
+          .catch(function(error){if(operationIsCurrent('export',token,startedRevision))announce(error.message||'The print package could not be created.');});
+      }
       function exportStl() {
         if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_run_preflight_and_resolve_blocking_items_before_e', 'Run preflight and resolve blocking items before exporting STL.')); return; }
         var token = beginOperation('export'), startedRevision = contextRevisionRef.current;
@@ -1508,11 +1561,14 @@
                 h('button', { type: 'button', disabled: Math.abs(unitMm - 5) < 0.000001, onClick: function () { applyUnitScale(5, 'Restored the Geometry World default scale of 5 millimeters per block.'); }, className: 'min-h-[40px] rounded-lg border border-emerald-400 px-3 text-[0.625rem] font-black text-emerald-100 disabled:cursor-default disabled:opacity-50' }, 'Reset to 5 mm / block')
               ),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                h('button', { type:'button', onClick:function(){chooseTab('Preflight');}, className:'min-h-[44px] rounded-xl bg-emerald-700 px-4 text-sm font-black text-white' }, 'Check this model'),
                 h('button', { type: 'button', onClick: returnToGeometryWorld, className: 'min-h-[42px] rounded-xl bg-cyan-700 px-4 text-xs font-black text-white' }, 'Revise in Geometry World'),
                 h('button', { type: 'button', onClick: downloadGeometryWorldSource, className: 'min-h-[42px] rounded-xl border border-cyan-400 px-4 text-xs font-black text-cyan-100' }, 'Download editable block source')
               ),
               h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Virtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.')
             ),
+            h(sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'details' : 'div', {className:'space-y-4', 'data-print-alternative-design':true},
+            sourceContext && sourceContext.sourceTool === 'geometryWorld' && h('summary', {className:'min-h-[44px] cursor-pointer rounded-xl border border-slate-600 p-3 text-sm font-bold text-slate-200'}, 'Start a different model'),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-create-title' },
               h('h2', { id: 'print-lab-create-title', className: 'text-lg font-black text-white' }, 'Design with primitives'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Build directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.'),
@@ -1555,6 +1611,7 @@
                 h('label', { className: 'min-w-[220px] text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Saved Geometry Sandbox sculpture'), h('select', { value: selectedSaved, onChange: function (event) { setSelectedSaved(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-2 text-white' }, h('option', { value: '' }, 'Choose a saved sculpture'), savedNames.map(function (name) { return h('option', { key: name, value: name }, name); }))),
                 h('button', { type: 'button', disabled: !selectedSaved, onClick: importSavedRecipe, className: 'min-h-[42px] rounded-xl border border-cyan-500 px-4 text-xs font-black text-cyan-100 disabled:opacity-50' }, 'Open in Print Lab')
               )
+            )
             )
           ),
           h('div', { className: 'space-y-4' },
@@ -1831,13 +1888,15 @@
           h('aside', { className: 'space-y-3 rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'handoff-summary-title' },
             h('h2', { id: 'handoff-summary-title', className: 'text-base font-black text-white' }, 'Handoff summary'),
             h('dl', { className: 'space-y-2 text-xs' },
-              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Model bytes embedded', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
+              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Review JSON embeds model', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
             ),
             h('p', { className: 'rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-[0.6875rem] leading-5 text-cyan-100' }, 'The .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.'),
             !rewardsAssetCompatibility.compatible && h('div', { className: 'rounded-xl border border-amber-500 bg-amber-950/35 p-3 text-[0.6875rem] leading-5 text-amber-100', role: 'alert', 'data-school-rewards-asset-ready': 'false' },
               h('strong', { className: 'block text-xs text-white' }, 'Reduce the model before opening School Rewards'),
               h('p', { className: 'mt-1' }, rewardsAssetCompatibility.reason + ' Current local file: ' + rewardsAssetSizeLabel + '; portal maximum: 4 MiB. The 5 MiB local inspection allowance is intentionally larger so staff can inspect and simplify a borderline file without uploading it.')
             ),
+            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('button',{type:'button',disabled:!report || report.status==='FAIL',onClick:downloadPrintPackage,className:'min-h-[48px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50'},'Download print package'),
+            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('p',{className:'text-xs leading-5 text-slate-200'},'One ZIP contains the STL at its final millimeter size, block source, and review manifest. Use the editable world file to reopen supported builds.'),
             h('button', { type: 'button', disabled: !title.trim() || !report || report.status === 'FAIL', onClick: downloadHandoff, className: 'min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Download review handoff'),
             rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce(__alloT('stem.printlab.sr_the_school_rewards_portal_could_not_open', 'The School Rewards portal could not open.')); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
             !rewardsPortalUrl && h('p', { className: 'text-[0.6875rem] leading-5 text-slate-300' }, 'Connect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.'),

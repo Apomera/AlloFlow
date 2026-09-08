@@ -1,0 +1,47 @@
+[
+  {
+    "workspace": "memory",
+    "variant": "SRAM (6T)",
+    "violations": []
+  },
+  {
+    "workspace": "memory",
+    "variant": "DRAM (1T1C)",
+    "violations": []
+  },
+  {
+    "workspace": "memory",
+    "variant": "Flash (NOR)",
+    "violations": []
+  },
+  {
+    "workspace": "memory",
+    "variant": "Flash (NAND)",
+    "violations": []
+  },
+  {
+    "workspace": "memory",
+    "variant": "FeRAM",
+    "violations": []
+  },
+  {
+    "workspace": "waferfab",
+    "variant": "Stage 1: Crystal Growth",
+    "violations": []
+  },
+  {
+    "workspace": "waferfab",
+    "variant": "Stage 3: Thermal Oxidation",
+    "violations": []
+  },
+  {
+    "workspace": "waferfab",
+    "variant": "Stage 6: Ion Implantation",
+    "violations": []
+  },
+  {
+    "workspace": "waferfab",
+    "variant": "Stage 8: Metallization & CMP",
+    "violations": []
+  }
+]

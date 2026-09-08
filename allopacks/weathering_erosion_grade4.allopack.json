@@ -1,0 +1,497 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Break, Move, Settle — Changing Land",
+    "author": "AlloFlow; AI-assisted draft, educator review pending",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "4th Grade",
+    "standards": "NGSS 4-ESS2-1 (use observations or measurements as evidence of weathering effects or erosion rates)",
+    "createdAt": "2026-09-08T00:00:00.000Z",
+    "imageShotList": "allopacks/weathering_erosion_grade4.IMAGES.md",
+    "contentSources": [
+      {
+        "title": "Official learning standard",
+        "url": "https://www.nextgenscience.org/topic-arrangement/4earths-systems-processes-shape-earth"
+      }
+    ],
+    "reviewStatus": "AI content and structural checks; educator review pending",
+    "imageStatus": "planned-not-generated"
+  },
+  "sourceTopic": "Break, Move, Settle — Changing Land",
+  "history": [
+    {
+      "id": "we-directions",
+      "type": "directions",
+      "title": "Start Here",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "body": "Read **Break, Move, Settle — Changing Land** with a partner or use read-aloud. Explore **Key Words**, then play Matching and Memory. Use **Keep the Ideas Clear** as a reference. Try **Sort and Explain**, **Explain Your Thinking**, and **Check Your Understanding**. Use **Remember the Ideas** to build a memory cue. Read **Questions to Explore**, then complete **Try It with Evidence**.\n\nExplain an answer using a detail from the lesson. Images are planned for a later edition; every activity works with text now.",
+        "objectives": [
+          {
+            "id": "we-goal-match",
+            "label": "Complete Matching",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "we-glossary"
+          },
+          {
+            "id": "we-goal-memory",
+            "label": "Complete Memory",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "we-glossary"
+          },
+          {
+            "id": "we-goal-evidence",
+            "label": "I explained an answer using lesson evidence",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "4th Grade • Start Here"
+    },
+    {
+      "id": "we-reading",
+      "type": "simplified",
+      "title": "Break, Move, Settle — Changing Land",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": "## Break, Move, Settle\n\nAfter rain, a muddy stream crosses a path. Farther downhill, a fan of sand lies where the water spread out. Both places hold clues about how land changes.\n\n**Weathering** breaks rock down or changes it where it is. Water can enter a crack. If that water freezes, it can push against the sides. Repeated freezing and thawing can help widen some cracks. Roots growing in cracks can also push on rock. Not every crack forms in the same way.\n\n**Erosion** moves rock or soil from one place to another. Flowing water can carry loose grains. Wind can move dry sand. Moving ice can carry rock. Gravity can pull loose material downhill. Breaking and moving can happen together, but they name different processes.\n\nThe loose pieces are called **sediment**. Some are tiny; others are large. **Deposition** happens when moving sediment settles or is left behind. A stream that slows may drop some of its load. Different sizes can settle at different places.\n\nA **slope** is a slant in the land. Steeper slopes can change how water moves, but slope is not the only factor. The amount of water, the soil, and plant cover also matter. **Runoff** is water moving over the land surface.\n\nHow can we test one idea? Build two small trays with the same amount and kind of soil. Set different slopes. Add equal water amounts at the same rate and place. Catch the runoff in cups. Repeat the test with fresh setups. Decide how you will measure moved soil before you start.\n\nYour **evidence** is what you observed or measured. A darker cup may suggest more suspended soil, but color alone is not an exact mass. A **model** helps us study a process at a small scale. A tray cannot copy a whole hillside.\n\nUse careful language in your claim. Say what happened in your test, not what must happen on every hill. A useful explanation connects the evidence to a process and names a limit of the model.",
+      "meta": "4th Grade • Break, Move, Settle — Changing Land"
+    },
+    {
+      "id": "we-glossary",
+      "type": "glossary",
+      "title": "Key Words",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "term": "Weathering",
+          "def": "Rock breaking down or changing in place.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Erosion",
+          "def": "Movement of rock or soil by water, wind, ice, or gravity.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sediment",
+          "def": "Loose pieces of rock or other material carried or left behind.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Deposition",
+          "def": "The settling or dropping of material that was moving.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Slope",
+          "def": "A slant in a surface.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Runoff",
+          "def": "Water that flows over the land surface.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Evidence",
+          "def": "Observations or measurements that help support a claim.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Model",
+          "def": "A representation used to study part of a real system.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "4th Grade • Key Words"
+    },
+    {
+      "id": "we-anchor",
+      "type": "anchor-chart",
+      "title": "Keep the Ideas Clear",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "Break, Move, Settle — Changing Land",
+        "sections": [
+          {
+            "id": "we-section-1",
+            "label": "BREAK OR CHANGE",
+            "bullets": [
+              "Weathering happens in place",
+              "Cracks can widen through several processes"
+            ],
+            "iconPrompt": "Rock with a root growing in a crack"
+          },
+          {
+            "id": "we-section-2",
+            "label": "MOVE THEN SETTLE",
+            "bullets": [
+              "Erosion moves loose material",
+              "Deposition leaves it behind"
+            ],
+            "iconPrompt": "Stream carrying grains then depositing a fan"
+          },
+          {
+            "id": "we-section-3",
+            "label": "TEST ONE FACTOR",
+            "bullets": [
+              "Keep soil and water inputs alike",
+              "Change slope and repeat",
+              "Name limits of the tray model"
+            ],
+            "iconPrompt": "Two soil trays at different slopes with collection cups"
+          }
+        ]
+      },
+      "meta": "4th Grade • Keep the Ideas Clear"
+    },
+    {
+      "id": "we-sort",
+      "type": "concept-sort",
+      "title": "Sort and Explain",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "we-category-0",
+            "label": "Weathering: changing in place",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "we-category-1",
+            "label": "Erosion: moving material",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "we-category-2",
+            "label": "Deposition: leaving material",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "we-card-1",
+            "content": "A root widens a crack in a rock",
+            "categoryId": "we-category-0"
+          },
+          {
+            "id": "we-card-2",
+            "content": "Repeated freezing helps split a rock",
+            "categoryId": "we-category-0"
+          },
+          {
+            "id": "we-card-3",
+            "content": "A stream carries sand downstream",
+            "categoryId": "we-category-1"
+          },
+          {
+            "id": "we-card-4",
+            "content": "Wind blows dry sand across a path",
+            "categoryId": "we-category-1"
+          },
+          {
+            "id": "we-card-5",
+            "content": "Sand settles where a stream slows",
+            "categoryId": "we-category-2"
+          },
+          {
+            "id": "we-card-6",
+            "content": "A river leaves mud on a floodplain",
+            "categoryId": "we-category-2"
+          }
+        ]
+      },
+      "meta": "4th Grade • Sort and Explain"
+    },
+    {
+      "id": "we-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Thinking",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I notice ____. This matters because ____."
+          },
+          {
+            "text": "I compared ____ with ____. They differ because ____."
+          },
+          {
+            "text": "My evidence is ____. It supports ____."
+          },
+          {
+            "text": "At first I thought ____. Now I think ____ because ____."
+          }
+        ],
+        "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
+      },
+      "meta": "4th Grade • Explain Your Thinking"
+    },
+    {
+      "id": "we-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which example is weathering?",
+            "options": [
+              "Sand moving down a stream",
+              "Wind carrying grains away",
+              "A root widening a rock crack",
+              "Mud settling in a quiet pool"
+            ],
+            "correctAnswer": "A root widening a rock crack",
+            "conceptLabel": "land processes"
+          },
+          {
+            "type": "mcq",
+            "question": "What is erosion?",
+            "options": [
+              "Water freezing inside a crack",
+              "A rock changing in one place",
+              "Sediment resting after a flood",
+              "Loose material moving elsewhere"
+            ],
+            "correctAnswer": "Loose material moving elsewhere",
+            "conceptLabel": "land processes"
+          },
+          {
+            "type": "mcq",
+            "question": "Which change is deposition?",
+            "options": [
+              "Sand settling as water slows",
+              "Roots pushing against a crack",
+              "Wind lifting grains off a dune",
+              "A stream carrying mud downhill"
+            ],
+            "correctAnswer": "Sand settling as water slows",
+            "conceptLabel": "land processes"
+          },
+          {
+            "type": "mcq",
+            "question": "To test slope, what should stay alike?",
+            "options": [
+              "The amount of soil moved",
+              "Soil type and water input",
+              "The results from every trial",
+              "The height of both tray ends"
+            ],
+            "correctAnswer": "Soil type and water input",
+            "conceptLabel": "fair models"
+          },
+          {
+            "type": "mcq",
+            "question": "What is a limit of a soil-tray model?",
+            "options": [
+              "It makes all evidence useless",
+              "It proves every hill acts alike",
+              "It leaves out parts of real hills",
+              "It must have no water in it"
+            ],
+            "correctAnswer": "It leaves out parts of real hills",
+            "conceptLabel": "fair models"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain how a grain can experience erosion and deposition.",
+            "expectedAnswer": "Water can carry the grain away from one place, which is erosion, then leave it in a slower part of the stream, which is deposition.",
+            "conceptLabel": "land processes"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Why is water color not an exact soil-mass measurement?",
+            "expectedAnswer": "Color can depend on particle type, size, lighting, and concentration. A darker cup alone does not provide a measured mass of moved sediment.",
+            "conceptLabel": "fair models"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which evidence or example helped you change your mind?"
+          },
+          {
+            "text": "What would you check next, and why?"
+          }
+        ]
+      },
+      "meta": "4th Grade • Check Your Understanding"
+    },
+    {
+      "id": "we-memory",
+      "type": "memory-aid",
+      "title": "Remember the Ideas",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Ideas",
+        "instructions": "Study each cue. Make your own cue, then explain how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Weathering changes rock in place. Erosion moves material and deposition leaves it behind. A fair comparison controls other important conditions.",
+        "lessonRef": {
+          "resourceId": "we-reading",
+          "title": "Break, Move, Settle — Changing Land"
+        },
+        "cards": [
+          {
+            "id": "we-memory-0",
+            "target": "Remember: BREAK OR CHANGE",
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Weathering happens in place",
+              "Cracks can widen through several processes",
+              "Weathering changes rock in place."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Break in place. Think of a root pushing a rock crack wider.",
+            "mapping": "The rock changes where it is. This cue helps keep breaking apart distinct from moving away.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          },
+          {
+            "id": "we-memory-1",
+            "target": "Remember: MOVE THEN SETTLE",
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "essentialFacts": [
+              "Erosion moves loose material",
+              "Deposition leaves it behind",
+              "Erosion moves material and deposition leaves it behind."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "aiExample": "Move, then leave. Think of sand carried by a stream, then left on a bank.",
+            "mapping": "The two parts show two processes. Moving sand is erosion. Sand left behind is deposition.",
+            "scaffoldStarter": "My cue is ____. It helps me remember ____.",
+            "scaffoldSteps": [
+              "Choose a key idea.",
+              "Make a short cue or sketch.",
+              "Check that the cue keeps the idea correct."
+            ],
+            "coachPrompts": [
+              "What detail keeps your cue accurate?"
+            ],
+            "studentPrompt": "Create a cue in your own words or drawing.",
+            "reasoningPrompt": "Explain what your cue shows and what it leaves out."
+          }
+        ]
+      },
+      "meta": "4th Grade • Remember the Ideas"
+    },
+    {
+      "id": "we-faq",
+      "type": "faq",
+      "title": "Questions to Explore",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": [
+        {
+          "question": "Does erosion always happen slowly?",
+          "answer": "No. A storm or slide can move a lot at once. Small changes can also build over time."
+        },
+        {
+          "question": "Is weathering the same as weather?",
+          "answer": "No. Weather is the state of the air. Weathering is rock breaking down or changing in place."
+        },
+        {
+          "question": "Can plants change erosion?",
+          "answer": "Yes. Roots and plant cover can hold soil and change water flow. Their effect depends on the setup."
+        },
+        {
+          "question": "Does all sediment settle at once?",
+          "answer": "No. Grain size and water movement affect when and where material settles."
+        }
+      ],
+      "meta": "4th Grade • Questions to Explore"
+    },
+    {
+      "id": "we-challenge",
+      "type": "applied-challenge",
+      "title": "Try It with Evidence",
+      "timestamp": "2026-09-08T00:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Try It with Evidence",
+        "instructions": "Make a prediction or first answer. Use evidence to check it. Explain what you found.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "A school garden path loses soil during rain. Our class can compare small soil trays to study one factor before suggesting a change.",
+          "role": "Class investigators",
+          "audience": "A classmate checking our reasoning",
+          "drivingQuestion": "How does tray slope affect the sediment moved by equal water inputs in our model?",
+          "seedDirection": "Keep soil type, amount, water volume, and pour rate alike. Change slope. Collect runoff. Repeat fresh setups and record the same measure each time.",
+          "lockedLessonFacts": [
+            "Weathering changes rock in place.",
+            "Erosion moves material and deposition leaves it behind.",
+            "A fair comparison controls other important conditions."
+          ],
+          "openQuestions": [
+            "What will count as useful evidence?",
+            "What might our method miss?"
+          ],
+          "criteria": [
+            "Describe the method or model clearly",
+            "Use evidence to support your answer",
+            "Name a limit or a question to check next"
+          ],
+          "constraints": [
+            "Use teacher-approved materials or supplied examples",
+            "Keep a record of what you actually observe or calculate"
+          ],
+          "deliverable": "Report the setup, repeated observations, a supported claim, and one reason a tray differs from a real hillside.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A classmate checks a related claim from this lesson.",
+            "move": "They use the lesson rule: Weathering changes rock in place. They record an example, then check whether it supports the claim.",
+            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+          },
+          "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
+          "frameChoices": [
+            "Explain with a drawing and spoken words",
+            "Explain with a written record and evidence"
+          ],
+          "coachPrompts": [
+            "Which detail in your record supports your answer?"
+          ]
+        },
+        "coachHint": "Keep the claim and the evidence connected.",
+        "sourceExcerpt": "Weathering changes rock in place. Erosion moves material and deposition leaves it behind. A fair comparison controls other important conditions.",
+        "lessonRef": {
+          "resourceId": "we-reading",
+          "title": "Break, Move, Settle — Changing Land"
+        }
+      },
+      "meta": "4th Grade • Try It with Evidence"
+    }
+  ]
+}

@@ -1,0 +1,612 @@
+{
+  "scope": "Actual React tools and WebGL engine in a local minimal host; no printer connected.",
+  "errors": [],
+  "checks": {
+    "keyboard": {
+      "count": 25,
+      "redo": 1
+    },
+    "aim": {
+      "x": 0,
+      "y": 3,
+      "z": 2
+    },
+    "selection": {
+      "count": 24,
+      "check": {
+        "components": 1,
+        "triangles": 104,
+        "nonManifoldEdges": 0,
+        "openEdges": 0
+      },
+      "outline": true
+    },
+    "phone": {
+      "overflow": false,
+      "dock": {
+        "x": 301,
+        "y": 635,
+        "width": 82,
+        "height": 64
+      },
+      "measure": {
+        "x": 6,
+        "y": 8,
+        "width": 378,
+        "height": 362.125
+      },
+      "overlap": false
+    },
+    "before": {
+      "blocks": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 8,
+          "y": 1,
+          "z": 8,
+          "type": "wood",
+          "shape": "quarter",
+          "rotation": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        }
+      ],
+      "undo": 25,
+      "redo": 1,
+      "camera": [
+        8.5,
+        4.2,
+        11.5
+      ],
+      "quaternion": [
+        -0.3582637671833657,
+        0,
+        0,
+        0.9336204116896669
+      ]
+    },
+    "design": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\n\nLOCAL CONNECTED-TOOL HANDOFF\n\nFrom Geometry World\n\nThe STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.\n\nDefault: 5 mm / block\nCONNECTED BLOCKS\n24\nSHAPED PIECES\n0\nSTL TRIANGLES\n104\nBLOCK ENVELOPE\n2 × 3 × 4 blocks\n\nCURRENT PHYSICAL SIZE\n\n10 × 15 × 20 mm\n\nExact STL mesh envelope at 5 mm per Geometry World block. Width × depth × height.\n\nReset to 5 mm / block\nCheck this model\nRevise in Geometry World\nDownload editable block source\n\nVirtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.\n\nStart a different model\n3D preview\n\nDrag to orbit. Use the controls below for a keyboard path.\n\n↶\n↷\n+\n−\nReset\n\nThis preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.\n\nPhysical scale\n\nSCALE PRESETS\n\nDraft\n2.5 mm / block\nDefault\n5 mm / block\nLarge\n10 mm / block\nMillimeters per Geometry World block\n\nCurrent mesh envelope: 10 × 15 × 20 mm (width × depth × height).\n\nWithin the current printer envelope with 5 mm planning clearance. Compared with 220 × 220 × 250 mm. This is a planning buffer only; preflight and staff review are still required.\n\nSTL does not store units. Confirm this value and orientation again in the school slicer.\n\nContinue to Preflight\nLoaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.\nSelected build prepared locally. Opening Print Lab.",
+    "after": {
+      "blocks": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 8,
+          "y": 1,
+          "z": 8,
+          "type": "wood",
+          "shape": "quarter",
+          "rotation": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 1,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 2,
+          "type": "stone",
+          "shape": "cube",
+          "rotation": 0
+        }
+      ],
+      "undo": 25,
+      "redo": 1,
+      "camera": [
+        8.5,
+        4.2,
+        11.5
+      ],
+      "quaternion": [
+        -0.3582637671833657,
+        0,
+        0,
+        0.9336204116896669
+      ],
+      "scale": 10
+    },
+    "preflight": "ADDITIVE MANUFACTURING STUDIO\n\nPrint Lab\n\nShape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.\n\n1. Design\n2. Preflight\n3. Materials\n4. Submit\nSchool printer profile\n\nUse the receiving printer’s actual build area. These values are not machine settings.\n\nBed width (mm)\nBed depth (mm)\nBuild height (mm)\nPlanning clearance (mm)\nNozzle diameter (mm)\n\nPlanning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.\n\nGeometry World scale fits this profile\n\nModel envelope: 20 × 30 × 40 mm. Printer profile: 220 × 180 × 250 mm.\n\nIncludes the preferred 5 mm planning clearance. Profile changes update this check immediately; slicer and staff review remain required.\n\nRun advisory preflight\nAnalyze & Repair\n\nSTL repair only welds near-identical vertices and removes degenerate triangles. It does not fill holes, boolean-union shells, remesh, test wall thickness, or certify safety.\n\nCreate conservative repair candidate\nPreflight report\nPASS\nWIDTH\n20 mm\nDEPTH\n30 mm\nHEIGHT\n40 mm\nTRIANGLES\n104\n\nNo blocking condition was found by these limited checks.\n\nAdvisory, not certification. Print Lab does not prove wall thickness, self-intersection repair, support success, material suitability, or machine safety. A trained staff member must inspect the sliced result before accepting a request.\nPreflight completed without a blocking geometry error. Staff and slicer review are still required.\nSelected build prepared locally. Opening Print Lab.",
+    "package": {
+      "files": [
+        "model.stl",
+        "manifest.json",
+        "block-source.json",
+        "editable-world.json",
+        "READ-ME.txt"
+      ],
+      "manifest": {
+        "schema": "alloflow-print-package/1",
+        "title": "Geometry World build - 24 blocks",
+        "description": "Created from the selected Geometry World student blocks. Virtual block materials are appearance labels; choose the physical filament in Print Lab.",
+        "model": {
+          "file": "model.stl",
+          "sha256": "d6c0ff97683e6f282e36ce250f2f83de7c8a50dff059f81695c34a9bf0a87cea",
+          "units": "mm",
+          "coordinateSystem": "z-up",
+          "dimensionsMm": {
+            "width": 20,
+            "depth": 30,
+            "height": 40
+          }
+        },
+        "source": {
+          "tool": "geometryWorld",
+          "millimetersPerBlock": 10,
+          "editableFile": "editable-world.json",
+          "recipeFile": "block-source.json"
+        },
+        "material": "PETG",
+        "printerProfile": {
+          "name": "School printer",
+          "bedWidthMm": 220,
+          "bedDepthMm": 180,
+          "bedHeightMm": 250,
+          "planningClearanceMm": 5,
+          "nozzleMm": 0.4,
+          "maxTriangles": 250000,
+          "maxBytes": 5242880
+        },
+        "preflight": {
+          "sourceFormat": "STL",
+          "byteSize": 5284,
+          "triangleCount": 104,
+          "meshCount": 1,
+          "connectedComponents": 1,
+          "dimensionsMm": {
+            "width": 20,
+            "depth": 30,
+            "height": 40
+          },
+          "degenerateTriangles": 0,
+          "openEdges": 0,
+          "nonManifoldEdges": 0,
+          "windingInconsistencies": 0,
+          "windingOrientation": "POSITIVE",
+          "signedVolumeMm3": 24000,
+          "enclosedVolumeMm3": 24000,
+          "volumeAdvisory": "Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.",
+          "unitDeclaration": "file-unit=1mm",
+          "profile": {
+            "name": "School printer",
+            "bedWidthMm": 220,
+            "bedDepthMm": 180,
+            "bedHeightMm": 250,
+            "nozzleMm": 0.4,
+            "maxTriangles": 250000,
+            "maxBytes": 5242880
+          },
+          "status": "PASS",
+          "issues": []
+        },
+        "aiUse": "NONE",
+        "aiDisclosure": "",
+        "reviewStatus": "AWAITING_SLICER_AND_STAFF_REVIEW"
+      },
+      "editableBlocks": 24
+    },
+    "fragments": {
+      "count": 2,
+      "pieces": 2
+    },
+    "importButtons": [
+      "📝Estimate",
+      "📋Objectives",
+      "⚙️Menu",
+      "▲",
+      "⬜1",
+      "◢½",
+      "▭½",
+      "◣¼",
+      "🪨1",
+      "🌿2",
+      "🪵3",
+      "💎4",
+      "🥇5",
+      "🏖️6",
+      "🔲7",
+      "💧8",
+      "🧱9",
+      "❄️10",
+      "🌋11",
+      "🔥12",
+      "🔇 SR OFF",
+      "🕊️ FLY",
+      "🏠 Home",
+      "🗑️ Clear Mine",
+      "⛶",
+      "▶",
+      "Select build",
+      "Send to Print Lab",
+      "💾 Save editable world",
+      "📂 Open editable world",
+      "📘 Choose guided lesson",
+      "✨ Start a fresh sandbox"
+    ],
+    "importState": {
+      "toasts": [
+        {
+          "message": "Returned to your complete workspace with selection, undo history, and print scale preserved. Check the revised model before printing.",
+          "kind": "success"
+        },
+        {
+          "message": "Editable world checked locally. Review the preview before replacing the current sandbox.",
+          "kind": "info"
+        },
+        {
+          "message": "Opened Geometry World selected build with 24 student blocks. The previous sandbox was replaced only after confirmation.",
+          "kind": "success"
+        }
+      ],
+      "count": 24
+    }
+  },
+  "passed": true
+}

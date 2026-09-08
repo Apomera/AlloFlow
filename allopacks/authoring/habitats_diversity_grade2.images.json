@@ -1,0 +1,131 @@
+{
+  "slug": "habitats_diversity_grade2",
+  "status": "planned",
+  "assets": [
+    {
+      "id": "hd-term-1",
+      "target": "hd-glossary.data[0].image",
+      "prompt": "Show Habitat using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-2",
+      "target": "hd-glossary.data[1].image",
+      "prompt": "Show Plant using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-3",
+      "target": "hd-glossary.data[2].image",
+      "prompt": "Show Animal using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-4",
+      "target": "hd-glossary.data[3].image",
+      "prompt": "Show Pond using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-5",
+      "target": "hd-glossary.data[4].image",
+      "prompt": "Show Forest using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-6",
+      "target": "hd-glossary.data[5].image",
+      "prompt": "Show Observe using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-7",
+      "target": "hd-glossary.data[6].image",
+      "prompt": "Show Compare using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-term-8",
+      "target": "hd-glossary.data[7].image",
+      "prompt": "Show Diversity using a concrete example from the reading. Keep category names and the answer word out of the artwork."
+    },
+    {
+      "id": "hd-anchor-1",
+      "target": "hd-anchor.data.sections[0].iconUrl",
+      "prompt": "Child observing a pond from its edge"
+    },
+    {
+      "id": "hd-anchor-2",
+      "target": "hd-anchor.data.sections[1].iconUrl",
+      "prompt": "A group of similar ants beside a varied group of small animals"
+    },
+    {
+      "id": "hd-anchor-3",
+      "target": "hd-anchor.data.sections[2].iconUrl",
+      "prompt": "Two children observing equal garden plots"
+    },
+    {
+      "id": "hd-sort-1",
+      "target": "hd-sort.data.items[0].image",
+      "prompt": "Illustrate this exact card: We saw three snails beside the pond. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-sort-2",
+      "target": "hd-sort.data.items[1].image",
+      "prompt": "Illustrate this exact card: We drew two kinds of leaves in the garden. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-sort-3",
+      "target": "hd-sort.data.items[2].image",
+      "prompt": "Illustrate this exact card: We heard a bird during our visit. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-sort-4",
+      "target": "hd-sort.data.items[3].image",
+      "prompt": "Illustrate this exact card: No animals ever use this garden. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-sort-5",
+      "target": "hd-sort.data.items[4].image",
+      "prompt": "Illustrate this exact card: Every pond has exactly the same plants. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-sort-6",
+      "target": "hd-sort.data.items[5].image",
+      "prompt": "Illustrate this exact card: The hidden animal must be a frog. Preserve its meaning; do not include the category or mark an answer. Abstract or numerical meaning stays in the editable card text."
+    },
+    {
+      "id": "hd-lesson-1",
+      "target": "future native image resource panel 1",
+      "prompt": "Child observing a pond from its edge"
+    },
+    {
+      "id": "hd-lesson-2",
+      "target": "future native image resource panel 2",
+      "prompt": "A group of similar ants beside a varied group of small animals"
+    },
+    {
+      "id": "hd-lesson-3",
+      "target": "future native image resource panel 3",
+      "prompt": "Two children observing equal garden plots"
+    },
+    {
+      "id": "hd-lesson-4",
+      "target": "future native image resource panel 4",
+      "prompt": "Illustrate a correct example: Habitats meet needs of living things."
+    },
+    {
+      "id": "hd-lesson-5",
+      "target": "future native image resource panel 5",
+      "prompt": "Compare two cases from the reading without adding claims."
+    },
+    {
+      "id": "hd-lesson-6",
+      "target": "future native image resource panel 6",
+      "prompt": "Show the materials or examples for this task: Our class will look at two small outdoor places. We can use two sets of photos if we cannot go outside."
+    },
+    {
+      "id": "hd-lesson-7",
+      "target": "future native image resource panel 7",
+      "prompt": "Show a learner recording evidence for: What kinds of plants and animals do we find in each place?"
+    },
+    {
+      "id": "hd-lesson-8",
+      "target": "future native image resource panel 8",
+      "prompt": "Show the limits of the model discussed in the reading."
+    }
+  ]
+}

@@ -1117,9 +1117,18 @@ describe('Readiness confirmations belong to the reviewed lesson', () => {
     const b = mountBanner(props()); confirm(b);
     b.render(props(change));
     expect(check(b).checked).toBe(false);
-    expect(b.text()).toContain('The lesson changed. Please confirm the manual checks again.');
+    expect(b.text()).toContain('The lesson or delivery route changed. Please confirm the manual checks again.');
     expect(JSON.parse(localStorage.getItem(key)).checks).toEqual({});
     b.cleanup();
+  });
+
+  it.each([['setting', 'print'], ['priority', 'interactive']])('reopens saved checks when delivery %s changes between visits', (field, value) => {
+    const b = mountBanner(props()); confirm(b); b.cleanup();
+    localStorage.setItem('allo_guided_delivery_preferences', JSON.stringify({ setting: field === 'setting' ? value : 'take-home', priority: field === 'priority' ? value : 'accessible' }));
+    const c = mountBanner(props());
+    expect(check(c).checked).toBe(false);
+    expect(c.text()).toContain('The lesson or delivery route changed');
+    c.cleanup();
   });
 
   it('does not restore old checks merely because an edit is undone', () => {

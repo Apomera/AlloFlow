@@ -1,0 +1,31 @@
+{
+  "format": "circuit-guided-evidence-v1",
+  "question": "Keep the supply at 9 V and double the resistance. What happens to the current?",
+  "prediction": "It doubles",
+  "before": {
+    "mode": "series",
+    "voltage": 9,
+    "components": [
+      {
+        "type": "resistor",
+        "value": 100,
+        "id": 1
+      }
+    ]
+  },
+  "after": {
+    "mode": "series",
+    "voltage": 9,
+    "components": [
+      {
+        "type": "resistor",
+        "value": 200,
+        "id": 1
+      }
+    ]
+  },
+  "beforeCurrent": 0.09,
+  "afterCurrent": 0.045,
+  "explanation": "The source stayed at 9 V. Current fell from 90 mA to 45 mA when resistance doubled.",
+  "model": "Ideal DC teaching model"
+}

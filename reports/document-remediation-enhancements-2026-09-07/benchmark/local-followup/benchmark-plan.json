@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "mode": "local",
+  "startedAt": "2026-09-08T04:18:37.250Z",
+  "configuration": {
+    "mode": "local",
+    "trials": 1,
+    "timeoutMs": 120000,
+    "budgetMs": 240000
+  },
+  "corpus": {
+    "schemaVersion": 1,
+    "corpusId": "mixed-education-v1",
+    "manifestSha256": "7b19e71f60bbdf2d4f203393b9853bcdd304e53e15f22cdc181007f755618387",
+    "cases": [
+      {
+        "id": "education-worksheet",
+        "documentKind": "worksheet",
+        "backend": "portable",
+        "fixture": "worksheet",
+        "sourcePath": null,
+        "planPath": null,
+        "calibrationCaseId": null,
+        "expected": {
+          "exitCode": 0,
+          "readiness": "review-required"
+        },
+        "options": {}
+      },
+      {
+        "id": "education-table",
+        "documentKind": "table",
+        "backend": "portable",
+        "fixture": "complex-table",
+        "sourcePath": null,
+        "planPath": null,
+        "calibrationCaseId": null,
+        "expected": {
+          "exitCode": 0,
+          "readiness": "review-required"
+        },
+        "options": {}
+      }
+    ]
+  },
+  "versions": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "architecture": "arm64",
+    "gitCommit": "dcb39be6c9a9822a3aa9606bb3abdf4c9af74ba9",
+    "files": {
+      "agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py": "caa6804b43a94933493a1dbdd3cb958b2ee9f47fced59e3ee5fc91b1beb69900",
+      "agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs": "3234436d5c046ec62d4b019dd11c49e0f47aaf911741ec3d37174753896fdef6",
+      "desktop/mcp/alloflow-remediation-mcp-stdio.cjs": "9427256d9cba8265a2401102576b3a9d7d52a710a31d1bd3617e40c38f41b110",
+      "desktop/mcp/remediation_headless_driver.cjs": "f6d4cfe0f5f26322730f892dfdab45dc588aa342db2a19b1af7744b2bffbec61",
+      "desktop/mcp/remediation_verification.cjs": "9c23f92624065ea012e45b6cfc1c3c30a291066ea89c778b9d9c2883f990d6f2",
+      "doc_pipeline_source.jsx": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+      "doc_pipeline_module.js": "a8375a40069b24ea484905b7015ac3902af98199f2031c77f93c015f98f78ccc",
+      "accessibility_evidence_module.js": "bdc31055e61b1ac89206a4abca8f72eec6861ded696a1345f46ce6c7277c42c2",
+      "dev-tools/benchmark_document_remediation.cjs": "d5d0f40e030a5c299370d1044bf7454cd611b413cfbb8db7caaa30fb7b2e25f2",
+      "dev-tools/remediation_benchmark_corpus.cjs": "58c5c272b1ee05c6bbfe0a868e9a6ce02e77d23f179b098b64cdd74e0e4e47fe"
+    },
+    "promptBundleSha256": "bf5d764cce26e0bd88c8963532a2664b2b2979102ad31ddda7c6bac133893511",
+    "implementationSha256": "fa694099277425f1ef2b711e77fbe75dcb71a18f61112752b55839581feffe27",
+    "modelConfiguration": {
+      "provider": "Gemini via local MCP",
+      "model": "gemini-3-flash-preview",
+      "fallbackModel": "gemini-2.5-flash-lite",
+      "note": "Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed."
+    }
+  }
+}

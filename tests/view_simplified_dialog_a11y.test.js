@@ -56,6 +56,7 @@ describe('Simplified View layered accessibility', () => {
   });
 
   it('provides Enter and Space activation for scanner-reported word controls', () => {
-    expect(source.match(/e\.key === 'Enter' \|\| e\.key === ' '/g).length).toBeGreaterThanOrEqual(5);
+    expect(source).toContain("event.key === 'Enter' || event.key === ' '");
+    expect(source).toContain('data-reading-word={order} role="button"'); // Shared across layouts; activation is covered at runtime.
   });
 });

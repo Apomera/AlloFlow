@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "corpusStatus": "empty",
+  "coverage": {
+    "total": 0,
+    "synthetic": 0,
+    "independentlyReviewed": 0,
+    "unreviewed": 0,
+    "invalidObservations": 0
+  },
+  "syntheticMetrics": {
+    "evaluated": 0,
+    "mismatched": 0
+  },
+  "humanMetrics": null,
+  "rows": [],
+  "limitations": [
+    "Synthetic cases measure policy behavior, not remediation quality or human usability.",
+    "Human review provenance is declared by the importer; reviewer identity and judgments are not authenticated.",
+    "Missing layers and findings are not inferred to pass. Counts describe reviewed findings, not all possible issues."
+  ]
+}
