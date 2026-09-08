@@ -1,0 +1,18 @@
+{
+  "stem.archstudio.gridnav_floor": "Editing floor",
+  "stem.archstudio.gridnav_option": "Y={floor} · {count} blocks",
+  "stem.archstudio.gridnav_below": "Show floor below",
+  "stem.archstudio.gridnav_below_help": "Dashed squares mark blocks directly below empty cells. Edits affect only the current floor.",
+  "stem.archstudio.gridnav_below_cell": "Reference below: {material} {shape} on floor Y={floor}.",
+  "stem.archstudio.gridnav_jump": "Go to coordinates",
+  "stem.archstudio.gridnav_x": "Grid X",
+  "stem.archstudio.gridnav_z": "Grid Z",
+  "stem.archstudio.gridnav_go": "Go to cell",
+  "stem.archstudio.gridnav_invalid": "Enter whole-number X and Z coordinates from −64 to 64.",
+  "stem.archstudio.gridnav_cursor": "Cursor: X {x} · Y {y} · Z {z}",
+  "stem.archstudio.gridnav_window": "Visible window: X {minX} to {maxX} · Z {minZ} to {maxZ}",
+  "stem.archstudio.gridnav_scope": "The grid includes every material on this floor, regardless of 3D filters.",
+  "stem.archstudio.gridnav_replay": "Floor counts and reference outlines follow the selected replay step.",
+  "stem.archstudio.gridnav_jumped": "Grid cursor moved to X {x}, Y {y}, Z {z}.",
+  "stem.archstudio.gridnav_floor_changed": "Editing floor Y={floor}."
+}

@@ -1253,14 +1253,12 @@ function __alloAST(k, fb) {
   }
 
   function getArchGridAxisBounds(hasBlocks, minValue, maxValue, focusValue) {
-    if (!hasBlocks) return [0, 9];
-    var lo = Math.max(-64, Math.round(minValue) - 1);
-    var hi = Math.min(64, Math.round(maxValue) + 1);
+    var lo = hasBlocks ? Math.max(-64, Math.round(minValue) - 1) : 0;
+    var hi = hasBlocks ? Math.min(64, Math.round(maxValue) + 1) : 9;
+    var hasFocus = focusValue != null && isFinite(focusValue);
+    var focus = hasFocus ? Math.max(-64, Math.min(64, Math.round(Number(focusValue)))) : null;
     if (hi - lo + 1 > 32) {
-      var hasFocus = focusValue != null && isFinite(focusValue);
-      var mid = hasFocus
-        ? Math.max(Math.round(minValue), Math.min(Math.round(maxValue), Math.round(Number(focusValue))))
-        : Math.round((minValue + maxValue) / 2);
+      var mid = hasFocus ? focus : Math.round((minValue + maxValue) / 2);
       lo = mid - 15; hi = lo + 31;
       if (lo < -64) { lo = -64; hi = -33; }
       if (hi > 64) { hi = 64; lo = 33; }
@@ -1269,6 +1267,12 @@ function __alloAST(k, fb) {
     while (hi - lo + 1 < 10 && (lo > -64 || hi < 64)) {
       if (lo > -64) lo--;
       if (hi - lo + 1 < 10 && hi < 64) hi++;
+    }
+    // Preserve the fitted window while moving within it; shift only for a destination outside it.
+    if (hasFocus && (focus < lo || focus > hi)) {
+      var size = hi - lo + 1;
+      lo = Math.max(-64, Math.min(65 - size, focus - Math.floor((size - 1) / 2)));
+      hi = lo + size - 1;
     }
     return [lo, hi];
   }
@@ -1313,6 +1317,42 @@ function __alloAST(k, fb) {
     return visible;
   }
 
+
+
+  var ARCH_GRID_NAV_LABELS = {
+    "floor": "Editing floor",
+    "option": "Y={floor} · {count} blocks",
+    "below": "Show floor below",
+    "below_help": "Dashed squares mark blocks directly below empty cells. Edits affect only the current floor.",
+    "below_cell": "Reference below: {material} {shape} on floor Y={floor}.",
+    "jump": "Go to coordinates",
+    "x": "Grid X",
+    "z": "Grid Z",
+    "go": "Go to cell",
+    "invalid": "Enter whole-number X and Z coordinates from −64 to 64.",
+    "cursor": "Cursor: X {x} · Y {y} · Z {z}",
+    "window": "Visible window: X {minX} to {maxX} · Z {minZ} to {maxZ}",
+    "scope": "The grid includes every material on this floor, regardless of 3D filters.",
+    "replay": "Floor counts and reference outlines follow the selected replay step.",
+    "jumped": "Grid cursor moved to X {x}, Y {y}, Z {z}.",
+    "floor_changed": "Editing floor Y={floor}."
+};
+  function archGridNavigationData(current, floor) {
+    var list = getArchRuntimeBlocks(current), level = archDesignInteger(floor, 0, 31);
+    if (level == null) level = 0;
+    var counts = Array(32).fill(0), below = {};
+    list.forEach(function (b) {
+      counts[b.y]++;
+      if (level > 0 && b.y === level - 1) below[b.x + ',' + b.z] = b;
+    });
+    return { counts: counts, below: below, floor: level };
+  }
+  function archGridJump(value) {
+    value = value || {};
+    var x = archDesignInteger(value.x, -64, 64), z = archDesignInteger(value.z, -64, 64);
+    return x == null || z == null ? null : { x: x, z: z };
+  }
+  window.__alloArchGridNav = { data: archGridNavigationData, jump: archGridJump, labels: ARCH_GRID_NAV_LABELS };
 
   // Pure, atomic design operations: reject a clipped room or partial move.
   var ARCH_DESIGN_COST = { stone: 5, brick: 8, wood: 3, glass: 12, marble: 15, metal: 20 };
@@ -3840,8 +3880,20 @@ function __alloAST(k, fb) {
       return applyArchBlockAction(blocks, Object.assign({}, action || {}, { cell: selectedBlock })) !== blocks;
     };
 
+    function gridNavText(key, values) {
+      var text = t('stem.archstudio.gridnav_' + key, ARCH_GRID_NAV_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function changeGridFloor(value) {
+      var floor = archDesignInteger(value, 0, 31); if (floor == null) return;
+      upd('editLayer', floor);
+      if (announceToSR) announceToSR(gridNavText('floor_changed', { floor: floor }));
+    }
     var renderBuildGrid = function () {
       var gridBlocks = showReplay ? archReplayFrame : blocks;
+      var gridNavigation = archGridNavigationData(gridBlocks, editLayer);
+      var showGridBelow = d.gridShowBelow === true && editLayer > 0;
       var gridHasBlocks = gridBlocks.length > 0;
       var gridContentMinX = 0, gridContentMaxX = 0, gridContentMinZ = 0, gridContentMaxZ = 0;
       if (gridHasBlocks) {
@@ -3871,6 +3923,8 @@ function __alloAST(k, fb) {
       var cursorZ = hasGridCursor
         ? Math.max(gridMinZ, Math.min(gridMaxZ, gridCursorZ))
         : gridFocusBlock ? Math.round(gridFocusBlock.z) : Math.max(gridMinZ, Math.min(gridMaxZ, 0));
+      var jumpDraft = Object.assign({ x: cursorX, z: cursorZ }, d.gridJump || {});
+      var jumpTarget = archGridJump(jumpDraft);
       var cursorBounds = { minX: gridMinX, maxX: gridMaxX, minZ: gridMinZ, maxZ: gridMaxZ };
       var layerMap = {};
       gridBlocks.forEach(function (b) {
@@ -3891,6 +3945,8 @@ function __alloAST(k, fb) {
         for (var gx = gridMinX; gx <= gridMaxX; gx++) {
           (function (x, z) {
             var b = layerMap[x + ',' + z];
+            var belowBlock = !b && showGridBelow ? gridNavigation.below[x + ',' + z] : null;
+            var belowText = belowBlock ? gridNavText('below_cell', { material: belowBlock.material, shape: belowBlock.shape, floor: editLayer - 1 }) : '';
             var inDesignRegion = !!b && !!designSelectionBounds && b.x >= designSelectionBounds.minX && b.x <= designSelectionBounds.maxX && b.y >= designSelectionBounds.minY && b.y <= designSelectionBounds.maxY && b.z >= designSelectionBounds.minZ && b.z <= designSelectionBounds.maxZ;
             var isSelected = !!b && archBlockKey(b) === selectedBlockKey;
             var cellName = b ? (b.material || 'stone') + ' ' + (b.shape || 'block') : 'Empty cell';
@@ -3905,7 +3961,8 @@ function __alloAST(k, fb) {
               'data-arch-grid-x': x,
               'data-arch-grid-z': z,
               'data-arch-cell': x + ',' + editLayer + ',' + z,
-              'aria-label': cellName + ' at X ' + x + ', Y ' + editLayer + ', Z ' + z + '; ' + action,
+              'aria-label': cellName + ' at X ' + x + ', Y ' + editLayer + ', Z ' + z + '; ' + action + (belowText ? '. ' + belowText : ''),
+              'aria-describedby': belowBlock ? 'arch-grid-below-help' : undefined,
               onFocus: function () {
                 if (gridCursorX !== x || gridCursorZ !== z) upd({ gridCursorX: x, gridCursorZ: z });
               },
@@ -3913,17 +3970,18 @@ function __alloAST(k, fb) {
               onClick: function () { editAtGridCell(x, z); },
               title: 'X ' + x + '  Z ' + z + (b ? ' - ' + (b.shape || 'block') : '') + (isSelected ? ' - selected' : ''),
               style: {
-                width: cellPx, height: cellPx, padding: 0,
+                width: cellPx, height: cellPx, padding: 0, position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 5,
                 border: '2px solid ' + (isSelected ? '#fbbf24' : inDesignRegion ? '#38bdf8' : b ? 'rgba(255,255,255,.55)' : 'rgba(100,116,139,.42)'),
                 background: b ? (showHeatmap ? '#' + ('000000' + archHexFor(b).toString(16)).slice(-6) : (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8')) : 'rgba(30,41,59,.72)',
-                color: b ? '#fff' : '#64748b',
+                color: b ? '#fff' : '#cbd5e1',
                 fontSize: b ? Math.max(14, Math.floor(cellPx * 0.42)) : 13,
                 cursor: (mode === 'erase' || mode === 'paint' || mode === 'pick') ? (b ? (mode === 'pick' ? 'copy' : 'pointer') : 'default') : 'pointer',
                 boxShadow: isSelected ? '0 0 0 2px rgba(251,191,36,.35), inset 0 0 0 1px rgba(15,23,42,.35)' : b ? 'inset 0 0 0 1px rgba(15,23,42,.35)' : 'none'
               }
-            }, b ? (shapeIconById[b.shape || 'block'] || '\uD83E\uDDF1') : (mode === 'place' ? '+' : '')));
+            }, belowBlock && el('span', { 'aria-hidden': 'true', className: 'arch-grid-underlay', 'data-arch-underlay': 'true' }),
+              b ? (shapeIconById[b.shape || 'block'] || '\uD83E\uDDF1') : (mode === 'place' ? '+' : '')));
           })(gx, gz);
         }
         rowElements.push(el('div', {
@@ -3934,18 +3992,47 @@ function __alloAST(k, fb) {
         }, rowCells));
       }
 
-      return el('div', { style: { flex: 1, minHeight: 260, display: 'flex', flexDirection: 'column', padding: '54px 16px 14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 20%, rgba(30,41,59,.9), rgba(15,23,42,1))' } },
+      return el('div', { className: 'arch-grid-editor', style: { flex: 1, minHeight: 260, display: 'flex', flexDirection: 'column', padding: '54px 16px 14px', overflow: 'auto', background: 'radial-gradient(circle at 50% 20%, rgba(30,41,59,.9), rgba(15,23,42,1))' } },
         !archShow3d && el('div', { role: 'status', style: { margin: '0 auto 8px', padding: '6px 10px', borderRadius: 8, background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.45)', color: '#fde68a', fontSize: 11 } },
           '3D is unavailable, but the floor grid is fully editable.'),
-        el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-          el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': __alloAST('stem.archstudio.a11y_previous_floor', 'Previous floor'), onClick: function () { upd('editLayer', Math.max(0, editLayer - 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer > 0 ? '#e2e8f0' : '#475569', cursor: editLayer > 0 ? 'pointer' : 'default' } }, '\u2212'),
-          el('strong', { style: { minWidth: 92, textAlign: 'center', color: '#f8fafc', fontSize: 12 } }, 'Floor Y=' + editLayer),
-          el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': __alloAST('stem.archstudio.a11y_next_floor', 'Next floor'), onClick: function () { upd('editLayer', Math.min(31, editLayer + 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer < 31 ? '#e2e8f0' : '#475569', cursor: editLayer < 31 ? 'pointer' : 'default' } }, '+'),
-          el('span', { style: { color: '#94a3b8', fontSize: 11 } }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : mode === 'paint' ? 'Select a block to paint it' : 'Select a block to copy its shape, material, color, and rotation')
-        ),
+
+        el('div', { className: 'arch-grid-navigation' },
+          el('div', { className: 'arch-grid-floor-control' },
+            el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': __alloAST('stem.archstudio.a11y_previous_floor', 'Previous floor'),
+              onClick: function () { changeGridFloor(editLayer - 1); } }, '−'),
+            el('label', null, gridNavText('floor'),
+              el('select', { 'aria-label': gridNavText('floor'), value: editLayer, onChange: function (event) { changeGridFloor(Number(event.target.value)); } },
+                gridNavigation.counts.map(function (count, floor) { return el('option', { key: floor, value: floor }, gridNavText('option', { floor: floor, count: count })); }))),
+            el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': __alloAST('stem.archstudio.a11y_next_floor', 'Next floor'),
+              onClick: function () { changeGridFloor(editLayer + 1); } }, '+')),
+          el('div', { className: 'arch-grid-nav-options' },
+            el('label', { className: 'arch-grid-below-toggle' },
+              el('input', { type: 'checkbox', disabled: editLayer === 0, checked: showGridBelow,
+                onChange: function (event) { upd('gridShowBelow', event.target.checked); } }), gridNavText('below')),
+            el('details', { className: 'arch-grid-jump' },
+              el('summary', null, gridNavText('jump')),
+              el('form', { onSubmit: function (event) {
+                event.preventDefault();
+                var target = archGridJump(jumpDraft); if (!target) return;
+                upd({ gridCursorX: target.x, gridCursorZ: target.z, gridJump: null });
+                focusArchGridCell(target.x, target.z);
+                if (announceToSR) announceToSR(gridNavText('jumped', { x: target.x, y: editLayer, z: target.z }));
+              } },
+                el('div', { className: 'arch-grid-jump-fields' },
+                  ['x', 'z'].map(function (axis) { return el('label', { key: axis }, gridNavText(axis),
+                    el('input', { type: 'number', min: -64, max: 64, step: 1, required: true, value: jumpDraft[axis],
+                      'aria-invalid': archDesignInteger(jumpDraft[axis], -64, 64) == null,
+                      'aria-describedby': !jumpTarget ? 'arch-grid-jump-error' : undefined,
+                      onChange: function (event) { var patch = {}; patch[axis] = event.target.value; upd('gridJump', Object.assign({}, jumpDraft, patch)); } })); }),
+                  el('button', { type: 'submit', disabled: !jumpTarget }, gridNavText('go'))),
+                !jumpTarget && el('p', { id: 'arch-grid-jump-error', className: 'arch-grid-nav-note' }, gridNavText('invalid'))))),
+          showGridBelow && el('p', { className: 'arch-grid-nav-note', id: 'arch-grid-below-help' }, gridNavText('below_help')),
+          el('div', { className: 'arch-grid-cursor-readout', 'data-arch-grid-cursor': 'true' }, gridNavText('cursor', { x: cursorX, y: editLayer, z: cursorZ })),
+          el('p', { className: 'arch-grid-nav-note' }, gridNavText(showReplay ? 'replay' : 'scope'))),
+        el('div', { className: 'arch-grid-tool-instruction' }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : mode === 'paint' ? 'Select a block to paint it' : 'Select a block to copy its shape, material, color, and rotation'),
         el('div', { id: 'arch-grid-help', style: { margin: '0 auto 7px', color: '#94a3b8', fontSize: 10, textAlign: 'center' } },
           showReplay ? 'Construction replay is read-only \u2022 Arrow keys move between cells' : 'Arrow keys move between cells \u2022 Enter or Space uses the active tool \u2022 Home and End jump across a row'),
-        el('div', { style: { flex: 1, minHeight: 0, overflow: 'auto' } },
+        el('div', { className: 'arch-grid-scroll' },
           el('div', {
             role: 'grid',
             'data-arch-grid': 'true',
@@ -3960,7 +4047,8 @@ function __alloAST(k, fb) {
             width: 'max-content', margin: '0 auto', padding: 8, borderRadius: 10,
             background: 'rgba(2,6,23,.48)', border: '1px solid rgba(71,85,105,.7)'
           } }, rowElements)
-        )
+        ),
+        el('div', { className: 'arch-grid-window-note' }, gridNavText('window', { minX: gridMinX, maxX: gridMaxX, minZ: gridMinZ, maxZ: gridMaxZ }))
       );
     };
 
@@ -4658,6 +4746,31 @@ function __alloAST(k, fb) {
         + '#arch-design-panel .arch-repeat-summary{padding:9px;border-left:3px solid #6ee7b7;border-radius:5px;background:#102c29;color:#d1fae5;font-size:12px;line-height:1.6;}'
         + '@media(max-width:680px){#arch-design-panel button,#arch-design-panel input:not([type=checkbox]),#arch-design-panel select,#arch-design-panel .arch-repeat-controls input,#arch-design-panel .arch-repeat-controls select{min-height:44px!important;}}'
         + '.theme-contrast #arch-design-panel .arch-repeat-preview,.theme-contrast #arch-design-panel .arch-repeat-summary{background:#020617!important;border-color:#f8fafc!important;}'
+
+
+        + '#arch-studio-region .arch-grid-navigation{flex:none;align-self:stretch;max-width:700px;width:100%;margin:0 auto 10px;padding:12px;border:1px solid #44657f;border-radius:12px;background:linear-gradient(135deg,#163047,#102032);color:#e2e8f0;}'
+        + '#arch-studio-region .arch-grid-navigation button,#arch-studio-region .arch-grid-navigation select,#arch-studio-region .arch-grid-navigation input[type=number]{min-height:44px;min-width:0;padding:7px 9px;border:1px solid #64748b;border-radius:7px;background:#0b1a2d;color:#f1f5f9;font-family:inherit;font-size:12px;}'
+        + '#arch-studio-region .arch-grid-floor-control{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;align-items:end;}'
+        + '#arch-studio-region .arch-grid-floor-control label,#arch-studio-region .arch-grid-jump-fields label{display:grid;gap:4px;font-size:11px;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-grid-floor-control select{width:100%;font-weight:700;}'
+        + '#arch-studio-region .arch-grid-nav-options{display:flex;flex-wrap:wrap;gap:8px;align-items:start;margin-top:8px;}'
+        + '#arch-studio-region .arch-grid-below-toggle{display:flex;align-items:center;gap:6px;min-height:44px;font-size:12px;}'
+        + '#arch-studio-region .arch-grid-below-toggle input{width:18px;height:18px;accent-color:#a5b4fc;}'
+        + '#arch-studio-region .arch-grid-jump{flex:1;min-width:170px;border:1px solid #52697f;border-radius:7px;background:#102337;}'
+        + '#arch-studio-region .arch-grid-jump summary{padding:12px;min-height:44px;font-size:12px;cursor:pointer;}'
+        + '#arch-studio-region .arch-grid-jump summary:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px;}'
+        + '#arch-studio-region .arch-grid-jump form{padding:0 9px 9px;}'
+        + '#arch-studio-region .arch-grid-jump-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}'
+        + '#arch-studio-region .arch-grid-jump-fields button{grid-column:1/-1;background:#075985;}'
+        + '#arch-studio-region .arch-grid-navigation [aria-invalid=true]{border:2px solid #fbbf24!important;}'
+        + '#arch-studio-region .arch-grid-nav-note{margin:6px 0 0;font-size:11px;line-height:1.5;color:#cbd5e1;}'
+        + '#arch-studio-region .arch-grid-cursor-readout{margin-top:7px;color:#bae6fd;font-size:12px;font-variant-numeric:tabular-nums;}'
+        + '#arch-studio-region .arch-grid-tool-instruction{flex:none;text-align:center;color:#e2e8f0;font-size:12px;margin:0 0 6px;}'
+        + '#arch-studio-region .arch-grid-scroll{flex:1;min-height:220px;overflow:auto;}'
+        + '#arch-studio-region .arch-grid-window-note{flex:none;font-size:11px;color:#cbd5e1;text-align:center;padding-top:6px;}'
+        + '#arch-studio-region .arch-grid-underlay{position:absolute;inset:4px;border:2px dashed #a5b4fc;border-radius:2px;pointer-events:none;}'
+        + '.theme-contrast #arch-studio-region .arch-grid-navigation{background:#020617;border-color:#ffff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-grid-editor{padding-left:8px!important;padding-right:8px!important;}#arch-studio-region .arch-grid-navigation{padding:9px;}}'
 
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'

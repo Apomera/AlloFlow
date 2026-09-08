@@ -31,6 +31,16 @@ The labeled layout preview offers a plan and front elevation. The original uses 
 
 **Add repeated copies** applies every copy in one undo step and keeps the original region selected. The complete layout is checked against the current model, including collisions between new copies, world bounds, and the 4,096-block limit. A failed operation changes neither geometry nor history. Replay remains read-only. Changing counts, spacing, presets, or preview views does not edit the model. The controls use native labels, keyboard operation, visible focus, and larger phone targets; preview updates do not produce a live announcement on every keystroke. Failed-edit notices compare the same normalized model as the displayed build, so feedback remains visible for older saved blocks with missing properties.
 
+## Navigate the floor grid
+
+Choose **Floor Grid** in the build area. The **Editing floor** selector lists all 32 floors and the block count on each one. Use the adjacent Previous floor and Next floor buttons for single-floor changes. The cursor readout shows the active X, Y, and Z coordinates; the visible-window label reports the displayed X/Z range.
+
+Expand **Go to coordinates**, enter whole-number **Grid X** and **Grid Z** values from -64 through 64, and choose **Go to cell** or press Enter. The grid moves keyboard focus to that cell, including distant empty coordinates and positions in an empty project. Navigation alone changes neither blocks nor undo history. Enter or Space on the focused cell then uses the active building tool. Incomplete, fractional, and out-of-bounds inputs show an explanation and disable the jump.
+
+Enable **Show floor below** to align a new floor with the one beneath it. Dashed outlines appear inside empty current-floor cells with a block directly below. Their accessible names identify the reference material, shape, and floor. These are alignment references; they do not determine structural support. Painting or erasing an empty reference cell leaves the lower block intact. The toggle is disabled at ground level and retains its preference for higher floors.
+
+Counts and references include every material, regardless of the 3D view filters. During construction replay, they follow the selected replay frame and editing stays read-only. The grid retains arrow-key navigation, a single tab stop among cells, and focus after coordinate jumps. Its controls wrap for phones, with 44px floor buttons, coordinate inputs, and disclosure targets.
+
 ## Projects and revisions
 
 Open **Project & revisions** next to Design workbench. Give the build a name and design notes, then choose **Save snapshot**. The panel reports whether the current geometry and notes match the saved snapshot. Snapshots include names, notes, blocks, and their existing thumbnail; the browser gallery keeps the latest 50 snapshots.
@@ -101,8 +111,8 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all 11 Architecture Studio unit suites passed (298 tests), including 67 tests for repeated layouts. Nine unique Chromium workflows passed in the final repeat/workbench refinement: existing building and region edits, atomic copies and stacks, late collisions, replay protection, undo/redo, coordinate disclosure, active presets, keyboard focus, and 320px phone reflow and touch targets. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested workbench state across light, dark, and high-contrast appearances. Desktop and phone overview/preview screenshots were visually reviewed. Local browser validation disabled video/trace recording after earlier infrastructure timeouts; the existing test assertions remain intact.
+Results: all 12 Architecture Studio unit suites passed (347 tests), including 49 floor-grid navigation checks and 67 repeated-layout checks. Twelve Chromium workflows passed in the final floor-grid refinement: place, paint, erase, property picking, floor changes, distant imports and coordinate jumps, below-floor references, replay protection, undo/redo, WebGL fallback, keyboard focus, and 320px phone reflow and control sizes. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested grid state across light, dark, and high-contrast appearances. Desktop and phone grid screenshots were visually reviewed. Local browser validation disabled video/trace recording; the existing test assertions remain intact.
 
 No deployment or push was performed.
 
-Repository gates passed: pipeline integrity, source-pair synchronization, staged file sizes, Lumen preservation, localization staleness, and whitespace. The initial source-pair blocker was resolved in the workspace during this follow-up. Other work in the shared repository is preserved.
+Repository gates passed: pipeline integrity, source-pair synchronization, staged file sizes, Lumen preservation, localization staleness, and whitespace. Other work in the shared repository is preserved.

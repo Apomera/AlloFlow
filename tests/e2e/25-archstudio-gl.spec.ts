@@ -1711,4 +1711,127 @@ test.describe('Architecture Studio — real WebGL', () => {
     await page.screenshot({ path: testInfo.outputPath('workbench-overview-phone.png'), fullPage: true });
   });
 
+
+  test('grid navigation reaches distant cells and floors without editing until activation', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ editorView: 'grid', blocks, soundEnabled: false }), tower());
+    const nav = page.locator('.arch-grid-navigation');
+    await expect(nav.getByLabel('Editing floor', { exact: true }).locator('option')).toHaveCount(32);
+    await expect(nav.getByLabel('Editing floor', { exact: true }).locator('option[value="0"]')).toHaveText('Y=0 · 5 blocks');
+    await nav.getByLabel('Editing floor', { exact: true }).selectOption('31');
+    await expect(page.getByRole('button', { name: 'Next floor', exact: true })).toBeDisabled();
+    await nav.locator('summary').click();
+    await nav.getByLabel('Grid X', { exact: true }).fill('64');
+    await nav.getByLabel('Grid Z', { exact: true }).fill('-64');
+    await nav.getByLabel('Grid Z', { exact: true }).press('Enter');
+    const cell = page.locator('[data-arch-cell="64,31,-64"]');
+    await expect(cell).toBeFocused();
+    await expect(nav.locator('[data-arch-grid-cursor]')).toHaveText('Cursor: X 64 · Y 31 · Z -64');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await cell.press('Enter');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(14);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.at(-1))).toMatchObject({ x: 64, y: 31, z: -64 });
+    await expect(nav.getByLabel('Editing floor').locator('option[value="31"]')).toHaveText('Y=31 · 1 blocks');
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('grid navigation shows a below-floor reference without painting or erasing that floor', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', editLayer: 1, blocks: [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 1, y: 0, z: 0, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: 1, y: 1, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+    ], soundEnabled: false }));
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.getByLabel('Show floor below', { exact: true }).check();
+    const empty = page.locator('[data-arch-cell="0,1,0"]'), occupied = page.locator('[data-arch-cell="1,1,0"]');
+    await expect(empty.locator('[data-arch-underlay]')).toBeVisible();
+    await expect(empty).toHaveAccessibleName(/Empty cell.*Reference below: stone block on floor Y=0/);
+    await expect(occupied.locator('[data-arch-underlay]')).toHaveCount(0);
+    await empty.focus(); await empty.press('e'); await empty.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(3);
+    await empty.press('a'); await empty.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await empty.press('p'); await empty.press('Enter');
+    await expect(empty.locator('[data-arch-underlay]')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(4);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.filter((b: any) => b.y === 0))).toHaveLength(2);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await page.getByLabel('Editing floor', { exact: true }).selectOption('1');
+    await expect(empty.locator('[data-arch-underlay]')).toBeVisible();
+    await page.locator('.arch-grid-navigation').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('floor-grid-reference-desktop.png'), fullPage: true });
+    await page.getByLabel('Editing floor', { exact: true }).selectOption('0');
+    await expect(page.getByLabel('Show floor below', { exact: true })).toBeDisabled();
+    await expect(page.locator('[data-arch-underlay]')).toHaveCount(0);
+  });
+
+  test('grid navigation keeps replay references accurate and rejects incomplete coordinates', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', editLayer: 1, gridShowBelow: true,
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }],
+      showReplay: true, replayStep: 0, undoStack: [[{ x: 4, y: 0, z: 0, shape: 'block', material: 'wood' }]], soundEnabled: false }));
+    const nav = page.locator('.arch-grid-navigation');
+    await expect(page.locator('[data-arch-cell="4,1,0"] [data-arch-underlay]')).toBeVisible();
+    await expect(page.locator('[data-arch-cell="0,1,0"] [data-arch-underlay]')).toHaveCount(0);
+    await nav.locator('summary').click();
+    await nav.getByLabel('Grid X', { exact: true }).fill('');
+    await expect(nav.getByLabel('Grid X', { exact: true })).toHaveAttribute('aria-invalid', 'true');
+    await expect(nav.getByRole('button', { name: 'Go to cell', exact: true })).toBeDisabled();
+    await expect(nav.locator('#arch-grid-jump-error')).toContainText('whole-number');
+    await nav.getByLabel('Grid X', { exact: true }).fill('4');
+    await nav.getByLabel('Grid Z', { exact: true }).fill('0');
+    await nav.getByRole('button', { name: 'Go to cell', exact: true }).click();
+    const reference = page.locator('[data-arch-cell="4,1,0"]');
+    await expect(reference).toBeFocused(); await reference.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toHaveLength(1);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toHaveLength(1);
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-readonly', 'true');
+  });
+
+  test('grid navigation fits phones and passes accessibility checks in three appearances', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 850 });
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', editLayer: 1, gridShowBelow: true,
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }], soundEnabled: false }));
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:810px}' });
+    const nav = page.locator('.arch-grid-navigation'), summary = nav.locator('summary');
+    await summary.focus(); await page.keyboard.press('Enter');
+    await expect(nav.locator('details')).toHaveAttribute('open', '');
+    await page.keyboard.press('Tab');
+    await expect(nav.getByLabel('Grid X', { exact: true })).toBeFocused();
+    await nav.getByLabel('Grid X', { exact: true }).fill('-2');
+    await nav.getByLabel('Grid Z', { exact: true }).fill('2');
+    await nav.getByRole('button', { name: 'Go to cell', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="-2,1,2"]')).toBeFocused();
+    await summary.focus(); await page.keyboard.press('Enter');
+    await expect(nav.locator('details')).not.toHaveAttribute('open');
+    await page.screenshot({ path: testInfo.outputPath('floor-grid-navigation-phone.png'), fullPage: true });
+    const sizes = await nav.locator('button, select, input[type=number], summary').evaluateAll(els => els.filter(el => el.getClientRects().length).map(el => {
+      const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, height: r.height };
+    }));
+    expect(sizes.filter(b => b.left < 0 || b.right > 320 || b.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addStyleTag({ content: '#wrap{height:920px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
 });
