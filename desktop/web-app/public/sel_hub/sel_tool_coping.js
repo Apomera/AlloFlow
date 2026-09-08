@@ -145,16 +145,16 @@ window.SelHub = window.SelHub || {
     {
       id: 'cross_crawl', type: 'movement', icon: '\u274C',
       bestFor: ['blue', 'yellow'],
-      name: { elementary: 'Cross-Body Moves', middle: 'Cross-Lateral Movement', high: 'Bilateral Integration Exercise' },
+      name: { elementary: 'Cross-Body Moves', middle: 'Cross-Lateral Movement', high: 'Cross-Body Movement Break' },
       desc: {
         elementary: 'Touch your opposite knee with your hand \u2014 left hand to right knee!',
-        middle: 'Cross-body movements help connect both sides of your brain and refocus.',
-        high: 'Cross-lateral movements integrate the brain hemispheres, improving executive function and emotional regulation.'
+        middle: 'Cross-body movements offer a coordination break. Notice whether they help you feel ready for your next task.',
+        high: 'Practice a comfortable cross-body rhythm and notice your response. Movement can be adapted or skipped.'
       },
       steps: {
         elementary: ['Stand up with space around you', 'Touch your right knee with your left hand', 'Now touch your left knee with your right hand', 'Keep going \u2014 right hand to left knee, left hand to right knee!', 'Do 10 on each side!'],
         middle: ['Stand with feet shoulder-width apart', 'Lift your right knee and touch it with your left elbow', 'Return to standing, then lift your left knee to your right elbow', 'Maintain a steady rhythm \u2014 like slow marching', 'Do 20 total (10 per side), then stand still and notice your focus'],
-        high: ['This exercise activates the corpus callosum, integrating hemispheric processing', 'Standing, bring right knee to left elbow in a controlled cross-lateral pattern', 'Alternate: left knee to right elbow', 'Maintain 20-30 repetitions at a moderate, mindful pace', 'Variation: Add a cognitive task (count backwards by 3s while doing the movements) to amplify the integrative effect']
+        high: ['Try this seated or standing, using only movements that feel comfortable', 'Standing, bring right knee to left elbow in a controlled cross-lateral pattern', 'Alternate: left knee to right elbow', 'Maintain 20-30 repetitions at a moderate, mindful pace', 'Optional coordination challenge: count backwards by 3s while moving; slow down or skip it if it feels frustrating']
       },
       practiceable: true
     },
@@ -281,12 +281,12 @@ window.SelHub = window.SelHub || {
       desc: {
         elementary: 'Draw a picture of how you feel! Use any colors you want!',
         middle: 'Express emotions through art when words aren\u2019t enough.',
-        high: 'Visual-spatial expression of emotions engages right-hemisphere processing, bypassing verbal rumination loops.'
+        high: 'Art offers a way to explore feelings through images, colors, and movement when words are difficult.'
       },
       steps: {
         elementary: ['Get paper and crayons/markers', 'Think about how you feel right now', 'Pick colors that match your feeling', 'Draw anything you want \u2014 shapes, scribbles, or a picture', 'Tell someone about your drawing if you want to!'],
         middle: ['Choose your medium: paper, tablet, or even just a scrap of paper', 'Don\u2019t plan \u2014 just start with whatever colors and shapes feel right', 'Let the emotion guide your hand: angry? Press hard. Sad? Use flowing lines.', 'There\u2019s no right or wrong. This is for YOU, not for a grade.', 'When you\u2019re done, look at what you made. What does it tell you about how you feel?'],
-        high: ['Select a medium (drawing, painting, digital, collage \u2014 anything visual)', 'Set a timer for 5-10 minutes. No planning, no judgment.', 'Allow the emotional content to express itself non-verbally through color, form, pressure, and movement', 'This activates right-hemisphere processing, which can access emotional material that verbal processing misses', 'After: observe your creation with curiosity. What patterns emerged? What surprised you?']
+        high: ['Select a medium (drawing, painting, digital, collage \u2014 anything visual)', 'Set a timer for 5-10 minutes. No planning, no judgment.', 'Allow the emotional content to express itself non-verbally through color, form, pressure, and movement', 'You can express something visually without needing to explain it in words', 'After: observe your creation with curiosity. What patterns emerged? What surprised you?']
       },
       practiceable: false
     },
@@ -882,8 +882,8 @@ window.SelHub = window.SelHub || {
       },
       desc: {
         elementary: 'Cover one side of your nose, breathe in, switch, breathe out. It feels weird and amazing!',
-        middle: 'Alternate breathing through left and right nostrils \u2014 balances both sides of your nervous system.',
-        high: 'A classical pranayama using alternating nostril breathing to balance sympathetic (right) and parasympathetic (left) tendencies and harmonize the two cerebral hemispheres.'
+        middle: 'Alternate gentle breaths through each nostril if comfortable. Ordinary breathing is also a valid choice.',
+        high: 'A traditional pranayama practice that alternates nostrils while breathing gently. Effects vary; ordinary comfortable breathing is also an option.'
       },
       steps: {
         elementary: [
@@ -910,7 +910,7 @@ window.SelHub = window.SelHub || {
           'Close both for a brief retention (2 sec) \u2014 optional in early practice.',
           'Open right nostril, exhale right for 4 to 8 sec.',
           'Inhale right for 4 sec; retain; exhale left.',
-          'Mechanism: increases interhemispheric coherence (EEG studies show alpha symmetry shift); balances autonomic tone.',
+          'Notice whether this breathing pattern feels comfortable. Claims about balancing brain hemispheres are not established.',
           'Research: Telles et al. (2014) demonstrated reduced perceived stress and improved cognitive performance after 12 weeks of practice.'
         ]
       },
@@ -957,7 +957,7 @@ window.SelHub = window.SelHub || {
           'Inhale slowly through right nostril (some variations include retention).',
           'Exhale through right (or left, depending on tradition).',
           'Practice 3 to 5 minutes.',
-          'Right-nostril breathing is associated with increased sympathetic activity, elevated metabolism, and right-hemisphere activation.',
+          'This is traditionally described as an energizing breathing practice. Research does not establish a reliable effect for each person.',
           'Contraindicated in anxiety states, hypertension, or insomnia \u2014 use Chandra Bhedana (left nostril) instead.'
         ]
       },
@@ -1004,7 +1004,7 @@ window.SelHub = window.SelHub || {
           'Inhale through left nostril; optional brief retention.',
           'Exhale through left nostril.',
           'Practice 5 to 10 minutes.',
-          'Mechanism: left-nostril breathing increases parasympathetic activity and right-hemisphere processing; consistently lowers heart rate and blood pressure in studies.',
+          'Some small studies examine physiological effects, but this practice does not reliably produce a particular heart rate, blood pressure, or brain response.',
           'Research: Shannahoff-Khalsa demonstrated cardiovascular effects across multiple controlled trials.'
         ]
       },
@@ -1852,7 +1852,7 @@ window.SelHub = window.SelHub || {
       desc: {
         elementary: 'Trace each finger with your other hand \u2014 breathe in going up, breathe out going down.',
         middle: 'Trace up and down each finger of one hand with the other \u2014 synchronize your breath to the motion.',
-        high: 'Tactile-kinesthetic anchored paced breathing using contralateral hand tracing to engage proprioception and bilateral integration.'
+        high: 'Trace a hand as an optional visual and touch cue for comfortable breathing. You can trace in the air or simply watch.'
       },
       steps: {
         elementary: [
@@ -1877,7 +1877,7 @@ window.SelHub = window.SelHub || {
           'Use contralateral index finger to trace each digit, syncing inhale to upstroke and exhale to downstroke.',
           'Naturally paces ~4 to 6 sec per breath phase.',
           'Mechanism: integrates tactile, proprioceptive, visual, and respiratory channels \u2014 increases interoceptive engagement and reduces dissociation.',
-          'Bilateral hand engagement is also used in EMDR and Brainspotting for sensorimotor regulation.',
+          'Hand tracing is an attention cue here, not a trauma-processing treatment.',
           'Effective in crisis because the tactile anchor stays present even when imagery fails.'
         ]
       },
@@ -2197,7 +2197,7 @@ window.SelHub = window.SelHub || {
           'Adopt horse stance (Ma Bu): feet ~2x shoulder-width, knees over ankles, spine neutral.',
           'Hands in "holding a ball" position \u2014 one at face, one at belly, palms inward.',
           'Coordinate weight shift, hand exchange, and breath: inhale right shift; exhale left shift.',
-          'Mechanism: integrates cross-body bilateral motion (which stimulates contralateral brain coordination), proprioception, breath pacing, and meditative attention.',
+          'This practice combines cross-body movement, body awareness, comfortable breathing, and attention. Notice your own response rather than expecting a particular brain effect.',
           'Multiple studies (Wang et al. 2014; Yeh et al. 2018) show tai chi reduces anxiety, depression, and blood pressure.',
           'A complete mind-body practice; useful even in short bouts.'
         ]
@@ -3271,7 +3271,7 @@ window.SelHub = window.SelHub || {
           'Perform horizontal pulls, overhead pulls, and rotations',
           'Each rep with controlled eccentric phase',
           '3 sets of 12 reps for sustained proprioceptive input',
-          'Bilateral pulling integrates both hemispheres',
+          'Use a comfortable pulling motion and notice the effort in your arms',
           'Pairs well with breath work'
         ]
       },
@@ -3473,7 +3473,7 @@ window.SelHub = window.SelHub || {
       desc: {
         elementary: 'Walk like a big bear on your hands and feet. Stomp around the room!',
         middle: 'Bear crawl combines heavy work with bilateral coordination for sensory regulation.',
-        high: 'Bear crawls engage cross-lateral patterning, integrating proprioception and bilateral brain coordination.'
+        high: 'Bear crawls practice coordinating opposite limbs while supporting body weight. Choose a seated movement instead if needed.'
       },
       steps: {
         elementary: [
@@ -3495,11 +3495,11 @@ window.SelHub = window.SelHub || {
           'Move contralateral limbs simultaneously',
           'Crawl 20-30 feet with controlled tempo',
           'Engages shoulder stability, core, and hip mobility',
-          'Cross-lateral pattern activates corpus callosum',
+          'Notice the coordination between your opposite hand and foot',
           'Heavy proprioceptive load through palms and feet'
         ]
       },
-      evidence: 'Brain Gym (Dennison) cross-lateral integration; OT animal-walk protocols.',
+      evidence: 'Movement and coordination practice. This activity is not evidence of improved learning through brain-hemisphere integration.',
       whenToUse: 'PE class, sensory breaks, or any space where you can crawl around.',
       timeNeeded: '2 min',
       practiceable: true
@@ -3605,8 +3605,8 @@ window.SelHub = window.SelHub || {
       },
       desc: {
         elementary: 'Touch your right hand to your left knee, then left hand to right knee. Mix it up!',
-        middle: 'Standing cross-crawl integrates left and right brain through contralateral movement.',
-        high: 'Cross-crawl patterns activate corpus callosum coordination, supporting focus and bilateral integration.'
+        middle: 'Cross-crawl practices moving opposite limbs in a steady rhythm. Try it seated or standing.',
+        high: 'Cross-crawl is a coordination practice and optional movement break. Notice whether it helps you return to your task.'
       },
       steps: {
         elementary: [
@@ -3627,14 +3627,14 @@ window.SelHub = window.SelHub || {
           'Stand with weight evenly distributed',
           'March slowly, touching opposite hand to lifted knee',
           'Maintain rhythm 2-3 min',
-          'Cross-lateral pattern recruits both hemispheres',
-          'Engages corpus callosum communication',
-          'Brain Gym foundational integration exercise',
+          'Use a comfortable range of movement',
+          'Notice the rhythm of your hands and knees',
+          'Pause, adapt, or stop if the movement feels uncomfortable',
           'Pairs well with cognitive task warmup'
         ]
       },
-      evidence: 'Brain Gym (Dennison); bilateral integration research; EMDR mechanism studies.',
-      whenToUse: 'Before homework, tests, or any task needing focus and brain integration.',
+      evidence: 'Coordination practice; benefits for learning or emotional regulation from crossing the midline are not established by this exercise.',
+      whenToUse: 'As an optional movement break before a task. Check whether it is useful for you.',
       timeNeeded: '2 min',
       practiceable: true
     },
@@ -3690,12 +3690,12 @@ window.SelHub = window.SelHub || {
       name: {
         elementary: 'Butterfly Hug',
         middle: 'Butterfly Hug',
-        high: 'Butterfly Hug (EMDR Bilateral Stimulation)'
+        high: 'Butterfly Hug (Optional Tapping)'
       },
       desc: {
         elementary: 'Hug yourself and gently tap your shoulders like butterfly wings.',
-        middle: 'Cross arms over chest and alternate tapping shoulders. Self-administered bilateral stimulation.',
-        high: 'The butterfly hug uses bilateral tactile stimulation to help process distress, developed within EMDR therapy.'
+        middle: 'If comfortable, cross your arms and alternate gentle shoulder taps. You can pause, watch, or choose another support.',
+        high: 'An optional self-soothing practice with gentle alternating taps. This activity is not EMDR therapy or a way to process traumatic memories on your own.'
       },
       steps: {
         elementary: [
@@ -3717,12 +3717,12 @@ window.SelHub = window.SelHub || {
           'Alternate slow taps, left-right-left-right',
           'Pace approximately 1 tap per second',
           'Continue 30-90 seconds',
-          'Bilateral stimulation supports memory reconsolidation',
-          'Developed by Lucina Artigas for trauma resources',
+          'Notice whether tapping feels comforting, neutral, or uncomfortable',
+          'Stop if distress increases; ask someone you trust for support',
           'Can use during distress to self-soothe'
         ]
       },
-      evidence: 'EMDR therapy (Shapiro); Artigas & Jarero butterfly hug protocol for trauma resourcing.',
+      evidence: 'Inspired by the butterfly hug described by Artigas and Jarero. Evidence for EMDR therapy does not establish that this standalone activity treats trauma.',
       whenToUse: 'When you feel anxious, distressed, or are reminded of something painful.',
       timeNeeded: '1 min',
       practiceable: true
@@ -3740,7 +3740,7 @@ window.SelHub = window.SelHub || {
       desc: {
         elementary: 'Clap a pattern with your hands or a friend. Clap-clap-pause-clap!',
         middle: 'Rhythmic hand-clap patterns engage bilateral coordination and timing.',
-        high: 'Hand-clapping sequences require auditory-motor integration and bilateral brain coordination.'
+        high: 'Hand-clapping sequences practice coordinating movement with a rhythm. Adapt the motions to suit your body.'
       },
       steps: {
         elementary: [
@@ -3779,12 +3779,12 @@ window.SelHub = window.SelHub || {
       name: {
         elementary: 'Toss and Catch',
         middle: 'One-Ball Juggling',
-        high: 'Cascade Juggling (Bilateral Integration)'
+        high: 'Cascade Juggling (Coordination Practice)'
       },
       desc: {
         elementary: 'Toss a soft ball from one hand to the other. Try not to drop it!',
-        middle: 'Even one-ball juggling between hands trains crossing the midline and bilateral integration.',
-        high: 'Juggling promotes neuroplasticity, gray matter density (Draganski 2004), and bilateral integration.'
+        middle: 'One-ball juggling between hands practices coordination and tracking a moving object.',
+        high: 'Juggling practices a learned coordination skill. Brain changes reported in training studies do not establish broader emotional or academic benefits.'
       },
       steps: {
         elementary: [
@@ -3805,13 +3805,13 @@ window.SelHub = window.SelHub || {
           'Begin with one beanbag, cross-body arc tosses',
           'Progress to two-ball exchange',
           'Build to three-ball cascade pattern',
-          'Stimulates neuroplasticity and bilateral integration',
+          'Practices timing and hand-eye coordination',
           'Draganski 2004 showed gray matter increase from juggling practice',
           'Engages flow-state focus and dopamine reward loop',
           'Can be practiced anywhere with soft objects'
         ]
       },
-      evidence: 'Draganski et al. (2004) Nature: juggling increases gray matter; bilateral integration research.',
+      evidence: 'Draganski et al. (2004), Nature, reported brain-structure changes during juggling training; this does not establish emotional-regulation benefits.',
       whenToUse: 'Skill-building hobby that doubles as regulation and focus training.',
       timeNeeded: '5 min',
       practiceable: true
@@ -4977,7 +4977,7 @@ window.SelHub = window.SelHub || {
           'Establish steady bilateral rhythm on thighs',
           'Layer patterns: doubles, triplets, syncopation',
           'Pair with breath or music',
-          'Engages cerebellar timing, bilateral integration',
+          'Practices rhythm and coordinating movements',
           'Drum circles show stress reduction effects (Bittman)',
           'Accessible bilateral stimulation any time',
           'Effective for restless seated focus'
@@ -22969,7 +22969,7 @@ window.SelHub = window.SelHub || {
     },
     {
       id: 'cross-lateral',
-      name: 'Cross-Lateral Integration',
+      name: 'Cross-Body Movement Practice',
       category: 'movement',
       icon: '\u{1F501}',
       durationMin: 5,
@@ -22979,7 +22979,7 @@ window.SelHub = window.SelHub || {
       setup: 'Stand or sit with space to move arms freely. Make sure you have a clear area in front of you.',
       contraindications: ['Modify any movements that strain joints', 'Slow down or sit if balance is challenged'],
       script: [
-        { type: 'intro', text: 'Cross-lateral movements connect the two hemispheres of your brain through the corpus callosum. They calm anxiety, sharpen focus, and prepare you to learn. These are based on Brain Gym work and EMDR bilateral stimulation principles.' },
+        { type: 'intro', text: 'This is an optional movement and attention break. Try a comfortable rhythm, seated or standing, and notice whether it helps. You can watch, adapt, or stop at any time.' },
         { type: 'instruction', text: 'Stand or sit tall. Take a slow breath.', pauseSec: 10 },
         { type: 'instruction', text: 'Move one: Cross-Crawl. Lift your right knee and touch it with your left hand. Then left knee with right hand. Continue at a slow, steady pace.', pauseSec: 5 },
         { type: 'instruction', text: 'Right knee, left hand. Left knee, right hand. Slow and deliberate.', pauseSec: 30 },
@@ -22989,7 +22989,7 @@ window.SelHub = window.SelHub || {
         { type: 'pause', durationSec: 30 },
         { type: 'instruction', text: 'Move three: Butterfly Tap. Cross your arms over your chest, fingertips on opposite shoulders. Slowly alternate taps. Left shoulder, right shoulder. Slow. Even.', pauseSec: 30 },
         { type: 'pause', durationSec: 60 },
-        { type: 'instruction', text: 'This is also a self-administered version of EMDR bilateral stimulation. It calms the nervous system.', pauseSec: 10 },
+        { type: 'instruction', text: 'Tapping is optional. It may feel comforting, neutral, or uncomfortable. Stop if distress increases; this exercise is not EMDR therapy.', pauseSec: 10 },
         { type: 'instruction', text: 'Continue tapping at a calm pace for another minute.', pauseSec: 60 },
         { type: 'instruction', text: 'Move four: Lazy Eight. Trace a horizontal figure-eight in the air with one finger. Eyes follow the finger.', pauseSec: 15 },
         { type: 'instruction', text: 'Trace slowly. Out, around, through the center, out, around, through the center.', pauseSec: 30 },
@@ -22998,15 +22998,15 @@ window.SelHub = window.SelHub || {
         { type: 'pause', durationSec: 15 },
         { type: 'invitation', text: 'Drop your arms. Stand or sit still for a moment.' },
         { type: 'pause', durationSec: 15 },
-        { type: 'close', text: 'Notice your brain. Often it feels clearer, calmer, more in line. Use cross-lateral movements before tests, before studying, or when anxious. They take five minutes and they work.' }
+        { type: 'close', text: 'Notice how you feel now: different, the same, or uncomfortable. No particular result is required. Keep what helps, choose another support, or ask someone you trust for help.' }
       ],
       variations: [
-        { id: 'just-butterfly', name: 'Just the Butterfly', change: '60 seconds of slow butterfly taps alone is a powerful anxiety reset' },
+        { id: 'just-butterfly', name: 'Just the Butterfly', change: 'Try a few slow butterfly taps if comfortable; stop or choose another support if they do not help' },
         { id: 'with-affirmation', name: 'With Affirmation', change: 'Repeat a calming phrase ("I am safe and capable") during the butterfly taps' },
         { id: 'seated-mobility', name: 'Seated Limited Mobility', change: 'All four moves can be done seated; substitute arm circles for cross-crawl' }
       ],
-      whyItWorks: 'Cross-lateral movement activates both brain hemispheres simultaneously through the corpus callosum, supporting integration of motor, cognitive, and emotional processing. The butterfly tap specifically engages bilateral stimulation pathways linked to memory reconsolidation in EMDR.',
-      research: 'Dennison (1986) Brain Gym foundational work; Shapiro (2018) EMDR therapy; Sienaert et al. (2020) on bilateral stimulation mechanisms.'
+      whyItWorks: 'This sequence offers rhythmic movement and a focus for attention. Responses vary. It does not demonstrate brain-hemisphere integration, memory reconsolidation, or treatment of anxiety or trauma.',
+      research: 'Practice scaffold, not a validated treatment protocol. Evidence for clinician-delivered EMDR does not validate this self-guided movement sequence.'
     },
     {
       id: 'five-element-qigong',
@@ -26119,11 +26119,11 @@ window.SelHub = window.SelHub || {
           { instruction: 'Stand still. Notice your focus and clarity.', timed: true, seconds: 8, label: 'Notice' }
         ],
         high: [
-          { instruction: 'Standing, prepare for bilateral integration', timed: false },
+          { instruction: 'Sit or stand comfortably and prepare for a coordination practice', timed: false },
           { instruction: 'Right knee to left elbow, controlled cross-lateral pattern', timed: true, seconds: 20, label: 'Cross-lateral' },
           { instruction: 'Alternate: left knee to right elbow, maintain pace', timed: true, seconds: 20, label: 'Alternate' },
           { instruction: 'Challenge: count backwards by 3s from 30 while moving', timed: true, seconds: 25, label: 'Dual-task' },
-          { instruction: 'Stillness. The corpus callosum has been activated.', timed: true, seconds: 10, label: 'Integration' }
+          { instruction: 'Pause. Notice whether the movement felt helpful, neutral, or uncomfortable.', timed: true, seconds: 10, label: 'Notice' }
         ]
       }
     }

@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-08",
+  "regression": {
+    "files": 11,
+    "passed": 469,
+    "skipped": 2
+  },
+  "chromium": {
+    "workflows_passed": 6,
+    "viewports": [
+      320,
+      1280
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "high contrast"
+    ],
+    "catalog_and_guide_axe_violations": 0
+  },
+  "initial_render": {
+    "tools": 72,
+    "failures": 0
+  },
+  "mirror_parity": true,
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false,
+  "sha256": {
+    "sel_hub/sel_hub_module.js": "e10e248fdee43b93ec36773f2032799efae24a0e204bc1af69900eef6b5dc1be",
+    "sel_hub/sel_tool_coping.js": "a882140eae8796135c7fbd7bc8899a434867c0e681d464153e2a253b6a34ed2e",
+    "sel_hub/FOR_EDUCATORS.md": "bb0c4a4233ad44a251cd2d4addb48da38f2988f8eb53a6682d70f797d9995dcc"
+  },
+  "scope_note": "Isolated real SEL hub/plugins with AI disabled and stubbed host callbacks; not an end-to-end Desktop/live-service or full WCAG certification."
+}

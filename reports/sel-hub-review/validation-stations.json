@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-08",
+  "pass": "station practice and reflection",
+  "regression": {
+    "files": 8,
+    "passed": 156
+  },
+  "chromium": {
+    "workflows_passed": 12,
+    "station_viewport": 320,
+    "themes": [
+      "light",
+      "dark",
+      "high contrast"
+    ],
+    "station_contrast_or_label_violations": 0
+  },
+  "initial_render": {
+    "tools": 72,
+    "failures": 0
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "mirror_parity": true,
+  "deployed": false,
+  "sha256": {
+    "sel_hub/sel_hub_module.js": "759acd1dfdc7e7386278b848ccae403e85d12e9e6817d1600027b680cc11dd17",
+    "tests/sel_hub_review_browser.test.js": "2330eb4e677142ceb6ea976bb2cb5fef894fb98a77dc522a02b956576e0eb0e2"
+  },
+  "scope_note": "Real hub and plugins with AI disabled; includes legacy saved-state compatibility and new teacher/custom preset flows. No claim of packaged Desktop/live-service testing or full WCAG conformance."
+}

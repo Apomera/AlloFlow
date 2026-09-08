@@ -2,7 +2,7 @@
 
 A practical guide to what this tool is, how student data flows through it, and what you need to set up before you hand it to a class.
 
-> **Guide status:** Responsible-use reference, reviewed August 20, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.
+> **Guide status:** Responsible-use reference, reviewed September 8, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.
 
 ---
 
@@ -70,11 +70,10 @@ Some Hub activities can use a generative AI helper for things like rephrasing a 
 - The specific prompt the activity generates (e.g., "rephrase this reflection in a calmer tone: [student text]").
 - The student's free-text input for that prompt.
 
-**What is NOT sent:**
-- The student's name or identity (the Hub doesn't know it).
-- Previous session history.
-- Other students' work.
-- Anything from outside the current activity.
+**Check the actual prompt and mode:**
+- Free text can contain identifying information even when the Hub does not require a name.
+- Depending on the activity, the prompt may include scenario context or earlier turns. Inspect the configured activity before describing its data flow to students.
+- Do not infer an AI provider's retention or logging behavior from the Hub's local export format.
 
 **Practical guidance:**
 - Tell students explicitly: "When you use the AI helper, it sees what you type into that box. Don't put your full name, address, phone number, or anyone else's private information in there."
@@ -88,17 +87,16 @@ Before classroom use, trigger the safety flow in the current release, verify the
 
 The Hub has a **safety layer** that watches for language suggesting a student may be in crisis — self-harm, suicidal ideation, abuse disclosures, severe distress.
 
-**What the student sees when the safety layer fires:**
-- The current activity pauses.
-- A modal appears with **988** (Suicide & Crisis Lifeline, call or text) and **741741** (Crisis Text Line, text HOME).
-- A short message encourages them to talk to a trusted adult and lists generic supports.
-- The student can dismiss the modal and return to the activity, or close the Hub entirely.
+**What the student may see:**
+- Depending on the activity and safety path, the Hub can show support guidance or a crisis-resource panel encouraging contact with a trusted adult.
+- Do not promise that every flagged input pauses an activity or opens the same modal. Test each activity you plan to use, including its non-AI fallback.
+- The current US-oriented resource panels include **988** (Suicide & Crisis Lifeline, call or text) and **741741** (Crisis Text Line, text HOME); verify local relevance before classroom use.
 
 **What you, the teacher, can and cannot do:**
-- You **cannot** retrieve a transcript of the conversation. No transcript is retained anywhere — the crisis modal holds the flagged text only while it is open.
+- The teacher safety summary is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.
 - **In a live web session** (students joined with your session code, not the Canvas build): your dashboard shows a **count-based safety alert** per student — a flag total and a "critical" indicator, **never the student's words**. Treat a critical indicator as a prompt to check in personally.
 - **In solo mode or the Canvas build**: nothing reaches you, administrators, or the vendor — no alert, no list of which students saw the modal. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
-- For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. It is not transmitted anywhere, but on a shared device it is not invisible either — "no paper trail" is approximately true, not literally true. (Reducing this footprint further is on the roadmap.)
+- For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. Treat those excerpts as sensitive data on a shared device. Closing the tab does not clear browser storage; review the current Data & privacy controls and your deployment retention procedures.
 - The in-app consent screen tells students the same story for their mode — in solo/Canvas it explicitly says **no adult is automatically notified** and urges them to tell a trusted adult directly.
 
 **What you should do:**
@@ -123,7 +121,7 @@ The Hub's data flow depends on the approved mode: solo activity state may stay l
 > - **It is not a test or assessment.** Nothing students do in the Hub is graded or recorded in their school file.
 > - **No AlloFlow student account.** The Hub does not create an AlloFlow login for your child. Unsaved solo activity work is normally not recoverable through the classroom workflow; exports, browser storage, AI use, and live sessions are handled as described in our district-approved setup.
 > - **Optional AI helper.** Some activities can send the text entered into that activity to our district-approved AI service to suggest words or coping ideas. Our technology team has reviewed the service, account type, data protections, retention, and age requirements. [Replace this sentence with your district's approved description, or state that AI features are turned off.]
-> - **Safety support built in.** If a student writes about being in crisis, the activity pauses and shows the 988 Suicide & Crisis Lifeline (call or text 988) and Crisis Text Line (text HOME to 741741), along with a reminder to talk to a trusted adult.
+> - **Safety support built in.** Some activities can show support guidance when concerning language is detected. Detection and alerts are not guaranteed or a substitute for telling a trusted adult directly. [Describe the support route and locally appropriate resources verified for your approved setup.]
 >
 > If you'd prefer your child opt out of Hub activities, or if you have questions, please reach out. I'm happy to walk you through what students will see.
 
