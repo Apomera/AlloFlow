@@ -7,6 +7,9 @@ import http from 'node:http';
 import path from 'node:path';
 
 const TAG = process.argv[2] || 'shot';
+// THEME=dark|light|contrast -- contrast is the one that hides 3D scenes behind
+// blackened bg-* overlays, and only a screenshot catches it.
+const THEME = process.env.THEME || 'dark';
 const OUTDIR = process.env.SHOTDIR || '.';
 const ROOT = process.cwd();
 const MIME = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.json': 'application/json' };
@@ -37,7 +40,8 @@ window.__mount = function () {
     const [data, setData] = React.useState({ _threeLoaded: !!(window.THREE && window.THREE.OrbitControls) });
     const ctx = {
       React, toolData: data, setToolData: setData, labToolData: data, setLabToolData: setData,
-      theme: 'dark', isDark: true, isContrast: false, gradeBand: 'g68', gradeLevel: '7th Grade',
+      theme: window.__THEME, isDark: window.__THEME === 'dark', isContrast: window.__THEME === 'contrast',
+      gradeBand: 'g68', gradeLevel: '7th Grade',
       setStemLabTool() {}, setStemLabTab() {}, setToolSnapshots() {}, addToast() {},
       announceToSR() {}, awardXP() {}, beep() {}, celebrate() {}, canvasNarrate() {},
       canvasA11yDesc() {}, callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
@@ -47,7 +51,18 @@ window.__mount = function () {
       update(tool, key, val) { setData((p) => Object.assign({}, p, { [key]: val })); },
       updateMulti(tool, patch) { setData((p) => Object.assign({}, p, patch)); },
     };
-    try { return cfg.render(ctx); } catch (e) { return React.createElement('pre', null, 'threw: ' + e.message); }
+    let rendered;
+    try { rendered = cfg.render(ctx); }
+    catch (e) { return React.createElement('pre', null, 'threw: ' + e.message); }
+    // The host's own stylesheet must be present or a theme sweep measures
+    // nothing: the contrast rules live in AppStyles, not in the tool.
+    // The module registers a NAMESPACE object, not the component itself:
+    // window.AlloModules.AppStyles = { AppStyles: React.memo(AppStyles) }.
+    const ns = window.AlloModules && window.AlloModules.AppStyles;
+    const AppStyles = ns && (ns.AppStyles || ns);
+    return AppStyles
+      ? React.createElement(React.Fragment, null, React.createElement(AppStyles, null), rendered)
+      : rendered;
   }
   window.ReactDOM.render(React.createElement(Host), document.getElementById('wrap'));
 };
@@ -104,10 +119,18 @@ async function shot(label, clicks, outfile) {
     '/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js',
     '/vendor/three-r128/three.min.js',
     '/vendor/three-r128/OrbitControls.js',
+    '/app_styles_module.js',
     '/stem_lab/stem_lab_module.js',
     '/stem_lab/stem_tool_watercycle.js',
   ]) await page.addScriptTag({ url: s });
   await page.addScriptTag({ content: SHELL });
+  await page.evaluate((theme) => {
+    window.__THEME = theme;
+    // The host carries the theme class on an ancestor, not on <html>.
+    document.body.className = theme === 'contrast' ? 'theme-contrast' : (theme === 'dark' ? 'dark' : '');
+    const wrap = document.getElementById('wrap');
+    if (wrap) wrap.className = theme === 'contrast' ? 'theme-contrast' : '';
+  }, THEME);
   await page.evaluate(() => window.__mount());
   await page.waitForTimeout(1800);
   for (const c of clicks) {
@@ -129,6 +152,7 @@ async function shot(label, clicks, outfile) {
   const size = fs.statSync(outfile).size;
   console.log('  [' + label + '] state: phase=' + st.phase + ' parcel=' + st.parcel +
     ' canvasPhase=' + st.canvasPhase + ' lens=' + st.lens);
+  console.log('  [' + label + '] theme=' + THEME);
   console.log('  [' + label + '] wrote ' + path.basename(outfile) + '  ' + Math.round(size / 1024) + ' KB' +
     (size < 20000 ? '   *** SUSPICIOUSLY SMALL - possibly blank' : ''));
   if (errs.length) console.log('  [' + label + '] page errors: ' + errs.slice(0, 3).join(' | '));
