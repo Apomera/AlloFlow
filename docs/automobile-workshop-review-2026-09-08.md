@@ -115,6 +115,19 @@ Direct-control evidence:
 - [Lift controls](../reports/automobile-workshop/direct-lift-controls.png)
 - [Keyboard controls on mobile](../reports/automobile-workshop/direct-controls-mobile.png)
 
+## Follow-up: operational lift stop and recovery
+
+The lift's red mushroom button now latches a saved stop state. Every lift movement command (initial rise, working-height rise, settling on locks and lowering) checks that state through both the 3D controls and the task card. Pressing stop preserves the current height, mechanical support state, tool, work history and instrument evidence. It does not substitute for mechanical locks or bypass any access requirements.
+
+The physical panel shows STOP/READY, a red/green status lamp and a depressed stop button when latched. While stopped, CLEAR? and RESET controls appear. The learner records a simulated clear-bay check before resetting; reopening the check or pressing stop again removes that confirmation. Resetting only releases the command interlock: it does not move the vehicle or complete a task. A new command still needs the correct equipment, prerequisites and reassembly state.
+
+A dedicated HTML panel exposes the same actions, stop status and vehicle position with keyboard support, including without WebGL. Focus lift panel brings the physical controls into view from any station. Stop state survives serialized work-order progress; older records default to a released stop. This remains an authored, discrete control exercise, not a hydraulic model, fault-detection system or operating procedure for a real lift.
+
+Validation: **504 tests across all 39 automobile suites passed**, including 57 workshop state/render tests. **All 13 workshop browser tests passed** in Chromium with real Three.js/WebGL, including physical stop/check/reset picking, blocked commands through both interaction paths, no movement on reset, station switching and mobile keyboard recovery. The browser run took 6.8 minutes; the broader regression took 82.06 seconds. Desktop controls, the mobile recovery panel and the complete mobile action panel were visually inspected. Syntax, scoped diff hygiene and source/public parity passed. No deployment or installer build was performed.
+
+- [Latched stop and physical recovery controls](../reports/automobile-workshop/lift-stop-latched.png)
+- [Mobile stop and reset panel](../reports/automobile-workshop/lift-stop-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

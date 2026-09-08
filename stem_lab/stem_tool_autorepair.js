@@ -9458,7 +9458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       shopTask('verify', 'brakes', 'aligner', 'Repeat the alignment measurement after securing the adjustment', 'This step represents securing hardware to the vehicle procedure, settling the suspension, checking steering centre and remeasuring. Capture a fresh result before accepting the repair.', { verified: true }, { serviced: true, alignmentReady: true, lift: 'ground', wheelRemoved: false }), SHOP_RELEASE] });
   function arShopJob(id) { return SHOP_JOBS.filter(function (j) { return j.id === id; })[0] || SHOP_JOBS[0]; }
   function arShopInitial(jobId) {
-    return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false,
+    return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false, liftStopped: false, liftBayClear: false,
       wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
       alignmentReady: false, alignment: { left: 30, right: 10, selected: 'left', tyres: false, targets: false, centered: false },
       plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', feedback: '', history: [] };
@@ -9470,6 +9470,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     state.step = Number.isInteger(state.step) ? Math.max(0, Math.min(job.tasks.length, state.step)) : 0;
     if (!SHOP_STATIONS.some(function (p) { return p.id === state.station; })) state.station = 'intake';
     if (['ground', 'prepared', 'low', 'checked', 'raised', 'locked'].indexOf(state.lift) === -1) state.lift = 'ground';
+    state.liftStopped = state.liftStopped === true;
+    state.liftBayClear = state.liftStopped && state.liftBayClear === true;
     var setup = state.instrument && typeof state.instrument === 'object' ? state.instrument : {};
     state.instrument = { mode: setup.mode === 'resistance' ? 'resistance' : 'dcv', contact: setup.contact === 'joint' ? 'joint' : 'posts', load: setup.load === 'starter' ? 'starter' : 'off', surface: setup.surface === 'backing' ? 'backing' : 'lining',
       jugMl: Number.isFinite(setup.jugMl) ? Math.max(0, Math.min(5000, Math.round(setup.jugMl / 100) * 100)) : 4100 };
@@ -9597,6 +9599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
     function blocked(message) { return Object.assign({}, state, { feedback: message }); }
     if (!task) return blocked('This training work order is complete. Review the handoff or choose another job.');
+    if (state.liftStopped && task.tool === 'lift-controls') return blocked('Lift stop is latched. Check the bay is clear and reset the stop before issuing a new lift command.');
     if (state.station !== task.station) return blocked('Go to ' + SHOP_STATIONS.filter(function (p) { return p.id === task.station; })[0].label + ' for this task.');
     if (state.tool !== task.tool) return blocked('Choose ' + SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1] + ' for this task.');
     var unmet = Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; });
@@ -9620,6 +9623,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
   function arShop3DActions(state) {
     var task = arShopJob(state.job).tasks[state.step], kind = arShopInstrumentKind(state), actions = [];
+    actions.push({ id: 'lift-stop', label: 'Emergency stop lift', station: 'lift' });
+    if (state.liftStopped) {
+      actions.push({ id: 'lift-clear', label: state.liftBayClear ? 'Reopen bay-clear check' : 'Confirm simulated bay is clear', station: 'lift' });
+      actions.push({ id: 'lift-reset', label: 'Reset lift stop', station: 'lift' });
+    }
     if (!(state.job === 'alignment' && state.alignmentCutaway)) actions.push({ id: 'hood', label: state.hood ? 'Close hood' : 'Open hood', station: 'engine' });
     if (!task) return actions;
     actions.push({ id: 'task', label: task.label, station: task.station });
@@ -9659,6 +9667,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var action = arShop3DActions(state).filter(function (item) { return item.id === id; })[0];
     if (!action) return blocked('This control is unavailable for the current task.');
     var atStation = Object.assign({}, state, { station: action.station });
+    if (id === 'lift-stop') return Object.assign({}, atStation, { liftStopped: true, liftBayClear: false, feedback: 'Lift stop latched. Lift commands are blocked; the vehicle stays at its current height. Check the bay before resetting.' });
+    if (id === 'lift-clear') return Object.assign({}, atStation, { liftBayClear: !state.liftBayClear, feedback: state.liftBayClear ? 'Bay-clear check reopened. The lift remains stopped.' : 'Simulated bay-clear check recorded. Reset the stop when ready; reset will not move the vehicle.' });
+    if (id === 'lift-reset') {
+      if (!state.liftBayClear) return blocked('Confirm the simulated bay is clear before resetting the lift stop.');
+      return Object.assign({}, atStation, { liftStopped: false, liftBayClear: false, feedback: 'Lift stop reset. Vehicle position is unchanged. Issue a new lift command to continue.' });
+    }
     if (id === 'hood') return Object.assign({}, atStation, { hood: !state.hood, reading: null, feedback: state.hood ? 'Hood closed.' : 'Hood opened. Engine components are accessible.' });
     if (id === 'task') return arShopAdvance(atStation);
     // Physical instrument controls obey the same equipment/access gates as capturing a reading.
@@ -9930,7 +9944,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     });
     box(lift, 'lift-overhead-crossbar', [0.26, 0.17, 2.97], [0.05, 3.30, 0], blue);
     box(lift, 'lift-control-panel', [0.20, 0.31, 0.16], [-0.13, 1.35, 1.51], dark);
-    cylinder(lift, 'lift-emergency-stop', 0.035, 0.032, [-0.13, 1.39, 1.607], red, 'z');
+    cylinder(lift, 'lift-stop-surround', 0.060, 0.012, [-0.13, 1.39, 1.603], amber, 'z');
+    var stopButton = cylinder(lift, 'lift-emergency-stop', 0.042, 0.032, [-0.13, 1.39, state.liftStopped ? 1.616 : 1.636], red, 'z');
+    stopButton.userData.latched = state.liftStopped;
+    var stopDisplay = instrumentDisplay(lift, state.liftStopped ? 'STOP' : 'READY', [-0.13, 1.60, 1.61], 0.32);
+    if (stopDisplay) stopDisplay.name = 'lift-stop-status-display';
+    cylinder(lift, 'lift-stop-status-light', 0.025, 0.020, [0.10, 1.60, 1.61], state.liftStopped ? red : green, 'z');
     register('lift', lift, [0.05, 1.75, 1.36]);
     if (state.job === 'alignment') {
       var toe = arShopAlignment(state), alignmentRig = new THREE.Group(); alignmentRig.name = 'workshop-alignment-rig'; brakes.add(alignmentRig);
@@ -10061,6 +10080,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       box(group, 'control-case-' + id, [width + 0.04, width * 0.32 + 0.045, 0.045], [0, 0, 0], api.trim(0x22d3ee, 20));
       instrumentDisplay(group, caption, [0, 0, 0.026], width); bindControl(group, id); return group;
     }
+    bindControl(stopButton, 'lift-stop');
+    bindControl(lift.getObjectByName('lift-stop-surround'), 'lift-stop');
+    directButton(lift, 'lift-clear', state.liftBayClear ? 'RECHECK' : 'CLEAR?', [-0.40, 0.98, 1.64], 0.30);
+    directButton(lift, 'lift-reset', 'RESET', [0.02, 0.98, 1.64], 0.30);
     bindControl(hood, 'hood');
     var toolShort = { 'job-card': 'ORDER', 'lift-card': 'CHECK', 'lift-controls': 'LIFT', lamp: 'LAMP', socket: 'SOCKET', gauge: 'GAUGE', 'brake-kit': 'BRAKES', torque: 'TORQUE', 'drain-pan': 'DRAIN', filter: 'FILTER', funnel: 'OIL JUG', meter: 'METER', 'terminal-kit': 'CLAMP', checklist: 'VERIFY', aligner: 'ALIGN', 'tie-rod': 'TIE ROD' };
     arShop3DTools(state).forEach(function (tool, index) {
@@ -19915,7 +19938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
-        var sceneState = [shop.job, shop.step, shop.tool, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
+        var sceneState = [shop.job, shop.step, shop.tool, shop.lift, shop.liftStopped, shop.liftBayClear, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
           onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
@@ -19938,6 +19961,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
           }
         }
+        function focusLiftControls() {
+          pick('lift'); stationCamera('lift'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+          SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
+        }
         function sceneControlPanel() {
           function use(id) { pick(arShop3DToken(shop, id)); }
           return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
@@ -19949,11 +19976,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
                 SHOP3D.focus('tools', { distance: 2.6, target: { x: 1.7, y: 1.30, z: -2.97 }, immediate: true });
               }, { 'data-ar-scene-tools-focus': true })),
+            h('div', { 'data-ar-lift-stop-panel': true, style: { padding: 10, marginTop: 10, border: '1px solid ' + (shop.liftStopped ? '#f87171' : '#64748b'), borderRadius: 8 } },
+              h('strong', { 'data-ar-lift-stop-status': shop.liftStopped ? 'stopped' : 'ready', style: { display: 'block', color: shop.liftStopped ? '#fca5a5' : '#a7f3d0' } }, shop.liftStopped ? 'Lift stop latched — commands blocked' : 'Lift stop released'),
+              h('p', { style: { fontSize: 12, margin: '6px 0' } }, shop.liftStopped ? 'Vehicle remains: ' + liftLabels[shop.lift] + '. Check the simulated bay, then reset. Resetting does not resume a command.' : 'The red 3D button latches the stop at the current height. This authored control exercise does not replace instructions for a specific lift.'),
+              h('div', { className: 'ar-shop-actions' },
+                control('Focus lift panel', focusLiftControls, { 'data-ar-lift-focus': true }),
+                arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') === 0; }).map(function (action) {
+                  return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id,
+                    'aria-pressed': action.id === 'lift-stop' ? shop.liftStopped : action.id === 'lift-clear' ? shop.liftBayClear : undefined,
+                    style: btnSecondary({ minHeight: 44, fontSize: 12, border: '1px solid ' + (action.id === 'lift-stop' ? '#f87171' : '#64748b') }) });
+                }))),
             h('p', { style: { fontSize: 12 } }, 'In hand: ' + (SHOP_TOOLS.filter(function (tool) { return tool[0] === shop.tool; })[0] || ['', 'No listed tool'])[1]),
             h('div', { className: 'ar-shop-actions', 'aria-label': 'Current tool tray' }, arShop3DTools(shop).map(function (tool) {
               return control(tool[1], function () { use('equip-' + tool[0]); }, { key: tool[0], 'data-ar-scene-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
             })),
-            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).map(function (action) {
+            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0; }).map(function (action) {
               return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id });
             })),
             task && (task.id === 'measure' || task.id === 'refill') && h('div', { style: { marginTop: 12 } },

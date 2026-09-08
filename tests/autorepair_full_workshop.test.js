@@ -335,3 +335,76 @@ describe('Direct physical workshop controls', () => {
     expect(html).toContain('3D view unavailable');
   });
 });
+
+
+describe('Latched workshop lift stop', () => {
+  function use(state, action) { return model.direct(state, model.token(state, action)); }
+  it('loads older work orders with a released stop and normalizes the bay check', () => {
+    expect(model.normalize({ job: 'oil' })).toMatchObject({ liftStopped: false, liftBayClear: false });
+    expect(model.normalize({ liftStopped: false, liftBayClear: true }).liftBayClear).toBe(false);
+    expect(model.normalize({ liftStopped: 'false', liftBayClear: 1 })).toMatchObject({ liftStopped: false, liftBayClear: false });
+  });
+  it.each(['ground', 'prepared', 'low', 'checked', 'raised', 'locked'])('latches at %s without changing the vehicle or work evidence', lift => {
+    const before = model.normalize({ ...model.initial('brakes'), lift, tool: 'socket', notes: 'Inspection notes remain available.' });
+    const stopped = use(before, 'lift-stop');
+    expect(stopped).toMatchObject({ liftStopped: true, liftBayClear: false, lift, tool: 'socket', step: 0, notes: before.notes, history: [] });
+    expect(before.liftStopped).toBe(false);
+    expect(model.normalize(JSON.parse(JSON.stringify(stopped))).liftStopped).toBe(true);
+  });
+  it.each(['brakes', 'oil'])('blocks every lift movement through direct and task-card actions in %s', jobId => {
+    const job = model.jobs.find(j => j.id === jobId);
+    for (const task of job.tasks.filter(t => t.tool === 'lift-controls')) {
+      const state = model.normalize({ ...model.initial(jobId), ...task.requires, step: job.tasks.indexOf(task), station: task.station, tool: task.tool, liftStopped: true });
+      for (const result of [model.advance(state), use(state, 'task')]) {
+        expect(result.step, task.id).toBe(state.step);
+        expect(result.lift, task.id).toBe(state.lift);
+        expect(result.feedback).toContain('Lift stop is latched');
+        expect(result.history).toEqual([]);
+      }
+    }
+  });
+  it('requires a fresh bay-clear check, and reset never resumes or advances a command', () => {
+    let state = model.normalize({ ...model.initial('brakes'), step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared' });
+    state = use(state, 'lift-stop');
+    expect(use(state, 'lift-reset')).toMatchObject({ liftStopped: true, lift: 'prepared', step: 2 });
+    state = use(state, 'lift-clear');
+    expect(state.liftBayClear).toBe(true);
+    state = use(state, 'lift-stop');
+    expect(state.liftBayClear).toBe(false);
+    state = use(state, 'lift-clear');
+    state = use(state, 'lift-clear');
+    expect(use(state, 'lift-reset').liftStopped).toBe(true);
+    state = use(use(state, 'lift-clear'), 'lift-reset');
+    expect(state).toMatchObject({ liftStopped: false, liftBayClear: false, lift: 'prepared', step: 2, history: [] });
+    expect(use(state, 'task')).toMatchObject({ lift: 'low', step: 3 });
+  });
+  it('retains equipment, reassembly and mechanical-lock gates after a reset', () => {
+    let state = model.normalize({ ...model.initial('brakes'), step: 10, lift: 'locked', wheelRemoved: true, station: 'lift', tool: 'lift-controls' });
+    state = use(use(use(state, 'lift-stop'), 'lift-clear'), 'lift-reset');
+    expect(model.advance(state)).toMatchObject({ step: 10, lift: 'locked', wheelRemoved: true });
+    expect(model.advance({ ...state, wheelRemoved: false, tool: 'lamp' }).step).toBe(10);
+    expect(model.advance({ ...state, wheelRemoved: false, lift: 'raised' }).step).toBe(10);
+    expect(model.advance({ ...state, wheelRemoved: false })).toMatchObject({ step: 11, lift: 'ground' });
+  });
+  it('does not treat the stop as mechanical support or invalidate unrelated instrument evidence', () => {
+    const unsafe = model.normalize({ ...model.initial('brakes'), step: 6, lift: 'raised', station: 'brakes', tool: 'socket', liftStopped: true });
+    expect(model.advance(unsafe).step).toBe(6);
+    let meter = model.normalize({ ...model.initial('electrical'), step: 2, hood: true, station: 'engine', tool: 'meter', answer: '1.4', instrument: { mode: 'dcv', contact: 'joint', load: 'starter' } });
+    meter = model.operate(meter, { type: 'read' });
+    const stopped = use(meter, 'lift-stop');
+    expect(model.ready(stopped)).toBe(true);
+    expect(model.advance({ ...stopped, station: 'engine' }).step).toBe(3);
+    const completed = model.normalize({ ...model.initial('electrical'), step: 6 });
+    expect(use(completed, 'lift-stop').liftStopped).toBe(true);
+  });
+  it('provides the entire stop and reset workflow without WebGL', () => {
+    resetStemLab(); loadTool(file, 'autoRepair');
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: { liftStopped: true, lift: 'locked' } } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelector('[data-ar-lift-stop-status]').textContent).toContain('commands blocked');
+    for (const id of ['lift-stop', 'lift-clear', 'lift-reset']) expect(host.querySelectorAll('[data-ar-scene-action="' + id + '"]')).toHaveLength(1);
+    expect(host.querySelector('[data-ar-scene-action="lift-stop"]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-ar-scene-action="lift-clear"]').getAttribute('aria-pressed')).toBe('false');
+    expect(html).toContain('Resetting does not resume a command');
+  });
+});
