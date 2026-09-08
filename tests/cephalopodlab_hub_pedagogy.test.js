@@ -713,3 +713,37 @@ describe('Cephalopod Lab mass extinction axis', () => {
     expect(bordered(chosen).length).toBeGreaterThan(0);
   });
 });
+
+// ── Keyboard parity for the clickable diagrams ──
+describe('Cephalopod Lab clickable diagrams have a keyboard path', () => {
+  // Three sections pair a clickable SVG with a selection. An SVG <g> with an
+  // onClick is reachable by mouse only, so each of these must also offer real
+  // buttons for the same selection — otherwise a keyboard user cannot select
+  // anything at all. The extinction axis shipped without one.
+  const render = (data) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: data });
+    return c;
+  };
+
+  it('offers a button for every extinction, not just an axis marker', () => {
+    const c = render({ activeSection: 'time', timeView: 'extinctions' });
+    const group = c.querySelector('[role="group"][aria-label="Pick a mass extinction"]');
+    expect(group).not.toBeNull();
+    const chips = Array.from(group.querySelectorAll('button'));
+    expect(chips).toHaveLength(5);
+    expect(chips.every((b) => b.hasAttribute('aria-pressed'))).toBe(true);
+    const chosen = render({ activeSection: 'time', timeView: 'extinctions', timeExtinctionId: 'end-permian' });
+    const pressed = Array.from(chosen.querySelectorAll('[role="group"][aria-label="Pick a mass extinction"] button'))
+      .filter((b) => b.getAttribute('aria-pressed') === 'true');
+    expect(pressed).toHaveLength(1);
+    expect(pressed[0].textContent).toMatch(/End-Permian/);
+  });
+
+  it('keeps the same guarantee for the skin cross-section and the life cycle', () => {
+    const skin = render({ activeSection: 'skin' });
+    expect(skin.querySelectorAll('[role="group"][aria-label="Pick a skin cell type"] button')).toHaveLength(5);
+    const life = render({ activeSection: 'lifecycle' });
+    expect(life.querySelectorAll('[role="group"][aria-label="Pick a life stage"] button')).toHaveLength(8);
+  });
+});

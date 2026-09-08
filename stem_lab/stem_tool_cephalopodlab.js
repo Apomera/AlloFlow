@@ -17516,6 +17516,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('text', { x: L, y: 162, fontSize: 9.5, fill: '#cbd5e1' },
                       __alloT('stem.cephalopodlab.ext_axis_note', 'Evenly spaced on the page would be a lie — these are placed by date, so the gaps are real. Select an event to highlight its card.'))));
               })(),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.ext_pick_event', 'Pick a mass extinction'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                EXTINCTIONS.map(function(ext) {
+                  var on = d.timeExtinctionId === ext.id;
+                  return h('button', { key: 'chip' + ext.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                    onClick: function() { setCL({ timeExtinctionId: on ? null : ext.id }); awardXP(1); clAnnounce(ext.name + ', about ' + ext.mya + ' million years ago.'); },
+                    style: { padding: '6px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                      background: on ? ext.color + '22' : 'transparent', color: on ? clReadableInk(ext.color) : '#cbd5e1',
+                      border: '1px solid ' + (on ? ext.color : 'rgba(148,163,184,0.4)') } },
+                    ext.name + ' · ' + ext.mya);
+                })),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 EXTINCTIONS.map(function(ext) {
                   var on = d.timeExtinctionId === ext.id;
