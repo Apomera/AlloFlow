@@ -12797,6 +12797,8 @@
       "read_aloud_busy": "Speaking…",
       "read_aloud_failed": "Read-aloud is not available right now.",
       "returned_sr": "Returned to the STEAM Lab tools.",
+      "scrub_aria": "Scale position, in powers of ten",
+      "scrub_label": "Where you are, across all 44 powers of ten",
       "size_line": "{len} {dim}",
       "title": "🪆 Scale Explorer — powers of ten",
       "to_big": "🌌 Biggest",

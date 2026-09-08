@@ -371,3 +371,36 @@ describe('Scale Explorer keeps the panel honest', () => {
     expect(body).toMatch(/a >= 1e14\) return round2/);
   });
 });
+
+describe('Scale Explorer position scrubber', () => {
+  // The log axis shows about three decades. Nothing showed where those three sat
+  // among the other forty-one, so there was no sense of position or of distance
+  // travelled, and no single control that jumped anywhere in the range.
+  it('spans the whole range and is a native, keyboard-driven control', () => {
+    expect(src).toMatch(/type: 'range', ref: scrubRef, min: MIN_EXP, max: MAX_EXP/);
+    expect(src).toMatch(/'aria-label': S\('scrub_aria'/);
+    // A bare number is meaningless read aloud, so the value is spoken as a length.
+    expect(src).toMatch(/'aria-valuetext': viewLineFor\(exp\)/);
+    expect(src).toMatch(/sc\.setAttribute\('aria-valuetext', viewLineFor\(expRef\.current\)\)/);
+  });
+
+  it('is painted, not bound, so moving the camera cannot re-render the panel', () => {
+    const paint = src.slice(src.indexOf('function paintReadout()'), src.indexOf('function settleExp'));
+    expect(paint).toMatch(/sc\.value = String\(expRef\.current\)/);
+    expect(src).not.toMatch(/value: exp, *\n?\s*'aria-label': S\('scrub_aria'/);
+  });
+
+  it('stands back only while a pointer is down, not merely while focused', () => {
+    // Guarding on focus froze the thumb: a slider keeps focus long after the
+    // student stops touching it, so it sat still while the camera moved on.
+    expect(src).toMatch(/if \(sc && !scrubDragRef\.current\)/);
+    expect(src).not.toMatch(/document\.activeElement !== sc/);
+    expect(src).toMatch(/onPointerDown: function \(\) \{ scrubDragRef\.current = true; \}/);
+    expect(src).toMatch(/onPointerUp: function \(\) \{ scrubDragRef\.current = false; \}/);
+    expect(src).toMatch(/onBlur: function \(\) \{ scrubDragRef\.current = false; \}/);
+  });
+
+  it('cancels a running journey rather than fighting it', () => {
+    expect(src).toMatch(/onChange: function \(e\) \{ stopJourney\(\); goTo\(parseFloat\(e\.target\.value\)/);
+  });
+});

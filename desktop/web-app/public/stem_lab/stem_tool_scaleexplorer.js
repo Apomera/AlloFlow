@@ -295,6 +295,12 @@
 
       var canvasRef = React.useRef(null);
       var readoutRef = React.useRef(null);
+      var scrubRef = React.useRef(null);
+      // Guarding the repaint on FOCUS was wrong: a slider keeps focus long after
+      // the student stops touching it, and the thumb then froze while the camera
+      // moved on. The paint must only stand back while a pointer is actually
+      // down on the thumb; under the keyboard the thumb should follow.
+      var scrubDragRef = React.useRef(false);
       var wrapRef = React.useRef(null);
       var targetRef = React.useRef(log10(HUMAN));
       var expRef = React.useRef(log10(HUMAN));
@@ -346,6 +352,13 @@
       function paintReadout() {
         var el = readoutRef.current;
         if (el) el.textContent = viewLineFor(expRef.current);
+        // Painted rather than bound, for the same reason as the readout: this
+        // moves every frame and must not re-render the panel to do it.
+        var sc = scrubRef.current;
+        if (sc && !scrubDragRef.current) {
+          sc.value = String(expRef.current);
+          sc.setAttribute('aria-valuetext', viewLineFor(expRef.current));
+        }
       }
       // React state catches up once, at rest, so anything that renders from exp
       // stays correct without paying for the frames in between.
@@ -723,6 +736,17 @@
             ),
             h('p', { id: descId, ref: readoutRef, style: { margin: 0, fontSize: '0.8125rem', color: P.text, fontWeight: 600 } }, viewLine),
             edge ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent, fontSize: '0.78125rem' }) }, '🛑 ' + edge) : null,
+            h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } },
+              S('scrub_label', 'Where you are, across all 44 powers of ten'),
+              h('input', { type: 'range', ref: scrubRef, min: MIN_EXP, max: MAX_EXP, step: 0.1, defaultValue: exp,
+                'aria-label': S('scrub_aria', 'Scale position, in powers of ten'),
+                'aria-valuetext': viewLineFor(exp),
+                onChange: function (e) { stopJourney(); goTo(parseFloat(e.target.value), { instant: true }); },
+                onPointerDown: function () { scrubDragRef.current = true; },
+                onPointerUp: function () { scrubDragRef.current = false; },
+                onPointerCancel: function () { scrubDragRef.current = false; },
+                onBlur: function () { scrubDragRef.current = false; },
+                style: { width: '100%', marginTop: 4, accentColor: P.accent } })),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),
