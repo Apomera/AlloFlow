@@ -918,3 +918,17 @@ Validation: 19 existing setup, active-turn, live-vote and HUD contracts passed; 
 - Zoom Gallery also **dropped a dead `&lang=` pop-out parameter** — the pop-out reads only `img` and `theme`, and the real mechanism is the opener sending already-resolved strings. A param that is always `en` and never read advertises a capability that does not exist.
 - ★**NOT fixed, needs a decision rather than a patch:** the host could add `lang` to ctx and fix all ten at once, but its only signal is a language NAME ("Spanish") while the tools building URLs expect a CODE ("es"). Handing them the name may be worse than the honest default. Left alone deliberately.
 - 82 tests across both tools; axe 0/0; both browser regressions clean. Not deployed.
+
+### 2026-09-07 — ctx contract swept repo-wide: 4 VERIFIED gaps, and a method warning (Claude Code)
+- Extended yesterday's ctx check to all 149 stem tools. ★★**It took four attempts to make it sound, and the first three produced garbage** — worth knowing before anyone repeats it:
+  1. plain `\bctx\.(\w+)` → **103 "missing fields"**, almost all `beginPath`, `fillRect`, `createOscillator`: `ctx` is also the usual name for a canvas 2D context and an AudioContext.
+  2. skipping tools that declare `var ctx =` → still noisy; many take `ctx` as a PARAMETER of a draw helper.
+  3. acorn, but walking the whole render body → same over-report, because I wrote a shadowing check and never used it to PRUNE.
+  4. acorn + pruning any inner function that rebinds the name → 9 bare + 16 guarded, small enough to check by hand. **Even then it mis-attributes for tools with terse parameter names** (`assessmentliteracy` reads `c.cluster`/`f.cluster` on callback params, reported as ctx fields). Script: `ctx_ast2.cjs` in the session scratchpad. **Treat its output as candidates, never as a defect list.**
+- **VERIFIED by reading the code and grepping the host (these four are real):**
+  - `ctx.lang` — not provided; **10 tools read it, all as `|| 'en'`, so all silently English.** App's real signal is the global `window.__alloTextLanguage`. Fixed in Zoom Gallery + Scale Explorer @9590a2052; the host-side fix is a decision (the global holds a NAME "Spanish", tools building URLs want a CODE "es").
+  - ★`ctx.tryAward` — **`grep -c tryAward` is 0 in BOTH `AlloFlowANTI.txt` and `stem_lab_module.js`.** `stem_tool_solarsystem.js:177` does `ctx.tryAward || function() {}`, so **Solar System's award hook has never fired**. Real dead feature; not mine to fix, flagged for its owner.
+  - `ctx.viewportWidth` — not provided; `spaceexplorer` falls back to `window.innerWidth`. Harmless.
+  - `ctx.pluginInstanceToken` — not provided (only a `pluginInstanceTokenRef` exists); `dissection` falls back to `setLabToolData`. Harmless.
+- Everything else the script listed is UNVERIFIED. `money.submitExploreScore` and others do appear in the host and are probably fine.
+- No code changed this round beyond what was already committed; both my tools remain clean (82 tests, axe 0/0).
