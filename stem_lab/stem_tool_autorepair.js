@@ -9451,7 +9451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   function arShopInitial(jobId) {
     return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false,
       wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
-      plugSecured: false, refilled: false, torqued: false, answer: '', notes: '', feedback: '', history: [] };
+      plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', feedback: '', history: [] };
   }
   function arShopState(raw) {
     var state = Object.assign(arShopInitial(raw && raw.job), raw || {});
@@ -9460,9 +9460,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     state.step = Number.isInteger(state.step) ? Math.max(0, Math.min(job.tasks.length, state.step)) : 0;
     if (!SHOP_STATIONS.some(function (p) { return p.id === state.station; })) state.station = 'intake';
     if (['ground', 'prepared', 'low', 'checked', 'raised', 'locked'].indexOf(state.lift) === -1) state.lift = 'ground';
+    var setup = state.instrument && typeof state.instrument === 'object' ? state.instrument : {};
+    state.instrument = { mode: setup.mode === 'resistance' ? 'resistance' : 'dcv', contact: setup.contact === 'joint' ? 'joint' : 'posts', load: setup.load === 'starter' ? 'starter' : 'off', surface: setup.surface === 'backing' ? 'backing' : 'lining',
+      jugMl: Number.isFinite(setup.jugMl) ? Math.max(0, Math.min(5000, Math.round(setup.jugMl / 100) * 100)) : 4100 };
+    state.lugs = Array.isArray(state.lugs) ? state.lugs.filter(function (n) { return Number.isInteger(n) && n >= 0 && n < 5; }).slice(0, 5) : [];
     state.history = Array.isArray(state.history) ? state.history.slice(0, job.tasks.length) : [];
     return state;
   }
+  // Instrument evidence belongs to the current task and exact setup. Changing a
+  // probe, load, quantity or service state invalidates a previously captured result.
+  function arShopInstrumentKind(state) {
+    var task = arShopJob(state.job).tasks[state.step];
+    if (!task) return null;
+    if (state.job === 'brakes' && task.id === 'measure') return 'gauge';
+    if (state.job === 'brakes' && task.id === 'refit') return 'torque';
+    if (state.job === 'oil' && task.id === 'refill') return 'jug';
+    if (state.job === 'electrical' && (task.id === 'measure' || task.id === 'verify')) return 'meter';
+    return null;
+  }
+  function arShopReadingKey(state) {
+    return JSON.stringify([state.job, state.step, !!state.serviced, state.instrument, state.lugs, !!state.wheelSeated, !!state.hood]);
+  }
+  function arShopOperate(raw, action) {
+    action = action || {};
+    var state = arShopState(raw), task = arShopJob(state.job).tasks[state.step], kind = arShopInstrumentKind(state);
+    function feedback(text, patch) { return Object.assign({}, state, patch || {}, { feedback: text }); }
+    if (!kind || !task) return feedback('Choose a task that uses a workshop instrument.');
+    if (action.type === 'configure') {
+      var allowed = { mode: ['dcv', 'resistance'], contact: ['joint', 'posts'], load: ['off', 'starter'], surface: ['lining', 'backing'] };
+      if (!allowed[action.field] || allowed[action.field].indexOf(action.value) === -1) return feedback('Choose a listed instrument setting.');
+      var instrument = Object.assign({}, state.instrument); instrument[action.field] = action.value;
+      return feedback('Setup changed. Capture a fresh reading.', { instrument: instrument, reading: null });
+    }
+    if (state.station !== task.station || state.tool !== task.tool) return feedback('Go to the task station and select ' + SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1] + '.');
+    if (Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; })) return feedback('Complete the lift, access and service prerequisites before using this equipment.');
+    if (kind === 'jug' && action.type === 'quantity') {
+      if ([100, 500, -100].indexOf(action.delta) === -1) return feedback('Use the measured jug controls.');
+      var ml = state.instrument.jugMl + action.delta;
+      if (ml < 0 || ml > 5000) return feedback('This training jug holds between 0 and 5000 mL.');
+      return feedback('Jug contains ' + (ml / 1000).toFixed(1) + ' L. Measure again before transferring.', {
+        instrument: Object.assign({}, state.instrument, { jugMl: ml }), reading: null });
+    }
+    if (kind === 'torque') {
+      if (action.type === 'seat-wheel') return feedback('Wheel seated and fasteners started by hand. Follow the training diagram to verify each fastener.', { wheelSeated: true, reading: null });
+      if (action.type !== 'lug' || !state.wheelSeated) return feedback('Seat the wheel and start the fasteners before the tightening check.');
+      var result = arEvaluateLugChoice(state.lugs, action.index);
+      if (!result.accepted) return feedback(result.kind === 'repeat' ? 'That fastener is already checked. Move across the hub.' : 'Follow the cross-hub diagram: start at 1, then 3, 5, 2 and 4.');
+      return feedback(result.complete ? 'All five fasteners checked in the training cross-hub sequence. Complete the task to record reassembly.' : 'Fastener ' + (action.index + 1) + ' checked. Move across the hub.', { lugs: result.sequence, reading: null });
+    }
+    if (action.type !== 'read') return feedback('Use the instrument controls for this task.');
+    if (kind === 'meter' && !state.hood) return feedback('Open the hood before connecting the meter.', { reading: null });
+    var setup = state.instrument, value, unit, valid, detail;
+    if (kind === 'gauge') {
+      value = setup.surface === 'lining' ? (state.serviced ? 8 : 2) : 5;
+      unit = 'mm'; valid = setup.surface === 'lining';
+      detail = valid ? 'Friction lining measured separately from the backing plate.' : 'This is the training backing plate, not the friction lining. Reposition the gauge.';
+    } else if (kind === 'meter') {
+      if (setup.mode !== 'dcv') return feedback('Use DC volts for this powered-circuit voltage test. Resistance mode does not produce a valid reading.', { reading: null });
+      value = setup.contact === 'posts' ? (setup.load === 'starter' ? 10.4 : 12.6) : setup.load === 'starter' ? (state.serviced ? 0.08 : 1.6) : 0;
+      unit = 'V'; valid = setup.contact === 'joint' && setup.load === 'starter';
+      detail = setup.contact === 'posts' ? 'Battery post-to-post voltage does not isolate the positive connection.' : setup.load === 'off' ? 'No starter load: zero drop cannot prove that the connection carries starter current.' : 'Voltage drop across the positive post-to-clamp joint under simulated starter load.';
+    } else {
+      value = setup.jugMl / 1000; unit = 'L'; valid = setup.jugMl === 4600;
+      detail = valid ? 'Measured service fill matches this fictional vehicle: 4.6 L.' : 'The jug must contain the service sheet’s 4.6 L before transfer.';
+    }
+    return feedback(value + ' ' + unit + '. ' + detail, { reading: { key: arShopReadingKey(state), kind: kind, value: value, unit: unit, valid: valid, detail: detail } });
+  }
+  function arShopEvidenceReady(state) {
+    var kind = arShopInstrumentKind(state);
+    if (!kind) return true;
+    if (kind === 'torque') return state.wheelSeated && state.lugs.length === 5 && state.lugs.every(function (lug, i) { return lug === TIRE_LUG_PATTERN[i]; });
+    return !!(state.reading && state.reading.valid && state.reading.key === arShopReadingKey(state));
+  }
+
   function arShopAdvance(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
     function blocked(message) { return Object.assign({}, state, { feedback: message }); }
@@ -9474,9 +9544,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if ((task.id === 'measure' || task.id === 'refill') && (!String(state.answer).trim() || !Number.isFinite(Number(state.answer)) || Math.abs(Number(state.answer) - job.answer) > 0.001)) {
       return blocked('Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
     }
+    if (!arShopEvidenceReady(state)) return blocked('Operate the equipment and capture valid evidence for this task before completing it.');
     if (task.id === 'release' && String(state.notes || '').trim().length < 20) return blocked('Write a handoff of at least 20 characters describing the finding, service and verification.');
-    return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', feedback: 'Completed: ' + task.label,
-      history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
+    return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', reading: null, feedback: 'Completed: ' + task.label,
+      history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
   }
 
   function buildWorkshopScene(THREE, api) {
@@ -9517,6 +9588,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       var texture = new THREE.CanvasTexture(canvas);
       var plane = new THREE.Mesh(new THREE.PlaneGeometry(width, width / 6), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
       plane.name = 'shop-sign-' + text; plane.position.set(pos[0], pos[1], pos[2]); parent.add(plane); return plane;
+    }
+    function instrumentDisplay(parent, text, pos, width) {
+      var canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 160;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#c6ead9'; ctx.fillRect(0, 0, 512, 160);
+      ctx.strokeStyle = '#16352a'; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 502, 150);
+      ctx.fillStyle = '#102d22'; ctx.font = 'bold 104px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 87, 468);
+      var texture = new THREE.CanvasTexture(canvas);
+      var display = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 160 / 512), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+      display.name = 'workshop-display-' + text; display.position.set(pos[0], pos[1], pos[2]); parent.add(display); return display;
     }
     function register(id, group, at) {
       group.userData.partId = id;
@@ -9658,7 +9741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     }
     [-1.3, 1.28].forEach(function (x) {
       [-0.79, 0.79].forEach(function (z) {
-        var front = x < 0, removed = front && z > 0 && state.wheelRemoved;
+        var front = x < 0, removed = front && z > 0 && state.wheelRemoved && !state.wheelSeated;
         cylinder(brakes, 'brake-rotor-' + x + '-' + z, 0.225, 0.033, [x, 0.40, z], metal, 'z');
         box(brakes, 'brake-caliper-' + x + '-' + z, [0.14, 0.22, 0.13], [x + 0.17, 0.44, z], red);
         var pad = box(brakes, 'brake-pad-' + x + '-' + z, [0.11, 0.15, state.serviced && state.job === 'brakes' && front ? 0.048 : 0.012], [x + 0.15, 0.44, z + (z > 0 ? 0.025 : -0.025)], amber);
@@ -9671,7 +9754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       });
       pipe(car, 'axle-' + x, [x, 0.40, -0.65], [x, 0.40, 0.65], 0.052, dark);
     });
-    if (state.wheelRemoved) wheel(rack, 'removed-front-wheel', 3.2, 0.64, -1.9);
+    if (state.wheelRemoved && !state.wheelSeated) wheel(rack, 'removed-front-wheel', 3.2, 0.64, -1.9);
     register('brakes', brakes, [-1.3, 0.65 + height, 0.99]);
     var oil = new THREE.Group(); oil.name = 'workshop-oil-station'; car.add(oil);
     var sump = box(oil, 'engine-oil-sump', [0.73, 0.20, 0.55], [-1.2, 0.40, 0], metal);
@@ -9706,6 +9789,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     box(lift, 'lift-control-panel', [0.20, 0.31, 0.16], [-0.13, 1.35, 1.51], dark);
     cylinder(lift, 'lift-emergency-stop', 0.035, 0.032, [-0.13, 1.39, 1.607], red, 'z');
     register('lift', lift, [0.05, 1.75, 1.36]);
+    // Equipment is attached to the active station; digital displays and fluid
+    // levels read the same serializable state as the accessible instrument panel.
+    var instrumentKind = arShopInstrumentKind(state);
+    var activeTask = arShopJob(state.job).tasks[state.step];
+    var instrumentReady = activeTask && state.tool === activeTask.tool && state.station === activeTask.station;
+    var captured = state.reading && state.reading.key === arShopReadingKey(state) ? state.reading : null;
+    if (instrumentReady && (instrumentKind === 'meter' || instrumentKind === 'jug') && (state.hood || instrumentKind === 'jug')) {
+      var cart = new THREE.Group(); cart.name = 'workshop-instrument-cart'; engine.add(cart);
+      box(cart, 'instrument-cart-top', [0.70, 0.045, 0.53], [-2.40, 0.88, 0.95], dark);
+      [-2.67, -2.13].forEach(function (x) { [0.74, 1.16].forEach(function (z) {
+        pipe(cart, 'instrument-cart-leg-' + x + '-' + z, [x, 0.12, z], [x, 0.87, z], 0.023, metal);
+        cylinder(cart, 'instrument-cart-wheel-' + x + '-' + z, 0.064, 0.035, [x, 0.07, z], rubber, 'z');
+      }); });
+      if (instrumentKind === 'meter') {
+        var meter = new THREE.Group(); meter.name = 'workshop-live-voltmeter'; cart.add(meter);
+        meter.userData = { reading: captured ? captured.value : null, contact: state.instrument.contact, load: state.instrument.load, mode: state.instrument.mode };
+        box(meter, 'voltmeter-rubber-case', [0.39, 0.49, 0.11], [-2.40, 1.15, 1.05], amber);
+        box(meter, 'voltmeter-face', [0.34, 0.43, 0.025], [-2.40, 1.15, 1.12], dark);
+        instrumentDisplay(meter, captured ? captured.value.toFixed(2) + ' V' : '— V', [-2.40, 1.30, 1.143], 0.30);
+        cylinder(meter, 'voltmeter-mode-dial', 0.061, 0.025, [-2.40, 1.10, 1.15], metal, 'z');
+        box(meter, 'voltmeter-dial-mark', [0.014, 0.050, 0.013], [-2.40, 1.12, 1.17], pale).rotation.z = state.instrument.mode === 'dcv' ? -0.60 : 0.60;
+        var contacts = [{ name: 'red', color: 0xef4444, x: -2.49, end: [-0.97, 1.19, 0.51] },
+          { name: 'black', color: 0x1f2937, x: -2.31, end: [state.instrument.contact === 'posts' ? -0.76 : -0.90, 1.19, 0.51] }];
+        contacts.forEach(function (lead) {
+          var curve = new THREE.CatmullRomCurve3([new THREE.Vector3(lead.x, 0.99, 1.15), new THREE.Vector3(-2.05, 1.37, 0.84), new THREE.Vector3(-1.35, 1.39, 0.60), new THREE.Vector3(lead.end[0], lead.end[1], lead.end[2])]);
+          var cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, 0.009, 6, false), api.trim(lead.color, 15));
+          cable.name = 'workshop-meter-' + lead.name + '-lead'; cable.userData.contact = lead.name === 'red' ? 'positive-post' : state.instrument.contact === 'posts' ? 'negative-post' : 'positive-clamp'; meter.add(cable);
+          cylinder(meter, 'workshop-meter-' + lead.name + '-probe', 0.015, 0.12, [lead.end[0], 1.23, lead.end[2]], api.trim(lead.color, 25));
+        });
+      } else {
+        var jug = new THREE.Group(); jug.name = 'workshop-measuring-jug'; cart.add(jug);
+        jug.userData.quantityMl = state.instrument.jugMl;
+        box(jug, 'jug-clear-container', [0.31, 0.48, 0.28], [-2.40, 1.15, 1.0], new THREE.MeshPhongMaterial({ color: 0xd7ecf3, transparent: true, opacity: 0.22, depthWrite: false }));
+        var fillHeight = Math.max(0.002, state.instrument.jugMl / 5000 * 0.42);
+        box(jug, 'jug-oil-volume', [0.28, fillHeight, 0.25], [-2.40, 0.92 + fillHeight / 2, 1.0], api.trim(0xc88c24, 65));
+        for (var mark = 0; mark <= 5; mark++) box(jug, 'jug-graduation-' + mark, [mark % 5 ? 0.07 : 0.13, 0.008, 0.008], [-2.30, 0.92 + mark * 0.084, 1.145], dark);
+        pipe(jug, 'jug-handle-top', [-2.23, 1.32, 1.0], [-2.10, 1.32, 1.0], 0.017, metal);
+        pipe(jug, 'jug-handle-side', [-2.10, 1.32, 1.0], [-2.10, 1.02, 1.0], 0.017, metal);
+        pipe(jug, 'jug-handle-bottom', [-2.10, 1.02, 1.0], [-2.23, 1.02, 1.0], 0.017, metal);
+        instrumentDisplay(jug, (state.instrument.jugMl / 1000).toFixed(1) + ' L', [-2.40, 1.47, 1.13], 0.43);
+      }
+    }
+    if (instrumentReady && instrumentKind === 'gauge' && state.wheelRemoved && state.lift === 'locked') {
+      var gauge = new THREE.Group(); gauge.name = 'workshop-pad-thickness-gauge'; brakes.add(gauge);
+      gauge.userData.surface = state.instrument.surface; gauge.userData.reading = captured ? captured.value : null;
+      box(gauge, 'gauge-beam', [0.42, 0.025, 0.045], [-1.18, 0.64, 1.02], metal);
+      box(gauge, 'gauge-digital-head', [0.31, 0.14, 0.075], [-1.15, 0.72, 1.03], dark);
+      instrumentDisplay(gauge, captured ? captured.value + ' mm' : '— mm', [-1.15, 0.73, 1.073], 0.28);
+      [-1.30, -1.12].forEach(function (x) { box(gauge, 'gauge-jaw-' + x, [0.018, 0.19, 0.025], [x, 0.54, 1.02], metal); });
+    }
+    // Five physical fasteners share hit targets with the keyboard button diagram.
+    if (state.wheelSeated || state.torqued) {
+      for (var lugIndex = 0; lugIndex < 5; lugIndex++) {
+        var angle = Math.PI / 2 - lugIndex * Math.PI * 2 / 5;
+        var lugMaterial = api.trim(state.lugs.indexOf(lugIndex) !== -1 ? 0x34d399 : 0xfbbf24, 60);
+        lugMaterial.userData._keepOpaqueOnRecede = true;
+        var lug = cylinder(brakes, 'workshop-wheel-fastener-' + lugIndex, 0.026, 0.035,
+          [-1.30 + Math.cos(angle) * 0.13, 0.40 + Math.sin(angle) * 0.13, 0.962], lugMaterial, 'z');
+        lug.userData.partId = instrumentKind === 'torque' ? 'shop-lug-' + lugIndex : 'brakes'; lug.userData.checked = state.lugs.indexOf(lugIndex) !== -1; picks.push(lug);
+      }
+      if (instrumentKind === 'torque' && instrumentReady) {
+      var lastLug = state.lugs.length ? state.lugs[state.lugs.length - 1] : 0;
+      var wrenchAngle = Math.PI / 2 - lastLug * Math.PI * 2 / 5;
+      var wx = -1.30 + Math.cos(wrenchAngle) * 0.13, wy = 0.40 + Math.sin(wrenchAngle) * 0.13;
+      var torqueShaft = pipe(brakes, 'workshop-torque-wrench-shaft', [wx, wy, 1.015], [wx + 0.36, wy - 0.12, 1.015], 0.015, metal);
+      torqueShaft.material = torqueShaft.material.clone(); torqueShaft.material.userData._keepOpaqueOnRecede = true;
+      torqueShaft.userData.partId = 'shop-lug-' + lastLug; picks.push(torqueShaft);
+      var torqueGrip = pipe(brakes, 'workshop-torque-wrench-grip', [wx + 0.27, wy - 0.09, 1.015], [wx + 0.44, wy - 0.15, 1.015], 0.028, dark);
+      torqueGrip.material = torqueGrip.material.clone(); torqueGrip.material.userData._keepOpaqueOnRecede = true;
+      torqueGrip.userData.partId = 'shop-lug-' + lastLug; picks.push(torqueGrip);
+      }
+    }
+
+    [[engine, 'engine'], [brakes, 'brakes']].forEach(function (station) {
+      station[0].traverse(function (object) {
+        if (!object.isMesh || object.userData.partId) return;
+        object.material = object.material.clone(); object.material.userData._keepOpaqueOnRecede = !object.material.transparent;
+        object.userData.partId = station[1]; picks.push(object);
+      });
+    });
     scene.updateMatrixWorld(true);
     return { meshes: meshes, picks: picks, anchor: car };
   }
@@ -19472,12 +19635,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function change(patch) { save(Object.assign({}, shop, patch)); }
         function pick(id) {
+          if (/^shop-lug-[0-4]$/.test(id)) {
+            var next = arShopOperate(Object.assign({}, shop, { station: 'brakes' }), { type: 'lug', index: Number(id.slice(-1)) });
+            save(next); arAnnounce(next.feedback); return;
+          }
           if (!SHOP_STATIONS.some(function (p) { return p.id === id; })) return;
           change({ station: id, feedback: '' });
           arAnnounce(SHOP_STATIONS.filter(function (p) { return p.id === id; })[0].label + ' selected.');
         }
         function stationCamera(id) {
           if (!SHOP3D.focus) return;
+          var viewport = document.querySelector('[data-ar-workshop] .ar-bay-viewport');
+          if (viewport) viewport.scrollIntoView({ block: 'center', behavior: 'auto' });
           SHOP3D.reset();
           if (id === 'oil' || id === 'exhaust') {
             if (shop.lift !== 'locked') {
@@ -19491,7 +19660,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus(id, { distance: 2.8, target: { x: -1.3, y: (shop.lift === 'locked' ? 1.58 : shop.lift === 'raised' ? 1.68 : 0) + 0.5, z: 0.65 }, immediate: true });
           } else SHOP3D.focus(id, { distance: id === 'lift' ? 5.8 : 3.7 });
         }
-        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled].join('-');
+        var instrumentKind = arShopInstrumentKind(shop);
+        var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
+        var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
+        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
           onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
@@ -19499,6 +19671,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
         }
+        function instrumentPanel() {
+          var kind = arShopInstrumentKind(shop);
+          if (!kind) return null;
+          var reading = shop.reading && shop.reading.key === arShopReadingKey(shop) ? shop.reading : null;
+          function operate(action) { var next = arShopOperate(shop, action); save(next); arAnnounce(next.feedback); }
+          function setting(field, title, options) {
+            return h('div', { key: field }, h('label', { htmlFor: 'ar-shop-instrument-' + field }, title),
+              h('select', { id: 'ar-shop-instrument-' + field, value: shop.instrument[field],
+                onChange: function (e) { operate({ type: 'configure', field: field, value: e.target.value }); } },
+                options.map(function (option) { return h('option', { key: option[0], value: option[0] }, option[1]); })));
+          }
+          var title = { meter: 'Connect the voltmeter', gauge: 'Position the thickness gauge', jug: 'Prepare the measured oil fill', torque: 'Refit and check the wheel' }[kind];
+          return h('section', { 'data-ar-shop-instrument': kind, 'aria-label': title,
+            style: { marginTop: 14, padding: 12, border: '2px solid ' + T.border, borderRadius: 10, background: T.cardAlt } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 15 } }, title),
+            kind === 'meter' && h('div', null,
+              setting('mode', 'Meter mode', [['dcv', 'DC volts'], ['resistance', 'Resistance (Ω)']]),
+              setting('contact', 'Probe contacts', [['posts', 'Battery + post to − post'], ['joint', 'Positive post to its cable clamp']]),
+              setting('load', 'Simulated circuit load', [['off', 'Starter off'], ['starter', 'Starter load applied']]),
+              h('p', null, 'Compare the battery voltage with the loss across one connection. A reading with no starter load cannot establish that a joint carries starter current.')),
+            kind === 'gauge' && h('div', null,
+              setting('surface', 'Place the gauge on', [['lining', 'Friction lining only'], ['backing', 'Steel backing plate']]),
+              h('p', null, 'Measure the lining separately from the backing plate, then compare it with this job’s service limit.')),
+            kind === 'jug' && h('div', null,
+              h('p', null, 'Training fill: 4.6 L = 4600 mL. The jug starts at 4.1 L. Prepare the full service quantity, then capture the measurement.'),
+              h('meter', { min: 0, max: 5000, value: shop.instrument.jugMl, 'aria-label': 'Oil in the measured jug', style: { width: '100%', height: 22 } }),
+              h('p', { 'data-ar-shop-jug-quantity': shop.instrument.jugMl }, h('strong', null, shop.instrument.jugMl + ' mL / ' + (shop.instrument.jugMl / 1000).toFixed(1) + ' L')),
+              h('div', { className: 'ar-shop-actions' }, [[100, 'Add 100 mL'], [500, 'Add 500 mL'], [-100, 'Remove 100 mL']].map(function (amount) {
+                return control(amount[1], function () { operate({ type: 'quantity', delta: amount[0] }); }, { key: amount[0], 'data-ar-shop-jug-change': amount[0] });
+              }))),
+            kind === 'torque' ? h('div', null,
+              h('p', null, 'Seat the wheel and start all fasteners by hand. This training diagram checks the cross-hub order 1 → 3 → 5 → 2 → 4. Each click represents a torque check against the vehicle service sheet; it does not simulate applied force.'),
+              !shop.wheelSeated && control('Seat wheel and start fasteners', function () { operate({ type: 'seat-wheel' }); }, { 'data-ar-shop-seat-wheel': true }),
+              h('div', { style: { position: 'relative', width: 230, maxWidth: '100%', height: 230, margin: '12px auto' }, role: 'group', 'aria-label': 'Five wheel fasteners, numbered clockwise from the top' },
+                h('svg', { viewBox: '0 0 230 230', width: '100%', height: 230, 'aria-hidden': true },
+                  h('circle', { cx: 115, cy: 115, r: 92, fill: T.card, stroke: T.border, strokeWidth: 8 }),
+                  h('path', { d: 'M115 28 L166 188 L32 92 L198 92 L64 188 Z', fill: 'none', stroke: T.border, strokeWidth: 2, strokeDasharray: '5 4' }),
+                  h('circle', { cx: 115, cy: 115, r: 23, fill: T.cardAlt, stroke: T.border, strokeWidth: 2 })),
+                [[50, 12], [86, 40], [72, 82], [28, 82], [14, 40]].map(function (point, i) {
+                  var checked = shop.lugs.indexOf(i) !== -1;
+                  return h('div', { key: i, style: { position: 'absolute', left: 'calc(' + point[0] + '% - 22px)', top: 'calc(' + point[1] + '% - 22px)' } },
+                    control((checked ? '✓ ' : '') + (i + 1), function () { operate({ type: 'lug', index: i }); },
+                      { 'data-ar-shop-lug': i, 'aria-label': 'Check fastener ' + (i + 1) + (checked ? ', already checked' : ''), 'aria-pressed': checked, disabled: !shop.wheelSeated,
+                        style: btnSecondary({ minHeight: 44, minWidth: 44, padding: 5, borderRadius: '50%', border: '2px solid ' + (checked ? T.good : T.border), background: T.card, fontSize: 12 }) }));
+                })),
+              h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. You can also select the exposed fasteners in the 3D wheel view.'))
+              : h('div', null,
+                h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': 'Captured instrument reading',
+                  style: { display: 'block', marginTop: 12, padding: 14, borderRadius: 8, background: isContrast ? '#000' : '#10262c', color: '#e3fff2', fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 27, fontWeight: 700 } },
+                  reading ? reading.value + ' ' + reading.unit : '— —'),
+                reading && h('p', { 'data-ar-shop-reading-valid': String(reading.valid) }, (reading.valid ? '✓ ' : '↺ ') + reading.detail),
+                control('Capture reading', function () { operate({ type: 'read' }); }, { 'data-ar-shop-instrument-read': true, style: btnSecondary({ minHeight: 44, marginTop: 10, width: '100%' }) })),
+            control('Show equipment in 3D', function () {
+              pick(task.station); stationCamera(task.station);
+              if ((kind === 'meter' || kind === 'jug') && SHOP3D.focus) {
+                SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+                SHOP3D.focus('engine', { distance: 2.6, target: { x: -2.4, y: 1.16, z: 1.0 }, immediate: true });
+              }
+            }, { 'data-ar-shop-instrument-focus': true, style: btnGhost({ minHeight: 44, marginTop: 10, width: '100%' }) }));
+        }
+
         function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
         function downloadReport() {
           var text = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
@@ -19528,7 +19761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             'A whole vehicle. A real sequence of decisions. Move between the service desk, lift and work stations to complete a training work order.'),
           h('div', { className: 'ar-shop-metrics', 'aria-label': 'Workshop status' },
             h('span', { 'data-ar-shop-lift': shop.lift, style: { color: shop.lift === 'locked' ? T.good : T.accentHi } }, liftLabels[shop.lift]),
-            h('span', null, shop.wheelRemoved ? 'Front wheel on rack' : 'Wheels fitted'),
+            h('span', null, shop.wheelRemoved ? (shop.wheelSeated ? 'Wheel seated — torque pending' : 'Front wheel on rack') : 'Wheels fitted'),
             h('span', null, shop.released ? 'Work order completed' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
           h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
             h('section', { 'aria-label': 'Workshop scene and stations', style: { minWidth: 0 } },
@@ -19538,6 +19771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 bayControls({ viewer: SHOP3D, selected: shop.station, selectedLabel: station.label }),
                 h('div', { className: 'ar-shop-actions' },
                   control('Whole shop', function () { SHOP3D.reset(); }),
+                  control('Return to work order', function () { var order = document.getElementById('ar-shop-work-order'); if (order) { order.focus({ preventScroll: true }); order.scrollIntoView({ block: 'start', behavior: 'auto' }); } }),
                   control('View selected station', function () { stationCamera(shop.station); }, { 'data-ar-shop-camera': 'station' }),
                   control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
                 h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Drag to orbit · scroll to zoom · arrow keys rotate · + / − zoom · 0 resets. Select a station below for the same content.')),
@@ -19558,7 +19792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   control('Detailed engine bay', function () { openActivity('underhood'); }),
                   control('Diagnostic cases', function () { openActivity('repairbay'); }),
                   control('Tire-change practice', function () { openActivity('tyre'); })))),
-            h('section', { className: 'ar-shop-card', 'aria-label': 'Training work order' },
+            h('section', { id: 'ar-shop-work-order', tabIndex: -1, className: 'ar-shop-card', 'aria-label': 'Training work order' },
               h('h2', { style: { fontSize: 19 } }, 'Your work order'),
               h('label', { htmlFor: 'ar-shop-job' }, 'Choose a service job'),
               h('select', { id: 'ar-shop-job', value: job.id, onChange: function (e) {
@@ -19575,6 +19809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('label', { htmlFor: 'ar-shop-tool' }, 'Equipment in hand'),
                 h('select', { id: 'ar-shop-tool', value: shop.tool, onChange: function (e) { change({ tool: e.target.value, feedback: '' }); } },
                   SHOP_TOOLS.map(function (tool) { return h('option', { key: tool[0], value: tool[0] }, tool[1]); })),
+                instrumentPanel(),
                 (task.id === 'measure' || task.id === 'refill') && h('div', null,
                   h('label', { htmlFor: 'ar-shop-answer' }, job.question + ' (' + job.unit + ')'),
                   h('input', { id: 'ar-shop-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); } })),

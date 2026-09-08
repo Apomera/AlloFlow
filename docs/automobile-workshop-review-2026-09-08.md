@@ -26,7 +26,7 @@ Open **Auto Repair Shop → Full mechanic workshop (3D)**.
 - Keyboard camera controls, station labels, touch-sized controls, responsive layout, light/dark/contrast palettes, reduced-motion behavior and a usable HTML path if WebGL fails.
 - The shared viewer accepts an optional bounded `minPitch`. Its existing 0.12-radian minimum remains the default. Only the new workshop opts into an upward view, with a camera-height floor so students cannot orbit beneath the shop floor. Opaque materials and physical lift geometry retain their appearance and scale during station selection.
 
-## Validation
+## Initial workshop validation
 
 The final unit/HTML regression run passed **591 tests across 40 files**, covering every automobile suite plus the shared first-response 3D contracts. An initial run alongside WebGL exceeded one existing used-car test’s five-second timeout; it passed in isolation, and the final broad run passed with a 15-second timeout. Syntax checks and scoped `git diff --check` passed. Both public mirrors are byte-identical.
 
@@ -47,6 +47,29 @@ Evidence images:
 - [Brake inspection](../reports/automobile-workshop/brake-inspection.png)
 - [Underbody inspection](../reports/automobile-workshop/underbody.png)
 - [Mobile layout](../reports/automobile-workshop/mobile.png)
+
+## Follow-up: operational equipment
+
+The second pass closes a gap between choosing a tool and using it. Instrument tasks now require captured evidence as well as the correct calculation. All values remain authored for the fictional training sedan.
+
+- **DC voltmeter:** choose DC voltage mode, battery posts or the positive post-to-clamp joint, and no load or starter load. The physical meter and probe leads update with those choices. Battery voltage alone and a zero-drop no-load reading cannot complete the connection diagnosis. A fresh loaded connection measurement is required after service: 1.60 V before and 0.08 V after. This models the diagnostic distinction described by [Fluke's automotive electrical troubleshooting guidance](https://www.fluke.com/en/learn/blog/automotive/electrical-automotive-troubleshooting).
+- **Pad gauge:** distinguish friction lining from the backing plate, then capture the lining measurement. The physical gauge displays the selected measurement; measuring the backing plate does not satisfy the task.
+- **Measured oil jug:** add 100 or 500 mL, remove 100 mL, and capture the 4.6 L service fill. The physical fluid volume, graduations and readout track the same state. Quantity changes invalidate the prior reading; capacity is bounded at 5 L.
+- **Wheel reassembly:** seat the wheel and start the fasteners before checking all five in the authored 1 → 3 → 5 → 2 → 4 pattern. Click the actual 3D fasteners or use the equivalent keyboard-accessible diagram. Adjacent, repeated and premature checks are rejected. The wheel visibly returns before the sequence is finished, while lowering remains blocked until reassembly is recorded.
+- **Evidence and navigation:** captures belong to the current task, instrument setup and service state. Captured values and the completed tightening sequence are retained in the downloadable history. Equipment close-ups scroll into view; a return button brings the learner back to the work order. Dedicated instrument display textures keep physical readings legible.
+
+This adds interactive equipment selection and measurement to the authored service workflow. Tightening checks still represent completion of the specified procedure; they do not calculate applied torque or simulate thread engagement.
+
+Follow-up validation: **469 tests across all 39 automobile test files passed** (including 22 workshop state/render tests). **All seven workshop browser tests passed** in Chromium with real Three.js/WebGL, covering the complete jobs, mobile/reduced-motion behavior, physical fastener ray picking, invalid and stale measurements, fresh post-service readings, jug quantity and scene values. The full browser run took 4.3 minutes; the automobile regression took 89.68 seconds. Evidence includes six new instrument screenshots and refreshed workshop views. The instrument close-ups and mobile controls were visually reviewed, including a full-width crop of the mobile controls. Syntax and scoped diff checks passed; the automobile public mirror is byte-identical. No deployment or installer build was performed.
+
+Additional evidence images:
+
+- [Voltmeter before service](../reports/automobile-workshop/voltmeter-before.png)
+- [Voltmeter after service](../reports/automobile-workshop/voltmeter-after.png)
+- [Measured oil jug](../reports/automobile-workshop/measured-oil.png)
+- [Lining gauge](../reports/automobile-workshop/lining-gauge.png)
+- [Wheel fastener interaction](../reports/automobile-workshop/wheel-torque.png)
+- [Instrument controls on mobile](../reports/automobile-workshop/instruments-mobile.png)
 
 ## Scope and remaining opportunities
 
