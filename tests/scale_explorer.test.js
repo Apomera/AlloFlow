@@ -133,8 +133,42 @@ describe('Scale Explorer view model', () => {
     expect(src).toMatch(/maxGlyph = Math\.min\(cssW, cssH\) \* 0\.62/);
     expect(src).toMatch(/glyph >= 10 && glyph <= maxGlyph/);
   });
-  it('skips labels that would collide, but never the focused one', () => {
-    expect(src).toMatch(/if \(!clash \|\| isFocus\)/);
+  it('gives the focused label first claim on space, rather than exempting it', () => {
+    // Exempting the focus from collision meant it drew ON TOP of whatever had
+    // already claimed the space. Labels are now a second pass ordered nearest
+    // first, so the thing the student is looking at claims its space first and
+    // everything else fits around it.
+    expect(src).toMatch(/\.sort\(function \(a, b\) \{ return a\.dist - b\.dist; \}\)/);
+    expect(src).toMatch(/if \(clash\) continue;/);
+    expect(src).not.toMatch(/if \(!clash \|\| isFocus\)/);
+  });
+
+  it('keeps a label from being cut in half by the edge of the stage', () => {
+    expect(src).toMatch(/var lx = clamp\(lc\.x, wpx \/ 2 \+ 8, cssW - wpx \/ 2 - 8\)/);
+  });
+
+  it('separates neighbours into lanes so they cannot draw on top of each other', () => {
+    // Everything shared one centreline, so a ladybird sat inside a bee and both
+    // labels landed on an elephant. Position on y carries no meaning here, so it
+    // is free to use for separation; the diameter still carries the size.
+    expect(src).toMatch(/var lane = \(i % 3\) - 1;/);
+    expect(src).toMatch(/y: midY \+ lane \* laneGap/);
+    expect(src).toMatch(/g\.arc\(c\.x, c\.y, c\.dia \/ 2/);
+  });
+
+  it('paints canvas text against the stage, not against the panel', () => {
+    // The axis and size labels used the panel's dim ink on a near-black stage;
+    // in the light theme that was about 1.8:1, and axe cannot see painted text.
+    expect(src).toMatch(/g\.fillStyle = P\.stageDim;/);
+    expect(src).not.toMatch(/g\.fillStyle = P\.dim;/);
+    for (const theme of ['light', 'contrast', 'dark']) expect(src).toMatch(/stageDim: '#/);
+  });
+
+  it('reads the focus through a ref, because the animation loop outlives the render', () => {
+    // draw() closed over focusId, so the highlight lagged a step behind the
+    // panel and during a zoom never appeared at all.
+    expect(src).toMatch(/var isFocus = obj\.id === focusIdRef\.current;/);
+    expect(src).toMatch(/focusIdRef\.current = focusId;/);
   });
   it('uses an absolute canvas transform, so a redraw cannot compound the scale', () => {
     expect(src).toMatch(/g\.setTransform\(dpr, 0, 0, dpr, 0, 0\)/);

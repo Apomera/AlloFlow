@@ -243,9 +243,9 @@
   }
 
   function palette(theme) {
-    if (theme === 'light') return { bg: '#f8fafc', panel: '#ffffff', panel2: '#f1f5f9', line: '#64748b', text: '#0f172a', dim: '#475569', accent: '#1d4ed8', accentBtn: '#1d4ed8', accentFg: '#ffffff', ok: '#047857', warn: '#92400e', selBg: '#dbeafe', selFg: '#1e3a8a', stage: '#0b1220', ring: '#93c5fd', ringHot: '#fbbf24', axis: '#cbd5e1', stageFg: '#f1f5f9' };
-    if (theme === 'contrast') return { bg: '#000000', panel: '#000000', panel2: '#0a0a0a', line: '#fbbf24', text: '#ffffff', dim: '#ffffff', accent: '#fbbf24', accentBtn: '#fbbf24', accentFg: '#000000', ok: '#00ff66', warn: '#ffff00', selBg: '#fbbf24', selFg: '#000000', stage: '#000000', ring: '#ffffff', ringHot: '#ffff00', axis: '#ffffff', stageFg: '#ffffff' };
-    return { bg: '#0f172a', panel: '#1e293b', panel2: '#273449', line: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#38bdf8', accentBtn: '#0369a1', accentFg: '#ffffff', ok: '#4ade80', warn: '#fbbf24', selBg: '#0c4a6e', selFg: '#e0f2fe', stage: '#070b16', ring: '#38bdf8', ringHot: '#fbbf24', axis: '#475569', stageFg: '#e2e8f0' };
+    if (theme === 'light') return { bg: '#f8fafc', panel: '#ffffff', panel2: '#f1f5f9', line: '#64748b', text: '#0f172a', dim: '#475569', accent: '#1d4ed8', accentBtn: '#1d4ed8', accentFg: '#ffffff', ok: '#047857', warn: '#92400e', selBg: '#dbeafe', selFg: '#1e3a8a', stage: '#0b1220', ring: '#93c5fd', ringHot: '#fbbf24', axis: '#94a3b8', stageFg: '#f1f5f9', stageDim: '#cbd5e1' };
+    if (theme === 'contrast') return { bg: '#000000', panel: '#000000', panel2: '#0a0a0a', line: '#fbbf24', text: '#ffffff', dim: '#ffffff', accent: '#fbbf24', accentBtn: '#fbbf24', accentFg: '#000000', ok: '#00ff66', warn: '#ffff00', selBg: '#fbbf24', selFg: '#000000', stage: '#000000', ring: '#ffffff', ringHot: '#ffff00', axis: '#ffffff', stageFg: '#ffffff', stageDim: '#ffffff' };
+    return { bg: '#0f172a', panel: '#1e293b', panel2: '#273449', line: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#38bdf8', accentBtn: '#0369a1', accentFg: '#ffffff', ok: '#4ade80', warn: '#fbbf24', selBg: '#0c4a6e', selFg: '#e0f2fe', stage: '#070b16', ring: '#38bdf8', ringHot: '#fbbf24', axis: '#64748b', stageFg: '#e2e8f0', stageDim: '#cbd5e1' };
   }
 
   window.StemLab.registerTool('scaleExplorer', {
@@ -309,6 +309,10 @@
       var rafRef = React.useRef(0);
       var lastDecadeRef = React.useRef(Math.round(log10(HUMAN)));
       var nearestRef = React.useRef('human');
+      // Read through a ref, not the render closure: the animation loop outlives
+      // the render that created it.
+      var focusIdRef = React.useRef(focusId);
+      focusIdRef.current = focusId;
       var intentRef = React.useRef(null);
       var speakTokenRef = React.useRef(0);
       var speakTimerRef = React.useRef(null);
@@ -473,7 +477,7 @@
           if (tx < -40 || tx > cssW + 40) continue;
           g.strokeStyle = P.axis;
           g.beginPath(); g.moveTo(tx, axisY - 5); g.lineTo(tx, axisY + 5); g.stroke();
-          g.fillStyle = P.dim;
+          g.fillStyle = P.stageDim;
           g.fillText(powerLabel(n), tx, axisY + 8);
         }
 
@@ -482,6 +486,7 @@
         // screens wide, and its emoji then covers everything. So an emoji is
         // only painted inside a legible band; anything larger is an arc and a
         // label, which is what actually carries the scale information.
+        var laneGap = Math.min(cssH * 0.15, 84);
         var cands = [];
         for (var i = 0; i < sorted.length; i++) {
           var it = sorted[i];
@@ -491,7 +496,11 @@
           var x = cssW / 2 + (lg - e) * pxPerDecade;
           var dia = it.size / Math.pow(10, e) * refPx;
           if (dia < 2.5 || x < -cssW * 0.6 || x > cssW * 1.6) continue;
-          cands.push({ it: it, x: x, dia: dia, dist: dist });
+          // Three lanes, assigned by position in the size-ordered ladder, so a
+          // thing and its nearest neighbours are never in the same one. Stable
+          // per object, so nothing jumps lane as you zoom.
+          var lane = (i % 3) - 1;
+          cands.push({ it: it, x: x, dia: dia, dist: dist, y: midY + lane * laneGap });
         }
         // Closest to the focus is the most important, so it gets first claim on
         // label space and is painted last (on top).
@@ -502,57 +511,78 @@
         g.textBaseline = 'middle';
         for (var k = 0; k < cands.length; k++) {
           var c = cands[k], obj = c.it;
-          var isFocus = obj.id === focusId;
+          var isFocus = obj.id === focusIdRef.current;
           var fade = clamp(1 - (c.dist / (DECADES_ACROSS * 1.35)), 0.12, 1);
           var alpha = isFocus ? 1 : fade;
 
           g.globalAlpha = alpha;
           g.strokeStyle = isFocus ? P.ringHot : P.ring;
           g.lineWidth = isFocus ? 2.5 : 1.25;
-          g.beginPath(); g.arc(c.x, midY, c.dia / 2, 0, Math.PI * 2); g.stroke();
+          g.beginPath(); g.arc(c.x, c.y, c.dia / 2, 0, Math.PI * 2); g.stroke();
 
           var glyph = c.dia * 0.7;
           if (glyph >= 10 && glyph <= maxGlyph) {
             g.globalAlpha = alpha * (isFocus ? 1 : 0.85);
             g.font = glyph + 'px system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
             g.textAlign = 'center';
-            g.fillText(obj.emoji, c.x, midY);
+            g.fillText(obj.emoji, c.x, c.y);
           }
 
-          if (c.dia >= 30) {
-            g.globalAlpha = alpha;
-            g.font = (isFocus ? '700 ' : '500 ') + '12px system-ui, -apple-system, "Segoe UI", sans-serif';
-            g.textAlign = 'center'; g.textBaseline = 'bottom';
-            var nm = itemText(obj, 'name');
-            var wpx = g.measureText(nm).width;
-            var ly = midY - Math.min(c.dia / 2, maxGlyph / 2) - 8;
-            if (ly < 16) ly = 16;
-            var box = { x0: c.x - wpx / 2 - 6, x1: c.x + wpx / 2 + 6, y0: ly - 24, y1: ly + 2 };
-            var clash = false;
-            for (var b = 0; b < labelBoxes.length; b++) {
-              var o = labelBoxes[b];
-              if (box.x1 > o.x0 && box.x0 < o.x1 && box.y1 > o.y0 && box.y0 < o.y1) { clash = true; break; }
-            }
-            if (!clash || isFocus) {
-              labelBoxes.push(box);
-              g.fillStyle = isFocus ? P.ringHot : P.stageFg;
-              g.fillText(nm, c.x, ly);
-              g.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
-              g.fillStyle = P.dim;
-              g.fillText(humanLength(obj.size), c.x, ly + 13);
-            }
-            g.textBaseline = 'middle';
-          }
+          if (c.dia >= 30) c.wantsLabel = true;
           g.globalAlpha = 1;
         }
+
+        // Labels are a second pass, run NEAREST first. In one pass the focused
+        // object was labelled last and had to either yield or overlap whatever
+        // had already claimed the space; here the thing the student is looking
+        // at claims its space first and the rest fit around it.
+        var labelled = cands.filter(function (c) { return c.wantsLabel; })
+          .sort(function (a, b) { return a.dist - b.dist; });
+        g.textAlign = 'center'; g.textBaseline = 'bottom';
+        for (var L = 0; L < labelled.length; L++) {
+          var lc = labelled[L], lo = lc.it;
+          var lFocus = lo.id === focusIdRef.current;
+          g.globalAlpha = lFocus ? 1 : clamp(1 - (lc.dist / (DECADES_ACROSS * 1.35)), 0.12, 1);
+          g.font = (lFocus ? '700 ' : '500 ') + '12px system-ui, -apple-system, "Segoe UI", sans-serif';
+          var nm = itemText(lo, 'name');
+          var wpx = g.measureText(nm).width;
+          var ly = lc.y - Math.min(lc.dia / 2, maxGlyph / 2) - 8;
+          if (ly < 16) ly = 16;
+          // Keep the whole label on the stage; a name centred near the edge was
+          // being cut in half by it.
+          var lx = clamp(lc.x, wpx / 2 + 8, cssW - wpx / 2 - 8);
+          var box = { x0: lx - wpx / 2 - 6, x1: lx + wpx / 2 + 6, y0: ly - 24, y1: ly + 2 };
+          var clash = false;
+          for (var b = 0; b < labelBoxes.length; b++) {
+            var o = labelBoxes[b];
+            if (box.x1 > o.x0 && box.x0 < o.x1 && box.y1 > o.y0 && box.y0 < o.y1) { clash = true; break; }
+          }
+          if (clash) continue;
+          labelBoxes.push(box);
+          g.fillStyle = lFocus ? P.ringHot : P.stageFg;
+          g.fillText(nm, lx, ly);
+          g.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+          g.fillStyle = P.stageDim;
+          g.fillText(humanLength(lo.size), lx, ly + 13);
+        }
+        g.globalAlpha = 1;
+        g.textBaseline = 'middle';
       }
 
       React.useEffect(function () {
         draw();
         var onResize = function () { draw(); };
         window.addEventListener('resize', onResize);
+        // The stage now grows to match the side panel, so its height is not
+        // known until layout settles. Observe it rather than guess at a timeout.
+        var ro = null;
+        try {
+          var host = canvasRef.current && canvasRef.current.parentElement;
+          if (host && window.ResizeObserver) { ro = new ResizeObserver(function () { draw(); }); ro.observe(host); }
+        } catch (_) {}
         return function () {
           window.removeEventListener('resize', onResize);
+          if (ro) { try { ro.disconnect(); } catch (_) {} }
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
           if (journeyRef.current) clearInterval(journeyRef.current);
           clearTimeout(speakTimerRef.current);
@@ -729,7 +759,7 @@
 
           // ── Stage ──
           h('div', { style: { flex: '1 1 520px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
-            h('div', { style: { position: 'relative', height: 'min(52vh, 460px)', minHeight: 260, borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
+            h('div', { style: { position: 'relative', flex: '1 1 auto', minHeight: 'min(56vh, 420px)', borderRadius: 12, border: '1px solid ' + P.line, overflow: 'hidden', background: P.stage } },
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale.'),
                 'aria-describedby': descId,
