@@ -505,6 +505,122 @@ function AdventureConsequenceCard({
     className: "text-xs mt-2"
   }, label('next', 'Which part of your reasoning would you keep or change next time?'))));
 }
+function AdventureHistoryEntry({
+  entry,
+  t,
+  theme,
+  immersive = false,
+  renderFormattedText
+}) {
+  if (!entry || typeof entry !== 'object') return null;
+  if (entry.type === 'feedback' && entry.consequence?.version === 1) {
+    return /*#__PURE__*/React.createElement(AdventureConsequenceCard, {
+      consequence: entry.consequence,
+      t: t,
+      theme: theme,
+      immersive: immersive
+    });
+  }
+  const choice = entry.type === 'choice';
+  const label = choice ? adventureSettingsText(t, 'journal_choice', 'Your decision') : entry.type === 'scene' ? adventureSettingsText(t, 'journal_scene', 'Story context') : entry.type === 'feedback' ? adventureSettingsText(t, 'journal_feedback', 'Feedback') : entry.type === 'assist' ? adventureSettingsText(t, 'journal_assist', 'Guiding Hand support') : adventureSettingsText(t, 'journal_note', 'Story note');
+  return /*#__PURE__*/React.createElement("article", {
+    "aria-label": label,
+    style: adventureVisualTokens(theme, immersive),
+    className: 'rounded-2xl border bg-[var(--av-surface)] p-4 min-w-0 [overflow-wrap:anywhere] text-[var(--av-ink)] ' + (choice ? 'border-[var(--av-accent)] border-l-[3px]' : 'border-[var(--av-line)]')
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-[var(--av-accent)] mb-2 flex items-center gap-2"
+  }, choice ? /*#__PURE__*/React.createElement(MousePointerClick, {
+    size: 14,
+    "aria-hidden": "true"
+  }) : entry.type === 'scene' ? /*#__PURE__*/React.createElement(BookOpen, {
+    size: 14,
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 14,
+    "aria-hidden": "true"
+  }), label), /*#__PURE__*/React.createElement("div", {
+    className: 'text-sm leading-relaxed whitespace-pre-wrap ' + (entry.type === 'scene' ? 'font-serif' : '')
+  }, renderFormattedText(typeof entry.text === 'string' ? entry.text : '', !immersive, choice)));
+}
+function adventureRecentHistory(history) {
+  const entries = Array.isArray(history) ? history : [];
+  let start = 0;
+  entries.forEach((entry, index) => {
+    if (entry?.type === 'scene') start = index + 1;else if (entry?.type === 'choice') start = index;
+  });
+  return entries.slice(start);
+}
+function AdventureJourneyNotebook({
+  history,
+  t,
+  theme,
+  immersive = false,
+  renderFormattedText
+}) {
+  const notebookRef = React.useRef(null);
+  const [expanded, setExpanded] = React.useState(false);
+  const entries = (Array.isArray(history) ? history : []).filter(entry => entry && typeof entry === 'object');
+  React.useEffect(() => {
+    if (!entries.length) setExpanded(false);
+  }, [entries.length]);
+  if (!entries.length) return null;
+  const label = adventureSettingsText(t, 'journal_title', 'Journey notebook');
+  const decisions = entries.filter(entry => entry.type === 'choice').length;
+  return /*#__PURE__*/React.createElement("details", {
+    ref: notebookRef,
+    "data-adventure-notebook": true,
+    style: adventureVisualTokens(theme, immersive),
+    onToggle: event => setExpanded(event.currentTarget.open),
+    className: "rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] text-[var(--av-ink)] min-w-0 shadow-[var(--av-shadow)]"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "list-none cursor-pointer min-h-11 p-4 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] [&::-webkit-details-marker]:hidden"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "shrink-0 w-10 h-10 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement(History, {
+    size: 19
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block text-sm font-bold"
+  }, label), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs text-[var(--av-muted)] mt-1"
+  }, adventureSettingsText(t, 'journal_decisions', 'Recorded decisions'), ": ", /*#__PURE__*/React.createElement("span", {
+    className: "tabular-nums"
+  }, decisions))), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "text-[var(--av-accent)] text-xl font-semibold w-5 text-center shrink-0"
+  }, expanded ? '−' : '+'))), expanded && /*#__PURE__*/React.createElement("div", {
+    className: "px-4 pb-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "border-t border-[var(--av-line)] pt-3 pb-4 text-xs leading-relaxed text-[var(--av-muted)]"
+  }, adventureSettingsText(t, 'journal_hint', 'Follow the story, your decisions, and what changed. Use the lesson to check the feedback.')), /*#__PURE__*/React.createElement("ol", {
+    "aria-label": adventureSettingsText(t, 'journal_records', 'Story records'),
+    className: "ml-1 pl-4 border-l border-[var(--av-line)] space-y-3"
+  }, entries.map((entry, index) => /*#__PURE__*/React.createElement("li", {
+    key: index,
+    className: "relative min-w-0"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "absolute -left-[21px] top-5 w-2 h-2 rounded-full bg-[var(--av-accent)]"
+  }), /*#__PURE__*/React.createElement(AdventureHistoryEntry, {
+    entry: entry,
+    t: t,
+    theme: theme,
+    immersive: immersive,
+    renderFormattedText: renderFormattedText
+  })))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      if (!notebookRef.current) return;
+      notebookRef.current.open = false;
+      notebookRef.current.querySelector('summary')?.focus();
+    },
+    className: "mt-4 min-h-11 w-full rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] px-3 py-2 text-sm font-bold text-[var(--av-ink)] hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
+  }, adventureSettingsText(t, 'journal_close', 'Close notebook'))));
+}
 function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
   var closeHandlerRef = React.useRef(onClose);
   closeHandlerRef.current = onClose;
@@ -1972,22 +2088,21 @@ function AdventureView(props) {
     size: 20,
     className: "animate-pulse motion-reduce:animate-none",
     "aria-hidden": "true"
-  }), t('adventure.start'))))), adventureState.history.map((entry, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: `animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`
-  }, /*#__PURE__*/React.createElement("div", {
-    className: entry.type === 'feedback' && entry.consequence?.version === 1 ? 'w-full max-w-4xl' : `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${entry.type === 'choice' ? 'bg-indigo-600 text-white rounded-br-none' : entry.type === 'feedback' ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs' : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'}`
-  }, entry.type === 'choice' && /*#__PURE__*/React.createElement("span", {
-    className: "block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1"
-  }, t('adventure.you_chose')), entry.type === 'feedback' && entry.consequence?.version !== 1 && /*#__PURE__*/React.createElement("span", {
-    className: "block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 10
-  }), " ", t('adventure.analysis_label')), entry.type === 'feedback' && entry.consequence?.version === 1 ? /*#__PURE__*/React.createElement(AdventureConsequenceCard, {
-    consequence: entry.consequence,
+  }), t('adventure.start'))))), /*#__PURE__*/React.createElement(AdventureJourneyNotebook, {
+    history: adventureState.history,
     t: t,
-    theme: theme
-  }) : renderFormattedText(entry.text, true, entry.type === 'choice')))), adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
+    theme: theme,
+    renderFormattedText: renderFormattedText
+  }), adventureRecentHistory(adventureState.history).map((entry, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    "data-adventure-recent": true,
+    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500"
+  }, /*#__PURE__*/React.createElement(AdventureHistoryEntry, {
+    entry: entry,
+    t: t,
+    theme: theme,
+    renderFormattedText: renderFormattedText
+  }))), adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -2565,7 +2680,11 @@ function AdventureView(props) {
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), renderAdventureChoiceListen(opt, idx)), renderAdventureChoiceStatus(isDemocracy, isMyVote, voteCount, percent, isReadingThisOption));
     });
   })()))) : /*#__PURE__*/React.createElement("div", {
-    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
+    "data-adventure-reader": true,
+    role: "region",
+    "aria-label": adventureSettingsText(t, 'story_and_feedback', 'Story and feedback'),
+    style: adventureVisualTokens(theme, true),
+    className: "max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -2653,7 +2772,13 @@ function AdventureView(props) {
         }, formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1'), false, true), " ");
       }));
     });
-  })())))))), !adventureState.isImmersiveMode && /*#__PURE__*/React.createElement("div", {
+  })())), /*#__PURE__*/React.createElement(AdventureJourneyNotebook, {
+    history: adventureState.history,
+    t: t,
+    theme: theme,
+    renderFormattedText: renderFormattedText,
+    immersive: true
+  }))))), !adventureState.isImmersiveMode && /*#__PURE__*/React.createElement("div", {
     "data-adventure-actions": "standard",
     role: "region",
     "aria-label": adventureSettingsText(t, 'available_actions', 'Available actions'),

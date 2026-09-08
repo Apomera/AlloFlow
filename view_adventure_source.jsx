@@ -186,6 +186,83 @@ function AdventureConsequenceCard({ consequence, t, immersive = false, theme = '
 }
 
 
+
+function AdventureHistoryEntry({ entry, t, theme, immersive = false, renderFormattedText }) {
+  if (!entry || typeof entry !== 'object') return null;
+  if (entry.type === 'feedback' && entry.consequence?.version === 1) {
+    return <AdventureConsequenceCard consequence={entry.consequence} t={t} theme={theme} immersive={immersive} />;
+  }
+  const choice = entry.type === 'choice';
+  const label = choice ? adventureSettingsText(t, 'journal_choice', 'Your decision')
+    : entry.type === 'scene' ? adventureSettingsText(t, 'journal_scene', 'Story context')
+    : entry.type === 'feedback' ? adventureSettingsText(t, 'journal_feedback', 'Feedback')
+    : entry.type === 'assist' ? adventureSettingsText(t, 'journal_assist', 'Guiding Hand support')
+    : adventureSettingsText(t, 'journal_note', 'Story note');
+  return <article aria-label={label} style={adventureVisualTokens(theme, immersive)}
+    className={'rounded-2xl border bg-[var(--av-surface)] p-4 min-w-0 [overflow-wrap:anywhere] text-[var(--av-ink)] ' +
+      (choice ? 'border-[var(--av-accent)] border-l-[3px]' : 'border-[var(--av-line)]')}>
+    <p className="text-xs font-bold text-[var(--av-accent)] mb-2 flex items-center gap-2">
+      {choice ? <MousePointerClick size={14} aria-hidden="true" /> : entry.type === 'scene' ? <BookOpen size={14} aria-hidden="true" /> : <Sparkles size={14} aria-hidden="true" />}
+      {label}
+    </p>
+    <div className={'text-sm leading-relaxed whitespace-pre-wrap ' + (entry.type === 'scene' ? 'font-serif' : '')}>
+      {renderFormattedText(typeof entry.text === 'string' ? entry.text : '', !immersive, choice)}
+    </div>
+  </article>;
+}
+
+function adventureRecentHistory(history) {
+  const entries = Array.isArray(history) ? history : [];
+  let start = 0;
+  entries.forEach((entry, index) => {
+    if (entry?.type === 'scene') start = index + 1;
+    else if (entry?.type === 'choice') start = index;
+  });
+  return entries.slice(start);
+}
+
+function AdventureJourneyNotebook({ history, t, theme, immersive = false, renderFormattedText }) {
+  const notebookRef = React.useRef(null);
+  const [expanded, setExpanded] = React.useState(false);
+  const entries = (Array.isArray(history) ? history : []).filter(entry => entry && typeof entry === 'object');
+  React.useEffect(() => {
+    if (!entries.length) setExpanded(false);
+  }, [entries.length]);
+  if (!entries.length) return null;
+  const label = adventureSettingsText(t, 'journal_title', 'Journey notebook');
+  const decisions = entries.filter(entry => entry.type === 'choice').length;
+  return <details ref={notebookRef} data-adventure-notebook style={adventureVisualTokens(theme, immersive)}
+    onToggle={event => setExpanded(event.currentTarget.open)}
+    className="rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] text-[var(--av-ink)] min-w-0 shadow-[var(--av-shadow)]">
+    <summary className="list-none cursor-pointer min-h-11 p-4 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] [&::-webkit-details-marker]:hidden">
+      <span className="flex items-center gap-3">
+        <span aria-hidden="true" className="shrink-0 w-10 h-10 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center"><History size={19} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold">{label}</span>
+          <span className="block text-xs text-[var(--av-muted)] mt-1">{adventureSettingsText(t, 'journal_decisions', 'Recorded decisions')}: <span className="tabular-nums">{decisions}</span></span>
+        </span>
+        <span aria-hidden="true" className="text-[var(--av-accent)] text-xl font-semibold w-5 text-center shrink-0">{expanded ? '−' : '+'}</span>
+      </span>
+    </summary>
+    {expanded && <div className="px-4 pb-4">
+      <p className="border-t border-[var(--av-line)] pt-3 pb-4 text-xs leading-relaxed text-[var(--av-muted)]">{adventureSettingsText(t, 'journal_hint', 'Follow the story, your decisions, and what changed. Use the lesson to check the feedback.')}</p>
+      <ol aria-label={adventureSettingsText(t, 'journal_records', 'Story records')} className="ml-1 pl-4 border-l border-[var(--av-line)] space-y-3">
+        {entries.map((entry, index) => <li key={index} className="relative min-w-0">
+          <span aria-hidden="true" className="absolute -left-[21px] top-5 w-2 h-2 rounded-full bg-[var(--av-accent)]" />
+          <AdventureHistoryEntry entry={entry} t={t} theme={theme} immersive={immersive} renderFormattedText={renderFormattedText} />
+        </li>)}
+      </ol>
+      <button type="button" onClick={() => {
+        if (!notebookRef.current) return;
+        notebookRef.current.open = false;
+        notebookRef.current.querySelector('summary')?.focus();
+      }} className="mt-4 min-h-11 w-full rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] px-3 py-2 text-sm font-bold text-[var(--av-ink)] hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]">
+        {adventureSettingsText(t, 'journal_close', 'Close notebook')}
+      </button>
+    </div>}
+  </details>;
+}
+
 function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
   var closeHandlerRef = React.useRef(onClose);
   closeHandlerRef.current = onClose;
@@ -1465,19 +1542,10 @@ function AdventureView(props) {
                                     )}
                                 </div>
                             )}
-                            {adventureState.history.map((entry, i) => (
-                                <div key={i} className={`animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`}>
-                                    <div className={entry.type === 'feedback' && entry.consequence?.version === 1 ? 'w-full max-w-4xl' : `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${
-                                        entry.type === 'choice'
-                                        ? 'bg-indigo-600 text-white rounded-br-none'
-                                        : entry.type === 'feedback'
-                                        ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs'
-                                        : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'
-                                    }`}>
-                                        {entry.type === 'choice' && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1">{t('adventure.you_chose')}</span>}
-                                        {entry.type === 'feedback' && entry.consequence?.version !== 1 && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1 flex items-center gap-1"><Sparkles size={10}/> {t('adventure.analysis_label')}</span>}
-                                        {entry.type === 'feedback' && entry.consequence?.version === 1 ? <AdventureConsequenceCard consequence={entry.consequence} t={t} theme={theme}/> : renderFormattedText(entry.text, true, entry.type === 'choice')}
-                                    </div>
+                            <AdventureJourneyNotebook history={adventureState.history} t={t} theme={theme} renderFormattedText={renderFormattedText} />
+                            {adventureRecentHistory(adventureState.history).map((entry, i) => (
+                                <div key={i} data-adventure-recent className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500">
+                                    <AdventureHistoryEntry entry={entry} t={t} theme={theme} renderFormattedText={renderFormattedText} />
                                 </div>
                             ))}
                             {adventureState.pendingChoice && adventureState.isLoading && (
@@ -1984,7 +2052,7 @@ function AdventureView(props) {
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
+                                            <div data-adventure-reader role="region" aria-label={adventureSettingsText(t, 'story_and_feedback', 'Story and feedback')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.pendingChoice && adventureState.isLoading && (
                                                     <div role="status" aria-live="polite" aria-atomic="true" className="mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
                                                         <div className="bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg">
@@ -2069,6 +2137,7 @@ function AdventureView(props) {
                                                             </div>
                                                     )}
                                                 </div>
+                                                <AdventureJourneyNotebook history={adventureState.history} t={t} theme={theme} renderFormattedText={renderFormattedText} immersive />
                                             </div>
                                         )}
                                     </div>

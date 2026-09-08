@@ -41,7 +41,7 @@ async function mountActiveAdventure(page: any, theme: string, config: any = {}) 
       for (const name of propNames) props[name] = /^(set|handle|open|toggle|stop|prewarm|save|execute)/.test(name) ? noop : /^[A-Z]/.test(name) ? w[name] || (() => null) : /Ref$/.test(name) ? { current: null } : false;
       const scene = 'A river crosses the valley below the town. Compare the water measurements before deciding where to restore habitat.';
       Object.assign(props, {
-        theme, t: (key: string, values?: any) => key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || (key.startsWith('adventure.learning_settings.') ? key : key.split('.').at(-1).replaceAll('_', ' ')),
+        theme, t: (key: string, values?: any) => key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
         activeView: 'adventure', adventureImageSize: 200, adventureInputMode: 'choice', adventureLanguageMode: 'English', adventureDifficulty: 'Normal',
         adventureArtStyle: 'auto', adventureTextInput: '', adventureCustomInstructions: '', adventureCustomArtStyle: '', universalImageStyle: '',
         selectedLanguages: [], editingOptionsBuffer: [], studentProjectSettings: {}, sessionData: null, playbackState: {}, adventureEffects: [],
@@ -241,3 +241,115 @@ test('episode progress counts completed decisions and supports legacy and open-e
   await expect(progress).toHaveCount(0);
   await expect(page.locator('[data-adventure-progress]')).toContainText('3 completed · Open-ended');
 });
+
+function notebookHistory() {
+  return [
+    { type: 'scene', text: 'The team first surveys the riverbank.' },
+    { type: 'choice', text: 'Measure the water before proposing changes.', source: 'option' },
+    { type: 'feedback', text: 'The measurements provide a useful baseline.' },
+    { type: 'scene', text: 'The measurements reveal a change downstream.' },
+    { type: 'choice', text: 'Compare the wetland samples with the upstream baseline.', source: 'freetext' },
+    { type: 'feedback', text: 'The comparison supports your plan.', consequence: {
+      version: 1, mode: 'system', choice: 'Compare the wetland samples with the upstream baseline.',
+      reasoning: 'strategic_success', explanation: 'Your plan connects the measurements with habitat protection.',
+      changes: [{ key: 'resource:Quality', label: 'Water quality', before: 70, after: 78, unit: '%' }],
+      concepts: ['Water quality', 'Habitat'],
+      learningFeedback: { immediate: 'The team has a clearer picture of the river.', delayed: 'Habitat may recover if the conditions persist.', tradeoff: 'Monitoring needs time and resources.' }
+    } }
+  ];
+}
+for (const theme of ['light', 'dark', 'contrast']) {
+  test('journey notebook preserves history and keeps recent learning visible in ' + theme, async ({ page }, info) => {
+    await page.setViewportSize({ width: 375, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await load(page, theme);
+    const history = notebookHistory();
+    await mountActiveAdventure(page, theme, { state: { history, stats: { decisions: 2 }, turnCount: 3 } });
+    const notebook = page.locator('[data-adventure-notebook]');
+    const summary = notebook.locator(':scope > summary').first();
+    await expect(summary).toContainText('Journey notebook');
+    await expect(summary).toContainText('Recorded decisions: 2');
+    await expect(notebook).not.toHaveAttribute('open');
+    await expect(notebook.getByRole('listitem')).toHaveCount(0);
+    await expect(page.locator('[data-adventure-recent]')).toHaveCount(2);
+    await expect(page.locator('[data-adventure-recent]').first()).toContainText(history[4].text);
+    await expect(page.getByRole('region', { name: 'Decision debrief', exact: true })).toBeVisible();
+    await expect(page.getByText(history[0].text, { exact: true })).toHaveCount(0);
+    await summary.focus(); await page.keyboard.press('Enter');
+    await expect(notebook).toHaveAttribute('open', '');
+    await expect(notebook.getByRole('listitem')).toHaveCount(6);
+    await expect(notebook.getByText(history[0].text, { exact: true })).toBeVisible();
+    await expect(notebook.getByRole('article', { name: 'Your decision', exact: true })).toHaveCount(2);
+    await notebook.getByText('Review your decision', { exact: true }).click();
+    await expect(notebook.getByText('Monitoring needs time and resources.', { exact: true })).toBeVisible();
+    for (const width of [320, 1200]) {
+      await page.setViewportSize({ width, height: 1000 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await axe(page, '[data-adventure-notebook]');
+      await summary.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: info.outputPath('notebook-' + theme + '-' + width + '.png') });
+    }
+    await notebook.getByRole('button', { name: 'Close notebook', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(notebook).not.toHaveAttribute('open');
+    await expect(summary).toBeFocused();
+    await expect(notebook.getByRole('listitem')).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('journey-' + theme + '-1200.png') });
+    expect(await page.evaluate(() => (window as any).__adventureProps.adventureState.history)).toEqual(history);
+    expect(await page.evaluate(() => (window as any).__calls)).toEqual({ choices: [], speech: [], audio: [] });
+
+    const assisted = [...history, { type: 'scene', text: 'A new problem appears upstream.' },
+      { type: 'assist', text: 'Guiding Hand offers a sample comparison.', source: 'guiding_hand' },
+      { type: 'feedback', text: 'Check how the two samples differ.', assisted: true }];
+    await page.evaluate(history => (window as any).__updateAdventure({ adventureState: { history } }), assisted);
+    await expect(summary).toContainText('Recorded decisions: 2');
+    await expect(page.locator('[data-adventure-recent]')).toHaveCount(2);
+    await expect(page.getByRole('article', { name: 'Guiding Hand support', exact: true })).toContainText('Guiding Hand offers a sample comparison.');
+    await expect(notebook).not.toHaveAttribute('open');
+    await summary.click();
+    await expect(notebook.getByRole('listitem')).toHaveCount(9);
+    // A restart while the notebook is open must reset its disclosure state.
+    await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { history: [] } }));
+    await expect(notebook).toHaveCount(0);
+    await expect(page.locator('[data-adventure-recent]')).toHaveCount(0);
+    await page.evaluate(history => (window as any).__updateAdventure({ adventureState: { history } }), history);
+    await expect(notebook).not.toHaveAttribute('open');
+    await expect(notebook.getByRole('listitem')).toHaveCount(0);
+    await expect(summary).toContainText('+');
+  });
+
+  test('immersive reading and expanded notebook stay reachable in ' + theme, async ({ page }, info) => {
+    await page.setViewportSize({ width: 320, height: 740 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await load(page, theme);
+    const history = notebookHistory();
+    const paragraphs = Array.from({ length: 8 }, (_, n) => 'Observation ' + (n + 1) + ': Compare the river measurements with the needs of the town. Explain which evidence supports restoring this wetland.');
+    await mountActiveAdventure(page, theme, { props: { immersiveShowChoices: false },
+      state: { isImmersiveMode: true, history, currentScene: { text: paragraphs.join('\n\n'), options: ['Compare the samples', 'Review the measurements'] } } });
+    const reader = page.getByRole('region', { name: 'Story and feedback', exact: true });
+    const notebook = reader.locator('[data-adventure-notebook]');
+    const toggle = page.locator('[data-help-key="adventure_choice_toggle"]');
+    await expect(reader).toBeVisible();
+    await expect(toggle).toBeInViewport();
+    expect(await reader.evaluate((el: HTMLElement) => el.scrollHeight > el.clientHeight && el.scrollWidth <= el.clientWidth)).toBe(true);
+    await reader.getByText('Review your decision', { exact: true }).click();
+    await expect(reader.getByText('Monitoring needs time and resources.', { exact: true })).toBeVisible();
+    const lastSentence = reader.getByRole('region', { name: 'Current scene', exact: true }).getByRole('button').last();
+    await lastSentence.focus(); await page.keyboard.press('Enter');
+    expect((await page.evaluate(() => (window as any).__calls.speech))[0][1]).toBe('adventure-active');
+    await notebook.locator(':scope > summary').focus(); await page.keyboard.press('Enter');
+    await expect(notebook.getByRole('listitem')).toHaveCount(6);
+    await notebook.getByRole('button', { name: 'Close notebook', exact: true }).click();
+    await expect(notebook.locator(':scope > summary')).toBeFocused();
+    await reader.evaluate((el: HTMLElement) => { el.scrollTop = 0; });
+    await axe(page, '[data-adventure-reader]');
+    await page.screenshot({ path: info.outputPath('reader-' + theme + '-320.png') });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await toggle.click();
+    await expect(page.locator('[data-adventure-actions="immersive"]')).toBeVisible();
+    await toggle.click();
+    await expect(reader).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__adventureProps.adventureState.history)).toEqual(history);
+    expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+  });
+}
