@@ -267,6 +267,39 @@ describe('GIS Studio output sanity', () => {
     expect(english, 'these announcements reach a screen reader in English whatever language the class uses').toEqual([]);
   });
 
+  it('sends its visible labels through the translator, not just its announcements', () => {
+    // 328 interface labels were literal English. A class reading the tool in
+    // another language saw "Spatial analysis workbench" and "Reset table view"
+    // whatever their setting said.
+    const workspaces = ['map', 'import', 'compare', 'missions', 'timeline', 'project', 'composer', 'quality'];
+    const english = [
+      'Spatial analysis workbench', 'Reset table view', 'Accessible data-table twin',
+      'Measure path', 'Radius buffer', 'Find nearest point', 'Sort table rows',
+      'Layer workspace', 'Visible layers', 'Coordinate grid'
+    ];
+    const seen = new Set();
+    for (const workspace of workspaces) {
+      const html = renderTool('gisStudio', { gisTab: workspace, gisBasemap: 'none' }, {
+        t: (key, fallback) => (String(key).startsWith('stem.gisstudio.') ? '[[' + key + ']]' : (fallback || key))
+      });
+      // Nothing the translator was asked for may still appear in English.
+      for (const phrase of english) {
+        if (html.includes(phrase)) seen.add(workspace + ': ' + phrase);
+      }
+      expect(html, workspace + ' never called the translator').toContain('[[stem.gisstudio.');
+    }
+    expect([...seen], 'these labels bypass the translator and ship English to every language').toEqual([]);
+  });
+
+  it('keeps the English wording it always had when no translation exists', () => {
+    // Routing a label through the translator must not change what an English
+    // class reads: the fallback is the original string.
+    const html = renderTool('gisStudio', { gisBasemap: 'none' });
+    for (const phrase of ['Layer workspace', 'Visible layers', 'Spatial analysis workbench', 'Accessible data-table twin', 'Reset table view']) {
+      expect(html, 'the English fallback changed for: ' + phrase).toContain(phrase);
+    }
+  });
+
   it('says so when a pack has only one attribute to compare', () => {
     const single = packState({
       label: 'Otago towns',
