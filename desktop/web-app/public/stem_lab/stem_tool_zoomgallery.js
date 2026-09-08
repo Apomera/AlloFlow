@@ -435,6 +435,9 @@
       var currentRef = React.useRef(null);
 
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
+      // The host does not provide ctx.lang; the app's actual signal is a global.
+      // Used only to re-resolve strings when the language changes.
+      var uiLang = ctx.lang || (typeof window !== 'undefined' ? window.__alloTextLanguage : null) || 'en';
       var current = currentId ? (customItem && customItem.id === currentId ? customItem : IMAGES.find(function (s) { return s.id === currentId; }) || null) : null;
       currentRef.current = current;
       var mem = current ? (savedNotes[current.id] || { notice: '', wonder: '', feedback: '', pins: [] }) : null;
@@ -613,13 +616,12 @@
         }
         window.addEventListener('message', onMsg);
         return function () { window.removeEventListener('message', onMsg); };
-      }, [aiOn, ctx.toolData, ctx.lang]);
+      }, [aiOn, ctx.toolData, uiLang]);
 
       function openPopout(imgId) {
         var existing = _win.current;
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
-        var lang = (ctx.lang || 'en');
-        var url = ZOOM_GALLERY_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (imgId && imgId !== 'custom' ? '&img=' + encodeURIComponent(imgId) : '');
+        var url = ZOOM_GALLERY_URL + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (imgId && imgId !== 'custom' ? '&img=' + encodeURIComponent(imgId) : '');
         var w = null;
         try { w = window.open(url, 'alloflow-zoom-gallery', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { setPopupState('blocked'); say(I('popup_blocked')); return; }
@@ -713,7 +715,7 @@
           if (imgText(current, 'describe')) c.setAttribute('aria-describedby', descTextId);
           else c.removeAttribute('aria-describedby');
         } catch (_) {}
-      }, [currentId, imgState, ctx.lang]);
+      }, [currentId, imgState, uiLang]);
 
       // Leaving a picture abandons any speech request that belongs to it.
       React.useEffect(function () {

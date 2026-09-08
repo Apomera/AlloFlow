@@ -275,6 +275,8 @@
       var theme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
       var P = palette(theme);
       var slice = (ctx.toolData && ctx.toolData._scaleExplorer) || {};
+      // The host does not provide ctx.lang; the app's actual signal is a global.
+      var uiLang = ctx.lang || (typeof window !== 'undefined' ? window.__alloTextLanguage : null) || 'en';
 
       function S(key, fb, vars) { var v = t('stem.scaleExplorer.' + key, fb); return vars ? fmt(v, vars) : v; }
       function itemText(item, field, fb) { return t('stem.scaleExplorer.item_' + item.id.replace(/-/g, '_') + '_' + field, fb != null ? fb : item[field]); }
@@ -556,7 +558,7 @@
           clearTimeout(speakTimerRef.current);
         };
       }, []);
-      React.useEffect(function () { draw(); }, [theme, focusId, ctx.lang]);
+      React.useEffect(function () { draw(); }, [theme, focusId, uiLang]);
 
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
