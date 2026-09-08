@@ -13847,7 +13847,15 @@
       "ui_mission_progress": "Mission progress: {done} of {total} steps ({percent}%)",
       "ui_latitude_value": "Latitude: {value}",
       "ui_visual_area_factor": "{factor}× visual area",
-      "ui_baseline_year_value": "Baseline: {year}"
+      "ui_baseline_year_value": "Baseline: {year}",
+      "ui_story_check_claim": "Claim check",
+      "ui_story_check_evidence": "Evidence check",
+      "ui_story_check_limitation": "Limitation check",
+      "ui_ordered_story_frames": "{count} ordered Story Map evidence frames",
+      "ui_planning_checks_complete": "{done} of {total} planning checks complete",
+      "ui_rubric_rated_complete": "{rated} of {total} rubric areas rated • review complete",
+      "ui_rubric_rated": "{rated} of {total} rubric areas rated",
+      "ui_mapped_records_table_twin": "{count} mapped records in a data-table twin"
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",

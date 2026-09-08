@@ -300,6 +300,64 @@ describe('GIS Studio output sanity', () => {
     }
   });
 
+  it('leaves no visible text outside the translator', () => {
+    // 411 interface strings once bypassed it. This keeps the count at zero:
+    // a new literal label or a sentence glued around a value fails here.
+    const acorn = require(resolve(process.cwd(), 'node_modules/acorn'));
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_gisstudio.js'), 'utf8');
+    const ast = acorn.parse(source, { ecmaVersion: 2022, locations: true, ranges: true });
+    const INTERFACE_STARTS_AT = 4300; // above this line are the report builders
+    const PROSE = /[A-Za-z]{3,}s|[A-Za-z]{4,}/;
+    const NAMED = new Set(['aria-label', 'title', 'placeholder', 'alt']);
+
+    function translator(node) {
+      if (!node || node.type !== 'CallExpression') return false;
+      const callee = node.callee;
+      const name = callee.type === 'Identifier' ? callee.name
+        : (callee.type === 'MemberExpression' && callee.property ? callee.property.name : null);
+      return name === 't' || name === '__alloT' || name === 'gisFillTemplate' || name === 'escapeHTML';
+    }
+
+    const offenders = [];
+    (function walk(node, inside) {
+      if (!node || typeof node.type !== 'string') return;
+      const nowInside = inside || translator(node);
+      if (node.type === 'CallExpression' && node.callee && node.callee.name === 'h' && !nowInside) {
+        node.arguments.slice(2).forEach((child) => {
+          const report = (n) => {
+            if (n.type === 'Literal' && typeof n.value === 'string' &&
+                n.loc.start.line >= INTERFACE_STARTS_AT && n.value.trim().length > 3 && PROSE.test(n.value)) {
+              offenders.push('line ' + n.loc.start.line + ': ' + n.value.trim().slice(0, 50));
+            }
+            if (n.type === 'BinaryExpression') { report(n.left); report(n.right); }
+          };
+          report(child);
+        });
+        const props = node.arguments[1];
+        if (props && props.type === 'ObjectExpression') {
+          props.properties.forEach((prop) => {
+            if (!prop.key || !prop.value) return;
+            const key = prop.key.name || prop.key.value;
+            if (!NAMED.has(key)) return;
+            const value = prop.value;
+            if (value.type === 'Literal' && typeof value.value === 'string' &&
+                value.loc.start.line >= INTERFACE_STARTS_AT && PROSE.test(value.value)) {
+              offenders.push('line ' + value.loc.start.line + ' [' + key + ']: ' + String(value.value).slice(0, 50));
+            }
+          });
+        }
+      }
+      for (const key of Object.keys(node)) {
+        if (key === 'loc' || key === 'range') continue;
+        const value = node[key];
+        if (Array.isArray(value)) value.forEach((child) => child && typeof child.type === 'string' && walk(child, nowInside));
+        else if (value && typeof value.type === 'string') walk(value, nowInside);
+      }
+    })(ast, false);
+
+    expect(offenders, 'these strings ship English to every language').toEqual([]);
+  });
+
   it('says so when a pack has only one attribute to compare', () => {
     const single = packState({
       label: 'Otago towns',
