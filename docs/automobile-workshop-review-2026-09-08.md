@@ -18,7 +18,7 @@ Open **Auto Repair Shop → Full mechanic workshop (3D)**.
 - Service desk, tool cabinet, pegboard, wheel rack, used-oil drum, floor drainage, bay markings, shop signs and lighting.
 - Seven selectable stations with equivalent HTML buttons and descriptions: service desk, lift, engine/electrical, wheels/brakes, oil/filter, underbody/exhaust and tool bench.
 - A staged two-post lift: equipment/contact-point setup, low lift, stability check, working height and mechanical locks. Underbody operations and the upward inspection camera require the locked state.
-- Three ordered work orders: front brake service, oil/filter service, and slow-crank diagnosis. Every action checks the selected station, equipment, task prerequisites and required calculation before it advances.
+- Four ordered work orders: front brake service, oil/filter service, slow-crank diagnosis, and front toe alignment. Every action checks the selected station, equipment, task prerequisites and required calculation before it advances.
 - Visible service changes: the front wheel moves to the rack; both front pad sets change from worn to serviced; used oil appears in the collection pan; the filter changes; the sump records drained/refilled states; terminal corrosion disappears after the connection service.
 - STEM calculations use explicitly fictional service-sheet values: lining loss, remaining fluid volume and voltage-drop excess. Accepted calculations are retained in the downloadable work-order record.
 - Verification and a written customer handoff are required before work-order completion. Each job preserves its own progress in tool state. The existing host controls persistence of that state.
@@ -71,11 +71,34 @@ Additional evidence images:
 - [Wheel fastener interaction](../reports/automobile-workshop/wheel-torque.png)
 - [Instrument controls on mobile](../reports/automobile-workshop/instruments-mobile.png)
 
+## Follow-up: front toe alignment work order
+
+The fourth job adds a complete alignment exercise: intake, loaded-bay preparation, initial measurements, independent front toe adjustment, a fresh final measurement and a written handoff. It uses a fictional sedan with a straight rear thrust line and authored passing tyre, joint, camber and caster inspections. It does not infer alignment from wear alone.
+
+The learner confirms tyre/joint inspection, level loaded support with free plates and compensated targets, and steering centre. Measurements and adjustments require the vehicle on its tyres, the correct station and equipment, and the preceding task. The two-post lift arms are stowed during this job.
+
+Initial angles are left +0.30° and right +0.10°; total toe is their +0.40° sum. The fictional targets are +0.10° ±0.02° per front wheel, +0.20° ±0.02° total, and at most 0.02° left/right difference. Each side changes independently by 0.01° or 0.05°. Integer hundredths preserve exact increments. A passing total with a toe-in/toe-out imbalance is rejected. These are authored acceptance rules, not universal alignment specifications.
+
+The 3D scene includes turning front wheels and brake assemblies, checkerboard targets, turn/slip plates, exposed adjustment collars, floor reference guides and a live console. Target plates and collars select the same side as the accessible controls. An optional chassis view hides the body and engine to expose the wheel/steering comparison, then restores the full car; hidden components are excluded from picking. Wheel yaw and guides use an explicitly labeled **24× visual magnification**; the display values retain their actual model angles. The adjustment buttons represent angle changes, not wrench-turn instructions or physical tie-rod travel.
+
+Changing an angle invalidates the captured result. Switching sides keeps the same valid reading because no measured angle changed. The service and final verification steps require both individual values, total and balance to pass. The report preserves the baseline and corrected left/right/total readings. Job progress, selected side and adjustments survive switching work orders. Existing brake/oil/electrical capture keys keep their prior format so valid saved evidence from before this enhancement still works.
+
+Reference checks: [MOOG's alignment overview](https://www.moogparts.com/en-eu/archives/blog/why-what-how-wheel-alignment.html) distinguishes toe, camber, caster and thrust and emphasizes manufacturer specifications; [MOOG's tie-rod alignment guidance](https://www.moogparts.com/technical/bulletins/tech-tips/Why-an-Alignment-is-Needed-After-an-Outer-Tie-Rod-Replacement.html) supports measuring alignment following steering-linkage work. [Hunter's alignment equipment overview](https://www.hunter.com/alignment-machines/standard-alignment/) informed the use of targets and live alignment displays. The simulation does not reproduce either manufacturer's equipment or full service procedure.
+
+Alignment validation: **481 tests across all 39 automobile suites passed**, including 34 workshop state/render tests and a persisted pre-alignment reading compatibility case. **All nine workshop browser tests passed** in Chromium with real Three.js/WebGL, covering all four jobs, actual target picking, matched wheel/brake assembly yaw, chassis hide/restore, incorrect individual angles despite a passing total, stale captures, final verification and mobile saved progress. The full browser run took 3.4 minutes; the final unit regression took 124.06 seconds. The alignment overview, before/after chassis views and mobile controls were visually inspected. Syntax, scoped diff hygiene and source/public parity checks passed. No deployment or installer build was performed.
+
+Alignment evidence:
+
+- [Vehicle and alignment console](../reports/automobile-workshop/alignment-before.png)
+- [Chassis before adjustment](../reports/automobile-workshop/alignment-chassis-before.png)
+- [Chassis and readings after adjustment](../reports/automobile-workshop/alignment-after.png)
+- [Mobile alignment controls](../reports/automobile-workshop/alignment-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
 
-Useful next expansions would be an additional suspension/alignment work order, instructor-authored fault variants, more detailed transmission geometry, validated vehicle-specific reference data, localized workshop copy, and skill-specific assessments of the learner’s written reasoning. These were not added to the current change.
+Useful next expansions would be a suspension inspection work order and broader alignment geometry, instructor-authored fault variants, more detailed transmission geometry, validated vehicle-specific reference data, localized workshop copy, and skill-specific assessments of the learner’s written reasoning. These were not added to the current change.
 
 ## Reference checks
 

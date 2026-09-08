@@ -9409,7 +9409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     ['lamp', 'Inspection lamp'], ['socket', 'Wheel socket'], ['gauge', 'Pad thickness gauge'],
     ['brake-kit', 'Brake service kit'], ['torque', 'Torque wrench'], ['drain-pan', 'Drain pan'],
     ['filter', 'Filter wrench'], ['funnel', 'Measured oil jug'], ['meter', 'DC voltmeter'],
-    ['terminal-kit', 'Terminal service kit'], ['checklist', 'Verification checklist']
+    ['terminal-kit', 'Terminal service kit'], ['checklist', 'Verification checklist'], ['aligner', 'Wheel alignment console'], ['tie-rod', 'Tie-rod adjustment kit']
   ];
   function shopTask(id, station, tool, label, why, changes, requires) {
     return { id: id, station: station, tool: tool, label: label, why: why, changes: changes || {}, requires: requires || {} };
@@ -9447,10 +9447,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         shopTask('service', 'engine', 'terminal-kit', 'Simulate servicing the faulty connection', 'With the engine off, a trained technician follows the vehicle battery-isolation and terminal-service procedure. Corrosion disappears; the original battery stays installed.', { serviced: true }, { measured: true }),
         shopTask('verify', 'engine', 'meter', 'Repeat the same loaded voltage-drop test', 'After service the same connection measures 0.08 V under starter load, below the 0.2 V case limit. Cranking is restored; this test supports the connection repair.', { verified: true }, { serviced: true, lift: 'ground' }), SHOP_RELEASE] }
   ];
+  SHOP_JOBS.push({ id: 'alignment', title: '04 / Front toe alignment',
+    concern: 'The customer reports uneven front tyre wear and an off-centre steering wheel. Inspect first, then correct this authored front-toe fault.',
+    spec: 'Fictional sedan: initial left toe +0.30°, right +0.10°. Positive means toe-in; negative means toe-out. Target each front wheel: +0.10° ±0.02°; total: +0.20° ±0.02°; left/right difference at most 0.02°. Rear thrust, camber, caster, tyres and joints pass this authored inspection. These are not universal vehicle specifications.',
+    question: 'Add the initial individual readings: +0.30° + +0.10°. What is total front toe?', answer: 0.4, unit: '°',
+    tasks: [SHOP_INTAKE,
+      shopTask('alignment-setup', 'brakes', 'aligner', 'Prepare the loaded alignment bay', 'The tyres stay on a level surface at ride height. Complete the inspection, target setup and steering-centre checks before measuring.', { alignmentReady: true }, { lift: 'ground', wheelRemoved: false }),
+      shopTask('measure', 'brakes', 'aligner', 'Capture initial individual toe and calculate the total', 'Measure both front wheels relative to the authored straight rear thrust line. Record the baseline before making an adjustment.', { measured: true }, { alignmentReady: true, lift: 'ground', wheelRemoved: false }),
+      shopTask('service', 'brakes', 'tie-rod', 'Adjust individual toe to the service sheet', 'Change each simulated tie rod, then measure again. A correct total alone is insufficient: both individual angles and the left/right balance must pass.', { serviced: true }, { measured: true, alignmentReady: true, lift: 'ground', wheelRemoved: false }),
+      shopTask('verify', 'brakes', 'aligner', 'Repeat the alignment measurement after securing the adjustment', 'This step represents securing hardware to the vehicle procedure, settling the suspension, checking steering centre and remeasuring. Capture a fresh result before accepting the repair.', { verified: true }, { serviced: true, alignmentReady: true, lift: 'ground', wheelRemoved: false }), SHOP_RELEASE] });
   function arShopJob(id) { return SHOP_JOBS.filter(function (j) { return j.id === id; })[0] || SHOP_JOBS[0]; }
   function arShopInitial(jobId) {
     return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false,
       wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
+      alignmentReady: false, alignment: { left: 30, right: 10, selected: 'left', tyres: false, targets: false, centered: false },
       plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', feedback: '', history: [] };
   }
   function arShopState(raw) {
@@ -9464,6 +9474,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     state.instrument = { mode: setup.mode === 'resistance' ? 'resistance' : 'dcv', contact: setup.contact === 'joint' ? 'joint' : 'posts', load: setup.load === 'starter' ? 'starter' : 'off', surface: setup.surface === 'backing' ? 'backing' : 'lining',
       jugMl: Number.isFinite(setup.jugMl) ? Math.max(0, Math.min(5000, Math.round(setup.jugMl / 100) * 100)) : 4100 };
     state.lugs = Array.isArray(state.lugs) ? state.lugs.filter(function (n) { return Number.isInteger(n) && n >= 0 && n < 5; }).slice(0, 5) : [];
+    var alignment = state.alignment && typeof state.alignment === 'object' ? state.alignment : {};
+    state.alignment = { left: Number.isFinite(alignment.left) ? Math.max(-40, Math.min(40, Math.round(alignment.left))) : 30,
+      right: Number.isFinite(alignment.right) ? Math.max(-40, Math.min(40, Math.round(alignment.right))) : 10,
+      selected: alignment.selected === 'right' ? 'right' : 'left', tyres: alignment.tyres === true, targets: alignment.targets === true, centered: alignment.centered === true };
     state.history = Array.isArray(state.history) ? state.history.slice(0, job.tasks.length) : [];
     return state;
   }
@@ -9472,6 +9486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   function arShopInstrumentKind(state) {
     var task = arShopJob(state.job).tasks[state.step];
     if (!task) return null;
+    if (state.job === 'alignment' && ['alignment-setup', 'measure', 'service', 'verify'].indexOf(task.id) !== -1) return 'alignment';
     if (state.job === 'brakes' && task.id === 'measure') return 'gauge';
     if (state.job === 'brakes' && task.id === 'refit') return 'torque';
     if (state.job === 'oil' && task.id === 'refill') return 'jug';
@@ -9479,7 +9494,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return null;
   }
   function arShopReadingKey(state) {
-    return JSON.stringify([state.job, state.step, !!state.serviced, state.instrument, state.lugs, !!state.wheelSeated, !!state.hood]);
+    var key = [state.job, state.step, !!state.serviced, state.instrument, state.lugs, !!state.wheelSeated, !!state.hood];
+    // Preserve captured evidence saved before the alignment job was introduced.
+    if (state.job === 'alignment') key.push([state.alignment.left, state.alignment.right, state.alignment.tyres, state.alignment.targets, state.alignment.centered, state.alignmentReady]);
+    return JSON.stringify(key);
+  }
+  function arShopAlignment(state) {
+    var a = state.alignment, total = a.left + a.right;
+    var individual = a.left >= 8 && a.left <= 12 && a.right >= 8 && a.right <= 12;
+    var balanced = Math.abs(a.left - a.right) <= 2;
+    return { left: a.left / 100, right: a.right / 100, total: total / 100,
+      individual: individual, balanced: balanced, totalInSpec: total >= 18 && total <= 22,
+      inSpec: individual && balanced && total >= 18 && total <= 22,
+      prepared: a.tyres && a.targets && a.centered };
   }
   function arShopOperate(raw, action) {
     action = action || {};
@@ -9494,6 +9521,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     }
     if (state.station !== task.station || state.tool !== task.tool) return feedback('Go to the task station and select ' + SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1] + '.');
     if (Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; })) return feedback('Complete the lift, access and service prerequisites before using this equipment.');
+    if (kind === 'alignment') {
+      var a = Object.assign({}, state.alignment), toe = arShopAlignment(state);
+      if (action.type === 'alignment-select' && ['left', 'right'].indexOf(action.side) !== -1) {
+        a.selected = action.side; return feedback('Selected ' + action.side + ' front tie rod.', { alignment: a });
+      }
+      if (action.type === 'alignment-check') {
+        if (task.id !== 'alignment-setup' || ['tyres', 'targets', 'centered'].indexOf(action.check) === -1) return feedback('Complete preparation checks during bay setup.');
+        a[action.check] = !a[action.check];
+        return feedback(a[action.check] ? 'Preparation check recorded.' : 'Preparation check reopened.', { alignment: a, reading: null });
+      }
+      if (action.type === 'alignment-adjust') {
+        if (task.id !== 'service') return feedback('Capture the initial measurement before adjusting. Final verification only measures the secured result.');
+        if (!toe.prepared) return feedback('Restore the bay setup before adjusting.');
+        if ([-5, -1, 1, 5].indexOf(action.delta) === -1) return feedback('Use a listed toe adjustment increment.');
+        var nextToe = a[a.selected] + action.delta;
+        if (nextToe < -40 || nextToe > 40) return feedback('This model is limited to −0.40° through +0.40° per wheel.');
+        a[a.selected] = nextToe;
+        return feedback(a.selected + ' toe changed to ' + (nextToe / 100).toFixed(2) + '°. Capture a fresh alignment reading.', { alignment: a, reading: null });
+      }
+      if (action.type !== 'read' || task.id === 'alignment-setup') return feedback('Complete all three bay setup checks before measuring.');
+      if (!toe.prepared) return feedback('Restore the tyre, target and steering-centre checks before measuring.', { reading: null });
+      var toeValid = task.id === 'measure' || toe.inSpec;
+      var toeDetail = 'Left ' + toe.left.toFixed(2) + '°, right ' + toe.right.toFixed(2) + '°, total ' + toe.total.toFixed(2) + '°. ' +
+        (toe.inSpec ? 'Individual angles, total and balance meet the training sheet.' : toe.totalInSpec ? 'Total passes, but individual angles or left/right balance still need correction.' : 'Total toe is outside the training range; check both individual angles.');
+      return feedback(toeDetail, { reading: { key: arShopReadingKey(state), kind: kind, value: toe.total, unit: '° total', valid: toeValid, detail: toeDetail,
+        left: toe.left, right: toe.right, inSpec: toe.inSpec } });
+    }
     if (kind === 'jug' && action.type === 'quantity') {
       if ([100, 500, -100].indexOf(action.delta) === -1) return feedback('Use the measured jug controls.');
       var ml = state.instrument.jugMl + action.delta;
@@ -9529,6 +9583,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   function arShopEvidenceReady(state) {
     var kind = arShopInstrumentKind(state);
     if (!kind) return true;
+    if (kind === 'alignment') {
+      var toe = arShopAlignment(state), task = arShopJob(state.job).tasks[state.step];
+      if (!toe.prepared) return false;
+      if (task.id === 'alignment-setup') return true;
+      if (task.id !== 'measure' && !toe.inSpec) return false;
+    }
     if (kind === 'torque') return state.wheelSeated && state.lugs.length === 5 && state.lugs.every(function (lug, i) { return lug === TIRE_LUG_PATTERN[i]; });
     return !!(state.reading && state.reading.valid && state.reading.key === arShopReadingKey(state));
   }
@@ -9544,7 +9604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if ((task.id === 'measure' || task.id === 'refill') && (!String(state.answer).trim() || !Number.isFinite(Number(state.answer)) || Math.abs(Number(state.answer) - job.answer) > 0.001)) {
       return blocked('Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
     }
-    if (!arShopEvidenceReady(state)) return blocked('Operate the equipment and capture valid evidence for this task before completing it.');
+    if (!arShopEvidenceReady(state)) return blocked(task.id === 'alignment-setup' ? 'Complete all three alignment bay setup checks before continuing.' : 'Operate the equipment and capture valid evidence for this task before completing it.');
     if (task.id === 'release' && String(state.notes || '').trim().length < 20) return blocked('Write a handoff of at least 20 characters describing the finding, service and verification.');
     return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', reading: null, feedback: 'Completed: ' + task.label,
       history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
@@ -9746,7 +9806,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         box(brakes, 'brake-caliper-' + x + '-' + z, [0.14, 0.22, 0.13], [x + 0.17, 0.44, z], red);
         var pad = box(brakes, 'brake-pad-' + x + '-' + z, [0.11, 0.15, state.serviced && state.job === 'brakes' && front ? 0.048 : 0.012], [x + 0.15, 0.44, z + (z > 0 ? 0.025 : -0.025)], amber);
         pad.userData.thicknessMm = state.serviced && state.job === 'brakes' && front ? 8 : 2;
-        if (!removed) wheel(brakes, 'mounted-wheel-' + x + '-' + z, x, 0.4, z * 1.07);
+        if (state.job === 'alignment' && front) {
+          var cornerSide = z > 0 ? 'left' : 'right', steeringCorner = new THREE.Group();
+          steeringCorner.name = 'alignment-steering-corner-' + cornerSide; steeringCorner.position.set(x, 0.40, z); brakes.add(steeringCorner);
+          brakes.updateMatrixWorld(true);
+          [brakes.getObjectByName('brake-rotor-' + x + '-' + z), brakes.getObjectByName('brake-caliper-' + x + '-' + z), pad].forEach(function (part) { steeringCorner.attach(part); });
+          steeringCorner.rotation.y = (z > 0 ? -1 : 1) * state.alignment[cornerSide] / 100 * Math.PI / 180 * 24;
+        }
+        if (!removed) {
+          var mountedWheel = wheel(brakes, 'mounted-wheel-' + x + '-' + z, x, 0.4, z * 1.07);
+          if (state.job === 'alignment' && front) {
+            var toeSide = z > 0 ? 'left' : 'right', toeDegrees = state.alignment[toeSide] / 100;
+            mountedWheel.rotation.y = (z > 0 ? -1 : 1) * toeDegrees * Math.PI / 180 * 24;
+            mountedWheel.userData.toeDegrees = toeDegrees; mountedWheel.userData.visualMagnification = 24;
+            if (state.alignment.targets) {
+              var target = new THREE.Group(); target.name = 'alignment-target-' + toeSide; target.rotation.y = (z > 0 ? -1 : 1) * Math.PI / 4; mountedWheel.add(target);
+              var outside = z > 0 ? 1 : -1;
+              box(target, 'alignment-clamp-' + toeSide, [0.36, 0.045, 0.05], [0, 0, outside * 0.15], metal);
+              box(target, 'alignment-target-frame-' + toeSide, [0.26, 0.26, 0.025], [0, 0.22, outside * 0.17], pale);
+              for (var row = 0; row < 4; row++) for (var col = 0; col < 4; col++) {
+                if ((row + col) % 2) box(target, 'target-square-' + toeSide + '-' + row + '-' + col, [0.052, 0.052, 0.005], [-0.078 + col * 0.052, 0.142 + row * 0.052, outside * 0.186], dark);
+              }
+              target.userData.side = toeSide;
+            }
+          }
+        }
         pipe(car, 'strut-' + x + '-' + z, [x, 0.45, z * 0.80], [x + 0.08, 1.05, z * 0.70], 0.055, metal);
         for (var coil = 0; coil < 5; coil++) {
           var spring = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.013, 6, 16), amber); spring.rotation.x = Math.PI / 2; spring.position.set(x + 0.04, 0.68 + coil * 0.055, z * 0.75); car.add(spring);
@@ -9780,6 +9864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       box(lift, 'lift-guide-' + z, [0.045, 3.1, 0.10], [-0.08, 1.65, z], metal);
       box(lift, 'lift-carriage-' + z, [0.32, 0.38, 0.33], [0.05, 0.41 + height, z], dark);
       [-0.75, 0.94].forEach(function (x) {
+        if (state.job === 'alignment') { pipe(lift, 'stowed-lift-arm-' + x + '-' + z, [0.05, 0.27, z], [x, 0.27, z], 0.065, amber); return; }
         pipe(lift, 'lift-arm-' + x + '-' + z, [0.05, 0.40 + height, z], [x, 0.40 + height, z > 0 ? 0.64 : -0.64], 0.065, amber);
         cylinder(lift, 'lift-contact-pad-' + x + '-' + z, 0.08, 0.095, [x, 0.49 + height, z > 0 ? 0.64 : -0.64], rubber);
       });
@@ -9789,6 +9874,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     box(lift, 'lift-control-panel', [0.20, 0.31, 0.16], [-0.13, 1.35, 1.51], dark);
     cylinder(lift, 'lift-emergency-stop', 0.035, 0.032, [-0.13, 1.39, 1.607], red, 'z');
     register('lift', lift, [0.05, 1.75, 1.36]);
+    if (state.job === 'alignment') {
+      var toe = arShopAlignment(state), alignmentRig = new THREE.Group(); alignmentRig.name = 'workshop-alignment-rig'; brakes.add(alignmentRig);
+      alignmentRig.userData = { left: toe.left, right: toe.right, total: toe.total, inSpec: toe.inSpec, prepared: toe.prepared };
+      ['left', 'right'].forEach(function (side) {
+        var sign = side === 'left' ? 1 : -1, z = sign * 0.845, angle = state.alignment[side] / 100 * Math.PI / 180 * 24;
+        cylinder(alignmentRig, 'alignment-turnplate-' + side, 0.47, 0.014, [-1.3, 0.001, z], metal);
+        box(alignmentRig, 'alignment-rear-slip-plate-' + side, [0.8, 0.014, 0.7], [1.28, 0.001, z], metal);
+        pipe(alignmentRig, 'alignment-reference-' + side, [-1.3, 0.02, z], [-3.0, 0.02, z], 0.008, pale);
+        var guideColor = toe.inSpec ? 0x34d399 : side === state.alignment.selected ? 0xfbbf24 : 0x38bdf8;
+        pipe(alignmentRig, 'alignment-toe-guide-' + side, [-1.3, 0.03, z], [-3.0, 0.03, z - sign * Math.tan(angle) * 1.7], 0.017, api.trim(guideColor, 5));
+        pipe(alignmentRig, 'alignment-tie-rod-' + side, [-1.05, 0.33, sign * 0.17], [-1.2, 0.33, sign * 0.70], 0.023, metal);
+        var collar = pipe(alignmentRig, 'alignment-adjuster-' + side, [-1.10, 0.33, sign * 0.35], [-1.15, 0.33, sign * 0.52], 0.045, api.trim(guideColor, 45));
+        collar.userData.partId = 'shop-toe-' + side; collar.material.userData._keepOpaqueOnRecede = true; picks.push(collar);
+        // Visible target plates and adjustment collars select the same side as the HTML controls.
+        var physicalTarget = brakes.getObjectByName('alignment-target-' + side);
+        if (physicalTarget) physicalTarget.traverse(function (o) {
+          if (!o.isMesh) return; o.material = o.material.clone(); o.material.userData._keepOpaqueOnRecede = true;
+          o.userData.partId = 'shop-toe-' + side;
+        });
+      });
+      var console = new THREE.Group(); console.name = 'workshop-alignment-console'; console.position.set(-3.08, 0, -0.10); console.rotation.y = -Math.PI / 2; alignmentRig.add(console);
+      box(console, 'alignment-console-foot', [0.65, 0.08, 0.55], [0, 0.05, 0], dark);
+      box(console, 'alignment-console-post', [0.10, 0.91, 0.12], [0, 0.51, 0], metal);
+      box(console, 'alignment-console-case', [1.14, 0.68, 0.12], [0, 1.22, 0], dark);
+      label(console, 'FRONT TOE / DEGREES', [0, 1.46, 0.068], 1.02, '#38bdf8');
+      instrumentDisplay(console, toe.prepared ? 'L ' + toe.left.toFixed(2) : 'L —', [-0.27, 1.26, 0.072], 0.50);
+      instrumentDisplay(console, toe.prepared ? 'R ' + toe.right.toFixed(2) : 'R —', [0.27, 1.26, 0.072], 0.50);
+      instrumentDisplay(console, toe.prepared ? 'Σ ' + toe.total.toFixed(2) : 'SETUP', [0, 1.05, 0.072], 0.64);
+      console.userData.total = toe.total; console.userData.inSpec = toe.inSpec;
+      label(alignmentRig, 'WHEEL ANGLES / 24× VIEW', [-2.2, 0.10, 0], 1.4, '#fbbf24').rotation.x = -Math.PI / 2;
+    }
     // Equipment is attached to the active station; digital displays and fluid
     // levels read the same serializable state as the accessible instrument panel.
     var instrumentKind = arShopInstrumentKind(state);
@@ -9869,6 +9985,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         object.userData.partId = station[1]; picks.push(object);
       });
     });
+    if (state.job === 'alignment' && state.alignmentCutaway) {
+      engine.visible = false;
+      car.children.forEach(function (child) {
+        if (/^(vehicle-|rocker-panel-|door-|sill-trim-|wheel-arch-|rear-deck|roof|side-glazing-|cabin-pillar-|mirror-|front-windscreen|rear-windscreen|seat-|front-bumper|rear-bumper|front-grille|headlamp-|tail-lamp-)/.test(child.name)) child.visible = false;
+      });
+      picks = picks.filter(function (object) { for (var node = object; node; node = node.parent) if (!node.visible) return false; return true; });
+    }
     scene.updateMatrixWorld(true);
     return { meshes: meshes, picks: picks, anchor: car };
   }
@@ -19635,6 +19758,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function change(patch) { save(Object.assign({}, shop, patch)); }
         function pick(id) {
+          if (/^shop-toe-(left|right)$/.test(id)) {
+            var toeNext = arShopOperate(Object.assign({}, shop, { station: 'brakes' }), { type: 'alignment-select', side: id.slice(9) });
+            save(toeNext); arAnnounce(toeNext.feedback); return;
+          }
           if (/^shop-lug-[0-4]$/.test(id)) {
             var next = arShopOperate(Object.assign({}, shop, { station: 'brakes' }), { type: 'lug', index: Number(id.slice(-1)) });
             save(next); arAnnounce(next.feedback); return;
@@ -19663,13 +19790,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
-        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState].join('-');
+        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
           onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
         function control(label, fn, attrs) {
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
+        }
+        function alignmentPanel() {
+          var toe = arShopAlignment(shop), setup = task.id === 'alignment-setup';
+          function operate(action) { var next = arShopOperate(shop, action); save(next); arAnnounce(next.feedback); }
+          function signed(value) { return (value >= 0 ? '+' : '') + value.toFixed(2) + '°'; }
+          function gauge(label, value, pass) {
+            return h('div', { style: { padding: 10, border: '1px solid ' + T.border, borderRadius: 8 } },
+              h('span', { style: { fontSize: 12 } }, label),
+              h('strong', { style: { display: 'block', fontFamily: 'ui-monospace, monospace', fontSize: 24, color: pass ? T.good : T.accentHi } }, signed(value)),
+              h('span', { style: { fontSize: 11 } }, pass ? 'In training range' : 'Adjustment needed'));
+          }
+          return h('div', { 'data-ar-alignment-panel': true },
+            h('p', null, 'Positive = toe-in. Negative = toe-out. Total toe is the sum of left and right. Wheel angles and guide lines are shown at 24× for visibility; all readouts show actual model angles.'),
+            setup ? h('div', null, [['tyres', 'Inspect tyres and steering joints', 'The authored inspection passes tyre pressures, wear, joint play, rear thrust, camber and caster.'],
+              ['targets', 'Prepare plates and fit alignment targets', 'The simulated bay is level, tyres carry the vehicle weight, slip/turn plates are free and targets are compensated.'],
+              ['centered', 'Centre and secure the steering wheel', 'The steering wheel is held at centre for this authored procedure.']].map(function (check) {
+              return h('div', { key: check[0], style: { marginTop: 10 } },
+                control((shop.alignment[check[0]] ? '✓ ' : '') + check[1], function () { operate({ type: 'alignment-check', check: check[0] }); },
+                  { 'data-ar-alignment-check': check[0], 'aria-pressed': shop.alignment[check[0]], style: btnSecondary({ minHeight: 44, width: '100%', textAlign: 'left' }) }), h('p', null, check[2]));
+            })) : h('div', null,
+              h('div', { 'aria-label': 'Live alignment angles', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                gauge('Left front', toe.left, shop.alignment.left >= 8 && shop.alignment.left <= 12), gauge('Right front', toe.right, shop.alignment.right >= 8 && shop.alignment.right <= 12)),
+              h('p', { 'data-ar-alignment-total': toe.total }, h('strong', null, 'Total: ' + signed(toe.total)), ' · ' + (toe.totalInSpec ? 'Total in range' : 'Total outside range')),
+              h('p', { 'data-ar-alignment-balance': toe.balanced ? 'pass' : 'adjust' }, toe.balanced ? '✓ Left/right balance in range' : '↺ Left/right difference exceeds 0.02°. A correct total alone will not pass.'),
+              task.id === 'service' && h('div', null,
+                h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Tie rod to adjust' }, ['left', 'right'].map(function (side) {
+                  return control(side === 'left' ? 'Left front' : 'Right front', function () { operate({ type: 'alignment-select', side: side }); }, { key: side, 'data-ar-alignment-side': side, 'aria-pressed': shop.alignment.selected === side });
+                })),
+                h('p', null, 'Selected: ' + shop.alignment.selected + ' tie rod. Each click represents an angular change, not a number of wrench turns.'),
+                h('div', { className: 'ar-shop-actions' }, [-5, -1, 1, 5].map(function (delta) {
+                  return control((delta > 0 ? '+' : '−') + (Math.abs(delta) / 100).toFixed(2) + '°', function () { operate({ type: 'alignment-adjust', delta: delta }); }, { key: delta, 'data-ar-alignment-adjust': delta });
+                }))),
+              h('p', { 'data-ar-alignment-result': toe.inSpec ? 'pass' : 'adjust', style: { fontWeight: 700 } }, toe.inSpec ? '✓ All three alignment checks pass. Capture this result.' : 'Compare both individual angles, total toe and left/right balance with the service sheet.')));
         }
         function instrumentPanel() {
           var kind = arShopInstrumentKind(shop);
@@ -19682,10 +19842,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 onChange: function (e) { operate({ type: 'configure', field: field, value: e.target.value }); } },
                 options.map(function (option) { return h('option', { key: option[0], value: option[0] }, option[1]); })));
           }
-          var title = { meter: 'Connect the voltmeter', gauge: 'Position the thickness gauge', jug: 'Prepare the measured oil fill', torque: 'Refit and check the wheel' }[kind];
+          var title = { meter: 'Connect the voltmeter', gauge: 'Position the thickness gauge', jug: 'Prepare the measured oil fill', torque: 'Refit and check the wheel', alignment: 'Wheel alignment console' }[kind];
           return h('section', { 'data-ar-shop-instrument': kind, 'aria-label': title,
             style: { marginTop: 14, padding: 12, border: '2px solid ' + T.border, borderRadius: 10, background: T.cardAlt } },
             h('h4', { style: { margin: '0 0 10px', fontSize: 15 } }, title),
+            kind === 'alignment' && alignmentPanel(),
             kind === 'meter' && h('div', null,
               setting('mode', 'Meter mode', [['dcv', 'DC volts'], ['resistance', 'Resistance (Ω)']]),
               setting('contact', 'Probe contacts', [['posts', 'Battery + post to − post'], ['joint', 'Positive post to its cable clamp']]),
@@ -19717,7 +19878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                         style: btnSecondary({ minHeight: 44, minWidth: 44, padding: 5, borderRadius: '50%', border: '2px solid ' + (checked ? T.good : T.border), background: T.card, fontSize: 12 }) }));
                 })),
               h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. You can also select the exposed fasteners in the 3D wheel view.'))
-              : h('div', null,
+              : (kind === 'alignment' && task.id === 'alignment-setup') ? null : h('div', null,
                 h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': 'Captured instrument reading',
                   style: { display: 'block', marginTop: 12, padding: 14, borderRadius: 8, background: isContrast ? '#000' : '#10262c', color: '#e3fff2', fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 27, fontWeight: 700 } },
                   reading ? reading.value + ' ' + reading.unit : '— —'),
@@ -19725,6 +19886,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 control('Capture reading', function () { operate({ type: 'read' }); }, { 'data-ar-shop-instrument-read': true, style: btnSecondary({ minHeight: 44, marginTop: 10, width: '100%' }) })),
             control('Show equipment in 3D', function () {
               pick(task.station); stationCamera(task.station);
+              if (kind === 'alignment' && SHOP3D.focus) {
+                SHOP3D.reset(); SHOP3D.nudge(-0.50, 0.12);
+                SHOP3D.focus('brakes', { distance: 5.8, target: { x: -1.60, y: 0.65, z: 0 }, immediate: true });
+              }
               if ((kind === 'meter' || kind === 'jug') && SHOP3D.focus) {
                 SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
                 SHOP3D.focus('engine', { distance: 2.6, target: { x: -2.4, y: 1.16, z: 1.0 }, immediate: true });
@@ -19771,6 +19936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 bayControls({ viewer: SHOP3D, selected: shop.station, selectedLabel: station.label }),
                 h('div', { className: 'ar-shop-actions' },
                   control('Whole shop', function () { SHOP3D.reset(); }),
+                  shop.job === 'alignment' && control(shop.alignmentCutaway ? 'Show vehicle body' : 'Show chassis view', function () { change({ alignmentCutaway: !shop.alignmentCutaway }); }, { 'data-ar-alignment-cutaway': true, 'aria-pressed': !!shop.alignmentCutaway }),
                   control('Return to work order', function () { var order = document.getElementById('ar-shop-work-order'); if (order) { order.focus({ preventScroll: true }); order.scrollIntoView({ block: 'start', behavior: 'auto' }); } }),
                   control('View selected station', function () { stationCamera(shop.station); }, { 'data-ar-shop-camera': 'station' }),
                   control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
@@ -19780,11 +19946,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: btnSecondary({ minHeight: 48, textAlign: 'left', fontSize: 12, borderLeft: '4px solid ' + (isContrast ? T.accent : p.color), background: p.id === shop.station ? T.cardAlt : T.card, fontWeight: p.id === shop.station ? 800 : 500 }) });
               })),
               h('div', { className: 'ar-shop-card' },
-                h('h2', { style: { fontSize: 17 } }, station.label), h('p', null, station.detail),
+                h('h2', { style: { fontSize: 17 } }, station.label), h('p', null, shop.job === 'alignment' && shop.station === 'brakes' ? 'Measure front toe with the tyres loaded, adjust each side independently, then repeat the alignment check. Use the chassis view to compare wheel angles and steering parts.' : station.detail),
                 (shop.station === 'oil' || shop.station === 'exhaust') && h('p', { style: { color: T.accentHi }, 'data-ar-underbody-access': shop.lift === 'locked' ? 'ready' : 'blocked' },
                   shop.lift === 'locked' ? 'Underbody access ready. Use “View selected station” to look below the raised vehicle.' : 'Inspection preview only. Complete the lift sequence and engage the locks before any underbody service.'),
                 shop.station === 'engine' && control(shop.hood ? 'Close hood' : 'Open hood', function () { change({ hood: !shop.hood }); }, { 'aria-pressed': shop.hood, 'data-ar-shop-hood': true }),
-                shop.station === 'brakes' && h('p', { 'data-ar-shop-pad': shop.serviced && shop.job === 'brakes' ? '8' : '2' },
+                shop.station === 'brakes' && shop.job !== 'alignment' && h('p', { 'data-ar-shop-pad': shop.serviced && shop.job === 'brakes' ? '8' : '2' },
                   shop.serviced && shop.job === 'brakes' ? 'After service: both front pad sets show 8 mm lining. Refit and verify the wheel before lowering.' : 'Training observation: 2 mm front pad lining. This job uses a 3 mm replacement limit.'),
                 shop.station === 'engine' && shop.job === 'electrical' && h('p', { 'data-ar-shop-voltage': shop.verified ? '0.08' : '1.6' },
                   shop.verified ? 'Repeat loaded test: 0.08 V across the positive joint. Cranking restored.' : 'Service sheet: 12.6 V at rest; 10.4 V while cranking; 1.6 V drop across the positive connection.'),

@@ -4,11 +4,18 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
   const kind = model.kind(ready);
+  if (kind === 'alignment') {
+    if (task.id === 'alignment-setup') for (const check of ['tyres', 'targets', 'centered']) if (!ready.alignment[check]) ready = model.operate(ready, { type: 'alignment-check', check });
+    if (task.id === 'service') for (const side of ['left', 'right']) {
+      ready = model.operate(ready, { type: 'alignment-select', side });
+      while (ready.alignment[side] !== 10) ready = model.operate(ready, { type: 'alignment-adjust', delta: ready.alignment[side] > 10 ? -1 : 1 });
+    }
+  }
   if (kind === 'meter') {
     ready = model.operate(ready, { type: 'configure', field: 'contact', value: 'joint' });
     ready = model.operate(ready, { type: 'configure', field: 'load', value: 'starter' });
@@ -71,7 +78,7 @@ describe('Workshop accessible rendering', () => {
     const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed' } }, theme);
     const host = document.createElement('div'); host.innerHTML = html;
     expect(host.querySelectorAll('[data-ar-shop-station]')).toHaveLength(7);
-    expect(host.querySelectorAll('#ar-shop-job option')).toHaveLength(3);
+    expect(host.querySelectorAll('#ar-shop-job option')).toHaveLength(4);
     expect(html).toContain('3D view unavailable');
     expect(host.querySelector('[data-ar-shop-perform]').textContent).toContain('Perform simulated task');
     expect(host.querySelector('label[for="ar-shop-tool"]')).not.toBeNull();
@@ -162,4 +169,88 @@ describe('Operational workshop instruments', () => {
     expect(model.operate({ ...state, station: 'intake' }, { type: 'read' }).reading).toBeNull();
     expect(model.operate({ ...state, tool: 'lamp' }, { type: 'read' }).reading).toBeNull();
   });
+});
+
+
+describe('Front toe alignment workshop', () => {
+  function at(taskId) {
+    const job = model.jobs.find(j => j.id === 'alignment');
+    let state = model.initial(job.id);
+    while (job.tasks[state.step].id !== taskId) state = step(state);
+    const task = job.tasks[state.step];
+    return model.normalize({ ...state, station: task.station, tool: task.tool, answer: '0.4' });
+  }
+  it('requires every setup check with the vehicle supported by its tyres', () => {
+    let state = at('alignment-setup');
+    for (const check of ['tyres', 'targets']) state = model.operate(state, { type: 'alignment-check', check });
+    expect(model.advance(state).step).toBe(1);
+    expect(model.operate({ ...state, lift: 'locked' }, { type: 'alignment-check', check: 'centered' }).alignment.centered).toBe(false);
+    state = model.operate(state, { type: 'alignment-check', check: 'centered' });
+    expect(model.advance(state)).toMatchObject({ step: 2, alignmentReady: true });
+    expect(model.advance({ ...state, wheelRemoved: true }).step).toBe(1);
+  });
+  it('captures both baseline angles and prevents adjusting before the baseline', () => {
+    let state = at('measure');
+    expect(model.operate(state, { type: 'alignment-adjust', delta: -5 }).alignment.left).toBe(30);
+    state = model.operate(state, { type: 'read' });
+    expect(state.reading).toMatchObject({ left: 0.3, right: 0.1, value: 0.4, valid: true, inSpec: false });
+    expect(model.advance(state).history.at(-1).result).toContain('Left 0.30°, right 0.10°, total 0.40°');
+  });
+  it('rejects a passing total when individual angles and balance are wrong', () => {
+    let state = at('service');
+    state = { ...state, alignment: { ...state.alignment, left: 30, right: -10 } };
+    expect(model.alignment(state)).toMatchObject({ total: 0.2, totalInSpec: true, balanced: false, inSpec: false });
+    state = model.operate(state, { type: 'read' });
+    expect(state.reading.valid).toBe(false);
+    expect(model.advance(state).step).toBe(3);
+  });
+  it('adjusts the selected wheel, preserves exact hundredths, and invalidates captured evidence', () => {
+    let state = at('service');
+    for (let i = 0; i < 4; i++) state = model.operate(state, { type: 'alignment-adjust', delta: -5 });
+    state = model.operate(state, { type: 'read' });
+    expect(state.reading).toMatchObject({ left: 0.1, right: 0.1, value: 0.2, valid: true });
+    state = model.operate(state, { type: 'alignment-select', side: 'right' });
+    expect(model.ready(state)).toBe(true);
+    state = model.operate(state, { type: 'alignment-adjust', delta: -1 });
+    expect(state.alignment).toMatchObject({ left: 10, right: 9 });
+    expect(state.reading).toBeNull(); expect(model.advance(state).step).toBe(3);
+    state = model.operate(state, { type: 'read' });
+    expect(model.advance(state)).toMatchObject({ step: 4, serviced: true });
+  });
+  it('requires a fresh verification and rejects incomplete preparation or changed angles', () => {
+    let state = at('verify');
+    expect(model.advance(state).step).toBe(4);
+    state = model.operate(state, { type: 'read' });
+    expect(model.advance(state).verified).toBe(true);
+    expect(model.advance({ ...state, alignment: { ...state.alignment, centered: false } }).step).toBe(4);
+    expect(model.advance({ ...state, alignment: { ...state.alignment, left: 11 } }).step).toBe(4);
+    expect(model.operate(state, { type: 'alignment-adjust', delta: 5 }).alignment.left).toBe(10);
+  });
+  it('bounds controls and normalizes incomplete persisted alignment state', () => {
+    let state = at('service');
+    state = { ...state, alignment: { ...state.alignment, left: 40 } };
+    expect(model.operate(state, { type: 'alignment-adjust', delta: 5 }).alignment.left).toBe(40);
+    expect(model.operate(state, { type: 'alignment-adjust', delta: 2 }).alignment.left).toBe(40);
+    expect(model.normalize({ job: 'alignment', alignment: { left: NaN, right: -999, selected: 'rear', tyres: 'true' } }).alignment).toMatchObject({ left: 30, right: -40, selected: 'left', tyres: false });
+    expect(model.operate({ ...state, tool: 'lamp' }, { type: 'alignment-adjust', delta: -5 }).alignment.left).toBe(40);
+    expect(model.operate({ ...state, station: 'tools' }, { type: 'read' }).reading).toBeNull();
+  });
+  it.each([{ isDark: false }, { isDark: true }, { isContrast: true }])('keeps alignment controls usable without WebGL in %j', theme => {
+    resetStemLab(); loadTool(file, 'autoRepair');
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: at('service') } }, theme);
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelectorAll('[data-ar-alignment-adjust]')).toHaveLength(4);
+    expect(host.querySelectorAll('[data-ar-alignment-side]')).toHaveLength(2);
+    expect(host.querySelector('[data-ar-alignment-total]').textContent).toContain('+0.40°');
+    expect(html).toContain('24×'); expect(html).toContain('3D view unavailable');
+  });
+});
+
+
+it('accepts a valid brake-gauge capture persisted before alignment was added', () => {
+  const state = model.normalize({ job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, answer: '6',
+    reading: { key: JSON.stringify(['brakes', 7, false, { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, [], false, false]),
+      kind: 'gauge', value: 2, unit: 'mm', valid: true, detail: 'Friction lining measured separately from the backing plate.' } });
+  expect(model.advance(state)).toMatchObject({ step: 8, measured: true });
+  expect(model.advance(state).history.at(-1).result).toContain('Captured: 2 mm.');
 });
