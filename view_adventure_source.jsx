@@ -1064,7 +1064,7 @@ function AdventureView(props) {
                             </div>
                         </div>
                       )}
-                      <div className={`bg-indigo-900 p-4 rounded-lg border border-indigo-800 flex flex-col md:flex-row justify-between items-center shadow-md shrink-0 gap-4 relative overflow-x-auto ${adventureState.isImmersiveMode ? 'hidden' : ''}`}>
+                      <div data-adventure-header role="region" aria-label={adventureSettingsText(t, 'header_controls', 'Adventure controls')} style={{ ...adventureVisualTokens(theme), backgroundImage: theme === 'contrast' ? 'none' : 'linear-gradient(120deg, var(--av-wash), var(--av-surface) 70%)' }} className={`rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] [@media(max-height:740px)]:max-h-[28vh] overflow-y-auto overscroll-contain ${adventureState.isImmersiveMode ? 'hidden' : ''}`}>
                         {adventureEffects.levelUp && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
                                 <div aria-hidden="true"><ConfettiExplosion /></div>
@@ -1073,19 +1073,19 @@ function AdventureView(props) {
                                 </div>
                             </div>
                         )}
-                        <div className="text-white flex-grow relative z-10">
-                            <div className="flex items-center gap-3 overflow-x-auto min-w-0 pb-1">
-                                <h3 className="font-bold flex items-center gap-2 shrink-0 whitespace-nowrap"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/> {t('adventure.title')}</h3>
+                        <div className="text-[var(--av-ink)] min-w-0 relative z-10">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                                <h3 className="w-full font-bold text-base sm:text-lg tracking-tight flex items-center gap-2.5 min-w-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-950 border border-teal-700 shadow-sm"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/></span><span className="min-w-0 [overflow-wrap:anywhere]">{t('adventure.title')}</span></h3>
                                 {adventureInputMode === 'system' && (
-                                    <div className="bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse motion-reduce:animate-none">
+                                    <div className="bg-[var(--av-wash)] text-[var(--av-ink)] border border-[var(--av-line)] px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5">
                                         <span aria-hidden="true">🏛️</span> {t('adventure.system_simulation')}
                                     </div>
                                 )}
-                                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-2 relative shrink-0">
-                                    <span className="text-yellow-300">{t('common.level_abbrev') || 'Lvl'} {adventureState.level}</span>
-                                    <div className="w-20 h-2 bg-indigo-950 rounded-full overflow-hidden" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
+                                <div data-adventure-meter="xp" className="basis-28 flex-1 min-w-0 bg-[var(--av-surface)] px-3 py-2.5 rounded-2xl text-xs font-bold border border-[var(--av-line)] flex flex-wrap items-center gap-x-2 gap-y-2 relative">
+                                    <span className="text-[var(--av-ink)]">{t('common.level_abbrev') || 'Lvl'} {adventureState.level}</span><span className="ml-auto text-[var(--av-muted)] text-[11px] font-medium tabular-nums">{xpValue}/{xpMax} {t('common.xp') || 'XP'}</span>
+                                    <div className="w-full h-2 bg-[var(--av-wash)] border border-[var(--av-line)] rounded-full overflow-hidden" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
                                         <div
-                                            className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out motion-reduce:transition-none" aria-hidden="true"
+                                            className="h-full bg-[var(--av-accent)] transition-all duration-1000 ease-out motion-reduce:transition-none" aria-hidden="true"
                                             style={{ width: xpProgressPercent + '%' }}
                                         ></div>
                                     </div>
@@ -1095,40 +1095,26 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                 </div>
-                                <div
-                                    className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 relative shrink-0 transition-all duration-200 ${
+                                <div data-adventure-meter="energy"
+                                    className={`basis-28 flex-1 min-w-0 px-3 py-2.5 rounded-2xl text-xs font-bold border flex flex-wrap items-center gap-x-2 gap-y-2 relative transition-colors duration-200 motion-reduce:transition-none ${
                                         adventureInputMode === 'system'
-                                            ? 'bg-amber-900/60 border-amber-600'
+                                            ? 'bg-[var(--av-surface)] border-[var(--av-line)]'
                                             : adventureEffects.energy < 0
-                                                ? 'animate-shake border-red-500 bg-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.6)]'
-                                                : 'bg-indigo-800 border-indigo-600'
+                                                ? 'border-red-600 bg-[var(--av-surface)]'
+                                                : 'bg-[var(--av-surface)] border-[var(--av-line)]'
                                     }`}
                                     title={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })}
                                 >
-                                    <Zap size={12} aria-hidden="true" className={`fill-current transition-colors duration-200 motion-reduce:transition-none ${
-                                        adventureInputMode === 'system'
-                                            ? 'text-amber-400'
-                                            : adventureEffects.energy < 0
-                                                ? 'text-red-400'
-                                                : 'text-yellow-400'
-                                    }`} />
-                                    <span className={`w-6 text-right transition-colors duration-200 ${
-                                        adventureInputMode === 'system'
-                                            ? 'text-amber-300'
-                                            : adventureEffects.energy < 0
-                                                ? 'text-red-300'
-                                                : 'text-yellow-400'
-                                    }`}>
-                                        <AnimatedNumber value={energyValue} />
-                                    </span>
-                                    <div className="w-16 h-2 bg-indigo-950 rounded-full overflow-hidden relative" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
+                                    <span className="flex items-center gap-1.5 text-[var(--av-ink)]"><Zap size={13} aria-hidden="true" className="shrink-0" />{adventureInputMode === 'system' ? adventureSettingsText(t, 'header_stability', 'Stability') : adventureSettingsText(t, 'header_energy', 'Energy')}</span>
+                                    <span className="ml-auto tabular-nums text-[var(--av-ink)]"><AnimatedNumber value={energyValue} /></span>
+                                    <div className="w-full h-2 bg-[var(--av-wash)] border border-[var(--av-line)] rounded-full overflow-hidden relative" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
                                         <div
                                             aria-hidden="true" className={`h-full transition-all duration-500 motion-reduce:transition-none ${
                                                 adventureInputMode === 'system'
-                                                    ? 'bg-gradient-to-r from-amber-400 to-amber-600'
+                                                    ? (theme === 'contrast' ? 'bg-yellow-300' : 'bg-amber-500')
                                                     : adventureState.energy < 20 || adventureEffects.energy < 0
                                                         ? 'bg-red-500 animate-pulse motion-reduce:animate-none'
-                                                        : 'bg-yellow-400'
+                                                        : (theme === 'contrast' ? 'bg-yellow-300' : 'bg-amber-500')
                                             }`}
                                             style={{ width: energyValue + '%' }}
                                         ></div>
@@ -1139,8 +1125,8 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-300 shadow-sm shrink-0" title={t('adventure.tooltips.gold', { value: adventureState.gold })}>
-                                    <span aria-hidden="true">💰</span> {adventureState.gold}
+                                <div className="bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0" title={t('adventure.tooltips.gold', { value: adventureState.gold })}>
+                                    <span aria-hidden="true">💰</span><span>{adventureSettingsText(t, 'header_gold', 'Gold')}</span><span className="tabular-nums font-bold">{adventureState.gold}</span>
                                     {adventureState.activeGoldBuffTurns > 0 && (
                                         <span className="text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full">
                                             {adventureState.activeGoldBuffTurns}
@@ -1151,11 +1137,11 @@ function AdventureView(props) {
                                     turn but only shown on the game-over Mission Report — now visible DURING
                                     play so students/teachers see learning progress as it happens. */}
                                 {(adventureState.stats?.conceptsFound || []).length > 0 && (
-                                    <div className="bg-cyan-900/60 px-3 py-1 rounded-full text-xs font-bold border border-cyan-600 flex items-center gap-1.5 text-cyan-200 shadow-sm shrink-0"
+                                    <div className="bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0"
                                         title={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
                                         aria-label={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
                                     >
-                                        <span aria-hidden="true">🔑</span> {adventureState.stats.conceptsFound.length}
+                                        <span aria-hidden="true">🔑</span><span>{adventureSettingsText(t, 'header_concepts', 'Concepts')}</span><span className="tabular-nums font-bold">{adventureState.stats.conceptsFound.length}</span>
                                     </div>
                                 )}
                                 <InventoryGrid
@@ -1163,19 +1149,19 @@ function AdventureView(props) {
                                     onSelect={handleSelectInventoryItem}
                                 />
                                 {adventureInputMode === 'system' && enableFactionResources && (adventureState.systemResources || []).length > 0 && (
-                                    <div className="flex flex-wrap items-center gap-1 mt-1">
+                                    <div className="w-full flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--av-line)]">
                                         {adventureState.systemResources.slice(0, 5).map((resource, idx) => (
                                             <div
                                                 key={`fr-${idx}`}
-                                                className="bg-amber-900/50 border border-amber-600/40 rounded px-1.5 py-0.5 flex items-center gap-1 text-[11px]"
+                                                className="min-w-0 max-w-full bg-[var(--av-wash)] border border-[var(--av-line)] rounded-xl px-2.5 py-2 flex flex-wrap items-center gap-1.5 text-xs [overflow-wrap:anywhere]"
                                                 title={`${resource.name}: ${resource.quantity}${resource.unit || ''}`}
                                             >
                                                 <span aria-hidden="true">{resource.icon || '📦'}</span>
-                                                <span className="text-amber-200 font-bold">{resource.quantity}{resource.unit ? <span className="text-amber-300/70 font-normal ml-0.5">{resource.unit}</span> : ''}</span>
+                                                <span className="min-w-0 text-[var(--av-muted)]">{resource.name}</span><span className="text-[var(--av-ink)] font-bold tabular-nums">{resource.quantity}{resource.unit ? <span className="text-[var(--av-muted)] font-normal ml-0.5">{resource.unit}</span> : ''}</span>
                                             </div>
                                         ))}
                                         {adventureState.systemResources.length > 5 && (
-                                            <span className="text-amber-300/60 text-[11px]">+{adventureState.systemResources.length - 5}</span>
+                                            <span className="text-[var(--av-muted)] text-xs">+{adventureState.systemResources.length - 5}</span>
                                         )}
                                     </div>
                                 )}
@@ -1198,21 +1184,21 @@ function AdventureView(props) {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between text-[11px] font-bold text-indigo-200 mt-1 px-1 uppercase tracking-wider">
+                                    <div className="flex justify-between gap-3 text-xs font-semibold text-[var(--av-muted)] mt-1.5 px-1">
                                         <span>{t('adventure.debate_opponent')}</span>
                                         <span>{t('adventure.debate_you')}</span>
                                     </div>
                                 </div>
                             )}
-                            <p className="text-xs text-indigo-200 mt-1">{t('adventure.explore_hint')}</p>
+                            <p className="text-xs leading-relaxed text-[var(--av-muted)] mt-2">{t('adventure.explore_hint')}</p>
                         </div>
-                        <div className="flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0" role="group" aria-label={t('adventure.title')}>
+                        <div data-adventure-toolbar className="flex flex-wrap items-center gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3" role="group" aria-label={adventureSettingsText(t, 'header_tools', 'Story tools')}>
                             {AdventureAudioControls && <AdventureAudioControls soundEnabled={soundEnabled} t={t} />}
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && (
                                 <button type="button"
                                     data-help-key="adventure_edit_options" onClick={handleStartOptionEdit}
                                     disabled={isEditingOptions}
-                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isEditingOptions ? 'bg-indigo-900 text-indigo-600 border-indigo-700 opacity-50 cursor-not-allowed' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
+                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${isEditingOptions ? 'bg-[var(--av-wash)] text-[var(--av-muted)] border-[var(--av-line)] opacity-50 cursor-not-allowed' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
                                     title={t('adventure.edit_options_tooltip')}
                                     aria-label={t('adventure.edit_options_tooltip')}
                                 >
@@ -1222,10 +1208,10 @@ function AdventureView(props) {
                             {isTeacherMode && activeSessionCode && !adventureFreeResponseEnabled && (
                                 <button type="button"
                                     data-help-key="democracy_toggle" onClick={toggleDemocracyMode}
-                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${
+                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${
                                         sessionData?.democracy?.isActive
                                         ? 'bg-teal-700 text-white border-teal-500 ring-2 ring-teal-400'
-                                        : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'
+                                        : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'
                                     }`}
                                     title={t('adventure.tooltips.democracy_toggle')}
                                     aria-label={t('adventure.tooltips.democracy_toggle')}
@@ -1238,7 +1224,7 @@ function AdventureView(props) {
                             <button type="button"
                                 aria-label={t('adventure.ledger_tooltip')}
                                 onClick={handleSetShowLedgerToTrue}
-                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
+                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]"
                                 title={t('adventure.ledger_tooltip')}
                             >
                                 <BookOpen size={14} className="fill-current" aria-hidden="true"/>
@@ -1248,7 +1234,7 @@ function AdventureView(props) {
                                 aria-label={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
                                 aria-pressed={adventureState.isImmersiveMode}
                                 onClick={handleToggleAdventureImmersive}
-                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
                                 title={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
                             >
                                 <Monitor size={14} aria-hidden="true"/>
@@ -1263,7 +1249,7 @@ function AdventureView(props) {
                                     setAdventureAutoRead(newState);
                                     if (!newState) stopPlayback();
                                 }}
-                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureAutoRead ? 'bg-yellow-400 text-indigo-900 border-yellow-500 hover:bg-yellow-300' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ${adventureAutoRead ? 'bg-[var(--av-wash)] text-[var(--av-ink)] border-[var(--av-accent)] ring-1 ring-[var(--av-accent)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]'}`}
                                 title={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
                             >
                                 {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <VolumeX size={14} aria-hidden="true"/>}
@@ -1275,7 +1261,7 @@ function AdventureView(props) {
                                     aria-haspopup="dialog"
                                     data-help-key="adventure_scene_reading_practice"
                                     onClick={() => { stopPlayback(); setAdventureFluencyOpen(true); }}
-                                    className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-rose-800 text-rose-100 border-rose-500 hover:bg-rose-700"
+                                    className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-rose-800 text-rose-100 border-rose-500 hover:bg-rose-700"
                                     title={t('adventure.fluency_title') || 'Practice reading this scene'}
                                 >
                                     <Mic size={14} aria-hidden="true"/>
@@ -1286,7 +1272,7 @@ function AdventureView(props) {
                             <button type="button"
                                 aria-label={t('adventure.maximize_tooltip')}
                                 onClick={handleSetIsZenModeToTrue}
-                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
+                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]"
                                 title={t('adventure.maximize_tooltip')}
                             >
                                 <Maximize size={14} aria-hidden="true"/>
@@ -1295,7 +1281,7 @@ function AdventureView(props) {
                             )}
                             <button type="button" aria-label={t('common.start_new_adventure')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                className="min-w-11 min-h-11 flex items-center gap-2 bg-white/10 text-white border border-white/40 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/20 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900"
+                                className="min-w-11 min-h-11 flex items-center gap-2 bg-[var(--av-surface)] text-[var(--av-ink)] border border-[var(--av-control)] px-3 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--av-wash)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
                             >
                                 <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden="true" /> {t('adventure.restart')}
                             </button>

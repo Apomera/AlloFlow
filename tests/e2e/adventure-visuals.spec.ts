@@ -41,7 +41,7 @@ async function mountActiveAdventure(page: any, theme: string, config: any = {}) 
       for (const name of propNames) props[name] = /^(set|handle|open|toggle|stop|prewarm|save|execute)/.test(name) ? noop : /^[A-Z]/.test(name) ? w[name] || (() => null) : /Ref$/.test(name) ? { current: null } : false;
       const scene = 'A river crosses the valley below the town. Compare the water measurements before deciding where to restore habitat.';
       Object.assign(props, {
-        theme, t: (key: string, values?: any) => key === 'adventure.storybook_locked' ? 'Storybook unlocks after ' + values.needed + ' more XP.' : key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.title': 'Adventure', 'common.level_abbrev': 'Lvl', 'adventure.start_sequel': 'Start a sequel', 'adventure.storybook': 'Create a storybook', 'adventure.storybook_writing': 'Creating storybook…', 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
+        theme, t: (key: string, values?: any) => key === 'adventure.storybook_locked' ? 'Storybook unlocks after ' + values.needed + ' more XP.' : key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.title': 'Adventure', 'common.xp': 'XP', 'adventure.ledger_tooltip': 'Open journey log', 'adventure.log_button': 'Journey log', 'adventure.enter_immersive': 'Enter immersive view', 'adventure.view_immersive': 'Immersive view', 'adventure.auto_read_enable': 'Enable automatic reading', 'adventure.auto_read_disable': 'Disable automatic reading', 'adventure.auto_read_status_label': 'Read aloud', 'adventure.explore_hint': 'Read the scene, review your resources, then choose your next step.', 'common.level_abbrev': 'Lvl', 'adventure.start_sequel': 'Start a sequel', 'adventure.storybook': 'Create a storybook', 'adventure.storybook_writing': 'Creating storybook…', 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
         activeView: 'adventure', adventureImageSize: 200, adventureInputMode: 'choice', adventureLanguageMode: 'English', adventureDifficulty: 'Normal',
         adventureArtStyle: 'auto', adventureTextInput: '', adventureCustomInstructions: '', adventureCustomArtStyle: '', universalImageStyle: '',
         selectedLanguages: [], editingOptionsBuffer: [], studentProjectSettings: {}, sessionData: null, playbackState: {}, adventureEffects: [],
@@ -464,3 +464,70 @@ test('ended immersive sessions keep class continuation with the teacher and hide
   await recap.getByRole('button', { name: 'Start a sequel', exact: true }).click();
   expect(await page.evaluate(() => (window as any).__endingCalls.sequels)).toBe(1);
 });
+
+
+for (const theme of ['light', 'dark', 'contrast']) {
+  test('status header reflows with readable meters and reachable tools in ' + theme, async ({ page }, info) => {
+    await page.setViewportSize({ width: 1200, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await load(page, theme);
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    await mountActiveAdventure(page, theme, {
+      props: { isTeacherMode: true, adventureFluencyEnabled: true, isZenMode: false, adventureEffects: { xp: null, energy: null, levelUp: null } },
+      state: { level: 3, xp: 40, energy: 72, stats: { decisions: 2, conceptsFound: ['Habitat', 'Water quality'] } }
+    });
+    await page.evaluate(() => {
+      const w = window as any; w.__headerCalls = [];
+      const patch: any = {};
+      for (const name of ['handleSetShowLedgerToTrue', 'handleToggleAdventureImmersive', 'handleStartAdventure', 'handleStartOptionEdit', 'handleSetIsZenModeToTrue', 'setAdventureFluencyOpen', 'stopPlayback']) patch[name] = () => w.__headerCalls.push(name);
+      patch.setAdventureAutoRead = (value: boolean) => { w.__headerCalls.push('autoread:' + value); w.__updateAdventure({ adventureAutoRead: value }); };
+      w.__updateAdventure(patch);
+    });
+    const header = page.locator('[data-adventure-header]');
+    await expect(header).toBeVisible();
+    await expect(header.locator('[data-adventure-meter="xp"]')).toContainText('40/100 XP');
+    await expect(header.locator('[data-adventure-meter="energy"]')).toContainText('Energy');
+    await expect(header.locator('[data-adventure-meter="energy"]')).toContainText('72');
+    for (const width of [1200, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await expect(header.getByRole('heading', { name: 'Adventure', exact: true })).toBeVisible();
+      expect(await header.evaluate((node: HTMLElement) => node.scrollWidth <= node.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await axe(page, '[data-adventure-header]');
+      for (const button of await header.locator('[data-adventure-toolbar] button').all()) {
+        await button.scrollIntoViewIfNeeded();
+        const box = (await button.boundingBox())!;
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+      }
+      await header.evaluate((node: HTMLElement) => { node.scrollTop = 0; });
+      await page.screenshot({ path: info.outputPath('header-' + theme + '-' + width + '.png') });
+    }
+    await header.getByRole('button', { name: 'Open journey log', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await header.getByRole('button', { name: 'Enter immersive view', exact: true }).click();
+    await header.getByRole('button', { name: 'Enable automatic reading', exact: true }).click();
+    await expect(header.getByRole('button', { name: 'Disable automatic reading', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await header.getByRole('button', { name: 'Disable automatic reading', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__headerCalls)).toEqual(['handleSetShowLedgerToTrue', 'handleToggleAdventureImmersive', 'autoread:true', 'autoread:false', 'stopPlayback']);
+    expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+
+    await page.evaluate(() => (window as any).__updateAdventure({ adventureInputMode: 'system', enableFactionResources: true,
+      adventureState: { energy: 16, systemResources: [{ name: 'Water quality', quantity: 78, unit: '%' }, { name: 'Community monitoring and long-term habitat restoration budget', quantity: 1250, unit: 'credits' }] } }));
+    await expect(header.locator('[data-adventure-meter="energy"]')).toContainText('Stability');
+    await expect(header.getByText('Water quality', { exact: true })).toBeVisible();
+    await expect(header.getByText('Community monitoring and long-term habitat restoration budget', { exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.addStyleTag({ content: 'html { font-size: 20px; }' });
+    expect(await page.getByRole('region', { name: 'Current scene', exact: true }).evaluate(node => node.closest('.custom-scrollbar')!.getBoundingClientRect().height)).toBeGreaterThanOrEqual(100);
+    expect(await header.evaluate((node: HTMLElement) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    await header.getByRole('button', { name: 'Open journey log', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await axe(page, '[data-adventure-header]');
+    await header.evaluate((node: HTMLElement) => { node.scrollTop = 0; });
+    await page.screenshot({ path: info.outputPath('header-' + theme + '-systems-large-text.png') });
+    expect(errors).toEqual([]);
+  });
+}
