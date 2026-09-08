@@ -5622,6 +5622,11 @@
                 desc: t('stem.tools_menu.zoom_deep_into_real_openly_licensed') || 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
               },
+              {
+                id: 'scaleExplorer', icon: '🪆', label: t('stem.tools_menu.scale_explorer') || 'Scale Explorer',
+                desc: t('stem.tools_menu.zoom_smoothly_across_42_powers_of_ten') || 'Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so “ten times bigger” always looks the same distance. Compare any two things and find out how many of one fit across the other.',
+                color: 'violet', ready: true
+              },
               { id: '_cat_ArtsMusic', icon: '', label: t('stem.tools_menu.arts_music', 'Arts & Music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
 
               {
@@ -5866,6 +5871,7 @@
               cellAtlasLab: 'human cell atlas hca single cell scrna rna sequencing transcriptomics gene expression marker genes pancreas beta alpha delta ductal acinar stellate endothelial immune insulin cell type bioinformatics data literacy',
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
               particleLab3d: 'particle particles 3d molecular dynamics states matter solid liquid gas diffusion kinetic theory temperature pressure collisions attraction intermolecular forces gas laws',
+              scaleExplorer: 'scale explorer powers of ten orders of magnitude size sizes big small biggest smallest zoom logarithmic log axis ratio ratios compare comparison universe galaxy solar system earth moon human cell bacterium virus dna atom nucleus proton nanometre micrometre light year eames cosmic',
               zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
             };
             function _normalizeToolSearchText(value) {
@@ -7449,7 +7455,10 @@
             // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
             // window over Smithsonian CC0 (IIIF) + NASA public-domain images +
             // Notice→Wonder coach (launcher + AI bridge in stem_tool_zoomgallery.js).
-            zoomGallery: true
+            zoomGallery: true,
+            // Sep 2026: Scale Explorer — continuous log zoom across ~42 powers of
+            // ten with a keyboard-drivable canvas and a scale-ladder list.
+            scaleExplorer: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
