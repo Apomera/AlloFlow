@@ -9610,6 +9610,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
   }
 
+  function arShop3DToken(state, id) { return 'shop-use-' + state.job + '-' + state.step + '-' + id; }
+  function arShop3DTools(state) {
+    var task = arShopJob(state.job).tasks[state.step], required = task ? task.tool : 'lamp';
+    var index = SHOP_TOOLS.findIndex(function (tool) { return tool[0] === required; });
+    var choices = [SHOP_TOOLS[index], SHOP_TOOLS[(index + 4) % SHOP_TOOLS.length], SHOP_TOOLS[(index + 9) % SHOP_TOOLS.length]];
+    for (var i = 0; i < state.step % 3; i++) choices.push(choices.shift());
+    return choices;
+  }
+  function arShop3DActions(state) {
+    var task = arShopJob(state.job).tasks[state.step], kind = arShopInstrumentKind(state), actions = [];
+    if (!(state.job === 'alignment' && state.alignmentCutaway)) actions.push({ id: 'hood', label: state.hood ? 'Close hood' : 'Open hood', station: 'engine' });
+    if (!task) return actions;
+    actions.push({ id: 'task', label: task.label, station: task.station });
+    function operate(id, label, action) { actions.push({ id: id, label: label, station: task.station, action: action }); }
+    if (kind && kind !== 'torque' && !(kind === 'alignment' && task.id === 'alignment-setup')) operate('read', 'Capture instrument reading', { type: 'read' });
+    if (kind === 'meter') {
+      operate('meter-mode', state.instrument.mode === 'dcv' ? 'Switch meter to resistance' : 'Switch meter to DC volts', { type: 'configure', field: 'mode', value: state.instrument.mode === 'dcv' ? 'resistance' : 'dcv' });
+      operate('meter-contact', state.instrument.contact === 'posts' ? 'Move probes across positive joint' : 'Move probes across battery posts', { type: 'configure', field: 'contact', value: state.instrument.contact === 'posts' ? 'joint' : 'posts' });
+      operate('meter-load', state.instrument.load === 'off' ? 'Apply simulated starter load' : 'Switch simulated starter load off', { type: 'configure', field: 'load', value: state.instrument.load === 'off' ? 'starter' : 'off' });
+    }
+    if (kind === 'gauge') operate('gauge-surface', state.instrument.surface === 'lining' ? 'Move gauge to backing plate' : 'Move gauge to friction lining', { type: 'configure', field: 'surface', value: state.instrument.surface === 'lining' ? 'backing' : 'lining' });
+    if (kind === 'jug') {
+      operate('jug-add', 'Add 500 mL to jug', { type: 'quantity', delta: 500 });
+      operate('jug-remove', 'Remove 100 mL from jug', { type: 'quantity', delta: -100 });
+    }
+    if (kind === 'torque' && !state.wheelSeated) operate('seat', 'Seat wheel and start fasteners', { type: 'seat-wheel' });
+    if (kind === 'alignment') {
+      if (task.id === 'alignment-setup') [['tyres', 'Tyre and joint inspection'], ['targets', 'Plate and target setup'], ['centered', 'Steering-centre check']].forEach(function (check) {
+        operate('check-' + check[0], (state.alignment[check[0]] ? 'Reopen: ' : 'Confirm: ') + check[1], { type: 'alignment-check', check: check[0] });
+      });
+      if (task.id === 'service') {
+        operate('toe-minus', 'Decrease selected toe by 0.01°', { type: 'alignment-adjust', delta: -1 });
+        operate('toe-plus', 'Increase selected toe by 0.01°', { type: 'alignment-adjust', delta: 1 });
+      }
+    }
+    return actions;
+  }
+  function arShop3DPick(raw, token) {
+    var state = arShopState(raw), prefix = arShop3DToken(state, '');
+    function blocked(text) { return Object.assign({}, state, { feedback: text }); }
+    if (typeof token !== 'string' || token.indexOf(prefix) !== 0) return blocked('That control belongs to an earlier task. Use the current scene controls.');
+    var id = token.slice(prefix.length);
+    if (id.indexOf('equip-') === 0) {
+      var tool = arShop3DTools(state).filter(function (choice) { return choice[0] === id.slice(6); })[0];
+      return tool ? Object.assign({}, state, { tool: tool[0], station: 'tools', feedback: 'Picked up ' + tool[1] + '. Return to the service controls to use it.' }) : blocked('Choose one of the tools on the current tray.');
+    }
+    var action = arShop3DActions(state).filter(function (item) { return item.id === id; })[0];
+    if (!action) return blocked('This control is unavailable for the current task.');
+    var atStation = Object.assign({}, state, { station: action.station });
+    if (id === 'hood') return Object.assign({}, atStation, { hood: !state.hood, reading: null, feedback: state.hood ? 'Hood closed.' : 'Hood opened. Engine components are accessible.' });
+    if (id === 'task') return arShopAdvance(atStation);
+    // Physical instrument controls obey the same equipment/access gates as capturing a reading.
+    var task = arShopJob(state.job).tasks[state.step];
+    if (state.tool !== task.tool) return blocked('Select ' + SHOP_TOOLS.filter(function (tool) { return tool[0] === task.tool; })[0][1] + ' before operating this control.');
+    if (Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; })) return blocked('Complete the vehicle access and setup prerequisites before operating this control.');
+    return arShopOperate(atStation, action.action);
+  }
+
   function buildWorkshopScene(THREE, api) {
     var state = arShopState(api.sceneProps), scene = api.scene;
     var meshes = {}, picks = [];
@@ -9985,6 +10043,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         object.userData.partId = station[1]; picks.push(object);
       });
     });
+    // Task-scoped physical controls use exactly the same dispatcher as the HTML tray.
+    var directActions = arShop3DActions(state), currentTask = arShopJob(state.job).tasks[state.step];
+    function bindControl(object, actionId, toolId) {
+      if (!object || (!toolId && !directActions.some(function (action) { return action.id === actionId; }))) return;
+      var token = arShop3DToken(state, toolId ? 'equip-' + toolId : actionId);
+      object.traverse(function (mesh) {
+        if (!mesh.isMesh) return;
+        mesh.material = mesh.material.clone(); mesh.material.userData._keepOpaqueOnRecede = !mesh.material.transparent;
+        mesh.userData.partId = token; mesh.userData.workshopAction = actionId || 'equip-' + toolId;
+        if (picks.indexOf(mesh) === -1) picks.push(mesh);
+      });
+    }
+    function directButton(parent, id, caption, pos, width) {
+      if (!directActions.some(function (action) { return action.id === id; })) return;
+      var group = new THREE.Group(); group.name = 'workshop-control-' + id; group.position.set(pos[0], pos[1], pos[2]); parent.add(group);
+      box(group, 'control-case-' + id, [width + 0.04, width * 0.32 + 0.045, 0.045], [0, 0, 0], api.trim(0x22d3ee, 20));
+      instrumentDisplay(group, caption, [0, 0, 0.026], width); bindControl(group, id); return group;
+    }
+    bindControl(hood, 'hood');
+    var toolShort = { 'job-card': 'ORDER', 'lift-card': 'CHECK', 'lift-controls': 'LIFT', lamp: 'LAMP', socket: 'SOCKET', gauge: 'GAUGE', 'brake-kit': 'BRAKES', torque: 'TORQUE', 'drain-pan': 'DRAIN', filter: 'FILTER', funnel: 'OIL JUG', meter: 'METER', 'terminal-kit': 'CLAMP', checklist: 'VERIFY', aligner: 'ALIGN', 'tie-rod': 'TIE ROD' };
+    arShop3DTools(state).forEach(function (tool, index) {
+      var kit = new THREE.Group(); kit.name = 'workshop-tool-kit-' + tool[0]; kit.position.set(1.15 + index * 0.55, 1.28, -2.97); bench.add(kit);
+      kit.userData.toolId = tool[0]; kit.userData.equipped = state.tool === tool[0];
+      box(kit, 'tool-case-' + tool[0], [0.48, 0.31, 0.16], [0, 0, 0], api.trim(state.tool === tool[0] ? 0x28bb8b : 0x2385ad, 30));
+      pipe(kit, 'tool-handle-' + tool[0], [-0.10, 0.18, 0], [0.10, 0.18, 0], 0.025, metal);
+      instrumentDisplay(kit, toolShort[tool[0]] || 'TOOL', [0, 0.01, 0.087], 0.43); bindControl(kit, null, tool[0]);
+    });
+    if (currentTask) {
+      var taskParent = { intake: desk, lift: lift, engine: engine, brakes: brakes, oil: oil, exhaust: underbody, tools: bench }[currentTask.station];
+      var taskPos = { intake: [-3.55, 1.15, -1.43], lift: [-0.13, 1.20, 1.64], engine: [-1.3, 1.30, 1.05], brakes: [-1.3, 0.93, 1.15], oil: [-1.2, 0.29, 0.40], exhaust: [0.5, 0.33, 0.40], tools: [1.7, 1.60, -2.8] }[currentTask.station];
+      var alignmentConsole = brakes.getObjectByName('workshop-alignment-console');
+      if (instrumentKind === 'alignment' && alignmentConsole) { taskParent = alignmentConsole; taskPos = [0, 0.81, 0.09]; }
+      if ((instrumentKind === 'meter' || instrumentKind === 'jug') && instrumentReady) taskPos = [-2.4, 1.64, 1.15];
+      directButton(taskParent, 'task', currentTask.id === 'release' ? 'FINISH' : 'NEXT', taskPos, 0.30);
+      var taskParts = { 'wheel-off': 'mounted-wheel--1.3-0.79', drain: 'workshop-drain-pan', filter: 'service-oil-filter' };
+      if (taskParts[currentTask.id]) bindControl(scene.getObjectByName(taskParts[currentTask.id]), 'task');
+      if (currentTask.id === 'service' && state.job === 'brakes') bindControl(brakes.getObjectByName('brake-caliper--1.3-0.79'), 'task');
+      if (currentTask.id === 'service' && state.job === 'electrical') { bindControl(engine.getObjectByName('positive-post'), 'task'); bindControl(engine.getObjectByName('workshop-terminal-corrosion'), 'task'); }
+      if (currentTask.station === 'lift') bindControl(lift.getObjectByName('lift-control-panel'), 'task');
+      if (instrumentKind === 'torque' && !state.wheelSeated) {
+        bindControl(rack.getObjectByName('removed-front-wheel'), 'seat'); directButton(brakes, 'seat', 'SEAT', [-1.3, 0.55, 1.17], 0.26);
+      }
+      if (instrumentReady && instrumentKind === 'meter') {
+        bindControl(engine.getObjectByName('workshop-live-voltmeter'), 'read');
+        bindControl(engine.getObjectByName('voltmeter-mode-dial'), 'meter-mode');
+        bindControl(engine.getObjectByName('voltmeter-dial-mark'), 'meter-mode');
+        bindControl(engine.getObjectByName('workshop-meter-black-probe'), 'meter-contact');
+        directButton(engine, 'meter-contact', 'PROBES', [-2.08, 1.32, 1.17], 0.22);
+        directButton(engine, 'meter-load', 'LOAD', [-2.08, 1.09, 1.17], 0.22);
+      }
+      if (instrumentReady && instrumentKind === 'gauge') {
+        bindControl(brakes.getObjectByName('workshop-pad-thickness-gauge'), 'read');
+        directButton(brakes, 'gauge-surface', 'PLACE', [-0.86, 0.74, 1.10], 0.22);
+      }
+      if (instrumentReady && instrumentKind === 'jug') {
+        bindControl(engine.getObjectByName('workshop-measuring-jug'), 'read');
+        directButton(engine, 'jug-add', '+500', [-2.69, 1.14, 1.18], 0.20);
+        directButton(engine, 'jug-remove', '−100', [-2.10, 1.14, 1.18], 0.20);
+      }
+      if (instrumentKind === 'alignment' && alignmentConsole) {
+        alignmentConsole.traverse(function (object) { if (object.name.indexOf('workshop-display-') === 0 && !object.userData.workshopAction) bindControl(object, 'read'); });
+        directButton(alignmentConsole, 'toe-minus', '−.01', [-0.36, 0.81, 0.09], 0.24);
+        directButton(alignmentConsole, 'toe-plus', '+.01', [0.36, 0.81, 0.09], 0.24);
+        ['tyres', 'targets', 'centered'].forEach(function (check, i) { directButton(alignmentConsole, 'check-' + check, ['TYRES', 'TARGET', 'CENTRE'][i], [-0.35 + i * 0.35, 0.64, 0.09], 0.26); });
+      }
+    }
     if (state.job === 'alignment' && state.alignmentCutaway) {
       engine.visible = false;
       car.children.forEach(function (child) {
@@ -19758,6 +19882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function change(patch) { save(Object.assign({}, shop, patch)); }
         function pick(id) {
+          if (typeof id === 'string' && id.indexOf('shop-use-') === 0) { var directNext = arShop3DPick(shop, id); save(directNext); arAnnounce(directNext.feedback); return; }
           if (/^shop-toe-(left|right)$/.test(id)) {
             var toeNext = arShopOperate(Object.assign({}, shop, { station: 'brakes' }), { type: 'alignment-select', side: id.slice(9) });
             save(toeNext); arAnnounce(toeNext.feedback); return;
@@ -19790,13 +19915,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
-        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
+        var sceneState = [shop.job, shop.step, shop.tool, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
           onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
         function control(label, fn, attrs) {
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
+        }
+        function focusServiceControls() {
+          if (!task) { stationCamera('engine'); return; }
+          pick(task.station); stationCamera(task.station);
+          var kind = arShopInstrumentKind(shop);
+          if (kind === 'alignment') {
+            SHOP3D.reset(); SHOP3D.nudge(-0.50, 0.12);
+            SHOP3D.focus('brakes', { distance: 5.8, target: { x: -1.60, y: 0.65, z: 0 }, immediate: true });
+          } else if (kind === 'meter' || kind === 'jug') {
+            SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+            SHOP3D.focus('engine', { distance: 2.6, target: { x: -2.4, y: 1.25, z: 1.0 }, immediate: true });
+          } else if (task.station === 'lift') {
+            SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+            SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
+          }
+        }
+        function sceneControlPanel() {
+          function use(id) { pick(arShop3DToken(shop, id)); }
+          return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Work directly in the 3D shop'),
+            h('p', { style: { fontSize: 12, margin: '6px 0' } }, 'Click the hood, tool cases, instrument displays or blue controls. NEXT performs the current task. Dragging still orbits. These buttons provide the same actions with a keyboard.'),
+            h('div', { className: 'ar-shop-actions' },
+              control('Focus service controls', focusServiceControls, { 'data-ar-scene-focus': true }),
+              control('Choose tools in 3D', function () {
+                pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+                SHOP3D.focus('tools', { distance: 2.6, target: { x: 1.7, y: 1.30, z: -2.97 }, immediate: true });
+              }, { 'data-ar-scene-tools-focus': true })),
+            h('p', { style: { fontSize: 12 } }, 'In hand: ' + (SHOP_TOOLS.filter(function (tool) { return tool[0] === shop.tool; })[0] || ['', 'No listed tool'])[1]),
+            h('div', { className: 'ar-shop-actions', 'aria-label': 'Current tool tray' }, arShop3DTools(shop).map(function (tool) {
+              return control(tool[1], function () { use('equip-' + tool[0]); }, { key: tool[0], 'data-ar-scene-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
+            })),
+            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).map(function (action) {
+              return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id });
+            })),
+            task && (task.id === 'measure' || task.id === 'refill') && h('div', { style: { marginTop: 12 } },
+              h('label', { htmlFor: 'ar-shop-scene-answer', style: { display: 'block', fontSize: 12, marginBottom: 6 } }, job.question + ' (' + job.unit + ')'),
+              h('input', { id: 'ar-shop-scene-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); },
+                style: { minHeight: 44, width: '100%', boxSizing: 'border-box', background: '#fff', color: '#102033', padding: 10, borderRadius: 6 } })),
+            task && task.id === 'release' && h('div', { style: { marginTop: 12 } }, h('label', { htmlFor: 'ar-shop-scene-notes', style: { fontSize: 12 } }, 'Customer handoff'),
+              h('textarea', { id: 'ar-shop-scene-notes', rows: 3, maxLength: 2000, value: shop.notes, onChange: function (e) { change({ notes: e.target.value }); }, style: { width: '100%', boxSizing: 'border-box', padding: 10, background: '#fff', color: '#102033', borderRadius: 6 } })),
+            h('p', { 'data-ar-scene-feedback': true, style: { fontSize: 13, color: '#a5f3fc', marginBottom: 0, minHeight: 20 } }, shop.feedback || 'Choose equipment, then focus the service controls.'));
         }
         function alignmentPanel() {
           var toe = arShopAlignment(shop), setup = task.id === 'alignment-setup';
@@ -19884,17 +20050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   reading ? reading.value + ' ' + reading.unit : '— —'),
                 reading && h('p', { 'data-ar-shop-reading-valid': String(reading.valid) }, (reading.valid ? '✓ ' : '↺ ') + reading.detail),
                 control('Capture reading', function () { operate({ type: 'read' }); }, { 'data-ar-shop-instrument-read': true, style: btnSecondary({ minHeight: 44, marginTop: 10, width: '100%' }) })),
-            control('Show equipment in 3D', function () {
-              pick(task.station); stationCamera(task.station);
-              if (kind === 'alignment' && SHOP3D.focus) {
-                SHOP3D.reset(); SHOP3D.nudge(-0.50, 0.12);
-                SHOP3D.focus('brakes', { distance: 5.8, target: { x: -1.60, y: 0.65, z: 0 }, immediate: true });
-              }
-              if ((kind === 'meter' || kind === 'jug') && SHOP3D.focus) {
-                SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
-                SHOP3D.focus('engine', { distance: 2.6, target: { x: -2.4, y: 1.16, z: 1.0 }, immediate: true });
-              }
-            }, { 'data-ar-shop-instrument-focus': true, style: btnGhost({ minHeight: 44, marginTop: 10, width: '100%' }) }));
+            control('Show equipment in 3D', focusServiceControls, { 'data-ar-shop-instrument-focus': true, style: btnGhost({ minHeight: 44, marginTop: 10, width: '100%' }) }));
         }
 
         function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
@@ -19941,6 +20097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   control('View selected station', function () { stationCamera(shop.station); }, { 'data-ar-shop-camera': 'station' }),
                   control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
                 h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Drag to orbit · scroll to zoom · arrow keys rotate · + / − zoom · 0 resets. Select a station below for the same content.')),
+              sceneControlPanel(),
               h('nav', { className: 'ar-shop-stations', 'aria-label': 'Workshop stations' }, SHOP_STATIONS.map(function (p) {
                 return control(p.label, function () { pick(p.id); }, { key: p.id, 'data-ar-shop-station': p.id, 'aria-pressed': p.id === shop.station,
                   style: btnSecondary({ minHeight: 48, textAlign: 'left', fontSize: 12, borderLeft: '4px solid ' + (isContrast ? T.accent : p.color), background: p.id === shop.station ? T.cardAlt : T.card, fontWeight: p.id === shop.station ? 800 : 500 }) });

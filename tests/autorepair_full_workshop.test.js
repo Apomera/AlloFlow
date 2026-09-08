@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -253,4 +253,85 @@ it('accepts a valid brake-gauge capture persisted before alignment was added', (
       kind: 'gauge', value: 2, unit: 'mm', valid: true, detail: 'Friction lining measured separately from the backing plate.' } });
   expect(model.advance(state)).toMatchObject({ step: 8, measured: true });
   expect(model.advance(state).history.at(-1).result).toContain('Captured: 2 mm.');
+});
+
+
+describe('Direct physical workshop controls', () => {
+  function direct(state, id) { return model.direct(state, model.token(state, id)); }
+  it('offers three distinct tool cases, including the required equipment, at every task', () => {
+    for (const job of model.jobs) for (let i = 0; i < job.tasks.length; i++) {
+      const state = model.normalize({ job: job.id, step: i });
+      const choices = model.tools(state).map(tool => tool[0]);
+      expect(new Set(choices).size).toBe(3); expect(choices).toContain(job.tasks[i].tool);
+    }
+  });
+  it('picks up tools without completing a task and rejects stale tray events', () => {
+    const state = model.initial('brakes');
+    const picked = direct(state, 'equip-job-card');
+    expect(picked).toMatchObject({ tool: 'job-card', station: 'tools', step: 0 });
+    const next = direct(picked, 'task');
+    expect(next.step).toBe(1);
+    expect(model.direct(next, model.token(state, 'task')).step).toBe(1);
+    expect(model.direct(next, model.token(state, 'equip-job-card')).tool).toBe('job-card');
+    expect(direct(state, 'equip-unknown').step).toBe(0);
+  });
+  it('retains task equipment and lift interlocks on physical controls', () => {
+    let state = model.normalize({ job: 'brakes', step: 2, lift: 'prepared', tool: 'lamp' });
+    expect(direct(state, 'task').lift).toBe('prepared');
+    state = { ...state, tool: 'lift-controls' };
+    expect(direct(state, 'task')).toMatchObject({ step: 3, lift: 'low', station: 'lift' });
+    expect(direct({ ...state, lift: 'ground' }, 'task').step).toBe(2);
+    expect(direct(model.normalize({ job: 'brakes', step: 6, tool: 'socket', lift: 'raised' }), 'task').wheelRemoved).toBe(false);
+  });
+  it('operates the hood independently and invalidates a previous capture', () => {
+    const state = model.normalize({ job: 'electrical', step: 2, tool: 'meter', hood: true, reading: { value: 1.6 } });
+    const closed = direct(state, 'hood');
+    expect(closed).toMatchObject({ hood: false, reading: null, step: 2, station: 'engine' });
+    expect(direct(closed, 'read').reading).toBeNull();
+    expect(direct(closed, 'hood').hood).toBe(true);
+  });
+  it('sets up and captures a loaded connection measurement through the physical dispatcher', () => {
+    let state = model.normalize({ job: 'electrical', step: 2, hood: true, tool: 'meter', answer: '1.4' });
+    state = direct(state, 'meter-contact'); state = direct(state, 'meter-load');
+    state = direct(state, 'read'); expect(state.reading).toMatchObject({ value: 1.6, valid: true });
+    state = direct(state, 'meter-mode'); expect(state.reading).toBeNull();
+    expect(direct(state, 'read').reading).toBeNull();
+    state = direct(state, 'meter-mode'); state = direct(state, 'read');
+    expect(direct(state, 'task')).toMatchObject({ step: 3, measured: true });
+  });
+  it('cannot configure physical equipment with the wrong tool or insufficient access', () => {
+    const state = model.normalize({ job: 'brakes', step: 7, lift: 'raised', wheelRemoved: true, tool: 'gauge' });
+    expect(direct(state, 'gauge-surface').instrument.surface).toBe('lining');
+    expect(direct({ ...state, lift: 'locked', tool: 'socket' }, 'gauge-surface').instrument.surface).toBe('lining');
+  });
+  it('changes oil quantity but still requires a fresh capture and correct calculation to refill', () => {
+    let state = model.normalize({ job: 'oil', step: 9, tool: 'funnel', plugSecured: true, serviced: true });
+    state = direct(state, 'jug-add'); expect(state.instrument.jugMl).toBe(4600);
+    state = direct(state, 'read'); expect(direct(state, 'task').refilled).toBe(false);
+    state = direct({ ...state, answer: '0.5' }, 'task'); expect(state.refilled).toBe(true);
+    expect(direct(state, 'jug-add').instrument.jugMl).toBe(4600);
+  });
+  it('adjusts the selected alignment side and blocks a stale adjustment after completing service', () => {
+    let state = model.normalize({ job: 'alignment', step: 3, measured: true, alignmentReady: true, tool: 'tie-rod', alignment: { left: 10, right: 10, selected: 'right', tyres: true, targets: true, centered: true } });
+    state = direct(state, 'toe-plus'); expect(state.alignment).toMatchObject({ left: 10, right: 11 });
+    const oldToken = model.token(state, 'toe-minus');
+    state = direct(state, 'read'); state = direct(state, 'task'); expect(state.step).toBe(4);
+    expect(model.direct(state, oldToken).alignment.right).toBe(11);
+  });
+  it('retains wheel seating, torque sequence and customer handoff gates', () => {
+    let state = model.normalize({ job: 'brakes', step: 9, tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true });
+    state = direct(state, 'seat'); expect(state.wheelSeated).toBe(true);
+    expect(direct(state, 'task').wheelRemoved).toBe(true);
+    state = model.normalize({ job: 'electrical', step: 5, tool: 'job-card', verified: true });
+    expect(direct(state, 'task').released).toBe(false);
+  });
+  it('renders equivalent direct actions and calculation inputs when WebGL is unavailable', () => {
+    resetStemLab(); loadTool(file, 'autoRepair');
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: { job: 'electrical', step: 2, tool: 'meter', hood: true } } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelectorAll('[data-ar-scene-tool]')).toHaveLength(3);
+    expect(host.querySelector('[data-ar-scene-action="meter-load"]')).not.toBeNull();
+    expect(host.querySelector('label[for="ar-shop-scene-answer"]')).not.toBeNull();
+    expect(html).toContain('3D view unavailable');
+  });
 });

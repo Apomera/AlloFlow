@@ -94,6 +94,27 @@ Alignment evidence:
 - [Chassis and readings after adjustment](../reports/automobile-workshop/alignment-after.png)
 - [Mobile alignment controls](../reports/automobile-workshop/alignment-mobile.png)
 
+## Follow-up: direct 3D workshop controls
+
+This pass turns the scene into an operational surface. The hood opens or closes when clicked. A tray on the tool bench presents three labeled equipment cases for the current task; selecting a case changes the tool in hand. The choices include the required equipment without highlighting it as the answer. Focus controls bring the tray or current service equipment into view.
+
+Blue NEXT controls on the service desk, lift, vehicle stations and alignment console run the current task through the existing station, equipment, access, arithmetic, evidence and handoff rules. The front wheel, drain pan, filter, front caliper and faulty battery connection also operate their corresponding service task when that task is current. Wheel seating and the existing five-fastener reassembly checks remain separate.
+
+Physical instrument interactions include clicking a meter/gauge/jug display to capture a reading, turning the meter dial between DC volts and resistance, switching probe contacts and simulated starter load, moving the pad gauge between lining and backing plate, adding/removing measured oil, and incrementing the selected toe angle from console controls. Alignment preparation checks are also available on the console. The physical controls use the same dispatcher as the equivalent buttons beside the viewer.
+
+The nearby control panel shows equipment in hand, feedback, the current actions and any required calculation or release notes. Learners can stay near the 3D view while completing the work; the detailed work order remains synchronized. The HTML path works without WebGL and supports keyboard operation. Orbit drags retain the viewer's existing movement threshold and do not trigger an action.
+
+Control identifiers include the work order and task step. A stale click cannot operate a subsequent task or equip a case from an earlier tray. Tool selection alone never completes a task. Changing measurement setup still invalidates old evidence, and direct clicks cannot bypass the service sequence or required verification. Scene rebuilding depends on task/tool/physical changes, while typing calculations and notes preserves the scene.
+
+Direct-control validation: **491 tests across all 39 automobile suites passed**, including 44 workshop state/render tests. **All 12 workshop browser tests passed** in Chromium with real Three.js/WebGL. The three new browser checks exercise actual hood, tool-case, meter dial/display, probe/load, terminal, lift, jug and alignment-control clicks; a drag over the lift control does not activate it. Keyboard Enter operates the equivalent mobile action, calculations stay synchronized, and mobile layout does not overflow horizontally. The final browser run took 6.7 minutes; the automobile regression took 94.60 seconds. Physical control close-ups, tool labels and the mobile action panel were visually reviewed. Syntax, scoped diff hygiene and source/public parity passed. No deployment or installer build was performed.
+
+Direct-control evidence:
+
+- [Physical tool tray](../reports/automobile-workshop/direct-tool-tray.png)
+- [Meter controls](../reports/automobile-workshop/direct-meter-controls.png)
+- [Lift controls](../reports/automobile-workshop/direct-lift-controls.png)
+- [Keyboard controls on mobile](../reports/automobile-workshop/direct-controls-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

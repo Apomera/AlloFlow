@@ -9,7 +9,7 @@ const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_autorepair.js', to
       function Probed() {
         var renderer = Reflect.construct(Real, Array.prototype.slice.call(arguments));
         var render = renderer.render;
-        renderer.render = function (scene, camera) { window.__shopScene = scene; window.__shopCamera = camera; return render.apply(renderer, arguments); };
+        renderer.render = function (scene, camera) { window.__shopScene = scene; window.__shopCamera = camera; window.__shopRenderCount = (window.__shopRenderCount || 0) + 1; return render.apply(renderer, arguments); };
         return renderer;
       }
       Probed.prototype = Real.prototype; THREE.WebGLRenderer = Probed;
@@ -392,5 +392,130 @@ test('alignment rejects a misleading passing total and preserves adjustments on 
   await expect(page.locator('[data-ar-alignment-side="right"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.locator('[data-ar-shop-instrument]').screenshot({ path: 'reports/automobile-workshop/alignment-mobile.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+async function shopPoint(page: any, name: string) {
+  await page.evaluate(() => { (window as any).__shopClickStable = null; });
+  await page.waitForFunction(n => {
+    const w = window as any, object = w.__shopScene?.getObjectByName(n);
+    if (!object || !w.__shopCamera) return false;
+    const point = object.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const previous = w.__shopClickStable;
+    if (previous && previous.frame === w.__shopRenderCount) return false;
+    const count = previous && Math.abs(previous.x - point.x) + Math.abs(previous.y - point.y) < 0.00001 ? previous.count + 1 : 0;
+    w.__shopClickStable = { frame: w.__shopRenderCount, x: point.x, y: point.y, count };
+    return count >= 3 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1;
+  }, name);
+  return await page.evaluate(n => {
+    const w = window as any, object = w.__shopScene.getObjectByName(n);
+    const point = object.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const rect = document.querySelector('.ar-bay-viewport canvas')!.getBoundingClientRect();
+    return { x: rect.left + (point.x + 1) / 2 * rect.width, y: rect.top + (1 - point.y) / 2 * rect.height };
+  }, name);
+}
+async function clickShop(page: any, name: string) { const point = await shopPoint(page, name); await page.mouse.click(point.x, point.y); }
+async function pickPhysicalTool(page: any, id: string) {
+  await page.locator('[data-ar-scene-tools-focus]').click();
+  await clickShop(page, 'workshop-tool-kit-' + id);
+  await expect(page.locator('#ar-shop-tool')).toHaveValue(id);
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Picked up');
+  await page.locator('[data-ar-scene-focus]').click();
+}
+
+test('direct 3D hood, tool cases and meter controls capture diagnostic evidence', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 1, station: 'engine', tool: 'lamp' } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-hood');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Hood opened');
+  await expect(page.locator('[data-ar-shop-task="hood"]')).toBeVisible();
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toBeVisible();
+  await page.locator('[data-ar-scene-tools-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-tool-tray.png' });
+  await clickShop(page, 'workshop-tool-kit-meter');
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('meter');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'voltmeter-mode-dial');
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('resistance');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'voltmeter-mode-dial');
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('dcv');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-meter-contact');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-meter-load');
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('starter');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-display-— V');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-meter-controls.png' });
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Check the measurement');
+  await page.locator('#ar-shop-scene-answer').fill('1.4');
+  await expect(page.locator('#ar-shop-answer')).toHaveValue('1.4');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  await pickPhysicalTool(page, 'terminal-kit');
+  await clickShop(page, 'workshop-terminal-corrosion');
+  await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();
+  await pickPhysicalTool(page, 'meter');
+  await clickShop(page, 'workshop-display-— V');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('0.08 V');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('direct lift controls distinguish orbit drag from a click and enforce the current task', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Choose Lift controls');
+  await pickPhysicalTool(page, 'lift-controls');
+  const point = await shopPoint(page, 'workshop-control-task');
+  await page.mouse.move(point.x, point.y); await page.mouse.down();
+  await page.mouse.move(point.x + 70, point.y + 20, { steps: 6 }); await page.mouse.up();
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toBeVisible();
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="stability"]')).toBeVisible();
+  await expect(page.locator('[data-ar-shop-lift]')).toHaveText('Low lift — check stability');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-lift-controls.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('direct jug and alignment controls change scene state and remain keyboard-accessible on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', serviced: true, plugSecured: true } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-add');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4600');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'jug-clear-container');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-remove');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 10, right: 10, selected: 'right', tyres: true, targets: true, centered: true } }));
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-toe-plus');
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.21');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('[data-ar-scene-action="toe-minus"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.2');
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'true');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-scene-controls]').screenshot({ path: 'reports/automobile-workshop/direct-controls-mobile.png' });
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
