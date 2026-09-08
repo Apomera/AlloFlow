@@ -1354,6 +1354,75 @@ function __alloAST(k, fb) {
   }
   window.__alloArchGridNav = { data: archGridNavigationData, jump: archGridJump, labels: ARCH_GRID_NAV_LABELS };
 
+
+  var ARCH_SCHEDULE_LABELS = {
+    "title": "Materials schedule",
+    "eyebrow": "Build quantities",
+    "close": "Close schedule",
+    "scope": "Schedule scope",
+    "all": "Full build",
+    "floor": "One floor",
+    "floor_select": "Schedule floor",
+    "group": "Group quantities by",
+    "material": "Material",
+    "shape": "Shape",
+    "blocks": "Blocks",
+    "materials": "Materials",
+    "credits": "Teaching credits",
+    "share": "{percent}% of blocks",
+    "caption": "{group} quantities · {scope}",
+    "scope_note": "Counts include all materials and shapes in the selected scope, including anything hidden by 3D filters.",
+    "replay_note": "This schedule shows the live build. Replay does not change these quantities.",
+    "credits_note": "Credits use the studio’s teaching prices per block. They are not real construction costs.",
+    "download": "Download schedule CSV",
+    "downloaded": "Materials schedule downloaded.",
+    "download_error": "The schedule could not be downloaded. Try again.",
+    "empty": "No blocks in this scope.",
+    "empty_help": "Choose another floor or add blocks to your build.",
+    "item": "Item",
+    "floor_name": "Floor Y={floor}"
+};
+  function archScheduleData(current, scope, floor) {
+    var blocks = getArchRuntimeBlocks(current), level = archDesignInteger(floor, 0, 31);
+    var data = { scope: scope === 'floor' ? 'floor' : 'all', floor: level == null ? 0 : level,
+      count: 0, credits: 0, materialCount: 0, floors: Array(32).fill(0), material: [], shape: [] };
+    var groups = { material: {}, shape: {} };
+    blocks.forEach(function (block) {
+      data.floors[block.y]++;
+      if (data.scope === 'floor' && block.y !== data.floor) return;
+      var credit = ARCH_DESIGN_COST[block.material];
+      data.count++; data.credits += credit;
+      ['material', 'shape'].forEach(function (kind) {
+        var id = block[kind], entry = groups[kind][id] || (groups[kind][id] = { id: id, count: 0, credits: 0 });
+        entry.count++; entry.credits += credit;
+      });
+    });
+    ['material', 'shape'].forEach(function (kind) {
+      data[kind] = Object.keys(groups[kind]).map(function (id) {
+        var entry = groups[kind][id]; entry.percent = Number((100 * entry.count / data.count).toFixed(1)); return entry;
+      }).sort(function (a, b) { return b.count - a.count || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); });
+    });
+    data.materialCount = data.material.length;
+    return data;
+  }
+  function archScheduleCSV(data, group, names) {
+    if (!data || !data.count) return '';
+    var kind = group === 'shape' ? 'shape' : 'material';
+    var rows = [['Scope', 'Floor', 'Group', 'Item', 'Blocks', 'Share (%)', 'Teaching credits']];
+    data[kind].forEach(function (entry) {
+      rows.push([data.scope, data.scope === 'floor' ? data.floor : '', kind,
+        names && names[entry.id] || entry.id, entry.count, entry.percent, entry.credits]);
+    });
+    return '\uFEFF' + rows.map(function (row) {
+      return row.map(function (value) {
+        var text = String(value);
+        if (typeof value === 'string' && /^\s*[=+\-@\t\r]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      }).join(',');
+    }).join('\r\n') + '\r\n';
+  }
+  window.__alloArchSchedule = { data: archScheduleData, csv: archScheduleCSV, labels: ARCH_SCHEDULE_LABELS };
+
   // Pure, atomic design operations: reject a clipped room or partial move.
   var ARCH_DESIGN_COST = { stone: 5, brick: 8, wood: 3, glass: 12, marble: 15, metal: 20 };
   function archDesignInteger(value, min, max) {
@@ -3835,6 +3904,83 @@ function __alloAST(k, fb) {
       coachTip = '\uD83C\uDFF0 ' + t('stem.archstudio.coach_legendary', 'Legendary architect! Export your creation as STL for 3D printing!');
     }
 
+
+    function scheduleText(key, values) {
+      var text = t('stem.archstudio.schedule_' + key, ARCH_SCHEDULE_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function closeSchedule() {
+      upd('showBOM', false);
+      setTimeout(function () { var button = document.getElementById('arch-schedule-toggle'); if (button) button.focus(); }, 0);
+    }
+    function toggleSchedule() {
+      if (showBOM) { closeSchedule(); return; }
+      upd({ showBOM: true, showDesign: false, showProject: false });
+      setTimeout(function () {
+        var heading = document.getElementById('arch-schedule-heading'); if (heading) { heading.focus(); heading.scrollIntoView({ block: 'nearest' }); }
+      }, 0);
+    }
+    function renderSchedulePanel() {
+      if (!showBOM) return null;
+      var floor = archDesignInteger(d.scheduleFloor, 0, 31);
+      var data = archScheduleData(blocks, d.scheduleScope, floor == null ? editLayer : floor);
+      var group = d.scheduleGroup === 'shape' ? 'shape' : 'material';
+      var names = {}, metadata = group === 'shape' ? shapes : materials;
+      metadata.forEach(function (entry) { names[entry.id] = entry.label; });
+      var scopeName = data.scope === 'all' ? scheduleText('all') : scheduleText('floor_name', { floor: data.floor });
+      function downloadSchedule() {
+        var csv = archScheduleCSV(data, group, names), url = null;
+        if (!csv) return;
+        try {
+          var name = (archProjectText(d.projectName, 80).trim() || 'architecture-project').replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-');
+          url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+          var link = document.createElement('a'); link.href = url;
+          link.download = name + '.schedule-' + group + (data.scope === 'floor' ? '-floor-' + data.floor : '') + '.csv';
+          document.body.appendChild(link); link.click(); link.remove();
+          if (announceToSR) announceToSR(scheduleText('downloaded'));
+        } catch (_) { if (ctx.addToast) ctx.addToast(scheduleText('download_error'), 'error'); }
+        finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+      return el('section', { id: 'arch-schedule-panel', 'aria-labelledby': 'arch-schedule-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeSchedule(); } } },
+        el('div', { className: 'arch-schedule-heading-row' },
+          el('div', null, el('p', { className: 'arch-schedule-eyebrow' }, scheduleText('eyebrow')),
+            el('h2', { id: 'arch-schedule-heading', tabIndex: -1 }, scheduleText('title'))),
+          el('button', { type: 'button', className: 'arch-schedule-close', onClick: closeSchedule, 'aria-label': scheduleText('close') }, '×')),
+        el('div', { className: 'arch-schedule-controls' },
+          el('label', null, scheduleText('scope'),
+            el('select', { 'aria-label': scheduleText('scope'), value: data.scope, onChange: function (event) { upd({ scheduleScope: event.target.value, scheduleFloor: data.floor }); } },
+              ['all', 'floor'].map(function (scope) { return el('option', { key: scope, value: scope }, scheduleText(scope)); }))),
+          el('label', null, scheduleText('group'),
+            el('select', { 'aria-label': scheduleText('group'), value: group, onChange: function (event) { upd('scheduleGroup', event.target.value); } },
+              ['material', 'shape'].map(function (kind) { return el('option', { key: kind, value: kind }, scheduleText(kind)); }))),
+          data.scope === 'floor' && el('label', { className: 'arch-schedule-floor' }, scheduleText('floor_select'),
+            el('select', { 'aria-label': scheduleText('floor_select'), value: data.floor, onChange: function (event) { upd('scheduleFloor', Number(event.target.value)); } },
+              data.floors.map(function (count, level) { return el('option', { key: level, value: level }, gridNavText('option', { floor: level, count: count })); })))),
+        el('dl', { className: 'arch-schedule-totals' },
+          [['blocks', data.count], ['materials', data.materialCount], ['credits', data.credits]].map(function (item) {
+            return el('div', { key: item[0] }, el('dt', null, scheduleText(item[0])), el('dd', { 'data-arch-schedule-total': item[0] }, item[1]));
+          })),
+        showReplay && el('p', { className: 'arch-schedule-replay' }, scheduleText('replay_note')),
+        el('p', { className: 'arch-schedule-note' }, scheduleText('scope_note')),
+        data.count ? el('table', { className: 'arch-schedule-table' },
+          el('caption', null, scheduleText('caption', { group: scheduleText(group), scope: scopeName })),
+          el('thead', null, el('tr', null, ['item', 'blocks', 'credits'].map(function (key) { return el('th', { key: key, scope: 'col' }, scheduleText(key)); }))),
+          el('tbody', null, data[group].map(function (entry) {
+            var meta = metadata.find(function (m) { return m.id === entry.id; });
+            return el('tr', { key: entry.id, 'data-arch-schedule-row': entry.id },
+              el('th', { scope: 'row' },
+                el('div', { className: 'arch-schedule-item' }, el('span', { 'aria-hidden': 'true' }, meta && meta.icon), names[entry.id]),
+                el('span', { className: 'arch-schedule-share' }, scheduleText('share', { percent: entry.percent })),
+                el('span', { className: 'arch-schedule-bar', 'aria-hidden': 'true' }, el('span', { style: { width: entry.percent + '%' } }))),
+              el('td', { 'data-arch-schedule-count': 'true' }, entry.count), el('td', { 'data-arch-schedule-credits': 'true' }, entry.credits));
+          })))
+          : el('div', { className: 'arch-schedule-empty' }, el('strong', null, scheduleText('empty')), el('p', null, scheduleText('empty_help'))),
+        el('p', { className: 'arch-schedule-note' }, scheduleText('credits_note')),
+        el('button', { type: 'button', className: 'arch-schedule-download', disabled: !data.count, onClick: downloadSchedule }, scheduleText('download')));
+    }
+
     // ── Render helpers ──
     var analysisBar = function (label, value, max, color, suffix) {
       var pct = max > 0 ? Math.round((value / max) * 100) : 0;
@@ -4772,6 +4918,36 @@ function __alloAST(k, fb) {
         + '.theme-contrast #arch-studio-region .arch-grid-navigation{background:#020617;border-color:#ffff00;}'
         + '@media(max-width:680px){#arch-studio-region .arch-grid-editor{padding-left:8px!important;padding-right:8px!important;}#arch-studio-region .arch-grid-navigation{padding:9px;}}'
 
+
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-schedule{width:clamp(300px,31vw,400px)!important;}'
+        + '#arch-schedule-panel{padding:14px;border:1px solid #b89751;border-radius:14px;background:linear-gradient(155deg,#283348,#152031);color:#f1f5f9;flex:none;}'
+        + '#arch-schedule-panel .arch-schedule-heading-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}'
+        + '#arch-schedule-panel h2{margin:4px 0 0;font-size:20px;line-height:1.2;}'
+        + '#arch-schedule-panel .arch-schedule-eyebrow{margin:0;color:#fde68a;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;}'
+        + '#arch-schedule-panel button,#arch-schedule-panel select{min-height:44px;min-width:0;border:1px solid #94a3b8;border-radius:8px;background:#0f172a;color:#f1f5f9;font:inherit;font-size:12px;padding:8px;cursor:pointer;}'
+        + '#arch-schedule-panel .arch-schedule-close{margin-left:auto;flex:none;width:44px;font-size:22px;}'
+        + '#arch-schedule-panel .arch-schedule-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}'
+        + '#arch-schedule-panel label{display:grid;gap:5px;font-size:12px;color:#e2e8f0;}'
+        + '#arch-schedule-panel .arch-schedule-floor{grid-column:1/-1;}'
+        + '#arch-schedule-panel .arch-schedule-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0;}'
+        + '#arch-schedule-panel .arch-schedule-totals>div{background:#0f1d30;border:1px solid #526178;border-radius:9px;padding:10px;}'
+        + '#arch-schedule-panel .arch-schedule-totals>div:last-child{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;border-color:#b89751;}'
+        + '#arch-schedule-panel dt{font-size:12px;color:#cbd5e1;}#arch-schedule-panel dd{margin:3px 0 0;color:#fef3c7;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;}'
+        + '#arch-schedule-panel .arch-schedule-note{font-size:12px;color:#cbd5e1;line-height:1.5;margin:12px 0;}'
+        + '#arch-schedule-panel .arch-schedule-replay{padding:10px;border:1px solid #eab308;border-radius:8px;color:#fef3c7;background:#422006;font-size:12px;line-height:1.5;}'
+        + '#arch-schedule-panel table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;}'
+        + '#arch-schedule-panel caption{text-align:left;color:#fde68a;font-weight:700;padding:8px 0;}'
+        + '#arch-schedule-panel th,#arch-schedule-panel td{padding:10px 5px;border-bottom:1px solid #475569;overflow-wrap:anywhere;vertical-align:top;}'
+        + '#arch-schedule-panel th{text-align:left;}#arch-schedule-panel thead th{color:#cbd5e1;font-size:11px;}'
+        + '#arch-schedule-panel th:first-child{width:50%;}#arch-schedule-panel td,#arch-schedule-panel th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums;}'
+        + '#arch-schedule-panel tbody th{font-weight:600;}#arch-schedule-panel .arch-schedule-item{display:flex;gap:5px;align-items:center;}'
+        + '#arch-schedule-panel .arch-schedule-share{display:block;font-size:10px;color:#cbd5e1;font-weight:400;margin:5px 0;}'
+        + '#arch-schedule-panel .arch-schedule-bar{display:block;height:4px;border-radius:4px;background:#475569;overflow:hidden;}#arch-schedule-panel .arch-schedule-bar>span{display:block;height:100%;background:#fcd34d;}'
+        + '#arch-schedule-panel .arch-schedule-empty{padding:14px;border:1px dashed #94a3b8;border-radius:9px;font-size:13px;line-height:1.5;}#arch-schedule-panel .arch-schedule-empty p{margin-bottom:0;color:#cbd5e1;}'
+        + '#arch-schedule-panel .arch-schedule-download{width:100%;background:#fcd34d;color:#1e293b;border-color:#fde68a;font-weight:800;}'
+        + '.theme-contrast #arch-schedule-panel{background:#000;border-color:#ffff00;}.theme-contrast #arch-schedule-panel .arch-schedule-bar>span{background:#ffff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-schedule{width:auto!important;max-height:min(72vh,620px);}#arch-schedule-panel{padding:12px;}}'
+
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -4920,12 +5096,12 @@ function __alloAST(k, fb) {
         ),
         el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
         el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
-          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false, showBOM: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.design_open', 'Design workbench')),
         el('button', { id: 'arch-drawings-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
         el('button', { id: 'arch-project-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showProject && !showDrawings, 'aria-controls': showProject && !showDrawings ? 'arch-project-panel' : undefined,
-          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false, showBOM: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
         ),
@@ -4945,7 +5121,9 @@ function __alloAST(k, fb) {
         pillBtn('\uD83D\uDCC2 Templates', showTemplates, 'rgba(56,189,248,.2)', '#38bdf8', '#7dd3fc', function () { upd('showTemplates', !showTemplates); }),
         pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }),
         pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }),
-        pillBtn('\uD83D\uDCCB BOM', showBOM, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { upd('showBOM', !showBOM); }),
+        el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
+          'aria-expanded': !!showBOM, 'aria-controls': showBOM ? 'arch-schedule-panel' : undefined,
+          style: { background: showBOM ? '#713f12' : 'rgba(71,85,105,.3)', border: '1px solid #b89751', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, scheduleText('title')),
         pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showStats', !showStats); }),
         pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }),
         pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }),
@@ -4976,8 +5154,9 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
+          renderSchedulePanel(),
           renderProjectPanel(),
           renderDesignPanel(),
 
@@ -5287,32 +5466,6 @@ function __alloAST(k, fb) {
               el('div', null, '\uD83D\uDCE6 Volume: ' + realVolM3.toFixed(1) + ' m\u00B3'),
               el('div', null, '\u2696\uFE0F Est. weight: ' + realWeightTons.toFixed(1) + ' tonnes'),
               scaleComparisons.length > 0 && el('div', { style: { color: '#fbbf24', fontWeight: 600, marginTop: 2 } }, '\uD83C\uDFD7\uFE0F ' + scaleComparisons[0])
-            )
-          ),
-
-          // Bill of Materials
-          showBOM && totalBlocks > 0 && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Bill of Materials'),
-            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-              bomMaterialEntries.map(function (e) {
-                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 10 } },
-                  el('span', null, e.icon),
-                  el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
-                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count),
-                  budgetEnabled && el('span', { style: { color: '#fbbf24', fontSize: 10 } }, '\uD83D\uDCB2' + e.cost)
-                );
-              })
-            ),
-            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-              bomShapeEntries.map(function (e) {
-                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 10 } },
-                  el('span', null, e.icon),
-                  el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
-                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count)
-                );
-              })
             )
           ),
 

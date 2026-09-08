@@ -1834,4 +1834,115 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+
+  test('materials schedule opens with focus and filters quantities without editing the build', async ({ page }, testInfo) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false, filterMaterial: 'stone', viewLayer: 0 }), tower());
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.getByRole('button', { name: 'Materials schedule', exact: true }).click();
+    const panel = page.locator('#arch-schedule-panel');
+    await expect(panel.getByRole('heading', { name: 'Materials schedule', exact: true })).toBeFocused();
+    await expect(panel.locator('[data-arch-schedule-total=blocks]')).toHaveText('13');
+    await expect(panel.locator('[data-arch-schedule-total=credits]')).toHaveText('87');
+    await panel.getByLabel('Schedule scope', { exact: true }).selectOption('floor');
+    await panel.getByLabel('Schedule floor', { exact: true }).selectOption('1');
+    await expect(panel.locator('[data-arch-schedule-total=blocks]')).toHaveText('4');
+    await expect(panel.locator('[data-arch-schedule-total=credits]')).toHaveText('32');
+    await panel.getByLabel('Group quantities by', { exact: true }).selectOption('shape');
+    await expect(panel.locator('caption')).toHaveText('Shape quantities · Floor Y=1');
+    expect(await page.evaluate(() => ({ blocks: (window as any).__bucket().blocks.length, history: (window as any).__bucket().undoStack || [], filter: (window as any).__bucket().filterMaterial, layer: (window as any).__bucket().viewLayer, floor: (window as any).__bucket().editLayer || 0 }))).toEqual({ blocks: 13, history: [], filter: 'stone', layer: 0, floor: 0 });
+    await panel.getByLabel('Schedule scope', { exact: true }).selectOption('all');
+    await panel.getByLabel('Group quantities by', { exact: true }).selectOption('material');
+    await page.screenshot({ path: testInfo.outputPath('materials-schedule-desktop.png'), fullPage: true });
+    await panel.getByRole('heading', { name: 'Materials schedule', exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Materials schedule', exact: true })).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('materials schedule exports the selected floor and refreshes after build edits and undo', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', showBOM: true, projectName: 'Studio review', soundEnabled: false, blocks: [
+      { x: 0, y: 0, z: 0, material: 'stone', shape: 'block' },
+      { x: 1, y: 0, z: 0, material: 'wood', shape: 'slab' },
+      { x: 0, y: 1, z: 0, material: 'glass', shape: 'block' },
+      { x: 1, y: 1, z: 0, material: 'wood', shape: 'slab' }
+    ] }));
+    const panel = page.locator('#arch-schedule-panel');
+    await panel.getByLabel('Schedule scope', { exact: true }).selectOption('floor');
+    await panel.getByLabel('Schedule floor', { exact: true }).selectOption('1');
+    await panel.getByLabel('Group quantities by', { exact: true }).selectOption('shape');
+    const downloadEvent = page.waitForEvent('download');
+    await panel.getByRole('button', { name: 'Download schedule CSV', exact: true }).click();
+    const download = await downloadEvent;
+    expect(download.suggestedFilename()).toBe('Studio review.schedule-shape-floor-1.csv');
+    const csv = await readFile((await download.path())!, 'utf8');
+    expect(csv).toContain('"floor","1","shape","Block","1","50","12"');
+    expect(csv).toContain('"floor","1","shape","Slab","1","50","3"');
+    await panel.getByLabel('Schedule floor', { exact: true }).selectOption('31');
+    await expect(panel.getByRole('button', { name: 'Download schedule CSV', exact: true })).toBeDisabled();
+    await expect(panel.locator('.arch-schedule-empty')).toContainText('No blocks in this scope.');
+    await panel.getByLabel('Schedule scope', { exact: true }).selectOption('all');
+    await page.locator('[data-arch-cell="2,0,0"]').click();
+    await expect(panel.locator('[data-arch-schedule-total=blocks]')).toHaveText('5');
+    await expect(panel.locator('[data-arch-schedule-total=credits]')).toHaveText('28');
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect(panel.locator('[data-arch-schedule-total=blocks]')).toHaveText('4');
+    await expect(panel.locator('[data-arch-schedule-total=credits]')).toHaveText('23');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('materials schedule is usable during replay and preserves workspace state', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', showBOM: true, soundEnabled: false, showReplay: true, replayStep: 0, undoStack: [[]] }), tower());
+    const panel = page.locator('#arch-schedule-panel');
+    await expect(panel.locator('[data-arch-schedule-total=blocks]')).toHaveText('13');
+    await expect(panel.locator('.arch-schedule-replay')).toContainText('live build');
+    await expect(panel.getByRole('button', { name: 'Download schedule CSV', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: 'Drawing desk', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+    await page.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect(panel).toBeVisible();
+    await page.getByRole('button', { name: 'Design workbench', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+    expect(await page.evaluate(() => ({ replay: (window as any).__bucket().showReplay, step: (window as any).__bucket().replayStep, blocks: (window as any).__bucket().blocks.length, undo: (window as any).__bucket().undoStack }))).toEqual({ replay: true, step: 0, blocks: 13, undo: [[]] });
+  });
+
+  test('materials schedule fits a phone and passes accessibility checks in three appearances', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', showBOM: true, soundEnabled: false }), tower());
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:860px}' });
+    const panel = page.locator('#arch-schedule-panel');
+    await panel.getByLabel('Schedule scope', { exact: true }).selectOption('floor');
+    await panel.getByLabel('Schedule floor', { exact: true }).selectOption('0');
+    await panel.getByRole('heading', { name: 'Materials schedule', exact: true }).focus();
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Close schedule', exact: true })).toBeFocused();
+    await page.screenshot({ path: testInfo.outputPath('materials-schedule-phone.png'), fullPage: true });
+    const sizes = await panel.locator('button,select').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, height: r.height }; }));
+    expect(sizes.filter(r => r.left < 0 || r.right > 320 || r.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await panel.getByRole('button', { name: 'Download schedule CSV', exact: true }).scrollIntoViewIfNeeded();
+    await expect(panel.getByRole('button', { name: 'Download schedule CSV', exact: true })).toBeInViewport();
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addStyleTag({ content: '#wrap{height:920px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
 });

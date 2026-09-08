@@ -41,6 +41,18 @@ Enable **Show floor below** to align a new floor with the one beneath it. Dashed
 
 Counts and references include every material, regardless of the 3D view filters. During construction replay, they follow the selected replay frame and editing stays read-only. The grid retains arrow-key navigation, a single tab stop among cells, and focus after coordinate jumps. Its controls wrap for phones, with 44px floor buttons, coordinate inputs, and disclosure targets.
 
+## Materials schedule
+
+Open **Materials schedule** in the feature toolbar. It replaces the former BOM list and opens at the top of a wider sidebar, with keyboard focus on its heading. Choose **Full build** or **One floor**, then group quantities by **Material** or **Shape**. The floor selector lists all 32 levels and their live block counts. Schedule floor selection is independent of the editing floor.
+
+Summary cards show block count, number of materials, and teaching credits. The table includes quantities, each group’s share of blocks, and its credit total. Shares are rounded to one decimal place and may not sum to exactly 100%. Credits use the existing studio price for each block’s material; shapes with several materials sum those individual prices. These are occupied grid-block quantities and teaching prices, not physical material volumes or real construction estimates.
+
+The schedule includes the whole live model within its selected scope, including geometry hidden by 3D filters. It explicitly identifies this live-model scope during replay. Changing scope, grouping, or floor and downloading a schedule do not change geometry, undo history, the editing floor, view filters, or replay. Quantities refresh after edits and undo/redo. Empty scopes show guidance and disable download.
+
+**Download schedule CSV** exports the selected grouping and scope using the same quantities shown in the table. Columns are Scope, Floor, Group, Item, Blocks, Share (%), and Teaching credits. Column names and scope/group values are stable English identifiers; item names follow the displayed labels. The UTF-8 CSV includes a byte-order mark, quoted fields, escaped quotes, and protection against spreadsheet formula interpretation in text labels. The filename includes the project name, grouping, and selected floor when applicable.
+
+**Close schedule** returns focus to its toolbar button. Escape also closes it from the panel, except when a native floor or grouping selector owns the key. Opening Design workbench or Project & revisions closes the schedule; visiting Drawing desk and returning preserves it. Controls have 44px targets, the table uses row and column headers, and the phone sidebar scrolls to keep every row and the download reachable.
+
 ## Projects and revisions
 
 Open **Project & revisions** next to Design workbench. Give the build a name and design notes, then choose **Save snapshot**. The panel reports whether the current geometry and notes match the saved snapshot. Snapshots include names, notes, blocks, and their existing thumbnail; the browser gallery keeps the latest 50 snapshots.
@@ -111,7 +123,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all 12 Architecture Studio unit suites passed (347 tests), including 49 floor-grid navigation checks and 67 repeated-layout checks. Twelve Chromium workflows passed in the final floor-grid refinement: place, paint, erase, property picking, floor changes, distant imports and coordinate jumps, below-floor references, replay protection, undo/redo, WebGL fallback, keyboard focus, and 320px phone reflow and control sizes. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested grid state across light, dark, and high-contrast appearances. Desktop and phone grid screenshots were visually reviewed. Local browser validation disabled video/trace recording; the existing test assertions remain intact.
+Results: all 13 Architecture Studio unit suites passed (368 tests), including 21 materials-schedule checks. Eight Chromium workflows passed in the schedule refinement: scope and grouping, CSV content and filename, live quantity updates after edits and undo, replay and workspace preservation, keyboard focus, 320px phone controls and scrolling, plus existing design, project, workspace, and grid regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested schedule and grid states across light, dark, and high-contrast appearances. Desktop and phone schedule screenshots were visually reviewed. Local browser validation disabled video/trace recording; the existing test assertions remain intact.
 
 No deployment or push was performed.
 
