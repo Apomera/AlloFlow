@@ -173,6 +173,7 @@ const SCENES = {
   // aquifer / subsurface visuals, which nothing else in this file gets to.
   underground: ['Droplet Journey', 'Begin as a droplet', 'wait:98000', 'Underground'],
   runoff: ['Droplet Journey', 'Begin as a droplet', 'wait:98000', 'River Runoff'],
+  plant: ['Droplet Journey', 'Begin as a droplet', 'wait:98000', 'Enter Plant'],
   // NOTE: there is no clickable lens control. The Sky / Surface / Subsurface
   // chips in the SCENE LENS panel are `.wc-scene-lens-axis span` STATUS
   // indicators (`is-active`) showing which band the camera is in -- they have no
