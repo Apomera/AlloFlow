@@ -842,7 +842,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // Through Time state
       timeView: 'timeline',                // 'timeline' | 'fossils' | 'extinctions' | 'body-evolution'
       timeEraId: 'ordovician',
-      timeExtinctionId: null,              // Through Time: highlighted mass extinction
+      timeExtinctionId: null,
+      ethoTally: {},                       // Ethogram: behaviour code -> scan-sample count
+      ethoLog: [],                         // Ethogram: ordered samples, so the last one can be undone              // Through Time: highlighted mass extinction
       timeFossilId: 'cameroceras',
       // Jet Propulsion Lab state
       jetSpeciesId: 'humboldt',            // species for jet comparison
@@ -20997,6 +20999,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 16aa — BEHAVIOR ETHOGRAM
       // ═══════════════════════════════════════════════════════
       function renderEthogram() {
+        // The section already described a real protocol — scan sampling: "Every
+        // 30 seconds, record the most prominent behavior from the list. Sum
+        // across a 20-min observation = a behavioral budget." It then printed
+        // 25 definitions and no way to record anything, so the observation it
+        // prescribes had to be done on paper. This adds the recorder: one press
+        // per scan, and the budget it names comes out the other end.
+        var tally = d.ethoTally || {};
+        var log = d.ethoLog || [];
+        var samples = log.length;
+        var TARGET = 40;                   // 20 minutes at one scan per 30 seconds
+        var byCode = {};
+        BEHAVIOR_ETHOGRAM.forEach(function(b) { byCode[b.code] = b; });
+        var record = function(code) {
+          var nextTally = Object.assign({}, tally);
+          nextTally[code] = (nextTally[code] || 0) + 1;
+          setCL({ ethoTally: nextTally, ethoLog: log.concat([code]) });
+          awardXP(1);
+          clAnnounce((byCode[code] ? byCode[code].name : code) + ' recorded. Sample ' + (samples + 1) + '.');
+        };
+        var undo = function() {
+          if (!samples) return;
+          var last = log[log.length - 1];
+          var nextTally = Object.assign({}, tally);
+          nextTally[last] = Math.max(0, (nextTally[last] || 0) - 1);
+          if (!nextTally[last]) delete nextTally[last];
+          setCL({ ethoTally: nextTally, ethoLog: log.slice(0, -1) });
+          clAnnounce('Removed the last sample.');
+        };
+        var ranked = Object.keys(tally).filter(function(c) { return tally[c] > 0; })
+          .sort(function(a, b) { return tally[b] - tally[a]; });
+        var pct = function(c) { return samples ? Math.round((tally[c] / samples) * 100) : 0; };
+
+        var recorder = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.etho_recorder_title', '⏱️ Scan-sample recorder')),
+            h('div', { role: 'status', style: { fontSize: 11, color: '#cbd5e1' } },
+              samples + ' ' + __alloT('stem.cephalopodlab.etho_samples', 'samples') + ' · ' + Math.min(100, Math.round(samples / TARGET * 100)) + '% ' + __alloT('stem.cephalopodlab.etho_of_20_min', 'of a 20-minute observation'))),
+          h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 10 } },
+            __alloT('stem.cephalopodlab.etho_recorder_intro', 'Watch your animal. Every 30 seconds, press the one behaviour that was most prominent in that interval — one press per scan, not one per event. Forty scans makes the 20-minute budget described above.')),
+          h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': TARGET, 'aria-valuenow': Math.min(samples, TARGET),
+            'aria-label': __alloT('stem.cephalopodlab.etho_progress_label', 'Scan samples recorded'),
+            style: { height: 6, borderRadius: 3, background: 'rgba(148,163,184,0.25)', overflow: 'hidden', marginBottom: 12 } },
+            h('div', { style: { width: Math.min(100, samples / TARGET * 100) + '%', height: '100%', background: '#86efac', transition: 'width 0.2s' } })),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.etho_record_group', 'Record a scan sample'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            BEHAVIOR_ETHOGRAM.map(function(b) {
+              var n = tally[b.code] || 0;
+              return h('button', { key: b.code, type: 'button',
+                onClick: function() { record(b.code); },
+                'aria-label': b.name + (n ? ', ' + n + ' recorded' : ', none recorded yet'),
+                style: { padding: '6px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  background: n ? 'rgba(134,239,172,0.14)' : 'rgba(15,23,42,0.6)',
+                  color: n ? '#a7f3d0' : '#cbd5e1',
+                  border: '1px solid ' + (n ? 'rgba(52,211,153,0.6)' : 'rgba(148,163,184,0.35)') } },
+                h('span', { 'aria-hidden': 'true', style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, marginRight: 6, color: '#c7d2fe' } }, b.code),
+                h('span', { 'aria-hidden': 'true' }, b.name),
+                n ? h('span', { 'aria-hidden': 'true', style: { marginLeft: 7, fontWeight: 900, color: '#6ee7b7' } }, n) : null);
+            })),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 } },
+            h('button', { type: 'button', onClick: undo, disabled: !samples,
+              style: { padding: '6px 11px', borderRadius: 7, fontSize: 11, fontWeight: 800, fontFamily: 'inherit',
+                cursor: samples ? 'pointer' : 'default', background: 'transparent',
+                color: samples ? '#cbd5e1' : '#64748b', border: '1px solid rgba(148,163,184,0.4)' } },
+              __alloT('stem.cephalopodlab.etho_undo', '↶ Undo last sample')),
+            samples ? h('button', { type: 'button', onClick: function() { setCL({ ethoTally: {}, ethoLog: [] }); clAnnounce('Observation cleared.'); },
+              style: { padding: '6px 11px', borderRadius: 7, fontSize: 11, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer',
+                background: 'transparent', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.4)' } },
+              __alloT('stem.cephalopodlab.etho_clear', '✕ Clear observation')) : null));
+
+        var budget = samples ? h('div', { style: cardStyle() },
+          h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.etho_budget_title', '📊 Behavioural budget')),
+          h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 12 } },
+            __alloT('stem.cephalopodlab.etho_budget_note_a', 'Share of your ') + samples + __alloT('stem.cephalopodlab.etho_budget_note_b', ' scans, most frequent first. This is a sample of moments, not a stopwatch: it estimates how the animal SPENDS its time, and it gets more trustworthy the more scans you take.')),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            ranked.map(function(c) {
+              var b = byCode[c];
+              return h('div', { key: c, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct(c),
+                'aria-label': (b ? b.name : c) + ': ' + tally[c] + ' of ' + samples + ' scans, ' + pct(c) + ' percent' },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: '#e2e8f0', marginBottom: 3 } },
+                  h('span', null, h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#c7d2fe', marginRight: 7 } }, c), b ? b.name : c),
+                  h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#86efac' } }, tally[c] + ' · ' + pct(c) + '%')),
+                h('div', { style: { height: 8, borderRadius: 4, background: 'rgba(148,163,184,0.2)', overflow: 'hidden' } },
+                  h('div', { style: { width: pct(c) + '%', height: '100%', background: '#34d399' } })));
+            })),
+          h('div', { style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px dashed rgba(148,163,184,0.4)' } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 } },
+              __alloT('stem.cephalopodlab.etho_field_note', 'For your field note')),
+            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+              __alloT('stem.cephalopodlab.etho_note_a', 'Scan sampling, ') + samples + __alloT('stem.cephalopodlab.etho_note_b', ' samples at 30-second intervals. Most frequent: ') +
+              (ranked[0] ? (byCode[ranked[0]] ? byCode[ranked[0]].name : ranked[0]) + ' (' + pct(ranked[0]) + '%)' : '—') +
+              (ranked[1] ? __alloT('stem.cephalopodlab.etho_note_c', ', then ') + (byCode[ranked[1]] ? byCode[ranked[1]].name : ranked[1]) + ' (' + pct(ranked[1]) + '%)' : '') +
+              '. ' + ranked.length + __alloT('stem.cephalopodlab.etho_note_d', ' of the 25 catalogued behaviours were seen.'))),
+          samples < TARGET ? h('div', { style: { fontSize: 11, color: '#fde68a', marginTop: 10 } },
+            __alloT('stem.cephalopodlab.etho_short_session_a', 'Only ') + samples + __alloT('stem.cephalopodlab.etho_short_session_b', ' scans so far. A budget from a handful of samples can swing wildly — say how many you took whenever you report one.')) : null) : null;
+
         return h('div', null,
           panelHeader('📐 Behavior Ethogram',
             'A structured list of observable cephalopod behaviors with codes and context. Use this for direct classroom observations or to interpret what you see in the sim.'),
@@ -21006,11 +21102,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.watch_a_cephalopod_sim_aquarium_or_wil', 'Watch a cephalopod (sim, aquarium, or wild). Every 30 seconds, record the most prominent behavior from the list. Sum across a 20-min observation = a behavioral budget. Compare across individuals or contexts.')
             )
           ),
+          recorder,
+          budget,
           BEHAVIOR_ETHOGRAM.map(function(b, idx) {
-            return h('div', { key: idx, style: { padding: '12px 14px', borderRadius: 8, background: idx % 2 === 0 ? 'rgba(15,23,42,0.5)' : 'rgba(15,23,42,0.3)', border: '1px solid rgba(167,139,250,0.18)', marginBottom: 8 } },
+            var n = tally[b.code] || 0;
+            return h('div', { key: idx, style: { padding: '12px 14px', borderRadius: 8, background: idx % 2 === 0 ? 'rgba(15,23,42,0.5)' : 'rgba(15,23,42,0.3)', border: '1px solid rgba(100,116,139,0.25)', marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 11, color: '#a78bfa', background: 'rgba(167,139,250,0.15)', padding: '2px 8px', borderRadius: 4, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, b.code),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, b.name)
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, b.name),
+                n ? h('span', { style: { fontSize: 10.5, fontWeight: 800, color: '#6ee7b7', background: 'rgba(52,211,153,0.14)', border: '1px solid rgba(52,211,153,0.5)', padding: '2px 8px', borderRadius: 999 } },
+                  n + ' ' + __alloT('stem.cephalopodlab.etho_recorded', 'recorded')) : null
               ),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 4 } }, b.description),
               h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, '🎬 ' + b.context)

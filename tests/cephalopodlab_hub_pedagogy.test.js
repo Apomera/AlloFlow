@@ -747,3 +747,53 @@ describe('Cephalopod Lab clickable diagrams have a keyboard path', () => {
     expect(life.querySelectorAll('[role="group"][aria-label="Pick a life stage"] button')).toHaveLength(8);
   });
 });
+
+// ── Ethogram scan-sample recorder ──
+describe('Cephalopod Lab ethogram recorder', () => {
+  const renderEtho = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'ethogram', ...data } });
+    return c;
+  };
+
+  it('offers one recording button per catalogued behaviour', () => {
+    const c = renderEtho();
+    const group = c.querySelector('[role="group"][aria-label="Record a scan sample"]');
+    expect(group).not.toBeNull();
+    expect(group.querySelectorAll('button')).toHaveLength(25);
+    expect(group.querySelector('button').getAttribute('aria-label')).toMatch(/none recorded yet$/);
+  });
+
+  it('shows no budget until something is recorded, then ranks by frequency', () => {
+    expect(renderEtho().textContent).not.toMatch(/Behavioural budget/);
+    const c = renderEtho({ ethoTally: { REST: 9, CRAWL: 6, COLOR: 4 }, ethoLog: new Array(19).fill('REST') });
+    expect(c.textContent).toMatch(/Behavioural budget/);
+    const meters = Array.from(c.querySelectorAll('[role="meter"]'));
+    expect(meters).toHaveLength(3);
+    // ordered most frequent first, and each states its share in words
+    expect(meters[0].getAttribute('aria-label')).toMatch(/^Resting: 9 of 19 scans, 47 percent$/);
+    expect(meters[1].getAttribute('aria-label')).toMatch(/^Slow crawl: 6 of 19/);
+  });
+
+  it('tracks progress toward the 20-minute protocol the section describes', () => {
+    const c = renderEtho({ ethoTally: { REST: 10 }, ethoLog: new Array(10).fill('REST') });
+    const bar = c.querySelector('[role="progressbar"][aria-label="Scan samples recorded"]');
+    expect(bar.getAttribute('aria-valuenow')).toBe('10');
+    expect(bar.getAttribute('aria-valuemax')).toBe('40');
+    expect(c.textContent).toMatch(/25% of a 20-minute observation/);
+  });
+
+  it('warns that a short session makes a shaky budget, and stops warning at 40', () => {
+    const short = renderEtho({ ethoTally: { REST: 3 }, ethoLog: new Array(3).fill('REST') });
+    expect(short.textContent).toMatch(/A budget from a handful of samples can swing wildly/);
+    const full = renderEtho({ ethoTally: { REST: 40 }, ethoLog: new Array(40).fill('REST') });
+    expect(full.textContent).not.toMatch(/can swing wildly/);
+  });
+
+  it('writes a field note that reports the sample count alongside the result', () => {
+    const c = renderEtho({ ethoTally: { REST: 9, CRAWL: 6 }, ethoLog: new Array(15).fill('REST') });
+    expect(c.textContent).toMatch(/Scan sampling, 15 samples at 30-second intervals/);
+    expect(c.textContent).toMatch(/Most frequent: Resting \(60%\), then Slow crawl \(40%\)/);
+    expect(c.textContent).toMatch(/2 of the 25 catalogued behaviours were seen/);
+  });
+});
