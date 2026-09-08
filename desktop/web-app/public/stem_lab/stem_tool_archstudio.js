@@ -1388,9 +1388,98 @@ function __alloAST(k, fb) {
       bounds: archDesignBounds(generated), interior: kind === 'room' ? (w - 2) * (depth - 2) : 0,
       footprint: w * depth, cost: generated.reduce(function (n, b) { return n + ARCH_DESIGN_COST[b.material]; }, 0) };
   }
+
+  var ARCH_REPEAT_LABELS = {
+    "operation": "Repeat copies",
+    "count": "New copies",
+    "count_error": "Enter a whole number from 1 to 12 for new copies.",
+    "help": "Each copy moves one more spacing step from the original. The original stays selected; all new copies are one undo step.",
+    "spacing": "Spacing between copies",
+    "spacing_x": "Spacing X",
+    "spacing_y": "Spacing Y",
+    "spacing_z": "Spacing Z",
+    "presets": "Spacing presets",
+    "row_x": "Row along X",
+    "row_z": "Row along Z",
+    "stack": "Stack above",
+    "presets_help": "Rows leave one empty cell between copies. Stacking uses the selected height with no gap. Adjust any spacing below.",
+    "preview": "Repeat layout preview",
+    "view": "Preview view",
+    "plan": "Plan · X/Z",
+    "front": "Front · X/Y",
+    "legend": "Solid outline: original. Dashed outlines: new copies. Crosses: occupied cells.",
+    "projection_note": "Plan collapses height; front collapses depth. Crosses mark actual 3D conflicts.",
+    "summary": "{copies} new copies · {blocks} added blocks · {cost} studio credits",
+    "extent": "Layout: {width} wide × {depth} deep × {height} high, in grid units.",
+    "apply": "Add repeated copies",
+    "repeated": "Added {count} blocks as repeated copies. The original region is still selected. Undo removes all copies.",
+    "already_added": "Copies added. Change the spacing or select another region to add more."
+};
+  // Copies are planned together, including collisions between copies, before one transaction.
+  function repeatArchDesign(current, action) {
+    var list = getArchRuntimeBlocks(current);
+    action = action || {};
+    if (!archDesignRegion(action.region)) return archDesignFailure('region', list);
+    var selected = archDesignSelection(list, action.region);
+    if (!selected.length) return archDesignFailure('empty', list);
+    var count = archDesignInteger(action.count, 1, 12);
+    if (count == null) return archDesignFailure('repeat_count', list);
+    var dx = archDesignInteger(action.dx, -128, 128), dy = archDesignInteger(action.dy, -31, 31), dz = archDesignInteger(action.dz, -128, 128);
+    if (dx == null || dy == null || dz == null) return archDesignFailure('invalid', list);
+    if (!dx && !dy && !dz) return archDesignFailure('unchanged', list);
+    if (list.length + selected.length * count > ARCH_MAX_BLOCKS) return archDesignFailure('capacity', list);
+    var box = archDesignBounds(selected);
+    if (box.minX + Math.min(0, dx * count) < -64 || box.maxX + Math.max(0, dx * count) > 64
+        || box.minY + Math.min(0, dy * count) < 0 || box.maxY + Math.max(0, dy * count) > 31
+        || box.minZ + Math.min(0, dz * count) < -64 || box.maxZ + Math.max(0, dz * count) > 64) return archDesignFailure('bounds', list);
+    var copies = [], candidates = [], occupied = {}, conflictKeys = {};
+    list.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+    for (var i = 1; i <= count; i++) {
+      var copy = selected.map(function (b) {
+        var cell = Object.assign({}, b, { x: b.x + dx * i, y: b.y + dy * i, z: b.z + dz * i });
+        var key = archBlockKey(cell);
+        if (occupied[key]) conflictKeys[key] = true;
+        occupied[key] = true;
+        return cell;
+      });
+      copies.push(copy); candidates = candidates.concat(copy);
+    }
+    var conflicts = Object.keys(conflictKeys).length;
+    return { ok: !conflicts, code: conflicts ? 'collision' : 'repeated', count: conflicts || candidates.length,
+      blocks: conflicts ? list : list.concat(candidates), selection: box, source: selected, copies: copies,
+      candidates: candidates, conflictKeys: conflictKeys, bounds: archDesignBounds(selected.concat(candidates)),
+      addedCost: candidates.reduce(function (sum, b) { return sum + ARCH_DESIGN_COST[b.material]; }, 0) };
+  }
+  function archRepeatPreset(selected, axis) {
+    var box = archDesignBounds(selected);
+    if (!box || ['x', 'y', 'z'].indexOf(axis) < 0) return null;
+    var offset = { dx: 0, dy: 0, dz: 0 };
+    var upper = axis.toUpperCase();
+    offset['d' + axis] = box['max' + upper] - box['min' + upper] + (axis === 'y' ? 1 : 2);
+    return offset;
+  }
+  // Projection merges depth only for display; collision keys always refer to full 3D cells.
+  function archRepeatProjection(result, view) {
+    if (!result || !result.copies) return null;
+    var front = view === 'front', box = result.bounds, minV = front ? box.minY : box.minZ, maxV = front ? box.maxY : box.maxZ;
+    return { width: box.maxX - box.minX + 1, height: maxV - minV + 1,
+      groups: [result.source].concat(result.copies).map(function (group, index) {
+        var cells = {};
+        group.forEach(function (b) {
+          var x = b.x - box.minX, y = front ? maxV - b.y : b.z - minV, key = x + ',' + y;
+          if (!cells[key]) cells[key] = { x: x, y: y, conflict: false };
+          if (result.conflictKeys[archBlockKey(b)]) cells[key].conflict = true;
+        });
+        return { index: index, cells: Object.keys(cells).map(function (key) { return cells[key]; }) };
+      })
+    };
+  }
+  window.__alloArchRepeat = { plan: repeatArchDesign, preset: archRepeatPreset, projection: archRepeatProjection, labels: ARCH_REPEAT_LABELS };
+
   function applyArchDesign(current, action) {
     action = action || {};
     var list = getArchRuntimeBlocks(current), kind = action.type;
+    if (kind === 'repeat') return repeatArchDesign(list, action);
     var selected = kind === 'build' ? [] : archDesignSelection(list, action.region);
     if (kind !== 'build' && !archDesignRegion(action.region)) return archDesignFailure('region', list);
     if (kind !== 'build' && !selected.length) return archDesignFailure('empty', list);
@@ -4008,7 +4097,14 @@ function __alloAST(k, fb) {
         painted: t('stem.archstudio.design_painted', 'Updated the material and color of {count} blocks.'),
         deleted: t('stem.archstudio.design_deleted', 'Removed {count} blocks. Use Undo to restore them.')
       };
+      if (result.code === 'repeat_count') return repeatText('count_error');
+      if (result.code === 'repeated') return repeatText('repeated', { count: result.count });
       return (messages[result.code] || '').replace('{count}', result.count || 0);
+    }
+    function repeatText(key, values) {
+      var value = t('stem.archstudio.repeat_' + key, ARCH_REPEAT_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { value = value.split('{' + name + '}').join(String(values[name])); });
+      return value;
     }
     function commitDesign(action) {
       var outcome = null;
@@ -4017,7 +4113,7 @@ function __alloAST(k, fb) {
         var tx = commitArchDesignState(a, action);
         outcome = tx.result;
         return Object.assign({}, p, { archStudio: Object.assign({}, tx.state, {
-          showDesign: true, designNotice: { code: tx.result.code, count: tx.result.count, signature: getArchBuildSignature(tx.state.blocks) }
+          showDesign: true, designNotice: { code: tx.result.code, count: tx.result.count, signature: getArchBuildSignature(getArchRuntimeBlocks(tx.state.blocks)) }
         }) });
       }
       if (typeof ctx.setToolData === 'function') ctx.setToolData(transform);
@@ -4030,6 +4126,7 @@ function __alloAST(k, fb) {
         if (outcome.ok && soundEnabled) sfxPlace();
       }, 0);
     }
+    function workbenchText(key) { return t('stem.archstudio.workbench_' + key, {"intro":"Build a structure or refine part of your model.","selection":"Selection","coordinates":"Selection coordinates","width":"Width","depth":"Depth","height":"Height","units":"Grid units","preview":"Layout preview"}[key]); }
     function renderDesignPanel() {
       if (!showDesign) return null;
       var tab = d.designTab === 'region' ? 'region' : 'build';
@@ -4038,12 +4135,13 @@ function __alloAST(k, fb) {
         door: true, windows: true, ceiling: false }, d.designSpec || {}, { material: activeMaterial, color: activeColor });
       var region = Object.assign({ minX: 0, maxX: 5, minY: 0, maxY: 3, minZ: 0, maxZ: 4 }, d.designRegion || {});
       var offset = Object.assign({ dx: 7, dy: 0, dz: 0 }, d.designOffset || {});
-      var operation = ['move', 'duplicate', 'rotate', 'paint', 'delete'].indexOf(d.designOperation) >= 0 ? d.designOperation : 'duplicate';
+      var repeatOptions = Object.assign({ count: 3 }, d.designRepeat || {});
+      var operation = ['move', 'duplicate', 'repeat', 'rotate', 'paint', 'delete'].indexOf(d.designOperation) >= 0 ? d.designOperation : 'duplicate';
       var selected = archDesignSelection(blocks, region);
       var selectedBounds = archDesignBounds(selected);
       var generation = tab === 'build' ? generateArchDesign(spec) : null;
       var action = tab === 'build' ? { type: 'build', spec: spec } : Object.assign({ type: operation,
-        region: region, material: activeMaterial, color: activeColor }, offset);
+        region: region, material: activeMaterial, color: activeColor, count: repeatOptions.count }, offset);
       var preview = d.showReplay ? archDesignFailure('replay', blocks) : applyArchDesign(blocks, action);
       var inputStyle = { width: '100%', minWidth: 0, minHeight: 32, borderRadius: 6, border: '1px solid #64748b',
         background: '#0f172a', color: '#f1f5f9', padding: '5px 6px', fontSize: 12 };
@@ -4089,22 +4187,51 @@ function __alloAST(k, fb) {
             })),
           el('figcaption', { style: textStyle }, spec.kind === 'room' && spec.door ? t('stem.archstudio.design_plan_caption', 'Top view • entrance on the minimum-Z wall') : t('stem.archstudio.design_top_view', 'Top view • X across, Z down')));
       }
+
+      var repeatDrawing = null;
+      var repeatView = d.designRepeatView === 'front' ? 'front' : 'plan';
+      var repeatProjection = tab === 'region' && operation === 'repeat' ? archRepeatProjection(preview, repeatView) : null;
+      if (repeatProjection) {
+        repeatDrawing = el('figure', { className: 'arch-repeat-preview' },
+          el('h4', null, workbenchText('preview')),
+          el('label', { style: textStyle }, repeatText('view'),
+            el('select', { 'aria-label': repeatText('view'), value: repeatView, style: inputStyle, onChange: function (event) { upd('designRepeatView', event.target.value); } },
+              el('option', { value: 'plan' }, repeatText('plan')), el('option', { value: 'front' }, repeatText('front')))),
+          el('svg', { role: 'img', 'aria-label': repeatText('preview'), 'aria-describedby': 'arch-repeat-legend',
+            'data-arch-repeat-plan': repeatView, viewBox: '-.5 -.5 ' + (repeatProjection.width + 1) + ' ' + (repeatProjection.height + 1),
+            style: { width: '100%', height: 145, display: 'block', margin: '8px 0' } },
+            repeatProjection.groups.map(function (group) {
+              return el('g', { key: group.index, 'data-arch-repeat-copy': group.index },
+                group.cells.map(function (cell) {
+                  return el('g', { key: cell.x + ',' + cell.y },
+                    el('rect', { x: cell.x + .07, y: cell.y + .07, width: .86, height: .86, rx: .05,
+                      fill: cell.conflict ? '#7f1d1d' : group.index === 0 ? '#164e63' : '#17352e',
+                      stroke: cell.conflict ? '#fca5a5' : group.index === 0 ? '#7dd3fc' : '#6ee7b7',
+                      strokeWidth: .065, strokeDasharray: group.index ? '.16 .08' : undefined }),
+                    cell.conflict && el('path', { 'data-arch-repeat-conflict': 'true',
+                      d: 'M' + (cell.x + .23) + ',' + (cell.y + .23) + 'l.54,.54m0,-.54l-.54,.54', stroke: '#fecaca', strokeWidth: .1 }));
+                }));
+            })),
+          el('figcaption', { id: 'arch-repeat-legend', style: textStyle }, repeatText('legend')),
+          el('p', { style: textStyle }, repeatText('projection_note')));
+      }
       var buttonLabel = tab === 'build' ? t('stem.archstudio.design_add', 'Add to build') : ({
-        move: t('stem.archstudio.design_apply_move', 'Move region'), duplicate: t('stem.archstudio.design_apply_copy', 'Copy region'),
+        repeat: repeatText('apply'), move: t('stem.archstudio.design_apply_move', 'Move region'), duplicate: t('stem.archstudio.design_apply_copy', 'Copy region'),
         rotate: t('stem.archstudio.design_apply_rotate', 'Rotate region 90°'), paint: t('stem.archstudio.design_apply_paint', 'Paint region'),
         delete: t('stem.archstudio.design_apply_delete', 'Delete region')
       })[operation];
       return el('section', { id: 'arch-design-panel', 'aria-labelledby': 'arch-design-heading', 'data-arch-design': 'true',
         style: { padding: 10, borderRadius: 12, background: 'linear-gradient(145deg,#123045,#172239)', border: '1px solid #38bdf8' } },
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+        el('div', { className: 'arch-design-header' },
           el('h3', { id: 'arch-design-heading', style: { margin: 0, flex: 1, fontSize: 13, color: '#e0f2fe' } }, t('stem.archstudio.design_title', 'Design workbench')),
           el('button', { type: 'button', 'aria-label': t('stem.archstudio.design_close', 'Close design workbench'), onClick: function () {
             upd('showDesign', false);
             setTimeout(function () { var button = document.getElementById('arch-design-toggle'); if (button) button.focus(); }, 0);
           }, style: smallButton }, '×')),
+        el('p', { className: 'arch-design-intro' }, workbenchText('intro')),
         el('div', { role: 'group', 'aria-label': t('stem.archstudio.design_workflow', 'Design workflow'), style: { display: 'flex', gap: 5 } },
           [['build', t('stem.archstudio.design_builder', 'Builder')], ['region', t('stem.archstudio.design_region', 'Region edits')]].map(function (item) {
-            return el('button', { key: item[0], type: 'button', 'aria-pressed': tab === item[0], onClick: function () { upd({ designTab: item[0], designNotice: null }); },
+            return el('button', { key: item[0], type: 'button', className: 'arch-design-tab', 'aria-pressed': tab === item[0], onClick: function () { upd({ designTab: item[0], designNotice: null }); },
               style: Object.assign({}, smallButton, { flex: 1, borderColor: tab === item[0] ? '#7dd3fc' : '#64748b', background: tab === item[0] ? '#164e63' : '#1e293b' }) }, item[1]);
           })),
         tab === 'build' ? el('div', null,
@@ -4142,24 +4269,34 @@ function __alloAST(k, fb) {
           el('p', { style: textStyle }, t('stem.archstudio.design_scale_note', 'Dimensions use grid units. Rooms include a solid base; wall height starts above it. Costs are studio credits.'))
         ) : el('div', null,
           el('p', { style: textStyle }, t('stem.archstudio.design_region_help', 'Select every block between two corners, including hidden layers and filtered materials.')),
-          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 } },
+          el('div', { className: 'arch-selection-shortcuts' },
             el('button', { type: 'button', disabled: !blocks.length, style: smallButton, onClick: function () { setRegion(archDesignBounds(blocks)); } }, t('stem.archstudio.design_all', 'Entire build')),
             el('button', { type: 'button', disabled: !blocks.some(function (b) { return b.y === editLayer; }), style: smallButton,
               onClick: function () { setRegion(archDesignBounds(blocks.filter(function (b) { return b.y === editLayer; }))); } }, t('stem.archstudio.design_current_floor', 'Current floor')),
             el('button', { type: 'button', disabled: !selectedBlock, style: smallButton, onClick: function () { if (selectedBlock) setRegion(archDesignBounds([selectedBlock])); } }, t('stem.archstudio.design_picked', 'Picked block'))),
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
-            ['X', 'Y', 'Z'].map(function (axis) {
-              return el(React.Fragment, { key: axis },
-                field(t('stem.archstudio.design_from', 'From') + ' ' + axis, 'min' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64),
-                field(t('stem.archstudio.design_to', 'To') + ' ' + axis, 'max' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64));
-            })),
-          el('p', { 'data-arch-region-count': 'true', style: Object.assign({}, textStyle, { color: '#7dd3fc', fontWeight: 700 }) },
-            t('stem.archstudio.design_selected', '{count} blocks selected').replace('{count}', selected.length)),
+
+          el('div', { className: 'arch-selection-summary' },
+            el('h4', null, workbenchText('selection')),
+            el('p', { 'data-arch-region-count': 'true', style: textStyle }, t('stem.archstudio.design_selected', '{count} blocks selected').replace('{count}', selected.length)),
+            selectedBounds && el('dl', { className: 'arch-selection-dimensions' },
+              [['width', 'X'], ['depth', 'Z'], ['height', 'Y']].map(function (item) {
+                return el('div', { key: item[0] }, el('dt', null, workbenchText(item[0])),
+                  el('dd', null, selectedBounds['max' + item[1]] - selectedBounds['min' + item[1]] + 1));
+              })),
+            selectedBounds && el('small', null, workbenchText('units'))),
+          el('details', { className: 'arch-selection-coordinates' },
+            el('summary', null, workbenchText('coordinates')),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+              ['X', 'Y', 'Z'].map(function (axis) {
+                return el(React.Fragment, { key: axis },
+                  field(t('stem.archstudio.design_from', 'From') + ' ' + axis, 'min' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64),
+                  field(t('stem.archstudio.design_to', 'To') + ' ' + axis, 'max' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64));
+              }))),
           el('p', { style: textStyle }, t('stem.archstudio.design_selection_hint', 'The cyan outline marks your region in 3D; selected floor-grid cells have cyan borders.')),
           el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.design_operation', 'Operation'),
             el('select', { 'aria-label': t('stem.archstudio.design_operation', 'Operation'), value: operation, style: inputStyle,
               onChange: function (ev) { upd({ designOperation: ev.target.value, designNotice: null }); } },
-              [['duplicate', t('stem.archstudio.design_copy', 'Copy')], ['move', t('stem.archstudio.design_move', 'Move')],
+              [['duplicate', t('stem.archstudio.design_copy', 'Copy')], ['repeat', repeatText('operation')], ['move', t('stem.archstudio.design_move', 'Move')],
                 ['rotate', t('stem.archstudio.design_rotate', 'Rotate 90°')], ['paint', t('stem.archstudio.design_paint', 'Paint')],
                 ['delete', t('stem.archstudio.design_delete', 'Delete')]].map(function (item) { return el('option', { key: item[0], value: item[0] }, item[1]); }))),
           (operation === 'move' || operation === 'duplicate') && el('div', null,
@@ -4170,6 +4307,29 @@ function __alloAST(k, fb) {
             el('button', { type: 'button', disabled: !selectedBounds, style: Object.assign({}, smallButton, { marginTop: 7 }), onClick: function () {
               if (selectedBounds) upd({ designOffset: { dx: selectedBounds.maxX - selectedBounds.minX + 2, dy: 0, dz: 0 }, designNotice: null });
             } }, t('stem.archstudio.design_beside', 'Set offset beside selection'))),
+
+          operation === 'repeat' && el('div', { className: 'arch-repeat-controls', 'data-arch-repeat': 'true' },
+            el('p', { id: 'arch-repeat-help', style: textStyle }, repeatText('help')),
+            field(repeatText('count'), 'count', repeatOptions, 'designRepeat', 1, 12),
+            el('div', { role: 'group', 'aria-label': repeatText('presets'), className: 'arch-repeat-presets' },
+              [['x', 'row_x', '→'], ['z', 'row_z', '↓'], ['y', 'stack', '↑']].map(function (item) {
+                var presetOffset = archRepeatPreset(selected, item[0]);
+                var presetActive = presetOffset && ['dx', 'dy', 'dz'].every(function (key) { return archDesignInteger(offset[key], key === 'dy' ? -31 : -128, key === 'dy' ? 31 : 128) === presetOffset[key]; });
+                return el('button', { key: item[0], type: 'button', 'aria-pressed': !!presetActive, disabled: !selectedBounds, style: smallButton,
+                  onClick: function () { var preset = archRepeatPreset(selected, item[0]); if (preset) upd({ designOffset: preset, designRepeatView: item[0] === 'y' ? 'front' : 'plan', designNotice: null }); }
+                }, el('span', { 'aria-hidden': 'true', className: 'arch-repeat-preset-icon' }, item[2]), repeatText(item[1]));
+              })),
+            el('p', { style: textStyle }, repeatText('presets_help')),
+            el('div', { role: 'group', 'aria-label': repeatText('spacing'), className: 'arch-repeat-spacing' },
+              field(repeatText('spacing_x'), 'dx', offset, 'designOffset', -128, 128),
+              field(repeatText('spacing_y'), 'dy', offset, 'designOffset', -31, 31),
+              field(repeatText('spacing_z'), 'dz', offset, 'designOffset', -128, 128)),
+            repeatDrawing,
+            preview.copies && el('div', { className: 'arch-repeat-summary', 'data-arch-repeat-summary': 'true' },
+              el('strong', null, repeatText('summary', { copies: preview.copies.length, blocks: preview.candidates.length, cost: preview.addedCost })),
+              el('p', { style: textStyle }, repeatText('extent', { width: preview.bounds.maxX - preview.bounds.minX + 1,
+                depth: preview.bounds.maxZ - preview.bounds.minZ + 1, height: preview.bounds.maxY - preview.bounds.minY + 1 })))
+          ),
           operation === 'rotate' && el('p', { style: textStyle }, t('stem.archstudio.design_rotation_note', 'Turns around Y and swaps width/depth, anchored at the selection’s minimum X/Z corner.')),
           operation === 'delete' && el('p', { style: Object.assign({}, textStyle, { color: '#fecaca' }) }, t('stem.archstudio.design_delete_note', 'Removes the selected blocks from every included layer. This is one undo step.'))
         ),
@@ -4180,9 +4340,9 @@ function __alloAST(k, fb) {
             materials.map(function (m) { return el('option', { key: m.id, value: m.id }, m.label + ' · ' + m.cost); }))),
         preview.ok && budgetEnabled && el('p', { style: Object.assign({}, textStyle, { color: projectedCost > budget ? '#fecaca' : '#a7f3d0' }) },
           t('stem.archstudio.design_projected_budget', 'Build cost after edit: {cost} / {budget} credits').replace('{cost}', projectedCost).replace('{budget}', budget)),
-        !preview.ok && el('p', { 'data-arch-design-warning': 'true', style: Object.assign({}, textStyle, { color: '#fde68a' }) }, tab === 'build' && currentNotice && currentNotice.code === 'built' && preview.code === 'collision'
+        !preview.ok && el('p', { id: 'arch-design-warning', 'data-arch-design-warning': 'true', style: Object.assign({}, textStyle, { color: '#fde68a' }) }, operation === 'repeat' && currentNotice && currentNotice.code === 'repeated' && preview.code === 'collision' ? repeatText('already_added') : tab === 'build' && currentNotice && currentNotice.code === 'built' && preview.code === 'collision'
           ? t('stem.archstudio.design_already_added', 'Design added. Change the origin to add another, or use Region edits to transform it.') : designMessage(preview)),
-        el('button', { type: 'button', 'data-arch-design-apply': 'true', disabled: !preview.ok, onClick: function () { commitDesign(action); },
+        el('button', { type: 'button', 'data-arch-design-apply': 'true', 'aria-describedby': !preview.ok ? 'arch-design-warning' : operation === 'repeat' && tab === 'region' ? 'arch-repeat-help' : undefined, disabled: !preview.ok, onClick: function () { commitDesign(action); },
           style: { width: '100%', minHeight: 38, marginTop: 8, borderRadius: 8, border: '1px solid ' + (preview.ok ? '#7dd3fc' : '#64748b'),
             background: preview.ok ? (operation === 'delete' && tab === 'region' ? '#991b1b' : '#075985') : '#334155',
             color: '#f1f5f9', fontSize: 12, fontWeight: 750, cursor: preview.ok ? 'pointer' : 'default', opacity: preview.ok ? 1 : .7 } }, buttonLabel),
@@ -4488,6 +4648,17 @@ function __alloAST(k, fb) {
 
         + '@media(max-width:680px){#arch-studio-region .arch-drawings-layout{grid-template-columns:1fr!important;}}'
         + '#arch-studio-region select:focus-visible{outline:2px solid #38bdf8;outline-offset:2px;}'
+
+        + '#arch-design-panel .arch-repeat-controls input,#arch-design-panel .arch-repeat-controls select{min-height:40px!important;font-family:inherit;}'
+        + '#arch-design-panel .arch-repeat-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:10px;}'
+        + '#arch-design-panel .arch-repeat-presets button{min-height:62px!important;padding:7px 4px!important;white-space:normal;line-height:1.4;}'
+        + '#arch-design-panel .arch-repeat-preset-icon{display:block;font-size:22px;color:#a7f3d0;margin-bottom:3px;}'
+        + '#arch-design-panel .arch-repeat-spacing{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}'
+        + '#arch-design-panel .arch-repeat-preview{margin:10px 0;padding:9px;border:1px solid #64748b;border-radius:9px;background:#0b1426;}'
+        + '#arch-design-panel .arch-repeat-summary{padding:9px;border-left:3px solid #6ee7b7;border-radius:5px;background:#102c29;color:#d1fae5;font-size:12px;line-height:1.6;}'
+        + '@media(max-width:680px){#arch-design-panel button,#arch-design-panel input:not([type=checkbox]),#arch-design-panel select,#arch-design-panel .arch-repeat-controls input,#arch-design-panel .arch-repeat-controls select{min-height:44px!important;}}'
+        + '.theme-contrast #arch-design-panel .arch-repeat-preview,.theme-contrast #arch-design-panel .arch-repeat-summary{background:#020617!important;border-color:#f8fafc!important;}'
+
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -4551,6 +4722,41 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-studio-stage{min-height:300px;}'
         + '#arch-studio-region .arch-studio-inquiry{max-height:30vh;}'
         + '}'
+
+
+        + '#arch-design-panel{padding:14px!important;background:linear-gradient(160deg,#143047,#111e31 60%)!important;box-shadow:0 12px 28px rgba(2,6,23,.24);}'
+        + '#arch-design-panel .arch-design-header{display:flex;align-items:center;gap:9px;margin-bottom:4px;}'
+        + '#arch-design-panel .arch-design-header h3{font-size:17px!important;letter-spacing:-.3px;}'
+        + '#arch-design-panel .arch-design-intro{margin:0 0 14px!important;color:#cbd5e1;}'
+        + '#arch-design-panel p,#arch-design-panel label{font-size:12px!important;line-height:1.6!important;}'
+        + '#arch-design-panel input:not([type=checkbox]),#arch-design-panel select{min-height:40px;font-size:13px!important;font-family:inherit;}'
+        + '#arch-design-panel .arch-design-tab{min-height:42px!important;font-size:12px!important;font-weight:700;}'
+        + '#arch-design-panel .arch-design-tab[aria-pressed=true]{border-width:2px!important;box-shadow:inset 0 -3px #7dd3fc;}'
+        + '#arch-design-panel .arch-selection-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0;}'
+        + '#arch-design-panel .arch-selection-shortcuts button{min-height:44px;line-height:1.4;}'
+        + '#arch-design-panel .arch-selection-summary{padding:11px;border:1px solid #31748c;border-radius:10px;background:#102a3b;margin:10px 0;}'
+        + '#arch-design-panel .arch-selection-summary h4{margin:0;font-size:12px;color:#bae6fd;}'
+        + '#arch-design-panel .arch-selection-summary [data-arch-region-count]{font-size:16px!important;margin:2px 0 9px!important;color:#e0f2fe!important;}'
+        + '#arch-design-panel .arch-selection-dimensions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0;}'
+        + '#arch-design-panel .arch-selection-dimensions>div{padding:6px;background:#0c1d2e;border-radius:6px;}'
+        + '#arch-design-panel .arch-selection-dimensions dt{font-size:11px;color:#cbd5e1;}'
+        + '#arch-design-panel .arch-selection-dimensions dd{margin:2px 0 0;font-size:17px;font-weight:700;color:#f0f9ff;}'
+        + '#arch-design-panel .arch-selection-summary small{display:block;color:#cbd5e1;font-size:10px;margin-top:6px;}'
+        + '#arch-design-panel .arch-selection-coordinates{border:1px solid #52697f;border-radius:8px;margin:10px 0;background:#0d2032;}'
+        + '#arch-design-panel .arch-selection-coordinates summary{padding:11px;min-height:44px;color:#dbeafe;font-size:12px;font-weight:650;cursor:pointer;}'
+        + '#arch-design-panel .arch-selection-coordinates summary:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px;border-radius:7px;}'
+        + '#arch-design-panel .arch-selection-coordinates[open] summary{border-bottom:1px solid #52697f;}'
+        + '#arch-design-panel .arch-selection-coordinates>div{padding:10px;}'
+        + '#arch-design-panel .arch-repeat-presets button[aria-pressed=true]{border:2px solid #6ee7b7!important;background:#143d32!important;}'
+        + '#arch-design-panel .arch-repeat-preview h4{margin:0 0 8px;color:#e0f2fe;font-size:13px;}'
+        + '#arch-design-panel .arch-repeat-preview{background:linear-gradient(150deg,#132b3b,#091527);}'
+        + '#arch-design-panel .arch-repeat-preview svg{height:170px!important;}'
+        + '#arch-design-panel [data-arch-design-warning]{padding:9px 11px;background:#352a14;border:1px solid #947532;border-radius:8px;}'
+        + '#arch-design-panel [data-arch-design-notice]{padding:9px 11px;background:#123345;border:1px solid #44839e;border-radius:8px;}'
+        + '#arch-design-panel [data-arch-design-apply]{min-height:44px!important;font-size:13px!important;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-workbench{max-height:min(62vh,520px);}#arch-design-panel input:not([type=checkbox]),#arch-design-panel select{min-height:44px!important;}}'
+        + '.theme-contrast #arch-design-panel{background:#020617!important;border-color:#f8fafc!important;}'
+        + '.theme-contrast #arch-design-panel .arch-selection-summary,.theme-contrast #arch-design-panel .arch-selection-coordinates{background:#020617;border-color:#f8fafc;}'
 
         + '#arch-studio-region .arch-studio-title-row{flex-wrap:wrap!important;overflow:visible!important;justify-content:space-between;gap:8px;}'
         + '#arch-studio-region .arch-studio-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto!important;}'
@@ -4657,7 +4863,7 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderProjectPanel(),
           renderDesignPanel(),

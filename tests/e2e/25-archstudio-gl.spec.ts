@@ -1541,4 +1541,174 @@ test.describe('Architecture Studio — real WebGL', () => {
     }
   });
 
+
+  test('repeat layout adds a row in one undo step and keeps original project details', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 960 });
+    const original = [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 0, y: 1, z: 0, shape: 'ramp', material: 'wood', color: '#123456', rotation: 270 },
+    ];
+    await mount3d(page, { blocks: original, showDesign: true, designTab: 'region', projectName: 'Colonnade', projectNotes: 'Keep these notes', soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    const panel = page.locator('[data-arch-design]');
+    await panel.getByLabel('Operation', { exact: true }).selectOption('repeat');
+    await panel.getByRole('button', { name: 'Row along X', exact: true }).click();
+    await expect(panel.getByLabel('Spacing X', { exact: true })).toHaveValue('2');
+    await expect(panel.locator('[data-arch-repeat-summary]')).toContainText('3 new copies · 6 added blocks · 24 studio credits');
+    await expect(panel.locator('[data-arch-repeat-copy]')).toHaveCount(4);
+    await expect(panel.getByRole('img', { name: 'Repeat layout preview' })).toBeVisible();
+    await panel.getByLabel('Preview view', { exact: true }).selectOption('front');
+    await panel.locator('[data-arch-repeat-plan]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('repeat-layout-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Add repeated copies', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(8);
+    const state = await page.evaluate(() => (window as any).__bucket());
+    expect(state.undoStack).toHaveLength(1);
+    expect(state.projectName).toBe('Colonnade');
+    expect(state.projectNotes).toBe('Keep these notes');
+    expect(state.designRegion).toEqual({ minX: 0, maxX: 0, minY: 0, maxY: 1, minZ: 0, maxZ: 0 });
+    expect(state.blocks.filter((b: any) => b.shape === 'ramp').map((b: any) => b.x)).toEqual([0, 2, 4, 6]);
+    expect(state.blocks.filter((b: any) => b.shape === 'ramp').every((b: any) => b.rotation === 270 && b.color === '#123456')).toBe(true);
+    await expect(panel.locator('[data-arch-design-notice]')).toContainText('Added 6 blocks');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('Copies added.');
+    await expect(panel.getByRole('button', { name: 'Add repeated copies', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks)).toEqual(original);
+    await page.getByRole('button', { name: /Redo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(8);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('repeat layout marks real collisions and revalidates late changes without partial insertion', async ({ page }) => {
+    await mount3d(page, { blocks: [{ x: 0, y: 0, z: 0, material: 'stone' }, { x: 2, y: 0, z: 0, material: 'stone' }],
+      showDesign: true, designTab: 'region', designOperation: 'repeat', soundEnabled: false });
+    const panel = page.locator('[data-arch-design]');
+    await panel.getByLabel('Spacing X', { exact: true }).fill('1');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('2 occupied cells');
+    expect(await panel.locator('[data-arch-repeat-conflict]').count()).toBeGreaterThan(0);
+    await expect(panel.getByRole('button', { name: 'Add repeated copies', exact: true })).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    await panel.getByLabel('Spacing X', { exact: true }).fill('3');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeEnabled();
+    await page.evaluate(() => {
+      const state = (window as any).__toolData.archStudio;
+      state.blocks = state.blocks.concat({ x: 9, y: 0, z: 0, shape: 'block', material: 'stone' });
+      (document.querySelector('[data-arch-design-apply]') as HTMLButtonElement).click();
+    });
+    await expect(panel.locator('[data-arch-design-notice]')).toContainText('occupied cells');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(3);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio = { ...w.__toolData.archStudio, showReplay: true, undoStack: [[]] };
+      (document.querySelector('#arch-design-toggle') as HTMLButtonElement).click();
+    });
+    await page.locator('#arch-design-toggle').click();
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('replay');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeDisabled();
+  });
+
+  test('repeat layout stacks floors and keeps preview changes separate from geometry', async ({ page }) => {
+    await mount3d(page, { blocks: [{ x: 0, y: 0, z: 0, shape: 'slab', material: 'stone' }, { x: 1, y: 0, z: 0, shape: 'slab', material: 'stone' }],
+      showDesign: true, designTab: 'region', designOperation: 'repeat', soundEnabled: false });
+    const panel = page.locator('[data-arch-design]');
+    await panel.getByLabel('New copies', { exact: true }).fill('2');
+    await panel.getByRole('button', { name: 'Stack above', exact: true }).click();
+    await expect(panel.getByLabel('Spacing Y', { exact: true })).toHaveValue('1');
+    await expect(panel.getByLabel('Preview view', { exact: true })).toHaveValue('front');
+    await expect(panel.locator('[data-arch-repeat-summary]')).toContainText('2 wide × 1 deep × 3 high');
+    await panel.getByLabel('Preview view', { exact: true }).selectOption('plan');
+    await expect(panel.locator('[data-arch-repeat-conflict]')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await panel.getByLabel('New copies', { exact: true }).fill('');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('whole number from 1 to 12');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeDisabled();
+    await panel.getByLabel('New copies', { exact: true }).fill('2');
+    await panel.getByLabel('Spacing Y', { exact: true }).fill('16');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('outside');
+    await panel.getByRole('button', { name: 'Stack above', exact: true }).click();
+    await panel.getByRole('button', { name: 'Add repeated copies', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.map((b: any) => b.y))).toEqual([0, 0, 1, 1, 2, 2]);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack.length)).toBe(1);
+  });
+
+  test('repeat layout supports phone keyboard use and accessible contrast themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 850 });
+    await mount3d(page, { blocks: [{ x: 0, y: 0, z: 0, material: 'stone' }, { x: 0, y: 1, z: 0, material: 'wood' }],
+      showDesign: true, designTab: 'region', designOperation: 'repeat', soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:810px}' });
+    const panel = page.locator('[data-arch-design]');
+    const stack = panel.getByRole('button', { name: 'Stack above', exact: true });
+    await stack.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel.getByLabel('Spacing Y', { exact: true })).toHaveValue('2');
+    await expect(stack).toBeFocused();
+    expect(await stack.evaluate(el => getComputedStyle(el).outlineStyle)).not.toBe('none');
+    await panel.getByLabel('New copies', { exact: true }).focus();
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('2');
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Row along X', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel.getByLabel('Spacing X', { exact: true })).toHaveValue('2');
+    await panel.locator('[data-arch-repeat-plan]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('repeat-layout-phone.png'), fullPage: true });
+    const bounds = await panel.locator('[data-arch-repeat] button, [data-arch-repeat] input, [data-arch-repeat] select').evaluateAll(els => els.map(el => {
+      const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, height: r.height, width: r.width };
+    }));
+    expect(bounds.filter(b => b.left < 0 || b.right > 320 || b.height < 44 || b.width < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+        });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
+
+  test('workbench UI keeps coordinate disclosure accessible and makes room for the preview', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await mount3d(page, { blocks: tower(), showDesign: true, designTab: 'region', soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    const panel = page.locator('[data-arch-design]'), details = panel.locator('.arch-selection-coordinates');
+    await page.screenshot({ path: testInfo.outputPath('workbench-overview-desktop.png'), fullPage: true });
+    await expect(panel.locator('.arch-selection-summary')).toContainText('13 blocks selected');
+    await expect(panel.locator('.arch-selection-dimensions')).toContainText('Width4');
+    expect((await page.locator('.arch-studio-workbench').boundingBox())!.width).toBeGreaterThanOrEqual(280);
+    await expect(details).not.toHaveAttribute('open');
+    const summary = details.locator('summary');
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(details).toHaveAttribute('open', '');
+    await page.keyboard.press('Tab');
+    await expect(panel.getByLabel('From X', { exact: true })).toBeFocused();
+    await panel.getByLabel('To X', { exact: true }).fill('0');
+    await expect(panel.locator('[data-arch-region-count]')).toHaveText('6 blocks selected');
+    await summary.focus();
+    await page.keyboard.press('Space');
+    await expect(details).not.toHaveAttribute('open');
+    await panel.getByLabel('Operation', { exact: true }).selectOption('repeat');
+    await panel.getByRole('button', { name: 'Row along X', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Row along X', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(panel.getByRole('button', { name: 'Stack above', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await panel.getByLabel('Spacing X', { exact: true }).fill('4');
+    await expect(panel.getByRole('button', { name: 'Row along X', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await page.setViewportSize({ width: 320, height: 850 });
+    await page.addStyleTag({ content: '#wrap{height:810px}' });
+    await panel.getByRole('heading', { name: 'Design workbench', exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('workbench-overview-phone.png'), fullPage: true });
+  });
+
 });

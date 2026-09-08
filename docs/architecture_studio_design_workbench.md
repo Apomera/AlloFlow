@@ -1,6 +1,6 @@
 # Architecture Studio design workbench
 
-Open **Design workbench** from the first toolbar button, or choose **Design a room** in an empty 3D view.
+Open **Design workbench** from the workspace bar, or choose **Design a room** in an empty 3D view.
 
 ## Build a structure
 
@@ -12,7 +12,7 @@ The top-view preview shows the footprint and openings, with crosses at occupied 
 
 ## Edit a region
 
-Switch to **Region edits**. Select the entire build, current floor, picked block, or an inclusive box using two corners. Reversed corners work. The selection includes hidden layers and filtered materials; the panel makes that scope explicit. Cyan outlines in 3D and cyan floor-grid borders mark the region.
+Switch to **Region edits**. Select the entire build, current floor, or picked block. The selection card shows block count and occupied width, depth, and height. Expand **Selection coordinates** to edit an inclusive box using two corners. Reversed corners work. The selection includes hidden layers and filtered materials; the panel makes that scope explicit. Cyan outlines in 3D and cyan floor-grid borders mark the region.
 
 - Copy and move use X/Y/Z offsets. Moving can reuse cells vacated by the same selection; copying leaves the source intact.
 - Rotate turns blocks and shape orientations 90 degrees around Y, anchored at the selection's minimum X/Z corner.
@@ -20,6 +20,16 @@ Switch to **Region edits**. Select the entire build, current floor, picked block
 - Delete removes all selected blocks as one undo step.
 
 Selections follow moved, copied, and rotated blocks. Successful edits reveal the live build by clearing restrictive view filters. Existing gallery, share, blueprint, STL, and Print Lab workflows use the same block data.
+
+## Repeat parts of a design
+
+In **Region edits**, select the source blocks and choose **Repeat copies**. Set **New copies** from 1 through 12; the original is not included in that count. Use **Row along X**, **Row along Z**, or **Stack above** to set spacing from the occupied selection dimensions. Rows leave one empty grid cell between copies. Stacking places the next copy directly above the selected height with no gap; it does not add structural supports or determine whether the design is buildable.
+
+Edit **Spacing X/Y/Z** to set a custom direction or distance, including negative or combined offsets. Copy 1 is one spacing step from the original, copy 2 is two steps away, and so on. Materials, colors, shapes, and rotations are retained.
+
+The labeled layout preview offers a plan and front elevation. The original uses solid outlines, new copies use dashed outlines, and crosses mark actual occupied 3D cells. Plan views collapse height; front views collapse depth, so projected overlap alone is not a conflict. Stacking automatically chooses the front view. The summary shows proposed copy count, added blocks, material credits, and layout dimensions. The preview is a grid-cell diagram, not detailed shape geometry.
+
+**Add repeated copies** applies every copy in one undo step and keeps the original region selected. The complete layout is checked against the current model, including collisions between new copies, world bounds, and the 4,096-block limit. A failed operation changes neither geometry nor history. Replay remains read-only. Changing counts, spacing, presets, or preview views does not edit the model. The controls use native labels, keyboard operation, visible focus, and larger phone targets; preview updates do not produce a live announcement on every keystroke. Failed-edit notices compare the same normalized model as the displayed build, so feedback remains visible for older saved blocks with missing properties.
 
 ## Projects and revisions
 
@@ -71,7 +81,7 @@ Drawings represent occupied grid cells rather than detailed curved or sloped geo
 
 ## Navigation, zoom, and accessibility
 
-The workspace bar keeps **Design workbench**, **Drawing desk**, and **Project & revisions** visible together. On small screens, Undo, Redo, Save, and Clear wrap into a separate row with larger targets. Secondary building tools remain in their own horizontal toolbar and are hidden while using the drawing desk.
+The workspace bar keeps **Design workbench**, **Drawing desk**, and **Project & revisions** visible together. The open design workbench has a wider desktop sidebar, larger headings, a selection summary, and expandable coordinate fields. Matching spacing presets show an active border and pressed state. On phones the workbench uses more vertical space, with the model reachable below it in the scrollable workspace. On small screens, Undo, Redo, Save, and Clear wrap into a separate row with larger targets. Secondary building tools remain in their own horizontal toolbar and are hidden while using the drawing desk.
 
 The drawing preview now has **Zoom drawing in**, **Zoom drawing out**, and **Fit drawing** controls. Zoom runs from 100% through 400% of the fitted view; this is a viewing magnification, not a paper scale. Scroll the enlarged drawing, or focus its named viewport and use the arrow keys to pan. Shift plus an arrow pans farther. The + and − keys zoom, and 0 or Home restores fit. Browser shortcuts using Control or Command remain available.
 
@@ -91,7 +101,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all ten Architecture Studio unit suites passed (231 tests). Seventeen focused Chromium design, project, drawing, and usability workflows passed. Coverage includes 320px reflow and touch targets, keyboard zoom/panning and focus, zoomed measurements, observer cleanup, project/replay preservation, and existing authoring/export behaviors. The replay assertion was narrowed to its notice after zoom added a second status announcement. Axe reported no violations for its selected WCAG 2 A/AA, 2.1 AA, and 2.2 AA tags in the tested build and drawing states across light, dark, and high-contrast appearances. Desktop and phone screenshots were visually reviewed.
+Results: all 11 Architecture Studio unit suites passed (298 tests), including 67 tests for repeated layouts. Nine unique Chromium workflows passed in the final repeat/workbench refinement: existing building and region edits, atomic copies and stacks, late collisions, replay protection, undo/redo, coordinate disclosure, active presets, keyboard focus, and 320px phone reflow and touch targets. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested workbench state across light, dark, and high-contrast appearances. Desktop and phone overview/preview screenshots were visually reviewed. Local browser validation disabled video/trace recording after earlier infrastructure timeouts; the existing test assertions remain intact.
 
 No deployment or push was performed.
 

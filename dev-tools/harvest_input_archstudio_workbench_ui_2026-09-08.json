@@ -1,0 +1,10 @@
+{
+  "stem.archstudio.workbench_intro": "Build a structure or refine part of your model.",
+  "stem.archstudio.workbench_selection": "Selection",
+  "stem.archstudio.workbench_coordinates": "Selection coordinates",
+  "stem.archstudio.workbench_width": "Width",
+  "stem.archstudio.workbench_depth": "Depth",
+  "stem.archstudio.workbench_height": "Height",
+  "stem.archstudio.workbench_units": "Grid units",
+  "stem.archstudio.workbench_preview": "Layout preview"
+}
