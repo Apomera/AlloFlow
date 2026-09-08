@@ -299,8 +299,14 @@ describe('Zoom Gallery read-aloud', () => {
 
   it('drops the navigator inset on a phone-sized stage', () => {
     // It sits exactly where the credit chip sits and eats a third of a small stage.
-    expect(toolSrc).toMatch(/showNavigator: \(el\.clientWidth \|\| 0\) >= 480/);
+    expect(toolSrc).toMatch(/var navOn = \(el\.clientWidth \|\| 0\) >= 480;/);
+    expect(toolSrc).toMatch(/showNavigator: navOn/);
     expect(popupSrc).toMatch(/showNavigator: \(osdEl\.clientWidth \|\| 0\) >= 480/);
+  });
+
+  it('keeps the credit line clear of the navigator instead of under it', () => {
+    // At the same corner they overlapped, so the credit ran beneath the inset.
+    expect(toolSrc).toMatch(/right: navOn \? 218 : 8/);
   });
 });
 

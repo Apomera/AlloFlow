@@ -418,6 +418,8 @@
       var _busy = React.useState(false); var busy = _busy[0], setBusy = _busy[1];
       var _copied = React.useState(''); var copied = _copied[0], setCopied = _copied[1];
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
+      var _navOn = React.useState(true); var navOn = _navOn[0], setNavOn = _navOn[1];
+      var navOnRef = React.useRef(true);
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var speakTokenRef = React.useRef(0);
       var speakTimerRef = React.useRef(null);
@@ -642,13 +644,17 @@
           setOsdState('ready');
           var el = stageRef.current; if (!el) return;
           var v = viewerRef.current;
+          // Whether the navigator inset is shown decides how wide the credit line
+          // may be: at the same corner they overlapped.
+          var navOn = (el.clientWidth || 0) >= 480;
+          if (navOnRef.current !== navOn) { navOnRef.current = navOn; setNavOn(navOn); }
           if (!v) {
             v = OSD({
               element: el,
               prefixUrl: OSD_BASE + 'images/',
               // The navigator inset sits where the credit chip sits, and on a phone
               // it eats a third of an already small stage.
-              showNavigator: (el.clientWidth || 0) >= 480,
+              showNavigator: navOn,
               navigatorPosition: 'BOTTOM_RIGHT',
               // OpenSeadragon's own zoom cluster renders as focusable <div>s with no
               // accessible name, so a keyboard user tabs into four anonymous stops.
@@ -832,6 +838,9 @@
       // Chips float over the photograph, so they carry their own opaque ground.
       var chipBox = { background: P.chip, color: P.chipFg, border: '1px solid ' + P.chipLine, borderRadius: 8 };
       var chipBtn = { background: P.chip, color: P.chipFg, border: '1px solid ' + P.chipLine, borderRadius: 8, padding: '6px 10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' };
+      // The zoom trio carries a single glyph each, so it needs an explicit size
+      // or it reads as three cramped specks next to a worded button.
+      var zoomBtn = Object.assign({}, chipBtn, { minWidth: 38, minHeight: 34, padding: '4px 8px', fontSize: '0.9375rem', lineHeight: 1 });
       var card = { background: P.panel2, border: '1px solid ' + P.line, borderRadius: 10, padding: '9px 11px', fontSize: '0.8125rem', lineHeight: 1.5, color: P.text };
       var ta = { width: '100%', minHeight: 84, background: P.bg, border: '1px solid ' + P.line, color: P.text, borderRadius: 8, padding: '8px 10px', fontSize: '0.8125rem', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' };
 
@@ -843,12 +852,15 @@
               var thumbUrl = s.thumb || (s.type === 'iiif' ? s.src + '/full/320,/0/default.jpg' : null);
               return h('button', { key: s.id, type: 'button', onClick: function () { openImage(s.id); },
                 'aria-label': imgText(s, 'name'),
-                style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: '0 0 10px', cursor: 'pointer', textAlign: 'left', color: P.text, font: 'inherit', overflow: 'hidden' } },
+                // A column so the badge sits on the card's own bottom edge; with
+                // captions of different lengths the badges were landing at a
+                // different height in every card.
+                style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: '0 0 10px', cursor: 'pointer', textAlign: 'left', color: P.text, font: 'inherit', overflow: 'hidden', display: 'flex', flexDirection: 'column' } },
                 thumbUrl ? h('img', { src: thumbUrl, alt: '', loading: 'lazy', style: { display: 'block', width: '100%', height: 120, objectFit: 'cover', background: '#000' },
                   onError: function (e) { try { e.currentTarget.style.display = 'none'; } catch (_) {} } }) : null,
                 h('div', { style: { fontWeight: 700, fontSize: '0.8125rem', margin: '8px 12px 3px' } }, s.emoji + ' ' + imgText(s, 'name')),
                 h('div', { style: { fontSize: '0.6875rem', color: P.dim, lineHeight: 1.4, margin: '0 12px' } }, imgText(s, 'meta') + ' · ' + s.source),
-                h('span', { style: { display: 'inline-block', fontSize: '0.625rem', fontWeight: 700, color: P.accent, border: '1px solid ' + P.accent, borderRadius: 999, padding: '1px 7px', margin: '6px 12px 0' } }, s.type === 'iiif' ? W('badge_deep') : W('badge_photo'))
+                h('span', { style: { display: 'inline-block', alignSelf: 'flex-start', marginTop: 'auto', fontSize: '0.625rem', fontWeight: 700, color: P.accent, border: '1px solid ' + P.accent, borderRadius: 999, padding: '1px 7px', margin: 'auto 12px 0' } }, s.type === 'iiif' ? W('badge_deep') : W('badge_photo'))
               );
             })
           ),
@@ -963,16 +975,19 @@
               mem.pins.length ? h('button', { type: 'button', onClick: function () { setNote(current.id, { pins: [] }); say(I('pins_cleared_sr')); }, style: chipBtn }, W('pin_clear')) : null,
               // Our own zoom controls: OpenSeadragon's are unlabelled focusable divs.
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
-                h('button', { type: 'button', aria: null, 'aria-label': W('zoom_in'), title: W('zoom_in'), onClick: function () { zoomBy(1.6); }, style: chipBtn }, '＋'),
-                h('button', { type: 'button', 'aria-label': W('zoom_out'), title: W('zoom_out'), onClick: function () { zoomBy(1 / 1.6); }, style: chipBtn }, '－'),
-                h('button', { type: 'button', 'aria-label': W('zoom_fit'), title: W('zoom_fit'), onClick: zoomHome, style: chipBtn }, '⤢'))) : null,
+                h('button', { type: 'button', 'aria-label': W('zoom_in'), title: W('zoom_in'), onClick: function () { zoomBy(1.6); }, style: zoomBtn }, '＋'),
+                h('button', { type: 'button', 'aria-label': W('zoom_out'), title: W('zoom_out'), onClick: function () { zoomBy(1 / 1.6); }, style: zoomBtn }, '－'),
+                h('button', { type: 'button', 'aria-label': W('zoom_fit'), title: W('zoom_fit'), onClick: zoomHome, style: zoomBtn }, '⤢'))) : null,
             current && imgState === 'open' ? h('div', { 'aria-hidden': 'true', style: Object.assign({}, chipBox, { position: 'absolute', top: 48, right: 8, zIndex: 6, fontSize: '0.6875rem', padding: '3px 8px' }) }, W('zoom_readout', { z: zoomX })) : null,
             stageMsg ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.chipFg, fontSize: '0.8125rem', zIndex: 3, textAlign: 'center', padding: 20, pointerEvents: 'none' } }, stageMsg) : null,
-            current && imgState === 'open' ? h('div', { style: Object.assign({}, chipBox, { position: 'absolute', bottom: 8, left: 8, right: 8, zIndex: 6, fontSize: '0.65625rem', padding: '4px 9px', lineHeight: 1.35, pointerEvents: 'none' }) },
+            current && imgState === 'open' ? h('div', { style: Object.assign({}, chipBox, { position: 'absolute', bottom: 8, left: 8, right: navOn ? 218 : 8, zIndex: 6, fontSize: '0.65625rem', padding: '4px 9px', lineHeight: 1.35, pointerEvents: 'none' }) },
               '📷 ' + current.credit + ' · ', h('a', { href: current.link, target: '_blank', rel: 'noopener noreferrer', style: { color: P.chipLink, textDecoration: 'underline', pointerEvents: 'auto', display: 'inline-block', padding: '5px 2px' } }, W('source_record'))) : null
           ),
           // Coach
-          h('aside', { 'aria-label': W('coach_aria'), style: { flex: '0 1 300px', minWidth: 240, background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
+          // alignSelf keeps the coach only as tall as it needs to be. Stretching
+          // it to match the stage left a bordered empty column — about 1,400px of
+          // it on the picker, where the coach has one sentence to say.
+          h('aside', { 'aria-label': W('coach_aria'), style: { flex: '0 1 300px', minWidth: 240, alignSelf: 'flex-start', background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
             h('h3', { style: { margin: 0, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, W('coach_heading')),
             renderCoach(),
             // Text alternative for the picture itself. A deep-zoom viewer is a
@@ -985,7 +1000,7 @@
                 h('p', { style: { margin: '0 0 6px', fontSize: '0.6875rem', color: P.dim, lineHeight: 1.45 } }, W('describe_intro')),
                 h('p', { id: descTextId, style: { margin: 0 } }, imgText(current, 'describe')),
                 speakBtn('describe', imgText(current, 'describe')) ? h('div', { style: { marginTop: 8 } }, speakBtn('describe', imgText(current, 'describe'))) : null)) : null,
-            h('p', { style: { margin: 'auto 0 0', fontSize: '0.65625rem', color: P.dim, lineHeight: 1.45 } }, I('inline_hint'))
+            h('p', { style: { margin: '2px 0 0', fontSize: '0.65625rem', color: P.dim, lineHeight: 1.45 } }, I('inline_hint'))
           )
         ),
         h('p', { style: { margin: 0, fontSize: '0.6875rem', color: P.dim, lineHeight: 1.5 } }, I('credit'))
