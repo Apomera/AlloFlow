@@ -1407,9 +1407,20 @@ window.StemLab = window.StemLab || {
           // ═══════════════════════════════════════
           var inheritMode = d.inheritMode || 'complete';
           var isSexLinked = inheritMode === 'sexLinked';
-          var parent1 = d.parent1 || ['A', 'a'];
-          var parent2 = d.parent2 || ['A', 'a'];
-          var grid, activePreset = d._activePreset || null;
+          // ★ `|| default` catches null but not a wrong TYPE, and these three come
+          // from toolData — a project file a student can save, copy, hand-edit or
+          // carry between tool versions. A string `parent1` is truthy, so
+          // `parent1.concat(parent2)` silently produced a concatenated STRING and
+          // `_activePreset` as a string made `.p1` undefined, crashing on
+          // `.concat` of undefined. Measured 2026-09-07 with every toolData key
+          // set to "abc"; in this shell one tool's throw blanks the whole lab.
+          // Guarded here at the single point of entry, so every downstream use of
+          // parent1/parent2/activePreset is covered by these three lines.
+          var parent1 = Array.isArray(d.parent1) ? d.parent1 : ['A', 'a'];
+          var parent2 = Array.isArray(d.parent2) ? d.parent2 : ['A', 'a'];
+          var grid, activePreset = (d._activePreset &&
+            Array.isArray(d._activePreset.p1) && Array.isArray(d._activePreset.p2))
+            ? d._activePreset : null;
 
           // Keep custom parent controls on one biological locus. Presets may supply
           // two or three valid alleles (for example A/B/i in the ABO model).
@@ -1588,11 +1599,16 @@ window.StemLab = window.StemLab || {
           // DIHYBRID CROSS LOGIC
           // ═══════════════════════════════════════
           var isDihybrid = d._isDihybrid || false;
-          var diParent1Gene1 = d._diP1G1 || ['A', 'a'];
-          var diParent1Gene2 = d._diP1G2 || ['B', 'b'];
-          var diParent2Gene1 = d._diP2G1 || ['A', 'a'];
-          var diParent2Gene2 = d._diP2G2 || ['B', 'b'];
-          var diPreset = d._diPreset || null;
+          // Same guard as the monohybrid parents above. With these as numbers the
+          // gamete strings became "NaN", `geno[0]` was undefined, and diPhenotype
+          // threw on `.toLowerCase()` — which only surfaced after the monohybrid
+          // fix stopped the render crashing earlier. Fixing one masked crash
+          // routinely reveals the next; re-run the probe after every fix.
+          var diParent1Gene1 = Array.isArray(d._diP1G1) ? d._diP1G1 : ['A', 'a'];
+          var diParent1Gene2 = Array.isArray(d._diP1G2) ? d._diP1G2 : ['B', 'b'];
+          var diParent2Gene1 = Array.isArray(d._diP2G1) ? d._diP2G1 : ['A', 'a'];
+          var diParent2Gene2 = Array.isArray(d._diP2G2) ? d._diP2G2 : ['B', 'b'];
+          var diPreset = (d._diPreset && typeof d._diPreset === 'object') ? d._diPreset : null;
 
           // Generate gametes for dihybrid: each parent produces 4 gamete types
           var diGametes1 = [

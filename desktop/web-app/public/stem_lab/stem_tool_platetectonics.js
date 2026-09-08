@@ -2256,7 +2256,12 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             // Unclamped: the old min(...,72) flattened everything below ~648km
             // onto one line, hiding the deepest third of the slab.
             var qy = 150 + depthKm * TECT_PX_PER_KM;
-            var newQ = (cur.quakes || []).slice();
+            // `|| []` catches null but not a wrong TYPE, and toolData arrives from a
+            // project file a student can save, copy, hand-edit or carry between tool
+            // versions. Measured 2026-09-07: every toolData key set to 9999 crashed
+            // this tool with `done.push is not a function`, and in this shell one
+            // tool's throw blanks the whole lab.
+            var newQ = (Array.isArray(cur.quakes) ? cur.quakes : []).slice();
             newQ.push({ x: qx, y: qy, m: magnitude, depthKm: depthKm, distKm: distKm, strikeKm: strikeKm, age: 0 });
             if (newQ.length > 40) newQ.shift();
             patch.quakes = newQ;
@@ -2845,7 +2850,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.textAlign = 'center';
 
       // Earthquake markers
-      (cur.quakes || []).forEach(function(q) {
+      (Array.isArray(cur.quakes) ? cur.quakes : []).forEach(function(q) {
         var alpha = Math.max(0, 1 - q.age / 3);
         var radius = 4 + q.m * 2 + q.age * 8;
         ctx.save();
@@ -3508,7 +3513,7 @@ var d = labToolData.plateTectonics || {};
           var timelapseProgress = d.timelapseProgress || 0;
 
           // New UDL states
-          var completedChallenges = d.completedChallenges || [];
+          var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
           var researchPoints = d.researchPoints || 0;
           var totalRP = d.totalRP || 0;
           var quizScore = d.quizScore || 0;
@@ -3576,7 +3581,7 @@ var d = labToolData.plateTectonics || {};
             var earned = [];
             updFn(function(cur) {
               earned = [];
-              var done = (cur.completedChallenges || []).slice();
+              var done = (Array.isArray(cur.completedChallenges) ? cur.completedChallenges : []).slice();
               var rpGain = 0;
               CHALLENGES.forEach(function(ch) {
                 if (done.indexOf(ch.id) === -1 && ch.check(cur)) {
@@ -7068,7 +7073,7 @@ var d = labToolData.plateTectonics || {};
           function renderSimulationFocus() {
             var quakeTotal = d.quakeCount || 0;
             var eruptionTotal = d.eruptionCount || 0;
-            var challengeTotal = (d.completedChallenges || []).length;
+            var challengeTotal = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length;
             var status = quakeTotal || eruptionTotal ? 'Active investigation' : 'Ready to investigate';
             var cue = selectedPlate
               ? 'Study the ' + selectedPlate + ' plate, then drag nearby crust to compare boundary behavior.'
@@ -9721,17 +9726,17 @@ var d = labToolData.plateTectonics || {};
                   // orange-800, not 700: measured 4.46:1 on orange-100, which is
                   // under AA by a hair in both themes.
                   className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800"
-                }, (d.completedChallenges || []).length + "/" + CHALLENGES.length + " challenges")
+                }, (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length + "/" + CHALLENGES.length + " challenges")
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
                 React.createElement("div", {
                   className: "bg-gradient-to-r from-orange-500 to-red-500 h-2.5 rounded-full transition-all duration-500",
-                  style: { width: Math.min(100, ((d.completedChallenges || []).length / CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(249,115,22,0.4)' }
+                  style: { width: Math.min(100, ((Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length / CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(249,115,22,0.4)' }
                 })
               ),
               React.createElement("div", { className: "flex flex-wrap gap-2 mt-3" },
                 CHALLENGES.map(function(ch) {
-                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  var done = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).indexOf(ch.id) !== -1;
                   return React.createElement("div", {
                     key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
                     className: "text-center cursor-default transition-all " + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),

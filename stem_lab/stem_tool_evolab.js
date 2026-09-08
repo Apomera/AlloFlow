@@ -6259,7 +6259,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             why: 'Mate choice is the selection force. The bower itself doesn\'t aid survival; the trait (bower-building skill) spreads only because females select for it. Compare to peacock tails (#3) — same mechanism, different display modality.' }
         ];
 
-        var sIdx = d.evoSlIdx == null ? -1 : d.evoSlIdx;
+        // ★ A vignette index off toolData is untrusted: a project file can carry
+        // a string or an out-of-range number, and `LIST[i]` is then undefined so
+        // the next property read throws. The `< 0` intro guard below does NOT
+        // catch it — `'abc' < 0` is false. Coerce to a real in-range index or
+        // -1, which the existing guard already handles. Same fix as WeldLab.
+        var sIdx = (function (raw, len) {
+          var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+          if (!isFinite(n)) return -1;
+          n = Math.floor(n);
+          return (n >= 0 && n < len) ? n : -1;
+        })(d.evoSlIdx, V.length);
         var sSeed = d.evoSlSeed || 1;
         var sAns = !!d.evoSlAns;
         var sPick = d.evoSlPick;
@@ -6450,7 +6460,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             why: 'Insects and vertebrates last shared an ancestor before either had wings. Insect wings evolved from epithelial outgrowths on the thorax (or possibly modified gill structures); bird wings evolved from modified theropod-dinosaur forelimbs. Two completely independent paths to powered flight.' }
         ];
 
-        var hsIdx = d.hsIdx == null ? -1 : d.hsIdx;
+        // ★ A vignette index off toolData is untrusted: a project file can carry
+        // a string or an out-of-range number, and `LIST[i]` is then undefined so
+        // the next property read throws. The `< 0` intro guard below does NOT
+        // catch it — `'abc' < 0` is false. Coerce to a real in-range index or
+        // -1, which the existing guard already handles. Same fix as WeldLab.
+        var hsIdx = (function (raw, len) {
+          var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+          if (!isFinite(n)) return -1;
+          n = Math.floor(n);
+          return (n >= 0 && n < len) ? n : -1;
+        })(d.hsIdx, V.length);
         var hsSeed = d.hsSeed || 1;
         var hsAns = !!d.hsAns;
         var hsPick = d.hsPick;

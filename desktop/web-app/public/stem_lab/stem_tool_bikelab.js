@@ -2207,13 +2207,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // SUB-VIEW: BRAKING PHYSICS
       // ─────────────────────────────────────────────────────
       function BrakingPhysics() {
-        var speedState = useState(d.brakingMph || 20);
+        var speedState = useState(isFinite(parseFloat(d.brakingMph)) ? parseFloat(d.brakingMph) : 20);
         var speedMph = speedState[0], setSpeedMph = speedState[1];
         var surfState = useState(d.brakingSurface || 'dry');
         var surf = surfState[0], setSurf = surfState[1];
         var brakeState = useState(d.brakingSplit || 'both');
         var brakeSplit = brakeState[0], setBrakeSplit = brakeState[1];
-        var reactionState = useState(d.brakingReactionSec || 1.0);
+        var reactionState = useState(isFinite(parseFloat(d.brakingReactionSec)) ? parseFloat(d.brakingReactionSec) : 1.0);
         var reaction = reactionState[0], setReaction = reactionState[1];
 
         var SURFACES = {
@@ -2222,7 +2222,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           gravel: { label: t('stem.bikelab.loose_gravel', 'Loose Gravel'), mu: 0.35 },
           ice:    { label: 'Ice',          mu: 0.10 }
         };
-        var mu = SURFACES[surf].mu;
+        // ★ `d.brakingSurface || 'dry'` accepts any truthy string, so a project
+        // file carrying a surface this tool does not know made SURFACES[surf]
+        // undefined and `.mu` threw. Fall back to the default surface rather
+        // than crashing — one tool's throw blanks the whole lab.
+        var mu = (SURFACES[surf] || SURFACES.dry).mu;
 
         // Typical commuter geometry: wheelbase L, CoM height h_com, CoM forward
         // of rear axle a_com. Endo limit = g·(L − a_com)/h_com.
@@ -2896,7 +2900,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         if (scoreRef.current.hillCrawlTime > 5) advice.push('Downshift to a lower gear before the climb — your speed dropped below 2 m/s for a while.');
         if (scoreRef.current.wetBrakingHard) advice.push('Wet pavement has half the grip of dry. Ease off the brake before entering puddles.');
         if (advice.length === 0 && finished) advice.push('Clean ride! You applied the physics correctly.');
-        var bestTime = d.rideBestTime;
+        // `bestTime &&` guards null but not type: a string is truthy and has no
+        // toFixed, which is exactly how this crashed.
+        var bestTime = (typeof d.rideBestTime === 'number' && isFinite(d.rideBestTime))
+          ? d.rideBestTime : null;
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🏘️', title: t('stem.bikelab.neighborhood_ride_2', 'Neighborhood Ride') }),

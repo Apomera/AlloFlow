@@ -20581,7 +20581,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             why: 'Postmenopausal women lose ~1–2% bone density per year for the first 5–10 years after menopause. A lifetime of low calcium intake compounds this. Treatment includes calcium + vitamin D, weight-bearing exercise, and often pharmacotherapy (bisphosphonates). Adolescent calcium intake (vignette #5) prevents this 50 years later.' }
         ];
 
-        var ddIdx = d.ddIdx == null ? -1 : d.ddIdx;
+        // ★ A vignette index off toolData is untrusted: a project file can carry
+        // a string or an out-of-range number, and `LIST[i]` is then undefined so
+        // the next property read throws. The `< 0` intro guard below does NOT
+        // catch it — `'abc' < 0` is false. Coerce to a real in-range index or
+        // -1, which the existing guard already handles. Same fix as WeldLab.
+        var ddIdx = (function (raw, len) {
+          var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+          if (!isFinite(n)) return -1;
+          n = Math.floor(n);
+          return (n >= 0 && n < len) ? n : -1;
+        })(d.ddIdx, V.length);
         var ddSeed = d.ddSeed || 1;
         var ddAns = !!d.ddAns;
         var ddPick = d.ddPick;
@@ -20823,7 +20833,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ];
 
       function MacroInquiryWidget() {
-        var iq = d.macroInquiry || { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        // ★ `|| {defaults}` is not a type guard: a string is truthy, so `iq` became
+        // 'abc' and `iq.log.length` threw. Merge onto the defaults instead, so a
+        // partial object from an older save keeps every field it is missing, and
+        // normalise the four numbers — a string there does not crash, it silently
+        // makes every derived readout NaN.
+        var MACRO_IQ_DEFAULTS = { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = (function (raw) {
+          var base = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+          var out = Object.assign({}, MACRO_IQ_DEFAULTS, base);
+          ['carbs', 'protein', 'fat', 'fiber'].forEach(function (k) {
+            var n = (typeof out[k] === 'number') ? out[k] : parseFloat(out[k]);
+            out[k] = isFinite(n) ? n : MACRO_IQ_DEFAULTS[k];
+          });
+          if (!Array.isArray(out.log)) out.log = [];
+          return out;
+        })(d.macroInquiry);
         function setIQ(patch) { upd('macroInquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         var total = iq.carbs + iq.protein + iq.fat; // grams — for the "total macros" readout

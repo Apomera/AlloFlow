@@ -318,7 +318,15 @@ const d = labToolData.solarSystem || {};
           // --- Research Points & Challenges ---
           var researchPoints = d.researchPoints || 0;
           var totalRP = d.totalRP || 0;
-          var completedChallenges = d.completedChallenges || [];
+          // ★ Same defect as plateTectonics: `|| []` catches null but not a wrong
+          // TYPE, and this value comes from a project file. A string survives the
+          // guard, `.slice()` then returns a STRING, and `.push` does not exist —
+          // `newCompleted.push is not a function`.
+          // NOTE: the sweep only caught this under full-lab load (0/5 in
+          // isolation), so the DETECTOR is timing-sensitive. The defect is not:
+          // it is plain in the code, and it is fixed on that basis rather than on
+          // whether a flaky probe happens to trip.
+          var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
           var planetsVisited = d.planetsVisited || [];
 
           // Engagement ledger. These badges used to fire on d.showX -- on revealing a

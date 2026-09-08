@@ -13696,7 +13696,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // MODULE 1: I-SPY BIRD SPOTTER (forest habitat)
       // ─────────────────────────────────────────────────────
       function ISpyHabitat() {
-        var habitatId_state = useState(d.activeHabitat || 'forest');
+        // ★ `|| 'forest'` accepts ANY truthy string, so a project file naming a
+        // habitat this build does not have (renamed, removed, or hand-edited)
+        // made HABITATS[habitatId] undefined and `habitat.width` threw. Note
+        // line 13964 already wrote `(HABITATS[habitatId] || {})` defensively —
+        // the guard existed at one use site and not at the source. Validate the
+        // id here instead, so every `habitat.` read downstream is safe.
+        var habitatId_state = useState(HABITATS[d.activeHabitat] ? d.activeHabitat : 'forest');
         var habitatId = habitatId_state[0], setHabitatId = habitatId_state[1];
         var picked_state = useState(null);
         var picked = picked_state[0], setPicked = picked_state[1];
