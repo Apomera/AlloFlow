@@ -160,6 +160,51 @@ function AdventureEpisodeRecap({ state, t, theme, immersive = false, mode, socia
   </section>;
 }
 
+
+function AdventureTurnStatus({ state, t, theme, immersive = false }) {
+  if (!state.isLoading || state.isGameOver) return null;
+  const choice = typeof state.pendingChoice === 'string' ? state.pendingChoice.trim() : '';
+  const stage = typeof state.loadingStage === 'string' ? state.loadingStage.trim() : '';
+  return <section data-adventure-turn-status aria-label={adventureSettingsText(t, 'turn_status', 'Turn status')}
+    style={adventureVisualTokens(theme, immersive)}
+    className="w-full max-w-4xl min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 shadow-[var(--av-shadow)] text-[var(--av-ink)] [overflow-wrap:anywhere]">
+    <div className="flex items-start gap-3">
+      <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--av-wash)] border border-[var(--av-line)] text-[var(--av-accent)]">
+        <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{adventureSettingsText(t, 'turn_preparing', 'Preparing the next scene')}</p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-xs leading-relaxed text-[var(--av-muted)]">
+          {stage || adventureSettingsText(t, 'turn_waiting', 'The story is unfolding…')}
+        </p>
+      </div>
+    </div>
+    {choice && <div className="mt-4 rounded-xl border-l-[3px] border-[var(--av-accent)] bg-[var(--av-wash)] p-3">
+      <p className="text-xs font-semibold text-[var(--av-accent)] mb-1.5">{adventureSettingsText(t, 'turn_decision', 'Your decision')}</p>
+      <blockquote className="text-sm leading-relaxed whitespace-pre-wrap text-[var(--av-ink)]">{choice}</blockquote>
+    </div>}
+  </section>;
+}
+
+function AdventureTurnRecovery({ t, theme, immersive = false, loading, onRetry }) {
+  return <div data-adventure-turn-recovery role="alert" aria-atomic="true" style={adventureVisualTokens(theme, immersive)}
+    className="w-full min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 text-[var(--av-ink)] shadow-[var(--av-shadow)] [overflow-wrap:anywhere]">
+    <div className="flex items-start gap-3">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)]">
+        <WifiOff size={24} aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <h3 className="text-sm sm:text-base font-bold">{t('adventure.interrupted_title')}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-[var(--av-muted)]">{t('adventure.interrupted_desc')}</p>
+      </div>
+    </div>
+    <button type="button" aria-label={t('common.retry_adventure_turn')} onClick={onRetry} disabled={loading || typeof onRetry !== 'function'}
+      className="mt-4 min-h-11 w-full sm:w-auto px-4 py-3 flex items-center justify-center gap-2 rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-ink)] text-sm font-semibold hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
+      <RefreshCw size={16} aria-hidden="true" className={loading ? 'animate-spin motion-reduce:animate-none' : ''} />{t('adventure.retry_action')}
+    </button>
+  </div>;
+}
+
 function AdventureLearningProfiles(props) {
   const { adventureState: state, t, setAdventureState } = props;
   const dark = props.theme === 'dark' || props.theme === 'contrast';
@@ -1338,24 +1383,7 @@ function AdventureView(props) {
                                     <AdventureHistoryEntry entry={entry} t={t} theme={theme} renderFormattedText={renderFormattedText} />
                                 </div>
                             ))}
-                            {adventureState.pendingChoice && adventureState.isLoading && (
-                                <div role="status" aria-live="polite" aria-atomic="true" className="flex justify-start animate-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
-                                    <div className="max-w-[85%] bg-amber-50 p-4 rounded-2xl rounded-bl-none border border-amber-200 shadow-sm">
-                                        <div className="flex items-center gap-2 mb-1.5">
-                                            <span className="text-amber-600 font-bold text-xs uppercase tracking-wider">⚔️ {t('adventure.your_choice') || 'Your Choice'}</span>
-                                        </div>
-                                        <p className="text-amber-800 text-sm font-medium italic leading-relaxed">"{adventureState.pendingChoice}"</p>
-                                        <p className="text-amber-700 text-xs mt-2 animate-pulse motion-reduce:animate-none">{adventureState.loadingStage || t('adventure.story_unfolds') || 'The story unfolds...'}</p>
-                                    </div>
-                                </div>
-                            )}
-                            {adventureState.isLoading && !adventureState.pendingChoice && (
-                                <div role="status" aria-live="polite" aria-atomic="true" className="flex justify-start animate-pulse motion-reduce:animate-none">
-                                    <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-400 flex items-center gap-2 text-slate-600 text-sm">
-                                        <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {adventureState.loadingStage || t('adventure.status.loading_story')}
-                                    </div>
-                                </div>
-                            )}
+                            {!failedAdventureAction && <AdventureTurnStatus state={adventureState} t={t} theme={theme} />}
                             {adventureState.currentScene && (
                                 <div role="region" aria-labelledby="adventure-current-scene-heading" className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none">
                                     <div style={adventureVisualTokens(theme)} className="w-full max-w-4xl bg-[var(--av-surface)] p-4 sm:p-6 rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] shadow-[var(--av-shadow)] relative min-w-0">
@@ -1693,7 +1721,7 @@ function AdventureView(props) {
                                 {!immersiveHideUI && (
                                 <div className="absolute bottom-0 left-0 right-0 px-2 sm:px-4 pb-2 z-30 flex flex-col justify-end">
                                     <div className="bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center">
-                                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-40">
+                                        <div className="flex justify-center shrink-0 mb-4">
                                              <button
                                                  type="button"
                                                  aria-pressed={immersiveShowChoices}
@@ -1708,24 +1736,11 @@ function AdventureView(props) {
                                         {immersiveShowChoices ? (
                                             <div data-adventure-actions="immersive" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} immersive />}
+                                                {!failedAdventureAction && <AdventureTurnStatus state={adventureState} t={t} theme={theme} immersive />}
                                                 {adventureState.isGameOver ? (
                                                     <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} immersive />
                                                 ) : failedAdventureAction ? (
-                                                    <div role="alert" aria-atomic="true" className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm">
-                                                        <div className="bg-red-500 p-3 rounded-full mb-3 text-white">
-                                                            <WifiOff size={24} aria-hidden="true" />
-                                                        </div>
-                                                        <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
-                                                        <p className="text-red-200 text-sm mb-4 max-w-xs">
-                                                            {t('adventure.interrupted_desc')}
-                                                        </p>
-                                                        <button type="button" aria-label={t('common.retry_adventure_turn')}
-                                                            onClick={handleRetryAdventureTurn}
-                                                            className="min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none border border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-900"
-                                                        >
-                                                            <RefreshCw size={18} aria-hidden="true" /> {t('adventure.retry_action')}
-                                                        </button>
-                                                    </div>
+                                                    <AdventureTurnRecovery t={t} theme={theme} immersive loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                                 ) : (
                                                     adventureState.currentScene && (
                                                         adventureFreeResponseEnabled ? (
@@ -1817,20 +1832,7 @@ function AdventureView(props) {
                                             </div>
                                         ) : (
                                             <div data-adventure-reader role="region" aria-label={adventureSettingsText(t, 'story_and_feedback', 'Story and feedback')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
-                                                {adventureState.pendingChoice && adventureState.isLoading && (
-                                                    <div role="status" aria-live="polite" aria-atomic="true" className="mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
-                                                        <div className="bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-amber-700 font-bold text-xs uppercase tracking-wider">⚔️ {t('adventure.your_choice') || 'Your Choice'}</span>
-                                                            </div>
-                                                            <p className="text-amber-100 text-sm font-medium italic leading-relaxed">"{adventureState.pendingChoice}"</p>
-                                                            <div className="flex items-center gap-2 mt-3">
-                                                                <div aria-hidden="true" className="w-2 h-2 bg-amber-400 rounded-full animate-pulse motion-reduce:animate-none"></div>
-                                                                <p className="text-amber-300 text-xs animate-pulse motion-reduce:animate-none">{t('adventure.story_unfolds') || 'The story unfolds...'}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                {failedAdventureAction ? <AdventureTurnRecovery t={t} theme={theme} immersive loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} /> : <AdventureTurnStatus state={adventureState} t={t} theme={theme} immersive />}
                                                 {(() => {
                                                     const lastFeedback = adventureState.history.slice().reverse().find(h => h && h.type === 'feedback');
                                                     if (lastFeedback) {
@@ -1922,21 +1924,7 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                     {failedAdventureAction ? (
-                                        <div role="alert" aria-atomic="true" className="w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none">
-                                            <div className="bg-red-100 p-3 rounded-full mb-3 text-red-500">
-                                                <WifiOff size={24} aria-hidden="true" />
-                                            </div>
-                                            <h3 className="font-bold text-red-900 mb-1">{t('adventure.interrupted_title')}</h3>
-                                            <p className="text-red-700/80 text-sm mb-4 max-w-xs">
-                                                {t('adventure.interrupted_desc')}
-                                            </p>
-                                            <button type="button" aria-label={t('common.retry_adventure_turn')}
-                                                onClick={handleRetryAdventureTurn}
-                                                className="min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
-                                            >
-                                                <RefreshCw size={18} aria-hidden="true" /> {t('adventure.retry_action')}
-                                            </button>
-                                        </div>
+                                        <AdventureTurnRecovery t={t} theme={theme} loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                     ) : isEditingOptions ? (
                                         <div className="flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in motion-reduce:animate-none fade-in">
                                             <div className="flex justify-between items-center mb-2">

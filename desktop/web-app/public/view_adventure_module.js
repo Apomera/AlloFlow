@@ -777,6 +777,83 @@ function AdventureEpisodeRecap({
     className: "text-xs leading-relaxed text-[var(--av-muted)]"
   }, label('teacher_continues', 'Your teacher can continue the story with the class.')));
 }
+function AdventureTurnStatus({
+  state,
+  t,
+  theme,
+  immersive = false
+}) {
+  if (!state.isLoading || state.isGameOver) return null;
+  const choice = typeof state.pendingChoice === 'string' ? state.pendingChoice.trim() : '';
+  const stage = typeof state.loadingStage === 'string' ? state.loadingStage.trim() : '';
+  return /*#__PURE__*/React.createElement("section", {
+    "data-adventure-turn-status": true,
+    "aria-label": adventureSettingsText(t, 'turn_status', 'Turn status'),
+    style: adventureVisualTokens(theme, immersive),
+    className: "w-full max-w-4xl min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 shadow-[var(--av-shadow)] text-[var(--av-ink)] [overflow-wrap:anywhere]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--av-wash)] border border-[var(--av-line)] text-[var(--av-accent)]"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 18,
+    className: "animate-spin motion-reduce:animate-none"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold"
+  }, adventureSettingsText(t, 'turn_preparing', 'Preparing the next scene')), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "mt-1 text-xs leading-relaxed text-[var(--av-muted)]"
+  }, stage || adventureSettingsText(t, 'turn_waiting', 'The story is unfolding…')))), choice && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 rounded-xl border-l-[3px] border-[var(--av-accent)] bg-[var(--av-wash)] p-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-semibold text-[var(--av-accent)] mb-1.5"
+  }, adventureSettingsText(t, 'turn_decision', 'Your decision')), /*#__PURE__*/React.createElement("blockquote", {
+    className: "text-sm leading-relaxed whitespace-pre-wrap text-[var(--av-ink)]"
+  }, choice)));
+}
+function AdventureTurnRecovery({
+  t,
+  theme,
+  immersive = false,
+  loading,
+  onRetry
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    "data-adventure-turn-recovery": true,
+    role: "alert",
+    "aria-atomic": "true",
+    style: adventureVisualTokens(theme, immersive),
+    className: "w-full min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 text-[var(--av-ink)] shadow-[var(--av-shadow)] [overflow-wrap:anywhere]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)]"
+  }, /*#__PURE__*/React.createElement(WifiOff, {
+    size: 24,
+    "aria-hidden": "true"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-sm sm:text-base font-bold"
+  }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-sm leading-relaxed text-[var(--av-muted)]"
+  }, t('adventure.interrupted_desc')))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.retry_adventure_turn'),
+    onClick: onRetry,
+    disabled: loading || typeof onRetry !== 'function',
+    className: "mt-4 min-h-11 w-full sm:w-auto px-4 py-3 flex items-center justify-center gap-2 rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-ink)] text-sm font-semibold hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    "aria-hidden": "true",
+    className: loading ? 'animate-spin motion-reduce:animate-none' : ''
+  }), t('adventure.retry_action')));
+}
 function AdventureLearningProfiles(props) {
   const {
     adventureState: state,
@@ -2333,33 +2410,11 @@ function AdventureView(props) {
     t: t,
     theme: theme,
     renderFormattedText: renderFormattedText
-  }))), adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    className: "flex justify-start animate-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "max-w-[85%] bg-amber-50 p-4 rounded-2xl rounded-bl-none border border-amber-200 shadow-sm"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-1.5"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-600 font-bold text-xs uppercase tracking-wider"
-  }, "⚔️ ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
-    className: "text-amber-800 text-sm font-medium italic leading-relaxed"
-  }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("p", {
-    className: "text-amber-700 text-xs mt-2 animate-pulse motion-reduce:animate-none"
-  }, adventureState.loadingStage || t('adventure.story_unfolds') || 'The story unfolds...'))), adventureState.isLoading && !adventureState.pendingChoice && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    className: "flex justify-start animate-pulse motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 rounded-2xl rounded-bl-none border border-slate-400 flex items-center gap-2 text-slate-600 text-sm"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 14,
-    className: "animate-spin motion-reduce:animate-none",
-    "aria-hidden": "true"
-  }), " ", adventureState.loadingStage || t('adventure.status.loading_story'))), adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
+  }))), !failedAdventureAction && /*#__PURE__*/React.createElement(AdventureTurnStatus, {
+    state: adventureState,
+    t: t,
+    theme: theme
+  }), adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
     role: "region",
     "aria-labelledby": "adventure-current-scene-heading",
     className: "flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none"
@@ -2768,7 +2823,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute -top-5 left-1/2 -translate-x-1/2 z-40"
+    className: "flex justify-center shrink-0 mb-4"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": immersiveShowChoices,
@@ -2793,6 +2848,11 @@ function AdventureView(props) {
     t: t,
     theme: theme,
     immersive: true
+  }), !failedAdventureAction && /*#__PURE__*/React.createElement(AdventureTurnStatus, {
+    state: adventureState,
+    t: t,
+    theme: theme,
+    immersive: true
   }), adventureState.isGameOver ? /*#__PURE__*/React.createElement(AdventureEpisodeRecap, {
     state: adventureState,
     t: t,
@@ -2805,28 +2865,13 @@ function AdventureView(props) {
     onSequel: handleStartSequel,
     canContinue: isTeacherMode || !activeSessionCode,
     immersive: true
-  }) : failedAdventureAction ? /*#__PURE__*/React.createElement("div", {
-    role: "alert",
-    "aria-atomic": "true",
-    className: "w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-red-500 p-3 rounded-full mb-3 text-white"
-  }, /*#__PURE__*/React.createElement(WifiOff, {
-    size: 24,
-    "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "font-bold text-white mb-1"
-  }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
-    className: "text-red-200 text-sm mb-4 max-w-xs"
-  }, t('adventure.interrupted_desc')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.retry_adventure_turn'),
-    onClick: handleRetryAdventureTurn,
-    className: "min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none border border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-900"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 18,
-    "aria-hidden": "true"
-  }), " ", t('adventure.retry_action'))) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
+  }) : failedAdventureAction ? /*#__PURE__*/React.createElement(AdventureTurnRecovery, {
+    t: t,
+    theme: theme,
+    immersive: true,
+    loading: adventureState.isLoading,
+    onRetry: handleRetryAdventureTurn
+  }) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, !isTeacherMode && activeSessionCode ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -2912,27 +2957,18 @@ function AdventureView(props) {
     "aria-label": adventureSettingsText(t, 'story_and_feedback', 'Story and feedback'),
     style: adventureVisualTokens(theme, true),
     className: "max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
-  }, adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    className: "mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-700 font-bold text-xs uppercase tracking-wider"
-  }, "⚔️ ", t('adventure.your_choice') || 'Your Choice')), /*#__PURE__*/React.createElement("p", {
-    className: "text-amber-100 text-sm font-medium italic leading-relaxed"
-  }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mt-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    "aria-hidden": "true",
-    className: "w-2 h-2 bg-amber-400 rounded-full animate-pulse motion-reduce:animate-none"
-  }), /*#__PURE__*/React.createElement("p", {
-    className: "text-amber-300 text-xs animate-pulse motion-reduce:animate-none"
-  }, t('adventure.story_unfolds') || 'The story unfolds...')))), (() => {
+  }, failedAdventureAction ? /*#__PURE__*/React.createElement(AdventureTurnRecovery, {
+    t: t,
+    theme: theme,
+    immersive: true,
+    loading: adventureState.isLoading,
+    onRetry: handleRetryAdventureTurn
+  }) : /*#__PURE__*/React.createElement(AdventureTurnStatus, {
+    state: adventureState,
+    t: t,
+    theme: theme,
+    immersive: true
+  }), (() => {
     const lastFeedback = adventureState.history.slice().reverse().find(h => h && h.type === 'feedback');
     if (lastFeedback) {
       return /*#__PURE__*/React.createElement("div", {
@@ -3023,28 +3059,12 @@ function AdventureView(props) {
     className: "bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-teal-200 shadow-sm flex items-center justify-center gap-2 w-fit mx-auto"
   }, /*#__PURE__*/React.createElement(Scale, {
     size: 12
-  }), " ", t('adventure.debate_stance'))), failedAdventureAction ? /*#__PURE__*/React.createElement("div", {
-    role: "alert",
-    "aria-atomic": "true",
-    className: "w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-red-100 p-3 rounded-full mb-3 text-red-500"
-  }, /*#__PURE__*/React.createElement(WifiOff, {
-    size: 24,
-    "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "font-bold text-red-900 mb-1"
-  }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
-    className: "text-red-700/80 text-sm mb-4 max-w-xs"
-  }, t('adventure.interrupted_desc')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.retry_adventure_turn'),
-    onClick: handleRetryAdventureTurn,
-    className: "min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 18,
-    "aria-hidden": "true"
-  }), " ", t('adventure.retry_action'))) : isEditingOptions ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.debate_stance'))), failedAdventureAction ? /*#__PURE__*/React.createElement(AdventureTurnRecovery, {
+    t: t,
+    theme: theme,
+    loading: adventureState.isLoading,
+    onRetry: handleRetryAdventureTurn
+  }) : isEditingOptions ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in motion-reduce:animate-none fade-in"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-2"

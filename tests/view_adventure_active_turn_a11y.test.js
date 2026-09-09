@@ -32,9 +32,10 @@ describe('Adventure active-turn accessibility', () => {
   });
 
   it('announces pending, failed, and live-vote state while respecting reduced motion', () => {
-    expect(source.match(/role="alert" aria-atomic="true"/g)).toHaveLength(2);
-    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true" className="flex justify-start');
-    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true" className="mb-4');
+    expect(source.match(/<AdventureTurnRecovery t=/g)).toHaveLength(3);
+    expect(source).toContain('data-adventure-turn-recovery role="alert" aria-atomic="true"');
+    expect(source.match(/<AdventureTurnStatus state=/g)).toHaveLength(3);
+    expect(source).toContain('<p role="status" aria-live="polite" aria-atomic="true"');
     expect(source).toContain('<span aria-live="polite" aria-atomic="true" className={`text-[11px]');
     expect(source).toContain('motion-reduce:transition-none motion-reduce:transform-none');
     expect(source).toContain('<WifiOff size={24} aria-hidden="true" />');

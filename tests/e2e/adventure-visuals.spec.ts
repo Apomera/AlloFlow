@@ -41,7 +41,7 @@ async function mountActiveAdventure(page: any, theme: string, config: any = {}) 
       for (const name of propNames) props[name] = /^(set|handle|open|toggle|stop|prewarm|save|execute)/.test(name) ? noop : /^[A-Z]/.test(name) ? w[name] || (() => null) : /Ref$/.test(name) ? { current: null } : false;
       const scene = 'A river crosses the valley below the town. Compare the water measurements before deciding where to restore habitat.';
       Object.assign(props, {
-        theme, t: (key: string, values?: any) => key === 'adventure.storybook_locked' ? 'Storybook unlocks after ' + values.needed + ' more XP.' : key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.title': 'Adventure', 'common.xp': 'XP', 'adventure.ledger_tooltip': 'Open journey log', 'adventure.log_button': 'Journey log', 'adventure.enter_immersive': 'Enter immersive view', 'adventure.view_immersive': 'Immersive view', 'adventure.auto_read_enable': 'Enable automatic reading', 'adventure.auto_read_disable': 'Disable automatic reading', 'adventure.auto_read_status_label': 'Read aloud', 'adventure.explore_hint': 'Read the scene, review your resources, then choose your next step.', 'common.level_abbrev': 'Lvl', 'adventure.start_sequel': 'Start a sequel', 'adventure.storybook': 'Create a storybook', 'adventure.storybook_writing': 'Creating storybook…', 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
+        theme, t: (key: string, values?: any) => key === 'adventure.storybook_locked' ? 'Storybook unlocks after ' + values.needed + ' more XP.' : key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.title': 'Adventure', 'adventure.interrupted_title': 'The turn was interrupted', 'adventure.interrupted_desc': 'Try your last decision again when you are ready.', 'common.retry_adventure_turn': 'Retry this turn', 'adventure.retry_action': 'Retry this turn', 'common.xp': 'XP', 'adventure.ledger_tooltip': 'Open journey log', 'adventure.log_button': 'Journey log', 'adventure.enter_immersive': 'Enter immersive view', 'adventure.view_immersive': 'Immersive view', 'adventure.auto_read_enable': 'Enable automatic reading', 'adventure.auto_read_disable': 'Disable automatic reading', 'adventure.auto_read_status_label': 'Read aloud', 'adventure.explore_hint': 'Read the scene, review your resources, then choose your next step.', 'common.level_abbrev': 'Lvl', 'adventure.start_sequel': 'Start a sequel', 'adventure.storybook': 'Create a storybook', 'adventure.storybook_writing': 'Creating storybook…', 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
         activeView: 'adventure', adventureImageSize: 200, adventureInputMode: 'choice', adventureLanguageMode: 'English', adventureDifficulty: 'Normal',
         adventureArtStyle: 'auto', adventureTextInput: '', adventureCustomInstructions: '', adventureCustomArtStyle: '', universalImageStyle: '',
         selectedLanguages: [], editingOptionsBuffer: [], studentProjectSettings: {}, sessionData: null, playbackState: {}, adventureEffects: [],
@@ -601,4 +601,99 @@ for (const theme of ['light', 'dark', 'contrast']) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   });
+}
+
+
+for (const immersive of [false, true]) {
+  for (const theme of ['light', 'dark', 'contrast']) {
+    test('turn status and retry remain readable in ' + theme + ' ' + (immersive ? 'immersive' : 'standard'), async ({ page }, info) => {
+      await page.setViewportSize({ width: 1200, height: 1100 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await load(page, theme);
+      const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+      const pending = 'Compare both water samples before changing the habitat.\nKeep monitoring the river <strong>carefully</strong>. ' + 'LongObservation'.repeat(12);
+      const history = notebookHistory();
+      await mountActiveAdventure(page, theme, { props: { immersiveShowChoices: false, adventureEffects: { xp: null, energy: null, levelUp: null } },
+        state: { isImmersiveMode: immersive, isLoading: true, pendingChoice: pending, loadingStage: 'Considering your evidence', history } });
+      const status = page.locator('[data-adventure-turn-status]');
+      await expect(status).toHaveCount(1);
+      await expect(status.getByRole('status')).toHaveText('Considering your evidence');
+      await expect(status.locator('blockquote')).toHaveText(pending);
+      await expect(status.locator('blockquote strong')).toHaveCount(0);
+      expect(await status.locator('blockquote').evaluate(el => !!el.closest('[aria-live]'))).toBe(false);
+      if (immersive) {
+        await page.getByRole('button', { name: 'Make a choice', exact: true }).click();
+        await expect(status).toHaveCount(1);
+        await expect(page.locator('[data-adventure-actions="immersive"]').locator('[data-adventure-turn-status]')).toBeVisible();
+      }
+      for (const button of await page.locator('[data-help-key="adventure_choice_btn"]').all()) await expect(button).toBeDisabled();
+      for (const width of [1200, 320]) {
+        await page.setViewportSize({ width, height: 1100 });
+        await status.scrollIntoViewIfNeeded();
+        expect(await status.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await axe(page, '[data-adventure-turn-status]');
+        expect(await status.locator('svg').evaluate(el => getComputedStyle(el).animationName)).toBe('none');
+        if (immersive) {
+          const navigation = (await page.locator('[data-help-key="adventure_choice_toggle"]').boundingBox())!;
+          const actions = (await page.locator('[data-adventure-actions="immersive"]').boundingBox())!;
+          expect(actions.y).toBeGreaterThanOrEqual(navigation.y + navigation.height);
+        }
+        await page.screenshot({ path: info.outputPath('waiting-' + theme + '-' + (immersive ? 'immersive' : 'standard') + '-' + width + '.png') });
+      }
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { loadingStage: 'Writing the next scene' } }));
+      await expect(status.getByRole('status')).toHaveText('Writing the next scene');
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { pendingChoice: '', loadingStage: '' } }));
+      await expect(status.locator('blockquote')).toHaveCount(0);
+      await expect(status.getByRole('status')).toHaveText('The story is unfolding…');
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: false } }));
+      await expect(status).toHaveCount(0);
+
+      const failed = { type: 'choice', payload: 'Compare the measurements' };
+      await page.evaluate(failed => {
+        const w = window as any; w.__retryCalls = [];
+        w.__updateAdventure({ failedAdventureAction: failed, handleRetryAdventureTurn: () => {
+          w.__retryCalls.push(w.__adventureProps.failedAdventureAction);
+          w.__updateAdventure({ failedAdventureAction: null, adventureState: { isLoading: true, pendingChoice: failed.payload, loadingStage: 'Trying the decision again' } });
+        } });
+      }, failed);
+      const recovery = page.locator('[data-adventure-turn-recovery]');
+      await expect(recovery).toHaveCount(1);
+      await expect(recovery.getByRole('heading')).toHaveText('The turn was interrupted');
+      if (immersive) {
+        await page.getByRole('button', { name: 'Return to story', exact: true }).click();
+        await expect(page.locator('[data-adventure-reader]').locator('[data-adventure-turn-recovery]')).toBeVisible();
+        await expect(recovery).toHaveCount(1);
+        await page.getByRole('button', { name: 'Make a choice', exact: true }).click();
+        await expect(page.locator('[data-adventure-actions="immersive"]').locator('[data-adventure-turn-recovery]')).toBeVisible();
+      }
+      const retry = recovery.getByRole('button', { name: 'Retry this turn', exact: true });
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.addStyleTag({ content: 'html { font-size: 20px; }' });
+      await retry.scrollIntoViewIfNeeded();
+      expect(await recovery.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await axe(page, '[data-adventure-turn-recovery]');
+      expect((await retry.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      if (immersive) {
+        const navigation = (await page.locator('[data-help-key="adventure_choice_toggle"]').boundingBox())!;
+        const actions = (await page.locator('[data-adventure-actions="immersive"]').boundingBox())!;
+        expect(actions.y).toBeGreaterThanOrEqual(navigation.y + navigation.height);
+      }
+      await page.screenshot({ path: info.outputPath('retry-' + theme + '-' + (immersive ? 'immersive' : 'standard') + '-320.png') });
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: true } }));
+      await expect(retry).toBeDisabled();
+      await expect(status).toHaveCount(0);
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: false } }));
+      await retry.focus(); await page.keyboard.press('Enter');
+      expect(await page.evaluate(() => (window as any).__retryCalls)).toEqual([failed]);
+      await expect(recovery).toHaveCount(0);
+      await expect(status.getByRole('status')).toHaveText('Trying the decision again');
+      expect(await page.evaluate(() => (window as any).__adventureProps.adventureState.history)).toEqual(history);
+      expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: false, pendingChoice: null } }));
+      await expect(status).toHaveCount(0);
+      for (const button of await page.locator('[data-help-key="adventure_choice_btn"]').all()) await expect(button).toBeEnabled();
+      expect(errors).toEqual([]);
+    });
+  }
 }
