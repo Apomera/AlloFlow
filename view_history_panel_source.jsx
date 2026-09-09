@@ -617,6 +617,24 @@ function HistoryPanel(props) {
     return label;
   };
   // HISTORY_DISPLAY_FORMAT_END
+  // Scan each unit at most once per render, stopping as soon as a row matches.
+  // Keep the first normalized ID, matching Array.find even for duplicate IDs.
+  // HISTORY_UNIT_LOOKUP_START
+  let historyUnitsById = null;
+  let nextHistoryUnitIndex = 0;
+  const getHistoryRowUnit = (unitId) => {
+    if (!unitId || !Array.isArray(units)) return null;
+    if (!historyUnitsById) historyUnitsById = new Map();
+    if (historyUnitsById.has(unitId)) return historyUnitsById.get(unitId);
+    while (nextHistoryUnitIndex < units.length) {
+      const unit = units[nextHistoryUnitIndex++];
+      const id = getSafeRowText(getSafeArtifactField(unit, 'id'), '', 160);
+      if (!historyUnitsById.has(id)) historyUnitsById.set(id, unit);
+      if (id === unitId) return unit;
+    }
+    return undefined;
+  };
+  // HISTORY_UNIT_LOOKUP_END
   const resourceTypes = Array.from(new Set(unitFilteredHistory
     .map(item => getSafeRowText(getSafeArtifactField(item, 'type'), '', 100))
     .filter(Boolean)))
@@ -1226,9 +1244,7 @@ function HistoryPanel(props) {
                             : '';
                         const itemDateTime = itemDateLabel ? itemDate.toISOString() : undefined;
                         const itemUnitId = getSafeRowText(getSafeArtifactField(item, 'unitId'), '', 160);
-                        const itemUnit = itemUnitId && Array.isArray(units)
-                            ? units.find(unit => getSafeRowText(getSafeArtifactField(unit, 'id'), '', 160) === itemUnitId)
-                            : null;
+                        const itemUnit = getHistoryRowUnit(itemUnitId);
                         const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, 'name'), 'Unit', 160);
                         const itemData = getSafeArtifactField(item, 'data');
                         const generatedArtifactData = getSafeArtifactField(generatedContent, 'data');

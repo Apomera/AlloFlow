@@ -1,0 +1,150 @@
+{
+  "baselineRef": "7f1fdcd39",
+  "cpuSlowdown": 4,
+  "scope": "Warmed actual component; production React; no utility CSS; three alternating measured runs per version. ID counters run separately from timings and include unit selector reads.",
+  "scenarios": [
+    {
+      "unitCount": 40,
+      "resourceCount": 400,
+      "unitIdReads": {
+        "before": 8280,
+        "after": 120
+      },
+      "rowTextParity": true,
+      "warmupRuns": [
+        {
+          "mode": "before",
+          "mountMs": 584.8000000044703,
+          "fourUpdatesMs": 2574.6999999955297,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 97.20000000298023,
+          "fourUpdatesMs": 170.19999999552965,
+          "rows": 400
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "mountMs": 119.79999999701977,
+          "fourUpdatesMs": 301.70000000298023,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 65.39999999850988,
+          "fourUpdatesMs": 192.80000000447035,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 141.10000000149012,
+          "fourUpdatesMs": 299.69999999552965,
+          "rows": 400
+        },
+        {
+          "mode": "before",
+          "mountMs": 128.60000000149012,
+          "fourUpdatesMs": 133.29999999701977,
+          "rows": 400
+        },
+        {
+          "mode": "before",
+          "mountMs": 61.5,
+          "fourUpdatesMs": 264.3999999985099,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 154.59999999403954,
+          "fourUpdatesMs": 166,
+          "rows": 400
+        }
+      ],
+      "medians": {
+        "before": {
+          "mountMs": 119.79999999701977,
+          "fourUpdatesMs": 264.3999999985099
+        },
+        "after": {
+          "mountMs": 141.10000000149012,
+          "fourUpdatesMs": 192.80000000447035
+        }
+      }
+    },
+    {
+      "unitCount": 400,
+      "resourceCount": 400,
+      "unitIdReads": {
+        "before": 81000,
+        "after": 1200
+      },
+      "rowTextParity": true,
+      "warmupRuns": [
+        {
+          "mode": "before",
+          "mountMs": 102.70000000298023,
+          "fourUpdatesMs": 188.60000000149012,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 90.40000000596046,
+          "fourUpdatesMs": 128.39999999850988,
+          "rows": 400
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "mountMs": 152.40000000596046,
+          "fourUpdatesMs": 325.8999999985099,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 94.39999999850988,
+          "fourUpdatesMs": 141.19999999552965,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 84.10000000149012,
+          "fourUpdatesMs": 218.70000000298023,
+          "rows": 400
+        },
+        {
+          "mode": "before",
+          "mountMs": 265,
+          "fourUpdatesMs": 395.70000000298023,
+          "rows": 400
+        },
+        {
+          "mode": "before",
+          "mountMs": 77.89999999850988,
+          "fourUpdatesMs": 244.40000000596046,
+          "rows": 400
+        },
+        {
+          "mode": "after",
+          "mountMs": 89.29999999701977,
+          "fourUpdatesMs": 183.80000000447035,
+          "rows": 400
+        }
+      ],
+      "medians": {
+        "before": {
+          "mountMs": 152.40000000596046,
+          "fourUpdatesMs": 325.8999999985099
+        },
+        "after": {
+          "mountMs": 89.29999999701977,
+          "fourUpdatesMs": 183.80000000447035
+        }
+      }
+    }
+  ],
+  "errors": []
+}

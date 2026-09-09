@@ -1,0 +1,11 @@
+{
+  "whitespace": "passed",
+  "passedTests": 51,
+  "failedTests": 0,
+  "files": 9,
+  "syntax": "passed",
+  "mirrorHashesMatch": true,
+  "desktopLoaders": "Existing local paths preserved",
+  "moduleSha256": "bd01ea9169b52c96e71c88454d066f3578e6d54f3044e142a9abe0f15d1416e7",
+  "mainLoaderVersion": "bd01ea916"
+}

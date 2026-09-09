@@ -670,6 +670,20 @@ function HistoryPanel(props) {
     resourceTypeLabelCache.set(type, label);
     return label;
   };
+  let historyUnitsById = null;
+  let nextHistoryUnitIndex = 0;
+  const getHistoryRowUnit = (unitId) => {
+    if (!unitId || !Array.isArray(units)) return null;
+    if (!historyUnitsById) historyUnitsById = /* @__PURE__ */ new Map();
+    if (historyUnitsById.has(unitId)) return historyUnitsById.get(unitId);
+    while (nextHistoryUnitIndex < units.length) {
+      const unit = units[nextHistoryUnitIndex++];
+      const id = getSafeRowText(getSafeArtifactField(unit, "id"), "", 160);
+      if (!historyUnitsById.has(id)) historyUnitsById.set(id, unit);
+      if (id === unitId) return unit;
+    }
+    return void 0;
+  };
   const resourceTypes = Array.from(new Set(unitFilteredHistory.map((item) => getSafeRowText(getSafeArtifactField(item, "type"), "", 100)).filter(Boolean))).sort((a, b) => getResourceTypeLabel(a).localeCompare(getResourceTypeLabel(b)));
   const displayedResourceTypes = resourceTypeFilter !== "all" && !resourceTypes.includes(resourceTypeFilter) ? [resourceTypeFilter, ...resourceTypes] : resourceTypes;
   const normalizedResourceSearch = resourceSearch.trim().toLocaleLowerCase();
@@ -1104,7 +1118,7 @@ function HistoryPanel(props) {
       const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
       const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
       const itemUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
-      const itemUnit = itemUnitId && Array.isArray(units) ? units.find((unit) => getSafeRowText(getSafeArtifactField(unit, "id"), "", 160) === itemUnitId) : null;
+      const itemUnit = getHistoryRowUnit(itemUnitId);
       const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, "name"), "Unit", 160);
       const itemData = getSafeArtifactField(item, "data");
       const generatedArtifactData = getSafeArtifactField(generatedContent, "data");
