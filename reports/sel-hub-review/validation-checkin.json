@@ -1,0 +1,48 @@
+{
+  "pass": "sixth - optional check-ins",
+  "regressions": {
+    "existing_passed": 436,
+    "existing_skipped": 2,
+    "energy_summary_passed": 6,
+    "total_passed": 442,
+    "logs": [
+      "reports/sel-hub-checkin-regression.log",
+      "reports/sel-hub-checkin-browser.log"
+    ],
+    "timing": "Before final overview/shortcut refinement; affected browser journeys rerun afterward."
+  },
+  "browser": {
+    "distinct_passed": 15,
+    "prior_journal_workflows": 7,
+    "checkin_workflows": 8,
+    "final_checkin_run_passed": 8,
+    "final_restored_history_shortcut_recheck_passed": 1,
+    "logs": [
+      "reports/sel-hub-checkin-browser.log",
+      "reports/sel-hub-checkin-final.log",
+      "reports/sel-hub-checkin-overview-verified.log"
+    ]
+  },
+  "final_tool_renders_passed": 72,
+  "render_log": "reports/sel-hub-checkin-render.log",
+  "audits": {
+    "light-checkin-axe.json": [],
+    "light-checkin-saved-axe.json": [],
+    "theme-contrast-checkin-axe.json": [],
+    "theme-contrast-checkin-saved-axe.json": [],
+    "theme-dark-checkin-axe.json": [],
+    "theme-dark-checkin-saved-axe.json": []
+  },
+  "visual_review": [
+    "light-checkin-phone.png",
+    "theme-contrast-checkin-saved-phone.png",
+    "checkin-overview-collapsed-phone.png"
+  ],
+  "sha256": "e4bc90554b1264fb40171b46c1a888e5f8e24a3347e047f33e1277da71dea4c2",
+  "mirrors_identical": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "compatibility": "Preserves existing numeric energy history. Older automatic default ratings cannot be distinguished retrospectively. Missing or invalid energy is excluded from new summaries.",
+  "limits": "Local isolated browser harness, simulated host callbacks and captured print payload; no physical printing, installed Desktop, live classroom, AI or full clinical-content validation.",
+  "deployed": false
+}

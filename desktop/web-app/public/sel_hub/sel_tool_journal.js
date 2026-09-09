@@ -529,7 +529,8 @@ window.SelHub = window.SelHub || {
     var highEnergyMood = 0, highEnergyCount = 0;
     var lowEnergyMood = 0, lowEnergyCount = 0;
     checkIns.forEach(function(ci) {
-      var e = ci.energy || 3;
+      var e = recordedEnergy(ci);
+      if (e == null) return;
       if (e >= 4) { highEnergyMood += ci.mood; highEnergyCount++; }
       else if (e <= 2) { lowEnergyMood += ci.mood; lowEnergyCount++; }
     });
@@ -556,6 +557,11 @@ window.SelHub = window.SelHub || {
     return { start: start.getTime(), end: end.getTime() };
   }
 
+  function recordedEnergy(ci) {
+    var value = ci && ci.energy;
+    return typeof value === 'number' && value >= 1 && value <= 5 ? value : null;
+  }
+
   function getWeeklySummary(checkIns) {
     var week = getWeekBounds(new Date());
     var weekEntries = (checkIns || []).filter(function(ci) {
@@ -565,14 +571,16 @@ window.SelHub = window.SelHub || {
 
     var totalMood = 0;
     var totalEnergy = 0;
+    var energyCount = 0;
     var trigCount = {};
     weekEntries.forEach(function(ci) {
       totalMood += ci.mood;
-      totalEnergy += (ci.energy || 3);
+      var energy = recordedEnergy(ci);
+      if (energy != null) { totalEnergy += energy; energyCount++; }
       (ci.triggers || []).forEach(function(t) { trigCount[t] = (trigCount[t] || 0) + 1; });
     });
     var avgMood = Math.round(totalMood / weekEntries.length * 10) / 10;
-    var avgEnergy = Math.round(totalEnergy / weekEntries.length * 10) / 10;
+    var avgEnergy = energyCount ? Math.round(totalEnergy / energyCount * 10) / 10 : null;
 
     var sortedTrigs = Object.keys(trigCount).sort(function(a, b) { return trigCount[b] - trigCount[a]; });
     var topTriggers = sortedTrigs.slice(0, 3);
@@ -603,6 +611,7 @@ window.SelHub = window.SelHub || {
       count: weekEntries.length,
       avgMood: avgMood,
       avgEnergy: avgEnergy,
+      energyCount: energyCount,
       topTriggers: topTriggers,
       trajectory: trajectory,
       encouragement: encouragement
@@ -666,7 +675,7 @@ window.SelHub = window.SelHub || {
         // Check-in state
         var checkIns       = d.checkIns || [];
         var ciMood         = d.ciMood != null ? d.ciMood : null;
-        var ciEnergy       = d.ciEnergy != null ? d.ciEnergy : 3;
+        var ciEnergy       = recordedEnergy({ energy: d.ciEnergy });
         var ciThoughts     = d.ciThoughts || '';
         var ciTriggers     = d.ciTriggers || [];
         var ciGratitude    = d.ciGratitude || '';
@@ -820,7 +829,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         var heroBand = (function() {
           var TAB_META = {
-            checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 daily 1-minute pulse',                       hint: 'Mood + intensity + brief context. The act of LOGGING shifts behavior even before you analyze the data \u2014 self-monitoring (Latham 1981) is one of the most-replicated effects in behavior science.' },
+            checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 notice and choose',                          hint: 'A check-in is a snapshot of what you choose to record. You can skip it, leave details blank, or write instead. There is no required mood or energy level.' },
             journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 space for reflection',                    hint: 'A few words or a made-up example are enough. Use a prompt if it helps you understand a situation. You can skip a topic, change your approach, or stop whenever you choose.' },
             calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 streaks + heat map',                       hint: 'Visual streak ladders harness consistency-bias: missing one day stings; missing two stings less. Don\u2019t miss twice. Pattern visibility \u2014 when do you tend to skip? \u2014 is the diagnostic, not the goal.' },
             insights: { accent: _jouFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
@@ -868,7 +877,7 @@ window.SelHub = window.SelHub || {
 
         function journalLaunchCard(title, blurb, actionLabel, tabId, color) {
           return h('button', {
-            onClick: function() { upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
+            onClick: function() { journalFocus(tabId === 'journal' ? 'sel-journal-entry' : 'sel-journal-content'); if (tabId === 'journal') upd({ activeTab: tabId, letterMode: null, letterViewingPast: false, jViewingPast: false }); else upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
             'aria-label': actionLabel + ': ' + title,
             style: {
               minHeight: 124,
@@ -984,10 +993,13 @@ window.SelHub = window.SelHub || {
 
           var energyLabels = ['Exhausted', 'Tired', 'Okay', 'Energized', 'Supercharged'];
 
-          checkinContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
+          checkinContent = h('div', { role: 'region', 'aria-label': 'Mood check-in', style: { padding: 20, maxWidth: 520, margin: '0 auto', overflowWrap: 'anywhere' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _jouFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? '\uD83D\uDE42 How Are You Feeling?' : '\uD83D\uDE42 Daily Mood Check-In'
             ),
+            h('p', { style: { fontSize: 14, lineHeight: 1.6, color: _jouFg('#cbd5e1') } }, 'Choose a mood only if one fits. Feelings can be mixed or hard to name. Energy and all details are optional; you do not need to explain or feel differently.'),
+            h('button', { style: Object.assign({}, journalButton, { width: '100%', marginBottom: 12 }), onClick: function() { journalFocus('sel-journal-entry'); upd({ activeTab: 'journal', letterMode: null, letterViewingPast: false, jViewingPast: false, jNotice: 'Check-in skipped. No entry was added. Any check-in choices stay in this activity until you return or clear them.' }); } }, 'Skip check-in and write'),
+            h('p', { id: 'sel-checkin-status', role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#e2e8f0') } }, d.ciNotice || ''),
             streak > 0 && h('div', { style: { textAlign: 'center', marginBottom: 12, fontSize: 12, color: _jouFg('#f59e0b') } },
               '\uD83D\uDD25 ' + streak + '-day streak!'
             ),
@@ -998,26 +1010,26 @@ window.SelHub = window.SelHub || {
             // Mood selector
             h('div', { style: { marginBottom: 18 } },
               h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
-                band === 'elementary' ? 'Pick the face that matches how you feel:' : 'Select your current mood:'
+                'Choose a mood to record, or skip above:'
               ),
-              h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10 } },
+              h('div', { role: 'group', 'aria-label': 'Mood choices', style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 } },
                 MOODS.map(function(m) {
                   var isSelected = ciMood === m.id;
                   return h('button', { 
-                    key: m.id,
+                    key: m.id, 'aria-label': m.label, 'aria-pressed': isSelected,
                     onClick: function() {
-                      upd({ ciMood: m.id, ciSubEmotion: null });
+                      upd({ ciMood: isSelected ? null : m.id, ciSubEmotion: null, ciExpandedEmotion: null, ciNotice: '' });
                       if (soundEnabled) sfxClick();
                     },
                     style: {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 12px',
                       borderRadius: 12, border: isSelected ? '2px solid ' + m.color : '2px solid #334155',
                       background: isSelected ? m.color + '22' : _jouBg('#1e293b'), cursor: 'pointer', transition: 'all 0.15s',
-                      transform: isSelected ? 'scale(1.1)' : 'scale(1)'
+                      minHeight: 72, minWidth: 72
                     }
                   },
                     h('span', { style: { fontSize: 28 } }, m.emoji),
-                    h('span', { style: { fontSize: 10, color: isSelected ? _jouFg(m.color) : _jouFg('#94a3b8'), fontWeight: 600 } }, m.label)
+                    h('span', { style: { fontSize: 14, color: _jouFg('#e2e8f0'), fontWeight: 600 } }, m.label)
                   );
                 })
               ),
@@ -1033,21 +1045,21 @@ window.SelHub = window.SelHub || {
                     var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                     var col = moodColor ? moodColor.color : ACCENT;
                     return h('button', { 
-                      key: sub.label,
+                      key: sub.label, 'aria-label': sub.label, 'aria-pressed': isSel,
                       onClick: function() {
-                        upd('ciSubEmotion', isSel ? null : sub.label);
+                        upd({ ciSubEmotion: isSel ? null : sub.label, ciExpandedEmotion: null });
                         if (soundEnabled) sfxClick();
                       },
                       style: {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                        padding: '8px 14px', borderRadius: 10,
+                        minHeight: 44, padding: '8px 14px', borderRadius: 10,
                         border: isSel ? '2px solid ' + col : '1px solid #334155',
                         background: isSel ? col + '22' : _jouBg('#1e293b'),
                         cursor: 'pointer', transition: 'all 0.15s'
                       }
                     },
                       h('span', { style: { fontSize: 20 } }, sub.emoji),
-                      h('span', { style: { fontSize: 10, color: isSel ? _jouFg(col) : _jouFg('#94a3b8'), fontWeight: 600 } }, sub.label)
+                      h('span', { style: { fontSize: 14, color: _jouFg('#e2e8f0'), fontWeight: 600 } }, sub.label)
                     );
                   })
                 ),
@@ -1063,21 +1075,21 @@ window.SelHub = window.SelHub || {
                       var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                       var col = moodColor ? moodColor.color : ACCENT;
                       return h('button', { 
-                        key: exp.label,
+                        key: exp.label, 'aria-label': exp.label, 'aria-pressed': isSel,
                         onClick: function() {
                           upd('ciExpandedEmotion', isSel ? null : exp.label);
                           if (soundEnabled) sfxClick();
                         },
                         style: {
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                          padding: '6px 10px', borderRadius: 10,
+                          minHeight: 44, padding: '6px 10px', borderRadius: 10,
                           border: isSel ? '2px solid ' + col : '1px solid #334155',
                           background: isSel ? col + '22' : _jouBg('#1e293b'),
                           cursor: 'pointer', transition: 'all 0.15s', minWidth: 60
                         }
                       },
                         h('span', { style: { fontSize: 18 } }, exp.emoji),
-                        h('span', { style: { fontSize: 11, color: isSel ? _jouFg(col) : _jouFg('#94a3b8'), fontWeight: 600 } }, exp.label)
+                        h('span', { style: { fontSize: 14, color: _jouFg('#e2e8f0'), fontWeight: 600 } }, exp.label)
                       );
                     })
                   ),
@@ -1101,57 +1113,52 @@ window.SelHub = window.SelHub || {
               )
             ),
 
-            // Energy slider
+            // An unanswered energy field must not become a neutral rating.
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
-                band === 'elementary' ? 'How much energy do you have?' : 'Energy level:'
+              h('label', { htmlFor: 'sel-checkin-energy', style: { display: 'block', fontSize: 14, color: _jouFg('#e2e8f0'), marginBottom: 8, fontWeight: 600 } }, 'Energy level (optional)'),
+              h('select', { id: 'sel-checkin-energy', value: ciEnergy == null ? '' : ciEnergy, 'aria-describedby': 'sel-checkin-energy-help', onChange: function(e) { upd('ciEnergy', e.target.value === '' ? null : Number(e.target.value)); }, style: Object.assign({}, journalButton, { width: '100%', fontSize: 16 }) },
+                h('option', { value: '' }, 'Not recorded / unsure'),
+                energyLabels.map(function(label, index) { return h('option', { key: index, value: index + 1 }, (index + 1) + ' - ' + label); })
               ),
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                h('span', { style: { fontSize: 11, color: _jouFg('#94a3b8'), minWidth: 50 } }, '\uD83D\uDCA4 Low'),
-                h('input', {
-                  type: 'range', min: 1, max: 5, value: ciEnergy,
-                  'aria-label': 'Energy level',
-                  onChange: function(e) { upd('ciEnergy', parseInt(e.target.value)); },
-                  style: { flex: 1, accentColor: ACCENT }
-                }),
-                h('span', { style: { fontSize: 11, color: _jouFg('#94a3b8'), minWidth: 50, textAlign: 'right' } }, '\u26A1 High')
-              ),
-              h('div', { style: { textAlign: 'center', fontSize: 11, color: _jouFg(ACCENT), marginTop: 4 } }, energyLabels[ciEnergy - 1])
+              h('p', { id: 'sel-checkin-energy-help', style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#cbd5e1') } }, 'Energy is separate from mood. Leaving this blank will not count as a middle rating.')
             ),
 
+            h('details', { 'aria-label': 'Optional check-in context', style: { marginBottom: 18, border: '1px solid ' + _jouBd('#475569'), borderRadius: 12, padding: 12 } },
+              h('summary', { style: { minHeight: 44, fontSize: 14, fontWeight: 700, cursor: 'pointer', color: _jouFg('#e2e8f0') } }, 'Add optional context'),
+              h('p', { style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#cbd5e1') } }, 'Include only what you want to record. Closing this section keeps any details you entered. Avoid identifying details about yourself or others.'),
             // Thoughts input
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
-                band === 'elementary' ? 'What\u2019s on your mind right now?' : 'What\u2019s on your mind?'
+              h('label', { htmlFor: 'sel-checkin-thoughts', style: { display: 'block', fontSize: 14, color: _jouFg('#e2e8f0'), marginBottom: 8, fontWeight: 600 } },
+                'What is on your mind? (optional)'
               ),
               h('textarea', {
-                value: ciThoughts,
+                id: 'sel-checkin-thoughts', value: ciThoughts,
                 'aria-label': 'Check-in thoughts',
                 onChange: function(e) { upd('ciThoughts', e.target.value); },
                 placeholder: band === 'elementary' ? 'I feel this way because... Don\'t share personal info (like your full name).' : 'Describe what\u2019s going on... Don\'t share personal info (names, school, etc.).',
                 rows: 3,
-                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
               })
             ),
 
             // Trigger tags
             h('div', { style: { marginBottom: 18 } },
               h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
-                band === 'elementary' ? 'What is this about? (pick any that fit)' : 'Context / triggers (select all that apply):'
+                'Context (optional; choose any that fit):'
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 TRIGGER_TAGS.map(function(tag) {
                   var isOn = ciTriggers.indexOf(tag) !== -1;
                   return h('button', { 
-                    key: tag,
+                    key: tag, 'aria-pressed': isOn,
                     onClick: function() {
                       var newArr = isOn ? ciTriggers.filter(function(t) { return t !== tag; }) : ciTriggers.concat([tag]);
                       upd('ciTriggers', newArr);
                       if (soundEnabled) sfxClick();
                     },
                     style: {
-                      padding: '6px 14px', borderRadius: 20, border: isOn ? '1px solid ' + ACCENT : '1px solid #334155',
-                      background: isOn ? ACCENT_DIM : _jouBg('#1e293b'), color: isOn ? _jouFg(ACCENT) : _jouFg('#94a3b8'),
+                      minHeight: 44, padding: '6px 14px', borderRadius: 20, border: isOn ? '1px solid ' + ACCENT : '1px solid #334155',
+                      background: isOn ? ACCENT_DIM : _jouBg('#1e293b'), color: _jouFg('#e2e8f0'),
                       fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
                     }
                   }, tag);
@@ -1161,18 +1168,20 @@ window.SelHub = window.SelHub || {
 
             // Gratitude prompt
             h('div', { style: { marginBottom: 20 } },
-              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
-                band === 'elementary' ? '\uD83D\uDE4F One thing I\u2019m grateful for today:' : '\uD83D\uDE4F One thing I\u2019m grateful for today...'
+              h('label', { htmlFor: 'sel-checkin-gratitude', style: { display: 'block', fontSize: 14, color: _jouFg('#e2e8f0'), marginBottom: 8, fontWeight: 600 } },
+                'Something you appreciate (optional)'
               ),
               h('input', {
-                type: 'text', value: ciGratitude,
+                id: 'sel-checkin-gratitude', type: 'text', value: ciGratitude,
                 'aria-label': 'Gratitude entry',
                 onChange: function(e) { upd('ciGratitude', e.target.value); },
                 placeholder: band === 'elementary' ? 'I\u2019m thankful for... Don\'t share personal info (like full names).' : 'Something I appreciate... Don\'t share personal info (names, school, etc.).',
-                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, boxSizing: 'border-box' }
+                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, minHeight: 44, boxSizing: 'border-box' }
               })
             ),
 
+            ),
+            h('p', { style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#cbd5e1') } }, 'Save Check-In adds one record to this activity. Use the Hub save/export controls to keep a project copy.'),
             // Save button
             h('button', { onClick: function() {
                 if (ciMood == null) { addToast('Please select a mood first!', 'warning'); return; }
@@ -1189,7 +1198,7 @@ window.SelHub = window.SelHub || {
                 var newCheckIns = checkIns.concat([entry]);
                 upd({
                   checkIns: newCheckIns,
-                  ciMood: null, ciEnergy: 3, ciThoughts: '', ciTriggers: [], ciGratitude: '',
+                  ciMood: null, ciEnergy: null, ciNotice: 'Check-in added to this activity. You can stop here or choose an optional next step.', ciThoughts: '', ciTriggers: [], ciGratitude: '',
                   ciSubEmotion: null, ciExpandedEmotion: null, showCoping: ciMood
                 });
                 if (soundEnabled) sfxSave();
@@ -1213,7 +1222,7 @@ window.SelHub = window.SelHub || {
               disabled: ciMood == null,
               style: {
                 width: '100%', padding: '14px 24px', borderRadius: 12, border: 'none',
-                background: ciMood != null ? ACCENT : '#334155', color: _jouFg('#fff'), fontWeight: 700,
+                minHeight: 44, background: _jouHC ? '#ffff00' : '#9d174d', color: _jouHC ? '#000000' : '#ffffff', fontWeight: 700,
                 fontSize: 14, cursor: ciMood != null ? 'pointer' : 'not-allowed', transition: 'all 0.15s'
               }
             }, '\uD83D\uDCBE Save Check-In'),
@@ -1226,9 +1235,9 @@ window.SelHub = window.SelHub || {
                   showCoping <= 2 ? '\uD83E\uDDE1 Suggested Coping Strategies' :
                   '\u2728 Keep the Momentum Going'
                 ),
-                h('button', { 'aria-label': 'You are not alone. These resources are here for you.',
+                h('button', { 'aria-label': 'Hide suggested activities',
                   onClick: function() { upd('showCoping', false); },
-                  style: { background: 'none', border: 'none', color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
+                  style: journalButton
                 }, '\u2715')
               ),
               showCoping <= 1 && h('div', { style: { fontSize: 12, color: _jouFg('#ef4444'), marginBottom: 10, fontWeight: 600 } },
@@ -1279,7 +1288,7 @@ window.SelHub = window.SelHub || {
                 '\u26A0\uFE0F If you are in crisis, please reach out to a trusted adult, call 988, or text HOME to 741741. This feeling is temporary.'
               ),
               h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 12 } },
-                band === 'elementary' ? 'Try some of these activities to feel even better:' : 'Suggested activities based on your mood:'
+                'Optional ideas based on the mood you selected. You can try one, choose another activity, or stop here.'
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 MOOD_PLAYLIST[showCoping].activities.map(function(act, idx) {
@@ -1292,7 +1301,7 @@ window.SelHub = window.SelHub || {
                       background: isDone ? '#22c55e11' : _jouBg('#1e293b'), transition: 'all 0.2s'
                     }
                   },
-                    h('button', { 
+                    h('button', { 'aria-label': 'I tried: ' + act.label, 'aria-pressed': isDone,
                       onClick: function() {
                         var newCompleted = Object.assign({}, playlistCompleted);
                         if (isDone) {
@@ -1310,11 +1319,11 @@ window.SelHub = window.SelHub || {
                         }
                       },
                       style: {
-                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                        width: 44, height: 44, borderRadius: 6, flexShrink: 0,
                         border: isDone ? '2px solid #22c55e' : '2px solid #475569',
-                        background: isDone ? _jouFg('#22c55e') : 'transparent',
+                        background: isDone ? (_jouHC ? '#ffff00' : '#14532d') : 'transparent',
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: _jouFg('#fff'), fontSize: 14, fontWeight: 700, padding: 0
+                        color: _jouHC && isDone ? '#000000' : '#ffffff', fontSize: 14, fontWeight: 700, padding: 0
                       }
                     }, isDone ? '\u2713' : ''),
                     h('span', { style: { fontSize: 20, flexShrink: 0 } }, act.icon),
@@ -1820,8 +1829,9 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                   ),
                   h('div', { style: { textAlign: 'center' } },
-                    h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, weeklySummary.avgEnergy.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Energy')
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, (weeklySummary.avgEnergy == null ? 'Not recorded' : weeklySummary.avgEnergy.toFixed(1))),
+                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Energy'),
+                    h('div', { style: { fontSize: 12, color: _jouFg('#cbd5e1') } }, 'From ' + weeklySummary.energyCount + ' recorded rating' + (weeklySummary.energyCount === 1 ? '' : 's'))
                   ),
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg(weeklySummary.trajectory) === 'improving' ? _jouFg('#22c55e') : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
@@ -1856,9 +1866,9 @@ window.SelHub = window.SelHub || {
                   var sections = [
                     { heading: 'This week at a glance', items: [
                       'Average mood: ' + weeklySummary.avgMood.toFixed(1) + ' / 5',
-                      'Average energy: ' + weeklySummary.avgEnergy.toFixed(1) + ' / 5',
+                      'Average energy: ' + (weeklySummary.avgEnergy == null ? 'Not recorded' : weeklySummary.avgEnergy.toFixed(1) + ' / 5') + ' (' + weeklySummary.energyCount + ' recorded ratings)',
                       'Trajectory: ' + weeklySummary.trajectory,
-                      'Check-ins this week: ' + (weeklySummary.checkInCount || 0)
+                      'Check-ins this week: ' + weeklySummary.count
                     ] }
                   ];
                   if (weeklySummary.topTriggers && weeklySummary.topTriggers.length) {
@@ -2174,9 +2184,12 @@ window.SelHub = window.SelHub || {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('journal', h, ctx) : null),
           tabBar,
           heroBand,
-          journalCommandPanel(),
+          activeTab === 'checkin' && h('details', { 'aria-label': 'Journal overview and shortcuts' },
+            h('summary', { style: Object.assign({}, journalButton, { margin: '0 12px 14px' }) }, 'Journal overview and shortcuts'),
+            journalCommandPanel()
+          ),
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+          h('div', { id: 'sel-journal-content', tabIndex: -1, style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       })();

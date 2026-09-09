@@ -547,6 +547,134 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     return page.getByRole('region', { name: 'Journal writing and saved entries', exact: true });
   }
 
+  it('check-in keeps the overview optional and its shortcuts keyboard accessible', async () => {
+    await openJournal({ activeTab: 'checkin', jViewingPast: true, jText: 'Unfinished fictional reflection', journalEntries: [{ timestamp: 1000, prompt: 'A fictional prompt', text: 'Earlier fictional reflection' }] }, 320);
+    const overview = page.locator('details[aria-label="Journal overview and shortcuts"]');
+    expect(await overview.evaluate(node => node.open)).toBe(false);
+    const summary = overview.locator(':scope > summary');
+    expect((await summary.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await summary.focus(); await page.keyboard.press('Enter');
+    expect(await overview.evaluate(node => node.open)).toBe(true);
+    await overview.getByRole('button', { name: /^Open journal:/i }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-entry');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.checkIns || [])).toEqual([]);
+    expect(await page.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('Unfinished fictional reflection');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.journalEntries)).toHaveLength(1);
+    await page.getByRole('tab', { name: /Check-In$/ }).click();
+    expect(await overview.evaluate(node => node.open)).toBe(false);
+    await page.getByRole('region', { name: 'Mood check-in', exact: true }).locator('h3').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, 'checkin-overview-collapsed-phone.png') });
+  }, 120000);
+
+  it('check-in skips without creating a record and preserves unfinished choices', async () => {
+    await openJournal({ activeTab: 'checkin', ciThoughts: 'A fictional unfinished thought', ciMood: 4 });
+    const region = page.getByRole('region', { name: 'Mood check-in', exact: true });
+    await region.getByRole('button', { name: 'Skip check-in and write', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-entry');
+    const data = await page.evaluate(() => window.__alloflowSelToolData.journal);
+    expect(data.checkIns || []).toEqual([]);
+    expect(data.ciThoughts).toBe('A fictional unfinished thought');
+    expect(data.ciMood).toBe(4);
+    expect(await page.getByRole('region', { name: 'Journal writing and saved entries' }).getByRole('status').innerText()).toContain('No entry was added');
+    await page.getByRole('tab', { name: /Check-In$/ }).click();
+    expect(await region.getByRole('button', { name: 'Good', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    expect(await region.getByRole('combobox', { name: 'Energy level (optional)', exact: true }).inputValue()).toBe('');
+  }, 120000);
+
+  it('check-in clears dependent emotion words and supports deselecting a mood', async () => {
+    await openJournal({ activeTab: 'checkin', ciMood: 5, ciSubEmotion: 'Excited', ciExpandedEmotion: 'Elated' });
+    const region = page.getByRole('region', { name: 'Mood check-in', exact: true });
+    await region.getByRole('button', { name: 'Good', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal)).toMatchObject({ ciMood: 4, ciSubEmotion: null, ciExpandedEmotion: null });
+    await region.getByRole('button', { name: 'Peaceful', exact: true }).click();
+    const expanded = region.getByRole('button', { name: 'Good', exact: true });
+    expect(await expanded.getAttribute('aria-pressed')).toBe('true');
+    await region.getByRole('button', { name: 'Good', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal)).toMatchObject({ ciMood: null, ciSubEmotion: null, ciExpandedEmotion: null });
+    expect(await region.getByRole('button', { name: /Save Check-In/ }).isDisabled()).toBe(true);
+  }, 120000);
+
+  it('check-in saves missing energy honestly and prints the correct weekly denominator', async () => {
+    const now = Date.now();
+    await openJournal({ activeTab: 'checkin', earnedBadges: { first_checkin: true, calendar_viewer: true, weekly_reviewer: true }, checkIns: [
+      { timestamp: now, mood: 3, energy: null }, { timestamp: now, mood: 3, energy: 4 }
+    ] });
+    const region = page.getByRole('region', { name: 'Mood check-in', exact: true });
+    await region.getByRole('button', { name: 'Okay', exact: true }).click();
+    await region.getByRole('button', { name: /Save Check-In/ }).click();
+    const data = await page.evaluate(() => window.__alloflowSelToolData.journal);
+    expect(data.checkIns).toHaveLength(3);
+    expect(data.checkIns[2]).toMatchObject({ mood: 3, energy: null, thoughts: '', gratitude: '', triggers: [] });
+    expect(await region.getByRole('status').innerText()).toContain('Check-in added');
+    await region.getByRole('button', { name: 'Hide suggested activities', exact: true }).click();
+    await region.getByRole('button', { name: 'Good', exact: true }).click();
+    await region.getByRole('combobox', { name: 'Energy level (optional)', exact: true }).selectOption('2');
+    await region.locator('details[aria-label="Optional check-in context"] > summary').click();
+    await region.getByRole('textbox', { name: 'Check-in thoughts', exact: true }).fill('A fictional learner tries a quieter space.');
+    await region.getByRole('button', { name: 'School', exact: true }).click();
+    expect(await region.getByRole('button', { name: 'School', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    await region.locator('details[aria-label="Optional check-in context"] > summary').click();
+    await region.getByRole('button', { name: /Save Check-In/ }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.checkIns[3])).toMatchObject({ energy: 2, thoughts: 'A fictional learner tries a quieter space.', triggers: ['School'] });
+    expect(await region.getByRole('combobox', { name: 'Energy level (optional)', exact: true }).inputValue()).toBe('');
+    await page.evaluate(() => { window.SelHub.printDoc = payload => { window.reviewPrint = payload; }; });
+    await page.getByRole('tab', { name: /Calendar$/ }).click();
+    expect(await page.getByText('From 2 recorded ratings', { exact: true }).count()).toBe(1);
+    await page.getByRole('button', { name: 'Print my weekly summary', exact: true }).click();
+    const printed = await page.evaluate(() => JSON.stringify(window.reviewPrint));
+    expect(printed).toContain('Average energy: 3.0 / 5 (2 recorded ratings)');
+    expect(printed).toContain('Check-ins this week: 4');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('check-in summaries display and print an entirely unrecorded energy week', async () => {
+    await openJournal({ activeTab: 'calendar', earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
+      { timestamp: Date.now(), mood: 3, energy: null }, { timestamp: Date.now(), mood: 3 }, { timestamp: Date.now(), mood: 3, energy: null }
+    ] });
+    expect(await page.getByText('Not recorded', { exact: true }).count()).toBe(1);
+    expect(await page.getByText('From 0 recorded ratings', { exact: true }).count()).toBe(1);
+    await page.evaluate(() => { window.SelHub.printDoc = payload => { window.reviewPrint = payload; }; });
+    await page.getByRole('button', { name: 'Print my weekly summary', exact: true }).click();
+    const printed = await page.evaluate(() => JSON.stringify(window.reviewPrint));
+    expect(printed).toContain('Average energy: Not recorded (0 recorded ratings)');
+    expect(printed).toContain('Check-ins this week: 3');
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('check-in controls and optional context fit a phone in %s', async theme => {
+    await openJournal({ activeTab: 'checkin', earnedBadges: { first_checkin: true } }, 320, theme);
+    const region = page.getByRole('region', { name: 'Mood check-in', exact: true });
+    await region.getByRole('button', { name: 'Not Great', exact: true }).click();
+    await region.getByRole('button', { name: 'Worried', exact: true }).click();
+    await region.locator('details[aria-label="Optional check-in context"] > summary').click();
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const audit = await region.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-checkin-axe.json'), JSON.stringify(audit, null, 2));
+    expect(audit).toEqual([]);
+    expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await region.locator('button:visible, summary:visible, select:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+    await region.locator('h3').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-checkin-phone.png') });
+    await region.getByRole('combobox', { name: 'Energy level (optional)', exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-checkin-context-phone.png') });
+    await region.getByRole('button', { name: /Save Check-In/ }).click();
+    const tried = region.getByRole('button', { name: /^I tried:/ }).first();
+    await tried.click();
+    expect(await tried.getAttribute('aria-pressed')).toBe('true');
+    const postAudit = await region.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-checkin-saved-axe.json'), JSON.stringify(postAudit, null, 2));
+    expect(postAudit).toEqual([]);
+    expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await region.locator('button:visible, summary:visible, select:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+    await tried.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-checkin-saved-phone.png') });
+  }, 120000);
+
   it('journal keeps draft prompt attribution when browsing and allows an explicit change', async () => {
     const region = await openJournal();
     const prompt = (await page.locator('#sel-journal-prompt').innerText()).slice(1, -1);
