@@ -13955,64 +13955,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (spawned) preyMeshes.push(spawned);
         }
 
-        // Lake prey leave a restrained surface wake so movement reads against
-        // the otherwise broad, quiet water plane. Wakes are created lazily for
-        // water prey that spawn later and reuse one low-poly ring geometry.
+        // Directional surface wakes share geometry and the lake's wave clock.
         var waterWakeGroup = new THREE.Group();
         waterWakeGroup.name = 'raptor-prey-water-wakes';
-        waterWakeGroup.frustumCulled = false;
-        var waterWakeGeometry = new THREE.RingGeometry(0.22, 0.34, 18);
+        var waterWakeGeometry = new THREE.PlaneGeometry(2,2,graphicsQuality==='low'?4:8,graphicsQuality==='low'?8:16);
+        waterWakeGeometry.rotateX(-Math.PI/2);waterWakeGeometry.translate(0,0,-1);
         var waterWakeEntries = [];
         scene.add(waterWakeGroup);
+        function advanceWaterWakeState(state,vx,vz,flightHeight,submergedDepth,waterDepth,isFish,dt,reduced) {
+          var speed=Math.hypot(vx,vz),alpha=1-Math.exp(-7*dt);
+          var targetHeading=speed>0.12?Math.atan2(vx,vz):state.heading;
+          if(state.heading===null)state.heading=targetHeading===null?0:targetHeading;
+          if(targetHeading!==null){var turn=Math.atan2(Math.sin(targetHeading-state.heading),Math.cos(targetHeading-state.heading));state.heading+=turn*alpha;}
+          var contact=isFish?Math.max(0,1-Math.max(0,submergedDepth)/1.25)*0.24:Math.max(0,1-flightHeight/0.65);
+          contact*=Math.max(0,Math.min(1,waterDepth/0.5));
+          var opacityGoal=reduced?0:0.38*contact*Math.max(0,Math.min(1,(speed-0.12)/1.8));
+          state.opacity=reduced?0:state.opacity+(opacityGoal-state.opacity)*alpha;
+          state.length+=(Math.min(5.5,1.1+speed*0.62)-state.length)*alpha;
+          state.width+=(Math.min(2.2,0.7+speed*0.14)-state.width)*alpha;
+        }
+        function createWaterWakeMaterial(timeUniform,dayUniform,windUniform,waveGLSL) {
+          var material=new THREE.MeshBasicMaterial({color:0xd0e2df,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+          material.color.convertSRGBToLinear();
+          material.userData.wakeDepth={value:4};material.userData.compiled=false;
+          material.extensions={derivatives:true};
+          material.onBeforeCompile=function(shader){
+            material.userData.compiled=true;
+            shader.uniforms.rhWaterTime=timeUniform;shader.uniforms.rhWaterWind=windUniform;
+            shader.uniforms.rhWakeDay=dayUniform;shader.uniforms.rhWakeDepth=material.userData.wakeDepth;
+            shader.vertexShader=(waveGLSL||'uniform float rhWaterTime; vec3 rhLakeWave(vec2 p,float depth){return vec3(0.0);}')+'\nvarying vec2 vRhWakeUV; uniform float rhWakeDepth;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvRhWakeUV=uv; vec4 wakeWorld=modelMatrix*vec4(transformed,1.0); transformed.y+=rhLakeWave(wakeWorld.xz,rhWakeDepth).x;');
+            shader.fragmentShader='varying vec2 vRhWakeUV; uniform float rhWaterTime,rhWakeDay;\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
+              '#include <color_fragment>',
+              'float along=vRhWakeUV.y; float across=abs(vRhWakeUV.x-0.5);',
+              'float footprint=max(fwidth(across),fwidth(along)); float aa=max(0.006,footprint);',
+              'float edge=0.055+along*0.34;',
+              'float crest=1.0-smoothstep(0.009,0.025+aa,abs(across-edge));',
+              'float inner=1.0-smoothstep(edge-0.025,edge+aa,across);',
+              'float ripple=pow(0.5+0.5*cos((along+across*across*0.8)*32.0-rhWaterTime*2.1),10.0);',
+              'float detail=1.0-smoothstep(0.025,0.14,footprint);',
+              'float fade=smoothstep(0.025,0.16,along)*(1.0-smoothstep(0.45,1.0,along));',
+              'float broken=0.76+0.24*sin(along*24.0-rhWaterTime*1.7);',
+              'diffuseColor.a*=fade*(crest*broken*0.8+ripple*inner*0.24*detail)*detail;',
+              'diffuseColor.rgb*=0.28+0.72*rhWakeDay;'
+            ].join('\n'));
+          };
+          material.customProgramCacheKey=function(){return 'raptor-directional-water-wake-v1';};
+          return material;
+        }
         function ensureWaterWake(prey) {
           if (!prey || (prey.surfaceMode !== 'water-surface' && prey.surfaceMode !== 'subsurface') || prey.waterWake) return;
-          var wake = new THREE.Mesh(waterWakeGeometry, new THREE.MeshBasicMaterial({
-            color: prey.data && prey.data.id === 'fish' ? 0x67e8f9 : 0xbfdbfe,
-            transparent: true,
-            opacity: 0,
-            side: THREE.DoubleSide,
-            depthWrite: false
-          }));
-          wake.rotation.x = -Math.PI / 2;
-          wake.visible = false;
-          wake.frustumCulled = false;
-          waterWakeGroup.add(wake);
-          prey.waterWake = wake;
-          waterWakeEntries.push({ prey: prey, wake: wake, phase: Math.random() * Math.PI * 2 });
+          var wake = new THREE.Mesh(waterWakeGeometry,createWaterWakeMaterial(waterAppearance.time,waterAppearance.daylight,vegetationWind,lakeWaveGLSL));
+          wake.visible=false;wake.frustumCulled=false;waterWakeGroup.add(wake);prey.waterWake=wake;
+          waterWakeEntries.push({prey:prey,wake:wake,state:{heading:null,opacity:0,length:1.1,width:0.7}});
         }
-        function updateWaterWakes(now) {
-          if (!waterWakeGroup) return;
-          for (var waterWakePreyIndex = 0; waterWakePreyIndex < preyMeshes.length; waterWakePreyIndex++) {
-            ensureWaterWake(preyMeshes[waterWakePreyIndex]);
-          }
-          for (var waterWakeIndex = waterWakeEntries.length - 1; waterWakeIndex >= 0; waterWakeIndex--) {
-            var waterWakeEntry = waterWakeEntries[waterWakeIndex];
-            var wakePrey = waterWakeEntry.prey;
-            if (!wakePrey || preyMeshes.indexOf(wakePrey) === -1) {
-              if (waterWakeEntry.wake.parent) waterWakeEntry.wake.parent.remove(waterWakeEntry.wake);
-              if (waterWakeEntry.wake.material) waterWakeEntry.wake.material.dispose();
-              waterWakeEntries.splice(waterWakeIndex, 1);
-              continue;
-            }
-            var wakeSpeed = Math.sqrt(wakePrey.vx * wakePrey.vx + wakePrey.vz * wakePrey.vz);
-            var wakeActive = !_rmFX && wakeSpeed > 0.16 && !wakePrey.alerted;
-            if (!wakeActive) {
-              waterWakeEntry.wake.visible = false;
-              waterWakeEntry.wake.material.opacity = 0;
-              continue;
-            }
-            var wakePhase = motionNow * 0.0022 + waterWakeEntry.phase;
-            var wakePulse = 0.78 + Math.sin(wakePhase) * 0.16;
-            var wakeScale = Math.min(2.4, 0.68 + wakeSpeed * 0.18) * wakePulse;
-            waterWakeEntry.wake.position.set(
-              wakePrey.mesh.position.x - wakePrey.vx * 0.22,
-              -1.46,
-              wakePrey.mesh.position.z - wakePrey.vz * 0.22
-            );
-            waterWakeEntry.wake.rotation.z = Math.atan2(wakePrey.vx, wakePrey.vz) * 0.16;
-            waterWakeEntry.wake.scale.set(wakeScale * 1.45, wakeScale, 1);
-            waterWakeEntry.wake.material.opacity = Math.min(0.28, 0.08 + wakeSpeed * 0.024);
-            waterWakeEntry.wake.visible = true;
+        function updateWaterWakes(now,dt) {
+          for(var preyIndex=0;preyIndex<preyMeshes.length;preyIndex++)ensureWaterWake(preyMeshes[preyIndex]);
+          for(var i=waterWakeEntries.length-1;i>=0;i--){
+            var entry=waterWakeEntries[i],prey=entry.prey,wake=entry.wake;
+            if(!prey || preyMeshes.indexOf(prey)===-1){waterWakeGroup.remove(wake);wake.material.dispose();waterWakeEntries.splice(i,1);continue;}
+            var waterDepth=-1.5-terrainHeightAt(prey.mesh.position.x,prey.mesh.position.z);
+            advanceWaterWakeState(entry.state,prey.vx,prey.vz,prey.flightHeight,-1.5-prey.mesh.position.y,waterDepth,prey.surfaceMode==='subsurface',dt,_rmFX);
+            var heading=entry.state.heading;
+            wake.position.set(prey.mesh.position.x-Math.sin(heading)*prey.groundClearance*0.6,-1.47,prey.mesh.position.z-Math.cos(heading)*prey.groundClearance*0.6);
+            wake.rotation.y=heading;wake.scale.set(entry.state.width,1,entry.state.length);
+            wake.material.userData.wakeDepth.value=Math.max(0,waterDepth);
+            wake.material.opacity=entry.state.opacity;wake.visible=entry.state.opacity>0.003;
           }
         }
 
@@ -15706,6 +15715,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             drawCalls: renderer.info.render.calls,
             triangles: renderer.info.render.triangles,
             waterHz: qualityProfile.waterHz,
+            waterWakeCount: waterWakeEntries.length,
+            waterWakeVertices: waterWakeGeometry.attributes.position.count,
+            waterWakePositionVersion: waterWakeGeometry.attributes.position.version,
+            waterWakeStates: waterWakeEntries.map(function(entry){return {visible:entry.wake.visible,opacity:entry.state.opacity,heading:entry.state.heading,length:entry.state.length,compiled:entry.wake.material.userData.compiled,fish:entry.prey.surfaceMode==='subsurface',depth:-1.5-entry.prey.mesh.position.y,height:entry.prey.flightHeight};}),
             cameraAltitude: camera.position.y,
             skyDomeMargin: skyDomeRadius - camera.position.distanceTo(skyDome.position),
             lakeSheenOpacity: lakeSheen ? lakeSheen.material.opacity : 0,
@@ -16122,6 +16135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           _rmFX = !!event.matches;
           if (_rmFX) {
             clearTouchdownFx();
+            waterWakeEntries.forEach(function(entry){entry.state.opacity=0;entry.wake.visible=false;entry.wake.material.opacity=0;});
             vegetationWindState.x=vegetationWindState.z=0;vegetationWind.value.set(0,0,0);
             speedLineMat.opacity = 0;
             raptor.cameraRoll = 0;
@@ -17587,7 +17601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               preyMeshes.splice(pi3, 1); pi3--;
             }
           }
-          updateWaterWakes(now);
+          updateWaterWakes(now,dt);
           updatePreyContacts();
 
           // Maintain spawn count

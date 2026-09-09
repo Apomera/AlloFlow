@@ -41,7 +41,7 @@
   // mountGL reads these to set background, fog, lights, sky/ground, walls, floor.
   var THEMES = {
     gallery: { bg: 0x0b1020, skyTop: '#17213f', skyHorizon: '#050814', exposure: 1.06, fog: 0.00022, fogColor: 0x0b1020, walls: true, ground: 0, stars: 0x93c5fd, starCount: 420, ambient: 0.4, hemi: [0xfff0d8, 0x293442, 0.52], sun: [0xfff4e2, 0.44], floorMul: 0.42 },
-    pasture: { bg: 0x8ec9ea, skyTop: '#4f9fda', skyHorizon: '#d6ecff', exposure: 1.05, fog: 0.00018, fogColor: 0xd6ecff, walls: false, ground: 0x4f7f43, stars: 0, starCount: 0, ambient: 0.9, hemi: [0xcdeaff, 0x3c5a2c, 0.95], sun: [0xfff3d6, 0.95], floorMul: 0.62 },
+    pasture: { bg: 0x8ec9ea, skyTop: '#448fc4', skyHorizon: '#d7e5d6', exposure: 0.96, fog: 0.000055, fogColor: 0xb9d0b5, walls: false, ground: 0x607e43, stars: 0, starCount: 0, ambient: 0.48, hemi: [0xd1eaff, 0x425336, 0.62], sun: [0xffefd1, 0.72], floorMul: 0.62 },
     space: { bg: 0x02030a, skyTop: '#111538', skyHorizon: '#010207', exposure: 1.15, fog: 0, fogColor: 0x02030a, walls: false, ground: 0, stars: 0xc3d4ff, starCount: 900, ambient: 0.34, hemi: [0x232f4d, 0x05060a, 0.5], sun: [0x9db4ff, 0.5], floorMul: 0.32 }
   };
   var THEME_KEYS = ['gallery', 'pasture', 'space'];
@@ -1262,23 +1262,87 @@
     state.scene = root;   // exposed so destroy() can traverse + dispose the whole graph
     root.background = new THREE.Color(theme.bg);
     try { if (theme.fog > 0) root.fog = new THREE.FogExp2(theme.fogColor, theme.fog); } catch (e) {}
-    // A restrained gradient dome gives every theme a horizon and depth cue
-    // without post-processing or a network texture.
+    // A deterministic panorama gives each environment its own distant setting.
+    // All scenery lives on one sky mesh: no extra lights, downloads, or motion.
+    var environmentKey = theme === THEMES.pasture ? 'pasture' : theme === THEMES.space ? 'space' : 'gallery';
+    var skyRadius = Math.max(12000, palace.bounds.width * 5);
     try {
-      var skyCanvas = document.createElement('canvas'); skyCanvas.width = 32; skyCanvas.height = 256;
-      var skyCtx = skyCanvas.getContext('2d'); var skyGrad = skyCtx.createLinearGradient(0, 0, 0, 256);
-      skyGrad.addColorStop(0, theme.skyTop || '#111827');
-      skyGrad.addColorStop(0.48, theme.skyHorizon || '#020617');
-      skyGrad.addColorStop(0.52, theme.skyHorizon || '#020617');
-      skyGrad.addColorStop(1, theme.skyTop || '#111827');
-      skyCtx.fillStyle = skyGrad; skyCtx.fillRect(0, 0, 32, 256);
+      var skyCanvas = document.createElement('canvas'); skyCanvas.width = 2048; skyCanvas.height = 1024;
+      var skyCtx = skyCanvas.getContext('2d'), skyW = skyCanvas.width, skyH = skyCanvas.height;
+      var envSeed = 731;
+      function envRandom() { envSeed = (envSeed * 1664525 + 1013904223) >>> 0; return envSeed / 4294967296; }
+      var skyGrad = skyCtx.createLinearGradient(0, 0, 0, skyH);
+      skyGrad.addColorStop(0, theme.skyTop); skyGrad.addColorStop(0.5, theme.skyHorizon); skyGrad.addColorStop(1, theme.skyTop);
+      skyCtx.fillStyle = skyGrad; skyCtx.fillRect(0, 0, skyW, skyH);
+      function skyGlow(x, y, rx, ry, color) {
+        // Repeat across the seam so looking around never reveals a hard edge.
+        [-skyW, 0, skyW].forEach(function (offset) {
+          skyCtx.save(); skyCtx.translate(x + offset, y); skyCtx.scale(rx, ry);
+          var glow = skyCtx.createRadialGradient(0, 0, 0, 0, 0, 1);
+          glow.addColorStop(0, color); glow.addColorStop(1, 'rgba(0,0,0,0)');
+          skyCtx.fillStyle = glow; skyCtx.fillRect(-1, -1, 2, 2); skyCtx.restore();
+        });
+      }
+      function hillLayer(base, rise, color, phase) {
+        skyCtx.beginPath(); skyCtx.moveTo(0, skyH);
+        for (var hx = 0; hx <= skyW; hx += 4) {
+          var ha = hx / skyW * Math.PI * 2;
+          var hy = base - rise * (0.5 + 0.27 * Math.sin(ha * 3 + phase) + 0.16 * Math.sin(ha * 7 - phase) + 0.07 * Math.cos(ha * 11));
+          skyCtx.lineTo(hx, hy);
+        }
+        skyCtx.lineTo(skyW, skyH); skyCtx.closePath(); skyCtx.fillStyle = color; skyCtx.fill();
+      }
+      if (environmentKey === 'pasture') {
+        skyGlow(430, 390, 350, 150, 'rgba(255,236,174,0.45)');
+        for (var cloud = 0; cloud < 16; cloud++) {
+          var cloudX = envRandom() * skyW, cloudY = 280 + envRandom() * 160;
+          for (var puff = 0; puff < 5; puff++) skyGlow(cloudX + puff * 17, cloudY + Math.sin(puff * 2) * 5, 38 + envRandom() * 28, 9 + envRandom() * 8, 'rgba(255,252,231,0.22)');
+        }
+        hillLayer(512, 62, '#94b6a3', 1); hillLayer(518, 48, '#799a7c', 3); hillLayer(525, 32, '#617e55', 5);
+        // Small distant tree clusters establish scale outside the walkable rooms.
+        for (var tree = 0; tree < 110; tree++) {
+          var treeX = envRandom() * skyW, treeY = 505 + envRandom() * 11, treeH = 5 + envRandom() * 12;
+          skyCtx.fillStyle = '#526d4c'; skyCtx.fillRect(treeX, treeY - treeH * 0.5, 1.5, treeH * 0.5);
+          skyCtx.beginPath(); skyCtx.ellipse(treeX, treeY - treeH * 0.7, treeH * 0.28, treeH * 0.52, 0, 0, Math.PI * 2); skyCtx.fill();
+        }
+      } else {
+        if (environmentKey === 'space') {
+          for (var nebula = 0; nebula < 28; nebula++) {
+            var nx = nebula / 28 * skyW, ny = 430 + Math.sin(nebula / 28 * Math.PI * 4) * 74;
+            skyGlow(nx, ny, 125, 95, nebula % 3 ? 'rgba(65,92,172,0.15)' : 'rgba(134,64,142,0.19)');
+          }
+          skyGlow(1420, 456, 180, 130, 'rgba(98,159,208,0.2)');
+          // A fixed distant planet, not an interactive destination or recall cue.
+          skyCtx.save(); skyCtx.translate(1420, 456); skyCtx.rotate(-0.3);
+          skyCtx.strokeStyle = 'rgba(156,188,212,0.38)'; skyCtx.lineWidth = 6;
+          skyCtx.beginPath(); skyCtx.ellipse(0, 0, 66, 16, 0, 0, Math.PI * 2); skyCtx.stroke();
+          var planetGrad = skyCtx.createRadialGradient(-20, -23, 2, 10, 7, 46);
+          planetGrad.addColorStop(0, '#91b9c8'); planetGrad.addColorStop(0.5, '#426a89'); planetGrad.addColorStop(1, '#101b35');
+          skyCtx.fillStyle = planetGrad; skyCtx.beginPath(); skyCtx.arc(0, 0, 36, 0, Math.PI * 2); skyCtx.fill();
+          skyCtx.strokeStyle = 'rgba(180,199,213,0.55)'; skyCtx.lineWidth = 4;
+          skyCtx.beginPath(); skyCtx.ellipse(0, 0, 66, 16, 0, 0, Math.PI); skyCtx.stroke(); skyCtx.restore();
+        } else {
+          skyGlow(450, 445, 420, 170, 'rgba(123,112,164,0.19)');
+          skyGlow(1480, 460, 290, 95, 'rgba(185,133,90,0.13)');
+          hillLayer(526, 43, '#111b2d', 2); hillLayer(536, 31, '#0b1323', 4);
+          skyGlow(1380, 364, 42, 45, 'rgba(216,223,244,0.13)');
+          skyCtx.fillStyle = '#cdd5e5'; skyCtx.beginPath(); skyCtx.arc(1380, 364, 12, 0, Math.PI * 2); skyCtx.fill();
+          skyCtx.fillStyle = '#111a30'; skyCtx.beginPath(); skyCtx.arc(1385, 360, 11, 0, Math.PI * 2); skyCtx.fill();
+        }
+        for (var star = 0; star < (environmentKey === 'space' ? 1100 : 340); star++) {
+          var sx = envRandom() * skyW, sy = 140 + envRandom() * 360;
+          // Leave the planet silhouette clean.
+          if (environmentKey === 'space' && Math.hypot(sx - 1420, sy - 456) < 40) continue;
+          skyCtx.fillStyle = 'rgba(216,228,249,' + (0.15 + envRandom() * 0.6) + ')';
+          skyCtx.beginPath(); skyCtx.arc(sx, sy, star % 31 === 0 ? 1.25 : 0.55, 0, Math.PI * 2); skyCtx.fill();
+        }
+      }
       var skyTex = new THREE.CanvasTexture(skyCanvas); skyTex.anisotropy = _textureAnisotropy;
       if (THREE.sRGBEncoding) skyTex.encoding = THREE.sRGBEncoding;
-      var skyRadius = Math.max(12000, palace.bounds.width * 5);
-      var skyDome = new THREE.Mesh(new THREE.SphereGeometry(skyRadius, 32, 18),
+      var skyDome = new THREE.Mesh(new THREE.SphereGeometry(skyRadius, 48, 24),
         new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false }));
       skyDome.position.set((palace.bounds.minX + palace.bounds.maxX) / 2, 0, (palace.bounds.minZ + palace.bounds.maxZ) / 2);
-      skyDome.userData.visualRole = 'sky-dome'; root.add(skyDome);
+      skyDome.userData.visualRole = 'sky-dome'; skyDome.userData.environment = environmentKey; root.add(skyDome);
     } catch (eSky) {}
     var camera = new THREE.PerspectiveCamera(58, w / hgt, 1, 60000);
     // WebXR rig: while presenting, the headset drives the camera's LOCAL pose, so
@@ -1296,9 +1360,21 @@
     // Open-world ground (pasture): a big soft plane under the palace.
     try {
       if (theme.ground) {
-        var gr = new THREE.Mesh(new THREE.PlaneGeometry(palace.bounds.width * 3, palace.bounds.width * 3),
-          new THREE.MeshStandardMaterial({ color: new THREE.Color(theme.ground), roughness: 1 }));
-        gr.rotation.x = -Math.PI / 2; gr.position.y = -2; root.add(gr);
+        var grassCanvas = document.createElement('canvas'); grassCanvas.width = grassCanvas.height = 256;
+        var grassCtx = grassCanvas.getContext('2d'); grassCtx.fillStyle = '#a9b984'; grassCtx.fillRect(0, 0, 256, 256);
+        var grassSeed = 9123;
+        for (var blade = 0; blade < 3200; blade++) {
+          grassSeed = (grassSeed * 1664525 + 1013904223) >>> 0; var bx = grassSeed / 4294967296 * 256;
+          grassSeed = (grassSeed * 1664525 + 1013904223) >>> 0; var by = grassSeed / 4294967296 * 256;
+          grassCtx.strokeStyle = blade % 3 ? 'rgba(45,72,36,0.16)' : 'rgba(234,221,165,0.22)';
+          grassCtx.beginPath(); grassCtx.moveTo(bx, by); grassCtx.lineTo(bx + 1.5, by - 2 - blade % 4); grassCtx.stroke();
+        }
+        var grassTexture = new THREE.CanvasTexture(grassCanvas); grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
+        grassTexture.repeat.set(skyRadius / 240, skyRadius / 240); grassTexture.anisotropy = _textureAnisotropy;
+        if (THREE.sRGBEncoding) grassTexture.encoding = THREE.sRGBEncoding;
+        var gr = new THREE.Mesh(new THREE.PlaneGeometry(skyRadius * 2, skyRadius * 2),
+          new THREE.MeshStandardMaterial({ color: new THREE.Color(theme.ground), map: grassTexture, roughness: 1 }));
+        gr.rotation.x = -Math.PI / 2; gr.position.y = -2; gr.userData.visualRole = 'meadow-ground'; root.add(gr);
       }
     } catch (e) {}
 
@@ -1350,7 +1426,18 @@
       return tex;
     }
     var wallMat = new THREE.MeshStandardMaterial({ color: 0xa39988, map: theme.walls ? makeSurfaceTexture('wall') : null, roughness: 0.92, metalness: 0.02 });
-    var floorTexture = theme.walls ? makeSurfaceTexture('floor') : null;
+    var floorTexture = makeSurfaceTexture('floor');
+    if (environmentKey === 'space') {
+      var deckCanvas = document.createElement('canvas'); deckCanvas.width = deckCanvas.height = 256;
+      var deckCtx = deckCanvas.getContext('2d'); deckCtx.fillStyle = '#8198b0'; deckCtx.fillRect(0, 0, 256, 256);
+      deckCtx.strokeStyle = '#536c85'; deckCtx.lineWidth = 2; deckCtx.strokeRect(4, 4, 248, 248);
+      deckCtx.strokeStyle = 'rgba(196,224,245,0.3)'; deckCtx.lineWidth = 1; deckCtx.strokeRect(9, 9, 238, 238);
+      for (var vent = 0; vent < 5; vent++) { deckCtx.fillStyle = '#516b82'; deckCtx.fillRect(20 + vent * 6, 22, 2, 18); }
+      // Replace the temporary stone texture before it is attached to any mesh.
+      floorTexture.dispose(); floorTexture = new THREE.CanvasTexture(deckCanvas);
+      floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; floorTexture.repeat.set(3, 2); floorTexture.anisotropy = _textureAnisotropy;
+      if (THREE.sRGBEncoding) floorTexture.encoding = THREE.sRGBEncoding;
+    }
     var trimMat = new THREE.MeshStandardMaterial({ color: 0x665c4f, roughness: 0.58, metalness: 0.12 });
     var sideTrimGeo = theme.walls ? new THREE.BoxGeometry(ROOM_W, 16, 12) : null;
     var endTrimGeo = theme.walls ? new THREE.BoxGeometry(12, 16, ROOM_D) : null;
@@ -1405,8 +1492,14 @@
       }
       // Floor: room-accent tint (brighter in open-world themes).
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
-        new THREE.MeshStandardMaterial({ color: theme.walls ? new THREE.Color('#8e877a').lerp(new THREE.Color(room.color), 0.08) : new THREE.Color(room.color).multiplyScalar(theme.floorMul), map: floorTexture, roughness: 0.68, metalness: 0.08 }));
-      floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; rg.add(floor);
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(theme.walls ? '#8e877a' : theme.ground ? '#c2b99d' : '#233a52').lerp(new THREE.Color(room.color), theme.walls ? 0.08 : 0.12), map: floorTexture, roughness: 0.68, metalness: 0.08 }));
+      floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; floor.userData.visualRole = 'environment-floor'; rg.add(floor);
+      if (!theme.walls) {
+        // Visible platform thickness anchors the garden terraces and orbital decks.
+        var deckBase = new THREE.Mesh(new THREE.BoxGeometry(ROOM_W, 14, ROOM_D),
+          new THREE.MeshStandardMaterial({ color: theme.ground ? 0x817c61 : 0x14283d, roughness: 0.8, metalness: theme.ground ? 0.05 : 0.35 }));
+        deckBase.position.y = -7; deckBase.userData.visualRole = 'environment-platform'; rg.add(deckBase);
+      }
       // Room-level mastery tint: a quiet, overview-only wash across the floor.
       // It is deliberately created for every room but kept transparent until
       // measured mastery exists, so late-loaded mastery data can light it up

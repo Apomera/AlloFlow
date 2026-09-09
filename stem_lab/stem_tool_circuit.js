@@ -81,7 +81,7 @@ window.StemLab = window.StemLab || {
   // Keep small positive measurements visible in the interactive readouts.
   function circuitPreciseVoltageText(value) {
     if(value==null)return 'undetermined';
-    if(value>0&&value<1)return value<.001?(value*1e6).toPrecision(3)+' µV':(value*1000).toFixed(2)+' mV';
+    if(Math.abs(value)>0&&Math.abs(value)<1)return Math.abs(value)<.001?(value*1e6).toPrecision(3)+' µV':(value*1000).toFixed(2)+' mV';
     return circuitVoltageText(value,2);
   }
   window.StemLab.solveCircuit = solveCircuit;
@@ -437,10 +437,36 @@ window.StemLab = window.StemLab || {
     return result('Resistance transfers energy','The voltage across this resistor equals its current times its resistance: V = I × R. Electrical energy becomes heat; charge continues through the circuit.',s.mode==='parallel'?'If you double this resistance, what happens to this branch current and the other branch currents?':'If you double this resistance, what happens to the current through every part?');
   }
 
+  // Recover only node potentials fixed by the shared DC solution. Unknown
+  // internal nodes stay unknown; known prefixes/suffixes remain measurable.
+  function circuitProbeReading(solved, red, black) {
+    var n=solved.rows.length,nodes;
+    if(solved.mode==='parallel'||!n)nodes=[{label:'N0 · positive rail',voltage:solved.voltage},{label:'N1 · return rail',voltage:0}];
+    else{
+      nodes=Array.from({length:n+1},function(_,i){return {label:'N'+i+(i===0?' · source +':i===n?' · source −':' · after part '+i),voltage:null};});
+      nodes[0].voltage=solved.voltage;nodes[n].voltage=0;
+      for(var i=0;i<n-1;i++){if(solved.rows[i].voltage==null)break;nodes[i+1].voltage=nodes[i].voltage-solved.rows[i].voltage;}
+      for(var j=n-1;j>0;j--){if(solved.rows[j].voltage==null)break;if(nodes[j].voltage==null)nodes[j].voltage=nodes[j+1].voltage+solved.rows[j].voltage;}
+    }
+    var index=function(value,fallback){return Number.isInteger(value)?Math.max(0,Math.min(nodes.length-1,value)):fallback;};
+    red=index(red,0);black=index(black,nodes.length-1);
+    var voltage=red===black?0:nodes[red].voltage==null||nodes[black].voltage==null?null:nodes[red].voltage-nodes[black].voltage;
+    // A floating section can have a known differential voltage even when neither
+    // endpoint has a resolved absolute potential (for example, an unpowered resistor).
+    if(voltage==null&&solved.mode==='series'&&n){
+      var low=Math.min(red,black),high=Math.max(red,black),drop=0,known=true;
+      for(var p=low;p<high;p++){if(solved.rows[p].voltage==null){known=false;break;}drop+=solved.rows[p].voltage;}
+      if(known)voltage=red<black?drop:-drop;
+    }
+    return {nodes:nodes,red:red,black:black,voltage:voltage};
+  }
+  window.StemLab.circuitProbeReading=circuitProbeReading;
+
   // Self-contained vector snapshot, rasterized locally for a portable PNG.
   function circuitBenchSnapshot(scene, solved, selectedIndex, state) {
     var ns='http://www.w3.org/2000/svg',root=document.createElementNS(ns,'svg');
     var notes=['Idealized steady DC model. Geometry is illustrative, not a breadboard wiring guide.'];
+    if(state.sceneProbes){var probe=circuitProbeReading(solved,state.probeRed,state.probeBlack);notes.push('Virtual voltmeter: red N'+probe.red+' − black N'+probe.black+' = '+circuitPreciseVoltageText(probe.voltage)+'. Ideal probes do not load the circuit.');}
     if(state.sceneCurrent)notes.push('Arrows show conventional-current direction, not speed or electron motion.');
     if(state.sceneCurrent&&solved.mode==='parallel')notes.push('In parallel, arrows trace the selected branch only; shared rails carry combined branch currents.');
     if(solved.voltageAmbiguous)notes.push('Undetermined voltages are not zero; individual blocked-part voltages may be unresolved.');
@@ -546,6 +572,7 @@ window.StemLab = window.StemLab || {
     var selectedRow=solved.rows[selectedIndex],insight=selectedRow?circuitPartInsight(solved,selectedRow):null;
     var compareMetric=['voltage','current','power'].indexOf(d.sceneCompare)>=0?d.sceneCompare:'details';
     var comparing=compareMetric!=='details';
+    var probe=circuitProbeReading(solved,d.probeRed,d.probeBlack);
     var compareMax=comparing?solved.rows.reduce(function(max,r){return Math.max(max,r[compareMetric]||0);},0):0;
     var compareUnknown=comparing&&solved.rows.some(function(r){return r[compareMetric]==null;});
     var compareText=function(value){
@@ -815,6 +842,24 @@ window.StemLab = window.StemLab || {
       label(p.x,p.y+31,4,String(i+1).padStart(2,'0')+'  '+c.type,'#cee0e9',true);
     });
     faces.sort(function(a,b){return a.depth-b.depth;});
+    var probeMarkers=[],probePins=[];
+    if(d.sceneProbes){
+      [{index:probe.red,name:'R',color:'#fda4af'},{index:probe.black,name:'B',color:'#d7e1eb'}].forEach(function(lead,k){
+        var at;
+        if(lead.index===0)at=[-220,-60,50];
+        else if(solved.mode==='parallel'||lead.index===count||!count)at=[-220,60,50];
+        else {var part=positions[lead.index-1],dir=Math.floor((lead.index-1)/4)%2?-1:1;at=[part.x+dir*35,part.y,10];}
+        var p=project(at[0],at[1],at[2]);
+        if(p[0]<0||p[0]>640||p[1]<0||p[1]>410)return;
+        var x=Math.max(14,Math.min(626,p[0]+(k?26:-26))),y=Math.max(14,Math.min(396,p[1]+(focus?36:60)));
+        probePins.push(h('span',{key:k,className:'circuit-probe-pin','data-lead':lead.name,style:{left:(x/640*100)+'%',top:(y/410*100)+'%'}},lead.name));
+        probeMarkers.push(h('g',{key:k,'data-voltage-probe':lead.name,'aria-hidden':true},
+          h('path',{d:'M '+p[0]+' '+p[1]+' L '+x+' '+y,stroke:lead.color,strokeWidth:2,fill:'none'}),
+          h('circle',{cx:p[0],cy:p[1],r:3.5,fill:lead.color,stroke:'#071823',strokeWidth:1}),
+          h('circle',{className:'circuit-probe-badge',cx:x,cy:y,r:11,fill:k?'#162b3e':'#622c3d',stroke:lead.color,strokeWidth:1.5}),
+          h('text',{className:'circuit-probe-badge',x:x,y:y+3.5,textAnchor:'middle',fontSize:10,fontWeight:700,fill:'#fff'},lead.name)));
+      });
+    }
     var stateLabel=solved.isShort?'Short path':solved.voltage===0?'Source off':solved.isOpen?'Open circuit':solved.current===0?'No current':'Current flowing';
     return h('section',{'aria-label':'3D circuit bench',className:'circuit-3d'},
       h('div',{className:'circuit-scene-heading'},
@@ -831,7 +876,7 @@ window.StemLab = window.StemLab || {
           solved.mode==='parallel'&&selectedRow&&selectedRow.current>0&&h('p',null,'Selected branch: '+circuitCurrentText(selectedRow.current)+' · Source total: '+circuitCurrentText(solved.current)+'. Shared rails carry combined branch currents.'),
           focus&&h('p',null,'Close-up shows part of the path. Turn off Close-up to see the full route.'))),
       h('div',{className:'circuit-scene-viewport','data-dragging':dragging,'aria-describedby':'circuit-camera-help',onPointerDown:startDrag,onPointerMove:moveDrag,onPointerUp:endDrag,onPointerCancel:endDrag,onLostPointerCapture:endDrag},
-      h('svg', {ref:sceneRef,viewBox:'0 0 640 410',role: 'img','aria-label':'Rotatable 3D representation of the '+solved.mode+' circuit with '+count+' parts. '+circuitCurrentText(solved.current)+'. Read individual measurements below.','aria-describedby':d.sceneCurrent?'circuit-flow-note':undefined},
+      h('svg', {ref:sceneRef,viewBox:'0 0 640 410',role: 'img','aria-label':'Rotatable 3D representation of the '+solved.mode+' circuit with '+count+' parts. '+circuitCurrentText(solved.current)+'. Read individual measurements below.','aria-describedby':[d.sceneCurrent?'circuit-flow-note':'',d.sceneProbes?'circuit-probe-help':''].filter(Boolean).join(' ')||undefined},
         h('defs',null,
           solved.rows.map(function(r,i){return h('radialGradient',{key:i,id:'circuit-light-pool-'+i},h('stop',{offset:'0%',stopColor:r.component.type==='led'?(r.component.ledColor||'#ef4444'):'#fbbf24',stopOpacity:.45}),h('stop',{offset:'100%',stopColor:'#153744',stopOpacity:0}));}),
           h('radialGradient',{id:'circuit-3d-backdrop',cx:'48%',cy:'45%',r:'70%'},h('stop',{offset:'0%',stopColor:'#21495c'}),h('stop',{offset:'100%',stopColor:'#081723'})),
@@ -846,6 +891,7 @@ window.StemLab = window.StemLab || {
         flowNodes,
         faces.map(function(f,i){return h('g',{key:i},f.node);}),
         labels.map(function(l,i){return (!l.part||d.sceneLabels!==false)&&(!focus||!l.part||l.index===selectedIndex)?h('g',{key:i},l.node):null;}),
+        probeMarkers,
         !count&&h('text',{x:355,y:220,fill:'#cbd5e1',textAnchor:'middle',fontSize:16},'Your next idea starts here.')),
 
         h('div',{className:'circuit-scene-pins',role:'group','aria-label':'Select a component directly in the 3D scene'},
@@ -858,7 +904,8 @@ window.StemLab = window.StemLab || {
               title:(i+1)+'. '+row.component.type+' · '+circuitCurrentText(row.current),
               style:{left:(anchor[0]/640*100)+'%',top:(anchor[1]/410*100)+'%'},
               onClick:function(){props.update('selectedPart',i);}},String(i+1));
-          }))
+          })),
+        h('div',{className:'circuit-scene-probe-pins','aria-hidden':true},probePins)
       ),
       h('div',{className:'circuit-scene-caption',id:'circuit-camera-help'},h('strong',null,focus?'Close-up · '+solved.rows[selectedIndex].component.type:solved.mode+' circuit · spatial view'),h('span',null,d.sceneLabels===false?'Labels hidden · choose a part below. Drag or use the sliders to orbit.':focus?'Drag to orbit. Choose another part below.':'Drag to orbit · tap a number to inspect. Sliders also control the camera.')),
       h('div',{className:'circuit-camera'},
@@ -872,6 +919,20 @@ window.StemLab = window.StemLab || {
           h('button',{type:'button',disabled:!count||exporting.current,onClick:saveBenchImage,'aria-describedby':'circuit-image-help'},exporting.current?'Preparing image…':'Save bench image'),
           h('button',{type:'button','aria-pressed':d.sceneLabels!==false,onClick:function(){props.update('sceneLabels',d.sceneLabels===false);}},'Labels'))),
       h('div',{className:'circuit-image-help',id:'circuit-image-help'},h('p',null,'Save a PNG of this view with a table of every part’s readings.'),h('p',{role:'status'},exportMessage)),
+      h('details',{className:'circuit-probe-panel',open:!!d.sceneProbes,onToggle:function(e){if(e.currentTarget.open!==!!d.sceneProbes)props.update('sceneProbes',e.currentTarget.open);}},
+        h('summary',null,'Virtual voltmeter',h('span',null,'Measure between two points')),
+        h('p',{id:'circuit-probe-help'},'Choose the red (+) and black (−) probe points. The reading is V(red) − V(black). These ideal probes do not draw current.'),
+        h('div',{className:'circuit-probe-controls'},
+          [{key:'probeRed',label:'Red (+) lead',value:probe.red},{key:'probeBlack',label:'Black (−) lead',value:probe.black}].map(function(lead){return h('div',{key:lead.key},h('label',{htmlFor:'circuit-'+lead.key},lead.label),h('select',{id:'circuit-'+lead.key,value:lead.value,onChange:function(e){props.update(lead.key,Number(e.target.value));}},probe.nodes.map(function(node,i){return h('option',{key:i,value:i},node.label);})));})),
+        h('div',{className:'circuit-probe-display',role:'status','aria-live':'polite'},
+          h('span',null,'V(red) − V(black)'),h('strong',null,circuitPreciseVoltageText(probe.voltage)),
+          h('p',null,probe.voltage==null?'At least one point has an undetermined potential in this model. This is not a zero reading.':probe.red===probe.black?'Both probes touch the same node, so the voltage difference is zero.':probe.voltage<0?'The red probe is at a lower potential than the black probe. The negative sign indicates lead orientation.':probe.voltage===0?'These two points are at the same potential. Zero voltage difference does not necessarily mean zero current.':'The red probe is at a higher potential than the black probe.')),
+        h('div',{className:'circuit-action-row'},
+          h('button',{type:'button',onClick:function(){props.updateMany({probeRed:probe.black,probeBlack:probe.red});}},'Swap probe leads'),
+          h('button',{type:'button',disabled:!count,onClick:function(){props.updateMany({probeRed:solved.mode==='parallel'?0:selectedIndex,probeBlack:solved.mode==='parallel'?1:selectedIndex+1});}},'Across selected part'),
+          h('button',{type:'button',onClick:function(){props.updateMany({probeRed:0,probeBlack:probe.nodes.length-1});}},'Across source')),
+        h('p',{className:'circuit-probe-tip'},solved.mode==='parallel'?'All parallel parts connect to the same two rails. Their voltages match even when branch currents differ.':'A node is a connection shared by ideal wires. No voltage is lost along an ideal wire.'),
+        focus&&h('p',{className:'circuit-probe-tip'},'Close-up may hide a probe. Reset the camera to see both probe points.')),
       selectedRow&&h('section',{className:'circuit-scene-insight','aria-label':'Selected 3D component readings','data-tone':insight.tone},
         h('div',{className:'circuit-selection-nav',role:'group','aria-label':'Step through 3D parts'},
           h('span',{className:'circuit-selection-position','aria-live':'polite','aria-atomic':true},'Part '+(selectedIndex+1)+' of '+count+' · '+(selectedRow.component.type==='led'?'LED':selectedRow.component.type)),
@@ -975,6 +1036,9 @@ window.StemLab = window.StemLab || {
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-part-compare{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:12px 20px 0}\n[data-circuit-builder-root] .circuit-part-compare label{font-size:11px;color:#cadfe8}\n[data-circuit-builder-root] .circuit-part-compare select{font-size:12px;min-height:36px;padding:7px 30px 7px 10px;background:#142f40;color:#e1f2f7;border:1px solid #527383;border-radius:8px;max-width:100%}\n[data-circuit-builder-root] .circuit-compare-scale{flex-basis:100%;border-left:2px solid #688f9c;padding-left:10px;margin:2px 0 0}\n[data-circuit-builder-root] .circuit-compare-scale p{font-size:11px;line-height:1.7;color:#bbd2dc;margin:0}\n[data-circuit-builder-root] .circuit-compare-scale p:first-child{color:#dfedf3}\n[data-circuit-builder-root] .circuit-part-copy{flex:1}\n[data-circuit-builder-root] .circuit-compare-track{display:block;width:100%;height:5px;border-radius:4px;background:#071823;overflow:hidden;margin-top:3px}\n[data-circuit-builder-root] .circuit-compare-track>span{display:block;height:100%;background:#a6dfff;border-radius:4px}\n[data-circuit-builder-root] .circuit-compare-track[data-metric=current]>span{background:#9be3c0}\n[data-circuit-builder-root] .circuit-compare-track[data-metric=power]>span{background:#f4d185}\n[data-circuit-builder-root] .circuit-compare-track[data-unknown=true]{background:repeating-linear-gradient(125deg,#96a8b5 0,#96a8b5 2px,#183544 2px,#183544 6px)}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-part-compare{padding:12px 13px 0}[data-circuit-builder-root] .circuit-part-compare select{flex:1;min-width:0}[data-circuit-builder-root] .circuit-part-copy small{overflow-wrap:anywhere}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-camera{margin-bottom:16px}\n[data-circuit-builder-root] .circuit-selection-nav{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid #3a575e;padding-bottom:12px;margin-bottom:13px}\n[data-circuit-builder-root] .circuit-selection-position{color:#c5dddF;font-size:11px}\n[data-circuit-builder-root] .circuit-selection-nav>div{display:flex;gap:6px}\n[data-circuit-builder-root] .circuit-selection-nav button{border:1px solid #587a84;background:#14313b;color:#e0f3f3;font-size:11px;min-height:34px;padding:6px 10px;border-radius:7px;display:inline-flex;align-items:center;gap:6px}\n[data-circuit-builder-root] .circuit-selection-nav button:hover:not(:disabled){background:#26505a;border-color:#9cdbd3}\n[data-circuit-builder-root] .circuit-selection-nav button:disabled{opacity:.42;cursor:default}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-camera{margin-bottom:13px}[data-circuit-builder-root] .circuit-selection-nav{gap:8px}[data-circuit-builder-root] .circuit-selection-nav button{padding:6px 9px}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-image-help{padding:0 20px 14px;margin-top:-4px;color:#b9ced9;font-size:11px;line-height:1.7}\n[data-circuit-builder-root] .circuit-image-help p{margin:0}\n[data-circuit-builder-root] .circuit-image-help p[role=status]:not(:empty){color:#d1efdf;margin-top:4px}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-image-help{padding:0 13px 13px}}\n";
+    circStyle.textContent += "\n[data-circuit-builder-root] .circuit-probe-panel{margin:0 20px 16px;padding:12px 15px;border:1px solid #596478;border-radius:12px;background:linear-gradient(120deg,#1b2c40,#122d39);color:#d7e7ef}\n[data-circuit-builder-root] .circuit-probe-panel>summary{font-size:13px;font-weight:650;color:#e2edf9;cursor:pointer;line-height:24px}\n[data-circuit-builder-root] .circuit-probe-panel>summary>span{font-size:10px;font-weight:400;color:#b8d0df;margin-left:12px;display:inline-block}\n[data-circuit-builder-root] .circuit-probe-panel>p{font-size:12px;line-height:1.7;margin:10px 0;color:#c1d5e2}\n[data-circuit-builder-root] .circuit-probe-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}\n[data-circuit-builder-root] .circuit-probe-controls label{display:grid;gap:6px;min-width:0;font-size:11px;color:#edc9d3}\n[data-circuit-builder-root] .circuit-probe-controls label+label{color:#d2e0ed}\n[data-circuit-builder-root] .circuit-probe-controls select{width:100%;min-width:0;min-height:38px;border:1px solid #5d7b90;background:#0f2434;color:#e2edf5;border-radius:7px;padding:6px;font-size:12px}\n[data-circuit-builder-root] .circuit-probe-display{background:#071a26;border:1px solid #3e6475;border-radius:9px;padding:14px}\n[data-circuit-builder-root] .circuit-probe-display>span{font-size:11px;color:#b7d7df;display:block}\n[data-circuit-builder-root] .circuit-probe-display>strong{display:block;color:#bef1dd;font:500 27px/1.5 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-probe-display>p{font-size:12px;line-height:1.7;color:#c1d7df;margin:3px 0 0}\n[data-circuit-builder-root] .circuit-probe-panel .circuit-action-row button{font-size:11px;min-height:36px}\n[data-circuit-builder-root] .circuit-probe-panel>.circuit-probe-tip{font-size:11px;margin-bottom:0}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-probe-panel{margin:0 13px 13px;padding:11px}[data-circuit-builder-root] .circuit-probe-controls{gap:8px}[data-circuit-builder-root] .circuit-probe-controls select{font-size:11px}}\n";
+    circStyle.textContent += '[data-circuit-builder-root] .circuit-probe-controls>div{display:grid;gap:6px;min-width:0}[data-circuit-builder-root] .circuit-probe-controls>div+div label{color:#d2e0ed}';
+    circStyle.textContent += '[data-circuit-builder-root] .circuit-scene-probe-pins{position:absolute;inset:0;pointer-events:none}[data-circuit-builder-root] .circuit-probe-pin{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#182d3d;border:2px solid #d7e1eb;color:#fff;font:bold 10px/1 Arial,sans-serif;box-shadow:0 1px 5px #02091399}[data-circuit-builder-root] .circuit-probe-pin[data-lead=R]{background:#622c3d;border-color:#fda4af}[data-circuit-builder-root] .circuit-scene-viewport .circuit-probe-badge{visibility:hidden}';
     document.head.appendChild(circStyle);
   }
 
@@ -1540,7 +1604,7 @@ window.StemLab = window.StemLab || {
           // Keep static solid geometry out of animation-only React updates.
           var spatialView = React.useMemo(function(){
             return d.benchView==='3d'?h(CircuitBench3D,{React:React,solved:solved,state:d,update:upd,updateMany:updMulti}):null;
-          },[React,solved,d.benchView,d.cameraYaw,d.cameraTilt,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.selectedPart,ctx.setToolData]);
+          },[React,solved,d.benchView,d.cameraYaw,d.cameraTilt,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.sceneProbes,d.probeRed,d.probeBlack,d.selectedPart,ctx.setToolData]);
 
           var mode = solved.mode;
           var components = solved.components;

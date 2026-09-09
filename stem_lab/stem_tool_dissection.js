@@ -1003,6 +1003,11 @@
 .diss-eye-study__transcript a { font-size: .78rem; color: #075985; text-decoration: underline; }
 @media (max-width: 520px) { .diss-eye-study { padding: .75rem; } .diss-eye-study__viewport { height: 300px; } .diss-eye-study__parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diss-eye-study__actions button { flex: 1 1 7rem; } }
 
+
+.diss-eye-study__handoff { margin-top: .8rem; padding: .85rem; background: #ecfdf5; border: 1px solid #8fbaa8; border-radius: .7rem; }
+.diss-eye-study__handoff > strong { color: #14543e; font-size: .87rem; }
+.diss-eye-study__handoff .diss-eye-study__actions { margin-bottom: 0; }
+
 .diss-study-card { min-width: 0; }
 .diss-flashcard { width: 100%; min-height: 7rem !important; border: 2px solid #c4b5fd; cursor: pointer; }
 .diss-disclosure { overflow: hidden; border-radius: .9rem; }
@@ -1964,7 +1969,8 @@
   function DissectionEyeStudy(props) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), sceneRef = React.useRef(null);
-    var statePair = React.useState({ yaw: -0.65, elevation: 0.45, distance: 6.8, open: true, selected: 'lens', preset: 'oblique' });
+    var initialPart = DISSECTION_EYE_STUDY_PARTS.some(function (part) { return part.id === props.initialSelected; }) ? props.initialSelected : 'lens';
+    var statePair = React.useState({ yaw: -0.65, elevation: 0.45, distance: 6.8, open: true, selected: initialPart, preset: 'oblique' });
     var state = statePair[0], setState = statePair[1], latest = React.useRef(state); latest.current = state;
     var statusPair = React.useState('loading'), status = statusPair[0], setStatus = statusPair[1];
     var retryPair = React.useState(0), retry = retryPair[0], setRetry = retryPair[1];
@@ -2045,6 +2051,22 @@
       h('div', { className: 'diss-eye-study__reference', 'aria-live': 'polite', 'aria-atomic': 'true' },
         h('h4', null, selected.name), h('p', null, selected.description),
         h('button', { type: 'button', disabled: !ready, onClick: function () { if (canvasRef.current) { canvasRef.current.scrollIntoView({ block: 'center', behavior: 'auto' }); canvasRef.current.focus({ preventScroll: true }); } } }, 'Focus 3D view')),
+
+      props.targets && props.targets[selected.id] && h('div', { className: 'diss-eye-study__handoff', 'data-eye-handoff': true },
+        h('strong', null, 'Continue in the dissection'),
+        h('p', null, props.targets[selected.id].layerName + ' layer · ' +
+          (props.targets[selected.id].inspected ? 'Previously inspected in 2D' : 'Not yet inspected in 2D')),
+        h('p', null, props.targets[selected.id].available
+          ? 'Find this structure in the 2D workspace, then compare it with the schematic. Opening the directory does not record an observation.'
+          : 'This layer is still locked. The directory will show the preparation needed before inspection.'),
+        props.targets[selected.id].inspected && h('p', { 'data-eye-record-status': true }, props.targets[selected.id].status),
+        h('div', { className: 'diss-eye-study__actions' },
+          h('button', { type: 'button', onClick: function () { props.onLocate(selected.id); } }, 'Find in 2D: ' + props.targets[selected.id].name),
+          props.targets[selected.id].inspected && props.targets[selected.id].available && h('button', { type: 'button',
+            onClick: function () { props.onNote(selected.id); } }, 'Review my evidence note')
+        )
+      ),
+
       h('details', { className: 'diss-eye-study__transcript' }, h('summary', null, 'Spatial description and model limits'),
         h('p', null, 'Anterior to posterior: cornea, aqueous-filled space, iris with its pupil opening, lens, vitreous-filled space, and retina. The sclera forms the outer coat; the optic nerve exits posteriorly.'),
         h('p', null, 'Light passes through the optical media toward the retina. Neural signals travel from the retina through the optic nerve toward the brain. The viewer does not calculate light rays.'),
@@ -16595,7 +16617,7 @@ var d = labToolData.dissection || {};
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, evidenceRemovePendingId: null, evidenceClearPending: false });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ specimen: sk, _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -16660,7 +16682,7 @@ var d = labToolData.dissection || {};
             }
             allowDissectionSave(resetSaveKey, null, spec.name, dissectionSaveOwner);
             closeTimedPractical();
-            updMany({ eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
             if (typeof announceToSR === 'function') announceToSR('Progress reset for ' + spec.name + '. Accessibility preferences were preserved.');
@@ -17118,6 +17140,37 @@ var d = labToolData.dissection || {};
               if (typeof announceToSR === 'function') announceToSR(advancedWorkspace ? 'Free explore mode active.' : 'Procedure practice mode active.');
             }
           }
+
+          function eyeStudyTargets() {
+            var targets = {};
+            if (specimen !== 'sheepEye') return targets;
+            DISSECTION_EYE_STUDY_PARTS.forEach(function (part) {
+              var layerIndex = spec.layers.findIndex(function (layer) { return (spec.organs[layer.id] || []).some(function (org) { return org.id === part.id; }); });
+              if (layerIndex < 0) return;
+              var layer = spec.layers[layerIndex];
+              var organ = (spec.organs[layer.id] || []).find(function (org) { return org.id === part.id; });
+              targets[part.id] = { name: organ.name, layerId: layer.id, layerName: layer.name,
+                available: layerIndex <= unlockedLayerIdx, inspected: !!(d.exploredOrgans || {})[specimen + '|' + part.id],
+                status: structureRecordStatus(organ) };
+            });
+            return targets;
+          }
+          function handoffEyeStudy(partId, toNote) {
+            if (specimen !== 'sheepEye' || d.quizMode || d.practicalMode) return;
+            var target = eyeStudyTargets()[partId];
+            if (!target) return;
+            if (toNote && (!target.inspected || !target.available)) return;
+            cancelActiveCanvasGesture('Gesture canceled before returning from the 3D reference; no action was recorded.');
+            if (target.available && target.layerId !== activeLayer) selectLayer(target.layerId);
+            // Prior observation permits note review; reference navigation itself never adds credit.
+            updMany({ eyeStudyMode: false, _eyeStudyReturnPart: partId, selectedOrgan: toNote ? partId : null,
+              hoveredOrgan: null, organSearch: toNote ? '' : target.name, directoryFilter: 'all' });
+            focusDissectionTarget(toNote ? 'diss-note-' + partId : 'diss-organ-search',
+              toNote ? 'Reviewing your existing evidence for ' + target.name + '.'
+                : target.available ? 'Find ' + target.name + ' in the ' + target.layerName + ' layer. Inspect it before recording an observation.'
+                : target.name + ' belongs to the locked ' + target.layerName + ' layer. Complete its preparation before inspection.');
+          }
+
           function chooseOrganFromDirectory(org, preserveFocus) {
             var exposureState = structureExposureState(org, currentProcedure);
             var evidenceKey = specimen + '|' + org.id;
@@ -18572,7 +18625,9 @@ var d = labToolData.dissection || {};
                 ),
 
               specimen === 'sheepEye' && d.eyeStudyMode && !d.quizMode && !d.practicalMode && !d.flashcardMode && !d.compareMode && React.createElement(DissectionEyeStudy, {
-                React: React,
+                React: React, initialSelected: d._eyeStudyReturnPart, targets: eyeStudyTargets(),
+                onLocate: function (id) { handoffEyeStudy(id, false); },
+                onNote: function (id) { handoffEyeStudy(id, true); },
                 onClose: function () { upd('eyeStudyMode', false); focusDissectionTarget('diss-canvas'); }
               }),
 
@@ -18907,6 +18962,7 @@ var d = labToolData.dissection || {};
                   !d.quizMode && React.createElement("div", { className: "diss-note-handoff", "data-note-handoff": true },
                     React.createElement("strong", null, __alloT('stem.dissection.record_status_title', 'Your record') + ': '),
                     structureRecordStatus(sel),
+                    specimen === 'sheepEye' && !d.practicalMode && d._eyeStudyReturnPart === sel.id && React.createElement('button', { type: 'button', onClick: function () { updMany({ eyeStudyMode: true, flashcardMode: false, compareMode: false, guidedMode: false, selectedOrgan: null }); focusDissectionTarget('diss-eye-study-title'); } }, 'Return to 3D study: ' + sel.name),
                     (function () {
                       var nextRecord = organs.find(function (org) { return org.id !== sel.id && !!(d.exploredOrgans || {})[specimen + '|' + org.id] && structureRecordStatus(org) !== 'Note and confidence recorded'; });
                       return nextRecord ? React.createElement("button", { type: "button", onClick: function () { if (chooseOrganFromDirectory(nextRecord, true)) focusDissectionTarget('diss-note-' + nextRecord.id); } }, __alloT('stem.dissection.next_record', 'Continue notes') + ': ' + nextRecord.name) : null;

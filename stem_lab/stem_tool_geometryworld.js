@@ -121,6 +121,7 @@
       /* Short touch landscapes */
       "@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel{top:82px!important;left:12px!important;right:auto!important;background:#112d2bf2!important;border-color:#aec9b647!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel input{accent-color:#b1d3a6}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-panel>.gw-touch-look-label{color:#e1eddc!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-mode-hint{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-look-zone{display:none}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-coordinate-hud{display:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"][data-geometry-mode] .gw-action-bar.gw-action-bar{left:12px!important;right:auto!important;bottom:132px!important;width:max-content!important;max-width:calc(100% - 420px)!important;transform:none!important;flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;gap:3px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-action-bar button{min-height:44px;flex-shrink:0}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-touch-joystick{bottom:16px!important;left:12px!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-hotbar{left:auto!important;right:12px!important;max-width:calc(100% - 150px)!important;transform:none!important}#geoworld-fs-workspace[data-touch-active=\"true\"] .gw-placement-hint{left:50%;transform:translateX(-50%);top:64px;max-width:190px}}",
       ".theme-contrast .gw-root .gw-touch-actions button,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button{background:#000!important;border-color:#00ff00!important;color:#00ff00!important;box-shadow:none}.theme-contrast .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"],[data-stem-theme=\"contrast\"] .gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#ffff00!important;color:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-touch-joystick,[data-stem-theme=\"contrast\"] .gw-root .gw-touch-joystick{background:#000!important;border-color:#fff!important}.theme-contrast .gw-root .gw-placement-hint,[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast .gw-root .gw-placement-hint[data-allowed=\"false\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-allowed=\"false\"]{border-style:dashed}",
+      ".gw-workspace-icon{display:block;width:18px;height:18px;flex:0 0 auto}.gw-utility-content{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.gw-utility-label{font-weight:600}.gw-utility-count{min-width:16px;padding:1px 4px;border-radius:5px;background:#d4e8ca16;color:#bacfb9;font-size:10px;font-variant-numeric:tabular-nums}.gw-root .gw-action-bar button{min-height:44px;padding:6px 9px!important}.gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#d4e8ca!important;color:#173b35!important;border-color:#f1f7e8!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#e8c5ae!important}.gw-root .gw-achievement-toast{box-sizing:border-box;max-width:min(360px,calc(100% - 32px));padding:12px 15px!important;gap:12px!important;border:1px solid #a4bb9e!important;border-radius:17px!important;background:#f4f0e4fa!important;box-shadow:0 12px 32px #102f2940!important;pointer-events:none}.gw-achievement-medal{display:grid;width:40px;height:48px;flex:0 0 auto;place-items:center;color:#4d7050}.gw-achievement-medal .gw-workspace-icon{width:34px;height:34px}.gw-achievement-copy{min-width:0}.gw-achievement-kicker{color:#60715b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.gw-achievement-name{margin-top:3px;color:#173b35;font-size:15px;font-weight:750;line-height:1.25}.gw-achievement-description{margin-top:3px;color:#516454;font-size:11px;line-height:1.45}@media(max-width:800px){.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"undo\"] .gw-utility-label,.gw-root[data-touch-active=\"true\"] .gw-action-bar [data-gw-utility=\"redo\"] .gw-utility-label{display:none}.gw-root[data-touch-active=\"true\"] .gw-action-bar button{padding:6px!important}.gw-root .gw-achievement-toast{top:188px!important;left:12px!important;transform:none!important;max-width:calc(100% - 100px);padding:10px 12px!important}}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-achievement-toast{display:none}}.theme-contrast .gw-root .gw-achievement-toast,[data-stem-theme=\"contrast\"] .gw-root .gw-achievement-toast{background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-achievement-toast *,[data-stem-theme=\"contrast\"] .gw-achievement-toast *{color:#ffff00!important}.theme-contrast .gw-root .gw-action-bar button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gw-root .gw-action-bar button[aria-pressed=\"true\"]{background:#ffff00!important;color:#000!important}",
       '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
     ].join('');
     document.head.appendChild(uiStyle);
@@ -531,17 +532,28 @@
     }));
   }
 
-  function renderTouchAction(el, icon, label) {
-    var paths={
+  var WORKSPACE_ICON_PATHS={
       up:'M12 20V4M5 11l7-7 7 7', down:'M12 4v16M5 13l7 7 7-7',
       place:'M3 7l9-5 9 5v10l-9 5-9-5ZM3 7l9 5 9-5M12 12v10',
       break:'M4 20L16 8M3 6c7-5 13-1 18 4l-3 3C13 8 8 5 3 6Z',
       measure:'M3 16L16 3l5 5L8 21ZM13 6l3 3M9 10l3 3M5 14l3 3',
       talk:'M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2ZM7 9h10M7 13h6',
-      undo:'M8 4L3 9l5 5M3 9h10a7 7 0 0 1 0 14'
+      undo:'M8 4L3 9l5 5M3 9h10a7 7 0 0 1 0 14',
+      redo:'M16 4l5 5-5 5M21 9H11a7 7 0 0 0 0 14',
+      fly:'M12 3v18M6 9l6-6 6 6M4 14l8 7 8-7',
+      home:'M3 11l9-8 9 8M5 9v12h5v-7h4v7h5V9',
+      clear:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
+      award:'M8 15l-2 7 6-3 6 3-2-7M19 9a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM12 5l1.2 2.4 2.6.4-1.9 1.9.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.9 2.6-.4Z'
     };
+  function renderWorkspaceIcon(el, icon) {
+    return el('svg',{className:'gw-workspace-icon',viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round'},el('path',{d:WORKSPACE_ICON_PATHS[icon] || WORKSPACE_ICON_PATHS.place}));
+  }
+  function renderWorkspaceAction(el, icon, label, count) {
+    return el('span',{className:'gw-utility-content'},renderWorkspaceIcon(el,icon),el('span',{className:'gw-utility-label'},label),typeof count==='number' && el('span',{className:'gw-utility-count','aria-hidden':'true'},count));
+  }
+  function renderTouchAction(el, icon, label) {
     return el('span',{className:'gw-touch-action-content'},
-      el('svg',{viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round'},el('path',{d:paths[icon] || paths.place})),
+      renderWorkspaceIcon(el,icon),
       el('span',{className:'gw-touch-action-name'},label));
   }
 
@@ -4715,6 +4727,7 @@
         };
 
         engine.clearWorld = function() {
+          if(engine.clearDimensionAnnotations)engine.clearDimensionAnnotations();
           if (engine.publishPlacementPreview) engine.publishPlacementPreview(null);
           if (engine.clearLayerGhosts) engine.clearLayerGhosts();
           if (engine.disposeLandscape) engine.disposeLandscape();
@@ -5019,43 +5032,53 @@
 
         // ── 3D Dimension Lines — show L/W/H around measured structure ──
         engine._dimLines = [];
+        engine._dimBuildTimers = [];
+        engine._dimensionRevision = 0;
         function clearDimLines() {
-          engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
-          engine._dimLines = [];
+          engine._dimensionRevision++;
+          (engine._dimBuildTimers || []).forEach(clearTimeout);engine._dimBuildTimers=[];
+          if(engine._dimTimer){clearTimeout(engine._dimTimer);engine._dimTimer=null;}
+          engine._dimLines.forEach(function(obj) {
+            engine.scene.remove(obj);
+            if(obj.geometry && !obj.isSprite)obj.geometry.dispose();
+            if(obj.material){if(obj.userData && obj.userData.gwDimensionLabel && obj.material.map)obj.material.map.dispose();obj.material.dispose();}
+          });
+          engine._dimLines=[];
+        }
+        engine.clearDimensionAnnotations=clearDimLines;
+        function hideDimensionDuringShowcase(object) {
+          if(!engine._showcase)return;
+          engine._showcase.hidden.push([object,object.visible]);object.visible=false;
         }
         function makeDimLabel(text, color) {
-          var THREE = window.THREE;
-          // Hi-DPI canvas for crisper labels at distance
-          var c = document.createElement('canvas'); c.width = 256; c.height = 96;
-          var cx = c.getContext('2d');
-          cx.clearRect(0, 0, 256, 96);
-          // Rounded pill background with subtle color-matched border
-          cx.fillStyle = 'rgba(15,23,42,0.94)';
-          if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.fill(); } else { cx.fillRect(8, 8, 240, 80); }
-          if (cx.roundRect) {
-            cx.strokeStyle = color || '#ffffff';
-            cx.lineWidth = 3;
-            cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.stroke();
-          }
-          // Text with subtle shadow for contrast at distance
-          cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = 6;
-          cx.font = 'bold 42px "SF Mono", "Consolas", monospace';
-          cx.textAlign = 'center'; cx.textBaseline = 'middle';
-          cx.lineJoin = 'round'; cx.lineWidth = 5; cx.strokeStyle = 'rgba(255,255,255,0.35)';
-          cx.strokeText(text, 128, 52);
-          cx.fillStyle = color || '#fff';
-          cx.fillText(text, 128, 52);
-          cx.shadowBlur = 0;
-          // Painted in sRGB; untagged, the pill and the coloured text reached the
-          // screen gamma-encoded twice and read as a faded pastel.
-          var dimTex = new THREE.CanvasTexture(c);
-          if (typeof THREE.sRGBEncoding !== 'undefined') dimTex.encoding = THREE.sRGBEncoding;
-          var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: dimTex, transparent: true, depthTest: false }));
-          spr.scale.set(1.6, 0.6, 1);
+          var THREE=window.THREE,c=document.createElement('canvas'),cx=c.getContext('2d');
+          var fontSize=34,fontFamily='system-ui, -apple-system, Segoe UI, sans-serif';
+          cx.font='600 '+fontSize+'px '+fontFamily;
+          var measured=cx.measureText(text).width;
+          if(measured>976){fontSize=Math.max(14,Math.floor(fontSize*976/measured));cx.font='600 '+fontSize+'px '+fontFamily;measured=cx.measureText(text).width;}
+          c.width=Math.min(1024,Math.max(144,Math.ceil((measured+48)/4)*4));c.height=80;
+          cx=c.getContext('2d');cx.clearRect(0,0,c.width,c.height);
+          cx.fillStyle='#123a32';cx.strokeStyle=color || '#d4e8ca';cx.lineWidth=2;
+          cx.beginPath();if(cx.roundRect)cx.roundRect(3,3,c.width-6,74,17);else cx.rect(3,3,c.width-6,74);cx.fill();cx.stroke();
+          cx.font='600 '+fontSize+'px '+fontFamily;cx.textAlign='center';cx.textBaseline='middle';
+          cx.fillStyle='#f5f0e5';cx.fillText(text,c.width/2,41,c.width-36);
+          var dimTex=new THREE.CanvasTexture(c);
+          if(typeof THREE.sRGBEncoding !== 'undefined')dimTex.encoding = THREE.sRGBEncoding;
+          dimTex.minFilter=THREE.LinearFilter;dimTex.generateMipmaps=false;
+          var spr=new THREE.Sprite(new THREE.SpriteMaterial({map:dimTex,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));
+          spr.scale.set(c.width/80*0.55,0.55,1);spr.renderOrder=999;
+          spr.userData.gwDimensionLabel=text;
           return spr;
+        }
+        function dimensionVolumeCaption(m) {
+          var occupied=typeof m.occupiedVolume==='number'?m.occupiedVolume:typeof m.totalVolume==='number'?m.totalVolume:m.count;
+          if(m.isComplete===false)return 'At least '+formatVolume(occupied)+' cu';
+          if(m.isSolidPrism!==false && Math.abs(occupied-m.boundingVolume)<0.000001)return m.L+' × '+m.W+' × '+m.H+' = '+formatVolume(occupied);
+          return 'Occupied V = '+formatVolume(occupied)+' cu';
         }
         function showDimLines(m, startX, startY, startZ) {
           clearDimLines();
+          var revision=engine._dimensionRevision;
           var THREE = window.THREE; if (!THREE) return;
           var x0 = startX, y0 = startY, z0 = startZ;
           var x1 = x0 + m.L, y1 = y0 + m.H, z1 = z0 + m.W;
@@ -5071,7 +5094,7 @@
             var bar = new THREE.Mesh(geo, mat);
             bar.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
             bar.renderOrder = 998;
-            engine.scene.add(bar); engine._dimLines.push(bar);
+            engine.scene.add(bar); engine._dimLines.push(bar); hideDimensionDuringShowcase(bar);
           }
 
           // ── Sequential formula buildup (L, then W, then H, then V) ──
@@ -5079,42 +5102,42 @@
           dimLine(x0, y0, z0, x1, y0, z0, 0xef4444);
           var lbl = makeDimLabel('L=' + m.L, '#ef4444');
           lbl.position.set((x0 + x1) / 2, y0 - 0.4, z0);
-          engine.scene.add(lbl); engine._dimLines.push(lbl);
+          engine.scene.add(lbl); engine._dimLines.push(lbl); hideDimensionDuringShowcase(lbl);
 
           // Step 2 (after 0.8s): Width line + label
-          setTimeout(function() {
-            if (!engine || !engine.scene || !window.THREE) return;
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
             var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
             wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
-            engine.scene.add(wbl); engine._dimLines.push(wbl);
-          }, 800);
+            engine.scene.add(wbl); engine._dimLines.push(wbl); hideDimensionDuringShowcase(wbl);
+          }, 800));
 
           // Step 3 (after 1.6s): Height line + label
-          setTimeout(function() {
-            if (!engine || !engine.scene || !window.THREE) return;
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
             var hbl = makeDimLabel('H=' + m.H, '#22c55e');
             hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
-            engine.scene.add(hbl); engine._dimLines.push(hbl);
-          }, 1600);
+            engine.scene.add(hbl); engine._dimLines.push(hbl); hideDimensionDuringShowcase(hbl);
+          }, 1600));
 
           // Step 4 (after 2.4s): Volume label + bounding box
-          setTimeout(function() {
-            if (!engine || !engine.scene || !window.THREE) return;
-            var volStr = m.L + '\u00d7' + m.W + '\u00d7' + m.H + '=' + (m.hasFractions ? m.formattedVolume : m.boundingVolume);
+          engine._dimBuildTimers.push(setTimeout(function() {
+            if (!engine || engine._destroyed || revision!==engine._dimensionRevision || !engine.scene || !window.THREE) return;
+            var volStr = dimensionVolumeCaption(m);
             var vbl = makeDimLabel(volStr, '#fbbf24');
             vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
-            vbl.scale.set(2.4, 0.75, 1);
-            engine.scene.add(vbl); engine._dimLines.push(vbl);
+            vbl.scale.multiplyScalar(1.12);
+            engine.scene.add(vbl); engine._dimLines.push(vbl); hideDimensionDuringShowcase(vbl);
             // Bounding box wireframe
             var bbGeo = new THREE.BoxGeometry(m.L, m.H, m.W);
-            var bbEdges = new THREE.EdgesGeometry(bbGeo);
+            var bbEdges = new THREE.EdgesGeometry(bbGeo);bbGeo.dispose();
             var bbMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.28 });
             var bbLine = new THREE.LineSegments(bbEdges, bbMat);
             bbLine.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-            engine.scene.add(bbLine); engine._dimLines.push(bbLine);
-          }, 2400);
+            engine.scene.add(bbLine); engine._dimLines.push(bbLine); hideDimensionDuringShowcase(bbLine);
+          }, 2400));
 
           // Persistent: clear on re-measure, distance >20, or after 30 seconds
           if (engine._dimTimer) clearTimeout(engine._dimTimer);
@@ -5239,7 +5262,7 @@
           if (!engine._showcase && !engine.isLocked) canvas.requestPointerLock();
         });
         document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
-          engine.isLocked = !!document.pointerLockElement;
+          engine.isLocked = document.pointerLockElement === canvas;
           if (engine.isLocked) { startAmbientWind(); var ts = engine._tutorialState || {}; if (ts.step === 0 && !ts.dismissed) upd('tutorialStep', 1); }
         });
 
@@ -5279,7 +5302,7 @@
           announceToSR(summarizeNearbyNpcs(entries, 4));
         }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
-          if (!engine.isLocked) return;
+          if (engine._showcase || document.pointerLockElement !== canvas) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
           engine.euler.y -= ev.movementX * MOUSE_SENSITIVITY;
           engine.euler.x -= ev.movementY * MOUSE_SENSITIVITY;
@@ -5932,22 +5955,31 @@
         }
         resetTouchJoystick();
         resetTouchLookFeedback();
+        // Camera modes take ownership from the previous gesture as a whole.
+        engine.releaseInput = function() {
+          engine.moveState = { forward:false, backward:false, left:false, right:false, sprint:false, flyUp:false, flyDown:false };
+          engine.lookState = { left:false, right:false, up:false, down:false };
+          engine._jumpLock = false;
+          engine._lastSpaceTime = 0;
+          engine._touchActive = false;
+          engine._touchLookId = null; engine._touchMoveId = null;
+          engine._touchLookStart = null; engine._touchMoveStart = null;
+          engine._touchMoveVec = { x:0, z:0 };
+          resetTouchJoystick(); resetTouchLookFeedback();
+        };
+        engine.refreshTouchActivity = function() {
+          var movement = engine.moveState || {};
+          // The action column and canvas can own different fingers. Releasing a
+          // look finger must not interrupt an Up or Down button still held.
+          engine._touchActive = engine._touchControlsEnabled !== false && !!(engine._touchMoveId != null || engine._touchLookId != null || movement.flyUp || movement.flyDown);
+          return engine._touchActive;
+        };
         engine.setTouchControlsEnabled = function(enabled) {
           engine._touchControlsEnabled = enabled !== false;
-          resetTouchJoystick();
-          resetTouchLookFeedback();
+          resetTouchJoystick(); resetTouchLookFeedback();
           if (!engine._touchControlsEnabled) {
-            engine._touchActive = false;
-            engine._touchLookId = null;
-            engine._touchMoveId = null;
-            engine._touchLookStart = null;
-            engine._touchMoveStart = null;
-            engine._touchMoveVec = { x: 0, z: 0 };
-            if (engine.moveState) {
-              engine.moveState.forward = false; engine.moveState.backward = false;
-              engine.moveState.left = false; engine.moveState.right = false;
-              engine.moveState.flyUp = false; engine.moveState.flyDown = false; engine._jumpLock = false;
-            }
+            engine.releaseInput();
+            engine.isLocked = document.pointerLockElement === canvas;
           }
         };
 
@@ -5988,14 +6020,12 @@
           if (!engine.camera || !engine._currentLesson || engine._guidedTour) return false;
           try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
           engine.isLocked = false;
-          engine._touchActive = false;
+          engine.releaseInput();
           engine._entryAnim = null;
           engine._viewPresetAnim = null;
           engine._viewPresetReturn = null;
           engine._viewPreset = 'free';
           setViewPreset('free');
-          engine.moveState.forward = false; engine.moveState.backward = false;
-          engine.moveState.left = false; engine.moveState.right = false;
           var focus = getGuidedTourFocus(engine._currentLesson);
           var guidedTourReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           engine._guidedTour = { elapsed: 0, duration: 12, focus: focus, step: -1, reducedMotion: guidedTourReducedMotion };
@@ -6010,11 +6040,7 @@
           var wasActive = !!engine._guidedTour;
           engine._guidedTour = null;
           engine._entryAnim = null;
-          engine._touchActive = false;
-          if (engine.moveState) {
-            engine.moveState.forward = false; engine.moveState.backward = false;
-            engine.moveState.left = false; engine.moveState.right = false;
-          }
+          engine.releaseInput();
           setGuidedTourActive(false);
           setGuidedTourStep(0);
           if (wasActive) announceToSR(completed ? 'Guided explore tour complete. You can now explore the world.' : 'Guided explore tour stopped.');
@@ -6037,7 +6063,7 @@
           if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
           try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
           engine.isLocked = false;
-          engine._touchActive = false;
+          engine.releaseInput();
           engine._entryAnim = null;
           var THREE = window.THREE;
           var currentPosition = engine.camera.position.clone();
@@ -6175,7 +6201,6 @@
           if (engine._touchControlsEnabled === false) return;
           ev.preventDefault();
           engine._touchActive = true;
-          engine.isLocked = true; // Treat touch as "locked" for rendering purposes
           for (var ti = 0; ti < ev.changedTouches.length; ti++) {
             var touch = ev.changedTouches[ti];
             var isLeftSide = touch.clientX < window.innerWidth / 2;
@@ -6245,7 +6270,7 @@
               resetTouchLookFeedback();
             }
           }
-          if (engine._touchMoveId === null && engine._touchLookId === null) engine._touchActive = false;
+          engine.refreshTouchActivity();
         }, { passive: false });
 
         canvas.addEventListener('touchcancel', _cvH.touchcancel = function() {
@@ -6258,6 +6283,7 @@
           resetTouchLookFeedback();
           engine.moveState.forward = false; engine.moveState.backward = false;
           engine.moveState.left = false; engine.moveState.right = false;
+          engine.refreshTouchActivity();
         }, { passive: false });
 
         // ── Cached blocks array (rebuilt only when blocks change). Avoids allocating
@@ -7806,7 +7832,7 @@
           if (engine.clearLayerGhosts) { engine.clearLayerGhosts(); if (engine._layerGhostMat) { engine._layerGhostMat.dispose(); engine._layerGhostMat = null; } }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows
-          if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+          if (engine.clearDimensionAnnotations) engine.clearDimensionAnnotations();
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);
@@ -8232,6 +8258,7 @@
       function stopMobileJump() {
         if (!engine || !engine.moveState) return;
         engine.moveState.flyUp = false; engine._jumpLock = false;
+        if (engine.flyMode && engine.refreshTouchActivity) engine.refreshTouchActivity();
       }
 
       function beginMobileDescent() {
@@ -8241,7 +8268,10 @@
       }
 
       function stopMobileDescent() {
-        if (engine && engine.moveState) engine.moveState.flyDown = false;
+        if (engine && engine.moveState) {
+          engine.moveState.flyDown = false;
+          if (engine.refreshTouchActivity) engine.refreshTouchActivity();
+        }
       }
 
       function activateMobileDescent() {
@@ -8253,8 +8283,7 @@
         beginMobileJump();
         setTimeout(function() {
           if (!engine) return;
-          engine.moveState.flyUp = false;
-          engine._jumpLock = false;
+          stopMobileJump();
         }, 150);
       }
 
@@ -8488,18 +8517,18 @@
         ),
 
           // Badge notification popup
-          lastBadgeNotification && el('div', {
+          lastBadgeNotification && !measureResult && !d.showcaseActive && openModals.length === 0 && el('div', {
             role: 'status', 'aria-live': 'polite', className: 'gw-achievement-toast',
             style: { position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 60,
               background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', border: '2px solid #a78bfa',
               borderRadius: '12px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px',
               boxShadow: '0 4px 20px rgba(124,58,237,0.4)', animation: 'fadeIn 0.3s ease-out' }
           },
-            el('span', { style: { fontSize: '28px' } }, lastBadgeNotification.icon),
-            el('div', null,
-              el('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, '\uD83C\uDF89 Achievement Unlocked!'),
-              el('div', { style: { fontSize: '14px', fontWeight: 700, color: '#fbbf24' } }, lastBadgeNotification.name),
-              el('div', { style: { fontSize: '11px', color: '#c4b5fd' } }, lastBadgeNotification.desc)
+            el('span', {className:'gw-achievement-medal','aria-hidden':'true'},renderWorkspaceIcon(el,'award')),
+            el('div', {className:'gw-achievement-copy'},
+              el('div', {className:'gw-achievement-kicker'},'Achievement unlocked'),
+              el('div', {className:'gw-achievement-name'},lastBadgeNotification.name),
+              el('div', {className:'gw-achievement-description'},lastBadgeNotification.desc)
             )
           ),
           // Volume-estimate drawer — available on demand without consuming play space.
@@ -10188,7 +10217,7 @@
         },
           // Fly mode toggle (always visible)
           el('button', {
-            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'),
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), 'aria-pressed':engine.flyMode ? 'true':'false', 'data-gw-utility':'fly',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
@@ -10199,29 +10228,29 @@
             },
             title: __alloT('stem.geometryworld.toggle_fly_mode_or_double_tap_space', 'Toggle fly mode (or double-tap Space)'),
             style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#94a3b8', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
-          }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
+          }, renderWorkspaceAction(el,'fly','Fly')),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
           // Undo — conditional
           engine._undoStack && engine._undoStack.length > 0 && el('button', {
-            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_action', 'Undo last action'),
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_action', 'Undo last action'), 'data-gw-utility':'undo',
             style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.undo) engine.undo(); },
             title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
-          }, '\u21A9 ' + engine._undoStack.length),
+          }, renderWorkspaceAction(el,'undo','Undo',engine._undoStack.length)),
           // Redo — conditional
           engine._redoStack && engine._redoStack.length > 0 && el('button', {
-            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'),
+            type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_redo_last_action', 'Redo last action'), 'data-gw-utility':'redo',
             style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
-          }, '\u21AA ' + engine._redoStack.length),
+          }, renderWorkspaceAction(el,'redo','Redo',engine._redoStack.length)),
           // Home (return to spawn)
           worldActive && el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point'),
             style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
             title: __alloT('stem.geometryworld.return_to_spawn_point_h', 'Return to spawn point (H)')
-          }, '\uD83C\uDFE0 Home'),
+          }, renderWorkspaceAction(el,'home','Home')),
           // Clear my blocks
           worldActive && el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks'),
@@ -10257,7 +10286,7 @@
               }
             },
             title: __alloT('stem.geometryworld.clear_only_your_placed_blocks_lesson_s', 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.')
-          }, '\uD83D\uDDD1\uFE0F Clear Mine')
+          }, renderWorkspaceAction(el,'clear','Clear'))
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
         isMobile && touchMode && worldActive && engine && el('div', { className: 'gw-touch-controls', style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },

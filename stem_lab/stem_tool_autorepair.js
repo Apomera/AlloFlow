@@ -9736,6 +9736,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     function operate(id, label, action) { actions.push({ id: id, label: label, station: task.station, action: action }); }
     if (kind && kind !== 'torque' && !(kind === 'alignment' && task.id === 'alignment-setup')) operate('read', 'Capture instrument reading', { type: 'read' });
     if (kind === 'meter') {
+      operate('meter-posts', 'Place black probe on negative battery post', { type: 'configure', field: 'contact', value: 'posts' });
+      operate('meter-joint', 'Place black probe on positive cable clamp', { type: 'configure', field: 'contact', value: 'joint' });
       operate('meter-mode', state.instrument.mode === 'dcv' ? 'Switch meter to resistance' : 'Switch meter to DC volts', { type: 'configure', field: 'mode', value: state.instrument.mode === 'dcv' ? 'resistance' : 'dcv' });
       operate('meter-contact', state.instrument.contact === 'posts' ? 'Move probes across positive joint' : 'Move probes across battery posts', { type: 'configure', field: 'contact', value: state.instrument.contact === 'posts' ? 'joint' : 'posts' });
       operate('meter-load', state.instrument.load === 'off' ? 'Apply simulated starter load' : 'Switch simulated starter load off', { type: 'configure', field: 'load', value: state.instrument.load === 'off' ? 'starter' : 'off' });
@@ -9783,6 +9785,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var task = arShopJob(state.job).tasks[state.step];
     if (state.tool !== task.tool) return blocked('Select ' + SHOP_TOOLS.filter(function (tool) { return tool[0] === task.tool; })[0][1] + ' before operating this control.');
     if (Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; })) return blocked('Complete the vehicle access and setup prerequisites before operating this control.');
+    if ((id === 'meter-posts' || id === 'meter-joint') && state.instrument.contact === action.action.value)
+      return Object.assign({}, atStation, { feedback: 'The black probe is already on that contact. The current capture is unchanged.' });
     return arShopOperate(atStation, action.action);
   }
 
@@ -9955,6 +9959,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     box(engine, 'workshop-battery', [0.38, 0.26, 0.29], [-0.87, 1.01, 0.51], rubber);
     cylinder(engine, 'positive-post', 0.03, 0.05, [-0.97, 1.165, 0.51], red);
     cylinder(engine, 'negative-post', 0.03, 0.05, [-0.76, 1.165, 0.51], metal);
+    var positiveClamp = new THREE.Group(); positiveClamp.name = 'workshop-positive-clamp'; engine.add(positiveClamp);
+    var clampRing = new THREE.Mesh(new THREE.TorusGeometry(0.041, 0.011, 8, 24), metal);
+    clampRing.name = 'positive-clamp-collar'; clampRing.rotation.x = Math.PI / 2; clampRing.position.set(-0.97, 1.16, 0.51); positiveClamp.add(clampRing);
+    box(positiveClamp, 'positive-clamp-contact', [0.058, 0.022, 0.048], [-0.914, 1.16, 0.51], metal);
+    cylinder(positiveClamp, 'positive-clamp-bolt', 0.012, 0.029, [-0.90, 1.169, 0.51], pale);
+    pipe(positiveClamp, 'positive-clamp-cable', [-0.92, 1.15, 0.49], [-0.89, 1.11, 0.36], 0.014, red);
+    pipe(engine, 'negative-battery-cable', [-0.76, 1.15, 0.49], [-0.69, 1.10, 0.38], 0.015, rubber);
     if (state.job === 'electrical' && !state.serviced) {
       var corrosion = cylinder(engine, 'workshop-terminal-corrosion', 0.065, 0.018, [-0.97, 1.157, 0.51], api.trim(0x99ddc6, 2)); corrosion.userData.faultState = 'high-resistance';
     }
@@ -10243,16 +10254,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       var taskParts = { 'wheel-off': 'mounted-wheel--1.3-0.79', drain: 'workshop-drain-pan', filter: 'service-oil-filter' };
       if (taskParts[currentTask.id]) bindControl(scene.getObjectByName(taskParts[currentTask.id]), 'task');
       if (currentTask.id === 'service' && state.job === 'brakes') bindControl(brakes.getObjectByName('brake-caliper--1.3-0.79'), 'task');
-      if (currentTask.id === 'service' && state.job === 'electrical') { bindControl(engine.getObjectByName('positive-post'), 'task'); bindControl(engine.getObjectByName('workshop-terminal-corrosion'), 'task'); }
+      if (currentTask.id === 'service' && state.job === 'electrical') { bindControl(positiveClamp, 'task'); bindControl(engine.getObjectByName('positive-post'), 'task'); bindControl(engine.getObjectByName('workshop-terminal-corrosion'), 'task'); }
       if (currentTask.station === 'lift') bindControl(lift.getObjectByName('lift-control-panel'), 'task');
       if (instrumentKind === 'torque' && !state.wheelSeated) {
         bindControl(rack.getObjectByName('removed-front-wheel'), 'seat'); directButton(brakes, 'seat', 'SEAT', [-1.3, 0.55, 1.17], 0.26);
       }
-      if (instrumentReady && instrumentKind === 'meter') {
+      if (instrumentReady && instrumentKind === 'meter' && state.hood) {
         bindControl(engine.getObjectByName('workshop-live-voltmeter'), 'read');
         bindControl(engine.getObjectByName('voltmeter-mode-dial'), 'meter-mode');
         bindControl(engine.getObjectByName('voltmeter-dial-mark'), 'meter-mode');
-        bindControl(engine.getObjectByName('workshop-meter-black-probe'), 'meter-contact');
+        bindControl(engine.getObjectByName('workshop-meter-black-probe'), 'meter-' + state.instrument.contact);
+        // Distinct contact targets place the probe deliberately, without toggling it back.
+        bindControl(positiveClamp, 'meter-joint');
+        bindControl(engine.getObjectByName('negative-post'), 'meter-posts');
+        [{ id: 'joint', x: -0.90, label: '+ CLAMP', dx: -0.16 }, { id: 'posts', x: -0.76, label: '− POST', dx: 0 }].forEach(function (contact) {
+          var target = new THREE.Group(); target.name = 'workshop-probe-target-' + contact.id;
+          target.position.set(contact.x, 1.19, 0.51); engine.add(target);
+          target.userData.selected = state.instrument.contact === contact.id;
+          var targetColor = target.userData.selected ? 0x6ee7b7 : 0x67e8f9;
+          var ring = new THREE.Mesh(new THREE.TorusGeometry(contact.id === 'joint' ? 0.027 : 0.04, 0.005, 8, 24), api.trim(targetColor, 10));
+          ring.name = 'probe-contact-ring-' + contact.id; ring.rotation.x = Math.PI / 2; ring.position.y = 0.01; target.add(ring);
+          pipe(target, 'probe-contact-guide-' + contact.id, [0, 0.01, 0], [contact.dx, 0.135, 0.04], 0.003, api.trim(targetColor, 10));
+          var tag = label(target, contact.label, [contact.dx, 0.16, 0.04], contact.id === 'posts' ? 0.16 : 0.22, target.userData.selected ? '#6ee7b7' : '#67e8f9');
+          if (tag) tag.name = 'workshop-probe-label-' + contact.id;
+          bindControl(target, 'meter-' + contact.id);
+        });
         directButton(engine, 'meter-contact', 'PROBES', [-2.08, 1.32, 1.17], 0.22);
         directButton(engine, 'meter-load', 'LOAD', [-2.08, 1.09, 1.17], 0.22);
       }
@@ -20129,6 +20155,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
           }
         }
+        function focusBatteryContacts() {
+          if (!shop.hood || instrumentKind !== 'meter' || !task || shop.tool !== task.tool) return;
+          pick('engine'); stationCamera('engine'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0.76);
+          SHOP3D.focus('engine', { distance: 1.80, target: { x: -0.87, y: 1.20, z: 0.53 }, immediate: true });
+          arAnnounce('Battery contact close-up. The red probe stays on the positive post. Select the negative post or positive clamp for the black probe.');
+        }
         function focusToolControls() {
           pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
           SHOP3D.focus('tools', { distance: 2.6, target: { x: 1.7, y: 1.30, z: -2.97 }, immediate: true });
@@ -20175,6 +20207,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('section', { 'data-ar-instrument-coach': coach.kind, 'data-ar-coach-status': coach.status, 'aria-label': 'Instrument status',
             style: { margin: '10px 0', padding: 12, border: '1px solid #64748b', borderRadius: 8, background: '#1e3346' } },
             h('strong', { style: { fontSize: 14 } }, coach.title),
+            coach.kind === 'meter' && shop.hood && task && shop.tool === task.tool && h('div', { style: { marginTop: 8 } },
+              control('Inspect battery contacts in 3D', focusBatteryContacts, { 'data-ar-meter-contacts-focus': true }),
+              h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Red stays on the positive post. Click − POST or + CLAMP to place the black probe. Green marks its selected contact. Contact size and spacing are schematic.')),
+
             h('p', { 'data-ar-coach-setup': true, style: { fontSize: 12, margin: '8px 0', lineHeight: 1.5 } }, coach.summary),
             coach.capture && h('div', { 'data-ar-coach-capture': coach.captured ? 'valid' : 'pending', style: { borderRadius: 6, padding: 8, background: '#0b1928', color: '#a5f3fc' } },
               h('span', { style: { fontSize: 11, display: 'block' } }, coach.capture === 'No current capture' ? 'Evidence' : coach.captured ? 'Valid capture' : 'Capture needs correction'),
@@ -20244,7 +20280,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               return control(tool[1], function () { use('equip-' + tool[0]); }, { key: tool[0], 'data-ar-scene-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
             })),
             h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0 && !action.explore; }).map(function (action) {
-              return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id });
+              return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id,
+                'aria-pressed': action.id === 'meter-posts' ? shop.instrument.contact === 'posts' : action.id === 'meter-joint' ? shop.instrument.contact === 'joint' : undefined });
             })),
             brakeExplorerPanel(),
             task && (task.id === 'measure' || task.id === 'refill') && h('div', { style: { marginTop: 12 } },

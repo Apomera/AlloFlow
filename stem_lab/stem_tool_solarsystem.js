@@ -6623,6 +6623,22 @@ const d = labToolData.solarSystem || {};
     return { x: r * Math.cos(nu), y: r * Math.sin(nu), r: r, nu: nu, E: E };
   }
 
+  // Exact orbit-plane velocity in km/s: differentiate x=a(cos E-e),
+  // y=a sqrt(1-e²) sin E with dE/dt=n/(1-e cos E).
+  function orbitalVelocity(a, e, M) {
+    var E = solveKepler(((M % TAU) + TAU) % TAU, e);
+    var n = Math.sqrt(G_SI * M_SUN / Math.pow(a * AU_KM * 1000, 3));
+    var factor = a * AU_KM * n / (1 - e * Math.cos(E));
+    return { x: -factor * Math.sin(E), y: factor * Math.sqrt(1 - e * e) * Math.cos(E) };
+  }
+  function orbitalMotionExplanation(body, time) {
+    if (body.e < 0.03) return "Nearly circular orbit: gravity mainly changes the direction of motion, while speed changes only a little.";
+    var M = TAU * time / body.T, p = orbitalPos(body.a, body.e, M), v = orbitalVelocity(body.a, body.e, M);
+    var radialSpeed = (p.x * v.x + p.y * v.y) / p.r;
+    if (Math.abs(radialSpeed) < 0.01) return "At a turning point in distance: motion is sideways to the Sun, while gravity points inward.";
+    return radialSpeed > 0 ? "Moving away from the Sun: gravity bends the path and reduces speed." : "Moving toward the Sun: gravity bends the path and increases speed.";
+  }
+
   // One common x/y scale preserves eccentricity; mean anomaly measures elapsed time.
   function orbitRhythmPoint(body, time) {
     var phase = ((time / body.T) % 1 + 1) % 1;
@@ -6982,6 +6998,7 @@ const d = labToolData.solarSystem || {};
   var showComets = d.orr_showComets !== false;
   var showDwarfs = d.orr_showDwarfs !== false;
   var showLabels = d.orr_showLabels !== false;
+  var showGravity = d.orr_showGravity === true;
   var snapshotStore = d.orr_snapshots || {};
   var tf_ans = d.orr_tfa || {};
 
@@ -8112,7 +8129,7 @@ const d = labToolData.solarSystem || {};
       redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion") + ":" + resetRequest,
       viewPresetKey: zoomMode,
       resetKey: resetRequest,
-      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : ""),
+      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : "") + (showGravity && canvasSelectedBody ? " orrery-motion-explanation" : ""),
       ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". In full-system view, a magnified inner-system inset plots Mercury through Mars with one common orbital-distance scale while enlarging markers for visibility. Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; marker sizes are " + (scaleMode === "relative" ? "radius-informed, compressed, and clamped for visibility" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },
@@ -8432,6 +8449,8 @@ const d = labToolData.solarSystem || {};
         }
 
         var t = timeRef.current;
+        cv._orreryMotionVectors = null;
+        cv.dataset.gravityDirection = String(showGravity);
         // Keep the compact DOM readout synchronized without triggering a React tree
         // render (and the canvas remount/flash that would cause). The canvas remains
         // the animation clock; these updates are throttled to a readable 5-6 Hz.
@@ -8475,6 +8494,7 @@ const d = labToolData.solarSystem || {};
               }
               setLiveText("orrery-rhythm-reading", "Now: " + fmt(livePos.r, 3) + " AU from the Sun · " + fmt(liveSpeed, 2) + " km/s");
               var livePhase = orbitPhaseLabel(liveBody, t);
+              setLiveText("orrery-motion-explanation", orbitalMotionExplanation(liveBody, t));
               setLiveText("orrery-live-distance", fmt(livePos.r, 3) + " AU");
               setLiveText("orrery-live-speed", fmt(liveSpeed, 2) + " km/s");
               setLiveText("orrery-live-phase", livePhase);
@@ -9512,9 +9532,9 @@ const d = labToolData.solarSystem || {};
           // Selected velocity vector: the tangent arrow points in the direction of
           // motion, and its length scales with the body's current orbital speed.
           if (selBody === b.id && st.scale > 2.5) {
-            var velocityPos = orbitalPos(b.a, b.e, M + TAU * 0.008);
-            var velocityDx = velocityPos.x - pos.x;
-            var velocityDy = -(velocityPos.y - pos.y);
+            var velocity = orbitalVelocity(b.a, b.e, M);
+            var velocityDx = velocity.x;
+            var velocityDy = -velocity.y;
             var velocityNorm = Math.sqrt(velocityDx * velocityDx + velocityDy * velocityDy);
             if (velocityNorm > 0.0001) {
               var velocityUx = velocityDx / velocityNorm;
@@ -9529,8 +9549,8 @@ const d = labToolData.solarSystem || {};
               var velocityHead = 5;
               ctx.save();
               ctx.globalAlpha = 0.92;
-              ctx.strokeStyle = b.color;
-              ctx.fillStyle = b.color;
+              ctx.strokeStyle = showGravity ? (isDark ? "#67e8f9" : "#0e7490") : b.color;
+              ctx.fillStyle = ctx.strokeStyle;
               ctx.lineWidth = 2.2;
               ctx.lineCap = "round";
               ctx.beginPath();
@@ -9547,6 +9567,20 @@ const d = labToolData.solarSystem || {};
               ctx.fill();
               ctx.restore();
             }
+          }
+          if (showGravity && selBody === b.id && st.scale > 2.5 && pos.r * st.scale > dotR + 21) {
+            var gravityUx = -pos.x / pos.r, gravityUy = pos.y / pos.r;
+            var gravityStart = dotR + 8, gravityEnd = Math.min(gravityStart + 34, pos.r * st.scale - 7);
+            var gravityTipX = sx + gravityUx * gravityEnd, gravityTipY = sy + gravityUy * gravityEnd;
+            ctx.save(); ctx.strokeStyle = isDark ? "#e9a8ff" : "#86198f"; ctx.fillStyle = ctx.strokeStyle;
+            ctx.lineWidth = 2.4; ctx.setLineDash([4, 3]);
+            ctx.beginPath(); ctx.moveTo(sx + gravityUx * gravityStart, sy + gravityUy * gravityStart);
+            ctx.lineTo(gravityTipX, gravityTipY); ctx.stroke(); ctx.setLineDash([]);
+            ctx.translate(gravityTipX, gravityTipY); ctx.rotate(Math.atan2(gravityUy, gravityUx));
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-6, -4); ctx.lineTo(-6, 4); ctx.closePath(); ctx.fill();
+            ctx.restore();
+            cv._orreryMotionVectors = { body: b.id, x: sx, y: sy, sunX: st.cx, sunY: st.cy,
+              gravityX: gravityUx, gravityY: gravityUy, velocityX: velocityUx, velocityY: velocityUy };
           }
           // Inclination indicator (tiny tilt line for high-i bodies)
           if (b.i > 5 && st.scale > 3) {
@@ -10104,6 +10138,12 @@ const d = labToolData.solarSystem || {};
         }
         updMulti(patch);
       }, { "aria-pressed": showDwarfs, "aria-label": __alloT('stem.solarsystem.a11y_show_dwarf_planets', 'Show dwarf planets') }),
+      btn("Motion + gravity", showGravity, function() {
+        var patch = { orr_showGravity: !showGravity };
+        if (!showGravity && selBody) { patch.orr_focus_body = selBody; patch.orr_focus_request = focusRequest + 1; }
+        if (!showGravity && !selBody) { patch.orr_sel = "earth"; patch.orr_focus_body = "earth"; patch.orr_focus_request = focusRequest + 1; patch.orr_zoom = "inner"; patch.orr_paused = true; }
+        updMulti(patch);
+      }, { "aria-pressed": showGravity, "aria-label": "Show motion and gravity directions", "aria-controls": "orrery-motion-guide" }),
       btn("Aa Labels", showLabels, function() { upd("orr_showLabels", !showLabels); }, { "aria-pressed": showLabels, "aria-label": __alloT('stem.solarsystem.a11y_show_orbit_labels', 'Show orbit labels') })
     );
 
@@ -10148,7 +10188,7 @@ const d = labToolData.solarSystem || {};
     }
     var followStageTarget = followBodyId ? OB.filter(function(b) { return b.id === followBodyId; })[0] : null;
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
-    var stageKeyItemCount = 4 + (zoomMode === "full" ? 1 : 0) + (stageBody ? 2 : 0) + (compareStageTarget ? 1 : 0);
+    var stageKeyItemCount = 4 + (zoomMode === "full" ? 1 : 0) + (stageBody ? 2 : 0) + (stageBody && showGravity ? 1 : 0) + (compareStageTarget ? 1 : 0);
     var stageTitle = stageBody ? stageBody.name + " in focus" : "Solar system in motion";
     var innerInsetScaleNote = zoomMode === "full"
       ? " The magnified inner-system inset uses one common orbital-distance scale for Mercury through Mars; its markers are enlarged for visibility."
@@ -10184,7 +10224,8 @@ const d = labToolData.solarSystem || {};
           h("span", { id: "orrery-live-map-scale", className: "orr-stage-key-item", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" }, "Ruler: " + mapScaleLabel(stageMapScale)),
           zoomMode === "full" ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "8px", borderRadius: "2px", background: "#1e2b4f", border: "1px solid #93c5fd" } }), "Magnified inner inset") : null,
           h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Comparative marker sizes" : "Teaching marker sizes"),
-          stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
+          stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: showGravity ? (isDark ? "#67e8f9" : "#0e7490") : stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
+          stageBody && showGravity ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: isDark ? "#e9a8ff" : "#86198f", fontWeight: 800 } }, "⇢"), "Sunward gravity") : null,
           stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
           compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
           ),
@@ -10279,6 +10320,13 @@ const d = labToolData.solarSystem || {};
       filterRow,
       bodyNavigator,
       orbitStage,
+      h("section", { id: "orrery-motion-guide", hidden: !showGravity || !stageBody, "aria-label": "Motion and gravity guide", style: { padding: "12px 14px", borderRadius: "12px", background: isDark ? "#142338" : "#eef6ff", border: "1px solid " + border, color: fg } },
+        h("strong", { style: { fontSize: "14px" } }, "Travel direction and gravity are different"),
+        h("p", { style: { fontSize: "12px", lineHeight: 1.5, margin: "6px 0" } }, "Solid cyan arrow: velocity, tangent to the orbit. Dashed purple arrow: gravity toward the Sun. Gravity changes velocity; it does not have to point along the path."),
+        h("p", { id: "orrery-motion-explanation", role: "status", "aria-live": paused ? "polite" : "off", style: { fontSize: "12px", fontWeight: 700, lineHeight: 1.5, margin: "6px 0" } }, stageBody ? orbitalMotionExplanation(stageBody, timeRef.current) : "Select a world to inspect its motion."),
+        h("p", { style: { fontSize: "11px", color: mutedFg, margin: "6px 0 0" } }, "Try Mercury at quarter orbit and three-quarter orbit. Arrow lengths are teaching cues; the gravity arrow shows direction only. This view uses the same simplified orbit plane as the map."),
+        h("a", { href: "https://imagine.gsfc.nasa.gov/features/yba/CygX1_mass/gravity/circular_motion.html", target: "_blank", rel: "noopener noreferrer", style: { display: "inline-block", marginTop: "7px", fontSize: "11px", color: accent, textDecoration: "underline" } }, "Explore orbital motion · NASA")
+      ),
       h("p", { id: "orrery-model-scale-note", role: "note", style: { margin: "-4px 2px 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, modelScaleNote),
       h("span", { id: "orrery-hover-summary", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, ""),
       bodyInfoCard,

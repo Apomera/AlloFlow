@@ -530,8 +530,11 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url; link.download = filename;
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    try { document.body.appendChild(link); link.click(); }
+    finally {
+      if (link.parentNode) link.parentNode.removeChild(link);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
   }
   function focusWorldSurface(delay) {
     if (typeof document === 'undefined') return;
@@ -822,16 +825,92 @@
       patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});focusWorldSurface(30);
     };
     engine.fitShowcase();
-    patchGeometryState(ctx,{showcaseActive:true,showcaseLook:'meadow',showcaseView:'perspective',sandboxDockCollapsed:true});
+    patchGeometryState(ctx,{showcaseActive:true,showcaseLook:'meadow',showcaseView:'perspective',showcaseSaving:!!engine._showcaseExporting,sandboxDockCollapsed:true});
     setTimeout(function(){var button=document.getElementById('gwe-showcase-close');if(button)button.focus();},30);
     announce(ctx,'Showcase view. Your creation is framed for viewing. Press Escape to return to building.','success');
   }
+  function showcaseExportSize(width, height, limit) {
+    width=Number(width);height=Number(height);
+    if(!isFinite(width) || !isFinite(height) || width<=0 || height<=0)throw new Error('The scene has no visible size.');
+    var edge=Math.max(1,Math.min(2048,Math.floor(Number(limit) || 2048)));
+    return width>=height ? {width:edge,height:Math.max(1,Math.round(edge*height/width))} : {width:Math.max(1,Math.round(edge*width/height)),height:edge};
+  }
+  function captureShowcaseImage(engine) {
+    return new Promise(function(resolve,reject){
+      var THREE=window.THREE,renderer=engine && engine.renderer,composer=engine && engine.composer;
+      var snapshot=null,size=null,failure=null,settled=false;
+      var timer=null;
+      function finish(blob,error){
+        // Native toBlob snapshots before returning, then encodes asynchronously.
+        // Wait a microtask as well so even synchronous test/host callbacks observe
+        // the restored live renderer, and restoration errors cannot be lost.
+        Promise.resolve().then(function(){
+          if(settled)return;settled=true;clearTimeout(timer);
+          if(failure || error || !blob){reject(failure || error || new Error('The image could not be encoded.'));return;}
+          resolve({blob:blob,width:size.width,height:size.height});
+        });
+      }
+      function restore(action){try{action();}catch(error){failure=failure || error;}}
+      try {
+        if(!THREE || !renderer || !renderer.domElement || !renderer.domElement.toBlob)throw new Error('The scene is not ready for an image.');
+        var liveSize=renderer.getSize(new THREE.Vector2()),ratio=renderer.getPixelRatio();
+        var limit=2048,cap=renderer.capabilities && renderer.capabilities.maxTextureSize;
+        if(isFinite(cap) && cap>0)limit=Math.min(limit,cap);
+        try {
+          var gl=renderer.getContext(),renderLimit=gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),viewportLimit=gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+          if(isFinite(renderLimit) && renderLimit>0)limit=Math.min(limit,renderLimit);
+          if(viewportLimit && viewportLimit.length===2)limit=Math.min(limit,viewportLimit[0],viewportLimit[1]);
+        }catch(_){}
+        size=showcaseExportSize(liveSize.x,liveSize.y,limit);
+        var useComposer=!!(composer && engine._postFxEnabled!==false && typeof composer.render==='function');
+        snapshot={width:liveSize.x,height:liveSize.y,ratio:ratio,
+          target:renderer.getRenderTarget(),viewport:renderer.getViewport(new THREE.Vector4()),scissor:renderer.getScissor(new THREE.Vector4()),scissorTest:renderer.getScissorTest(),
+          autoClear:renderer.autoClear,clearColor:renderer.getClearColor(new THREE.Color()).clone(),clearAlpha:renderer.getClearAlpha(),xr:renderer.xr && renderer.xr.enabled,
+          composer:useComposer ? {width:composer._width,height:composer._height,ratio:composer._pixelRatio,read:composer.readBuffer,write:composer.writeBuffer,renderToScreen:composer.renderToScreen,
+            passes:(composer.passes || []).map(function(pass){return {pass:pass,renderToScreen:pass.renderToScreen};})}:null};
+        // Keep the CSS viewport and camera unchanged. Re-render the actual scene
+        // at up to 2048 on the long edge (at most 4.2 MP), never upscale pixels.
+        renderer.setPixelRatio(1);renderer.setSize(size.width,size.height,false);
+        renderer.setRenderTarget(null);renderer.setScissorTest(false);
+        if(renderer.xr)renderer.xr.enabled=false;
+        if(useComposer){if(composer.setPixelRatio)composer.setPixelRatio(1);composer.setSize(size.width,size.height);composer.render();}
+        else renderer.render(engine.scene,engine.camera);
+        renderer.domElement.toBlob(function(blob){finish(blob);},'image/png');
+      } catch(error) {failure=error;finish(null,error);}
+      finally {
+        if(snapshot){
+          // Restore logical dimensions before DPR to avoid a temporary oversized
+          // buffer on high-DPR displays. Attempt every restore even if one fails.
+          restore(function(){renderer.setSize(snapshot.width,snapshot.height,false);});
+          restore(function(){renderer.setPixelRatio(snapshot.ratio);});
+          if(snapshot.composer){
+            restore(function(){composer.setSize(snapshot.composer.width,snapshot.composer.height);});
+            restore(function(){if(composer.setPixelRatio)composer.setPixelRatio(snapshot.composer.ratio);});
+            restore(function(){composer.readBuffer=snapshot.composer.read;composer.writeBuffer=snapshot.composer.write;composer.renderToScreen=snapshot.composer.renderToScreen;
+              snapshot.composer.passes.forEach(function(entry){entry.pass.renderToScreen=entry.renderToScreen;});});
+          }
+          restore(function(){renderer.setRenderTarget(snapshot.target);});
+          restore(function(){renderer.setViewport(snapshot.viewport);});
+          restore(function(){renderer.setScissor(snapshot.scissor);renderer.setScissorTest(snapshot.scissorTest);});
+          restore(function(){renderer.autoClear=snapshot.autoClear;renderer.setClearColor(snapshot.clearColor,snapshot.clearAlpha);if(renderer.xr)renderer.xr.enabled=snapshot.xr;});
+          if(failure)finish(null,failure);
+        }
+        // Bound encoding after GPU rendering and restoration have completed.
+        timer=setTimeout(function(){if(!settled){settled=true;reject(new Error('Image encoding took too long.'));}},20000);
+      }
+    });
+  }
   function saveShowcaseImage(ctx) {
-    var engine=window[ENGINE_KEY];if(!engine || !engine.renderer)return;
-    try {
-      if(engine.composer && engine._postFxEnabled!==false)engine.composer.render();else engine.renderer.render(engine.scene,engine.camera);
-      engine.renderer.domElement.toBlob(function(blob){if(blob)downloadBlob(blob,'geometry-world-creation.png');else announce(ctx,'The image could not be captured.','error');},'image/png');
-    }catch(error){announce(ctx,'The image could not be captured. Try again after the scene finishes loading.','error');}
+    var engine=window[ENGINE_KEY];if(!engine || !engine.renderer || engine._showcaseExporting)return Promise.resolve(false);
+    engine._showcaseExporting=true;patchGeometryState(ctx,{showcaseSaving:true});
+    announce(ctx,'Rendering a high-resolution image.','info');
+    return captureShowcaseImage(engine).then(function(result){
+      downloadBlob(result.blob,'geometry-world-creation.png');
+      announce(ctx,'Image saved at '+result.width+' by '+result.height+' pixels.','success');return true;
+    }).catch(function(){announce(ctx,'The image could not be saved. Your view is unchanged; try again.','error');return false;}).finally(function(){
+      engine._showcaseExporting=false;
+      if(window[ENGINE_KEY]===engine && !engine._destroyed)patchGeometryState(ctx,{showcaseSaving:false});
+    });
   }
 
   function measureSelectedBuild(ctx) {
@@ -931,6 +1010,7 @@
 
   window.StemLab = window.StemLab || {};
   window.StemLab.geometryWorldBuilderPure = {
+    showcaseExportSize:showcaseExportSize, captureShowcaseImage:captureShowcaseImage, saveShowcaseImage:saveShowcaseImage,
     MAX_BLOCKS: MAX_BLOCKS,
     MAX_EDITABLE_WORLD_BYTES: MAX_EDITABLE_WORLD_BYTES,
     MAX_EDITABLE_BLOCKS: MAX_EDITABLE_BLOCKS,
@@ -984,6 +1064,7 @@
       ,'.gw-root .gwe-showcase[role="dialog"]{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;z-index:205!important}.gwe-showcase{position:absolute;inset:0;z-index:205;background:linear-gradient(180deg,rgba(4,18,27,.18),transparent 22%,transparent 74%,rgba(4,18,27,.24));display:flex;align-items:flex-end;justify-content:center;padding:24px;box-sizing:border-box}.gwe-showcase-orbit{position:absolute;top:50%;width:44px;height:44px;border:1px solid #d3e5df99;border-radius:50%;background:#0c2438dd;color:#fff;font-size:25px;cursor:pointer;box-shadow:0 6px 20px #06192733}.gwe-showcase-orbit-left{left:20px}.gwe-showcase-orbit-right{right:20px}.gwe-showcase-orbit:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.gwe-showcase-caption{position:absolute;top:26px;left:28px;color:#fff;text-shadow:0 2px 16px #102b40}.gwe-showcase-caption span{font-size:10px;letter-spacing:.22em;font-weight:800}.gwe-showcase-caption strong{display:block;margin-top:6px;font-size:28px;font-weight:800;letter-spacing:-.03em}.gwe-showcase-tools{display:flex;gap:8px;padding:7px;border:1px solid #ffffff55;border-radius:16px;background:#0c2438e8;box-shadow:0 12px 36px #06192755;backdrop-filter:blur(12px)}.gwe-showcase-tools button{min-height:44px;padding:10px 18px;border:1px solid #a5cad055;border-radius:10px;background:transparent;color:#fff;font-size:13px;font-weight:800;cursor:pointer}.gwe-showcase-actions button:last-child{background:#d4e8ca;color:#173b35}.gwe-showcase-tools button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}#geoworld-fs-workspace[data-showcase-active="true"] .gw-toolbar{visibility:hidden}#geoworld-fs-workspace[data-showcase-active="true"] .gwe-builder-dock,#geoworld-fs-workspace[data-showcase-active="true"] .gw-hotbar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-action-bar,#geoworld-fs-workspace[data-showcase-active="true"] .gw-shape-tray,#geoworld-fs-workspace[data-showcase-active="true"] .gw-coordinate-hud,#geoworld-fs-workspace[data-showcase-active="true"] .gw-touch-controls,#geoworld-fs-workspace[data-showcase-active="true"] .gw-crosshair,#geoworld-fs-workspace[data-showcase-active="true"] .gw-measure-card,#geoworld-fs-workspace[data-showcase-active="true"] .gw-viewport-control{visibility:hidden!important}@media(max-width:520px){.gwe-showcase{padding:16px}.gwe-showcase-caption{top:20px;left:20px}.gwe-showcase-caption strong{font-size:24px}}'
       ,".gwe-showcase-looks{display:inline-flex;gap:3px;margin-top:14px;padding:4px;border:1px solid #c8ded466;border-radius:999px;background:#0c2438dc;box-shadow:0 6px 18px #102b4022;text-shadow:none}.gwe-showcase-looks button{min-height:44px;min-width:92px;padding:8px 18px;border:0;border-radius:999px;background:transparent;color:#e5f0ec;font-size:12px;font-weight:800;cursor:pointer}.gwe-showcase-looks button[aria-pressed=\"true\"]{background:#d5f2e8;color:#123c39}.gwe-showcase-looks button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.gw-root[data-showcase-active=\"true\"][data-showcase-look=\"studio\"]{background:#f1eee8!important}.gwe-showcase[data-look=\"studio\"]{background:linear-gradient(180deg,rgba(241,238,232,.15),transparent 24%,transparent 78%,rgba(86,68,44,.08))}.gwe-showcase[data-look=\"studio\"] button:focus-visible{outline-color:#245049}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-caption{color:#3d372e;text-shadow:none}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks{border-color:#8e7c5e44;background:#faf7f1ed;box-shadow:0 5px 16px #69523714}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button{color:#665c4d}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-looks button[aria-pressed=\"true\"]{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-looks{margin-top:12px}.gwe-showcase-looks button{min-width:88px;padding:8px 16px}}"
       ,".gwe-showcase-tools{flex-direction:column;gap:6px;max-width:100%;background:#112d2bef;border-color:#c6d7bd55}.gwe-showcase-actions{display:flex;gap:8px}.gwe-showcase-actions button{flex:1 1 auto;white-space:nowrap}.gwe-showcase-views{display:grid;grid-template-columns:1.65fr 1fr 1fr 1fr;gap:3px;padding:3px;border-radius:11px;background:#f5f0e509}.gwe-showcase-views button{min-width:0;min-height:44px;padding:7px 8px;border:0;border-radius:8px;color:#cfddc8;font-size:11px;font-weight:650;white-space:nowrap}.gwe-showcase-views button[aria-pressed=\"true\"]{background:#d4e8ca;color:#173b35}.gwe-showcase-views button:hover{box-shadow:inset 0 0 0 1px #bfd2b555}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools{background:#faf7f1ed;border-color:#8e7c5e44;box-shadow:0 10px 32px #69523721}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-tools button{color:#245049;border-color:#8e7c5e44}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views{background:#2450490a}.gwe-showcase[data-look=\"studio\"] .gwe-showcase-views button[aria-pressed=\"true\"],.gwe-showcase[data-look=\"studio\"] .gwe-showcase-actions button:last-child{background:#245049;color:#f5fbf7}@media(max-width:520px){.gwe-showcase-tools{width:min(296px,100%);box-sizing:border-box;padding:6px}.gwe-showcase-actions button{padding:9px 10px;font-size:12px}.gwe-showcase-views button{padding:6px 4px}}.theme-contrast .gwe-showcase-tools,[data-stem-theme=\"contrast\"] .gwe-showcase-tools{background:#000!important;border:2px solid #00ffff!important}.theme-contrast .gwe-showcase-tools button,[data-stem-theme=\"contrast\"] .gwe-showcase-tools button{color:#00ff00!important;border:1px solid #00ff00!important;background:#000!important}.theme-contrast .gwe-showcase-views button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gwe-showcase-views button[aria-pressed=\"true\"]{background:#00ff00!important;color:#000!important}"
+      ,'.gwe-showcase-tools button:disabled{opacity:.65;cursor:progress}'
     ].join('');
     document.head.appendChild(style);
   }
@@ -1286,7 +1367,7 @@
           ),
           h('div',{className:'gwe-showcase-actions'},
           h('button',{id:'gwe-showcase-close',type:'button',onClick:function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();}},'Back to building'),
-          h('button',{type:'button',onClick:function(){saveShowcaseImage(ctx);}},'Save image')
+          h('button',{type:'button','aria-label':'Save image','aria-busy':!!data.showcaseSaving,disabled:!!data.showcaseSaving,title:'Save a high-resolution PNG',onClick:function(){saveShowcaseImage(ctx);}},data.showcaseSaving?'Saving image...':'Save image')
           )
         )
       ));
