@@ -9395,6 +9395,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   };
   // Full-vehicle workshop: one serializable state machine drives the job card and geometry.
   // Values are authored for a fictional training sedan, never universal service specifications.
+  // Topic aliases help learners find activities without knowing their menu titles.
+  var AR_ACTIVITY_KEYWORDS = {
+    firstcar: 'beginner ownership new driver maintenance', workshop: '3d simulation mechanic oil change battery voltage brake pad alignment service lift',
+    underhood: '3d simulation engine battery fluids coolant oil parts', tyre: '3d simulation tire tyre wheel change flat puncture lug torque jack',
+    walk: 'inspection before driving daily safety tire lights leaks', vin: 'vehicle identification number recall year model',
+    maint: 'maintenance oil change schedule mileage service intervals', log: 'maintenance oil change receipt records expenses history',
+    tires: 'tire tyre wheel sizing pressure rotation winter tread', inspection: 'inspection safety brakes rust maine', cold: 'winter battery antifreeze cold snow',
+    roadside: 'emergency breakdown flat tire tyre jump start battery towing', diagnose: 'diagnostic diagnostics symptoms battery check engine obd codes fluids noise',
+    tree: 'diagnostic diagnostics symptoms no start overheating noise troubleshooting', repairbay: '3d simulation diagnostic diagnostics battery voltage brake repair evidence verification',
+    lab: 'diagnostic diagnostics scenarios measurement voltage battery', damage: 'inspection damage wear rust visual', glossary: 'definitions vocabulary terminology dictionary',
+    repair: 'repair oil change brake pads spark plug battery service', tools: 'tools equipment torque wrench socket multimeter jack', safety: 'safety ppe lift jack stands electrical refrigerant',
+    usedcar: 'buying purchase inspection used vehicle', estimate: 'repair cost quote bill invoice labor labour parts price', scams: 'repair cost quote upsell fraud consumer',
+    roi: 'repair cost budget replace replacement decision comparison money', career: 'career training mechanic technician certification ase vocational',
+    shopbiz: 'business cost pricing startup mobile mechanic insurance', race: 'racing motorsport career nascar pit crew', build: 'project restoration budget cost capstone',
+    diesel: 'diesel trucks heavy equipment career', power: 'small engine lawn mower snowmobile atv outboard generator', ev: 'electric vehicle hybrid battery high voltage regen',
+    path: 'beginner learning lessons study curriculum', quiz: 'quiz test assessment knowledge practice', badges: 'achievements progress awards', resources: 'reference sources links manuals'
+  };
+  function arActivitySearchText(value) {
+    return String(value == null ? '' : value).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/[^a-z0-9\u0080-\uffff]+/g, ' ').replace(/\b(?:tyres?|tires)\b/g, 'tire').replace(/\bcosts\b/g, 'cost').trim();
+  }
+  function arActivitySearch(categories, query) {
+    var words = arActivitySearchText(typeof query === 'string' ? query.slice(0, 120) : '').split(/\s+/).filter(Boolean);
+    return categories.map(function (category) {
+      return Object.assign({}, category, { modules: category.modules.filter(function (item) {
+        var text = arActivitySearchText([item.label, item.desc, category.name, category.desc, AR_ACTIVITY_KEYWORDS[item.id] || ''].join(' '));
+        return words.every(function (word) { return text.indexOf(word) !== -1; });
+      }) });
+    }).filter(function (category) { return category.modules.length > 0; });
+  }
+
   var SHOP_STATIONS = [
     { id: 'intake', label: 'Service desk', color: '#38bdf8', detail: 'Read the customer concern, confirm the scope, and record findings before releasing the vehicle.' },
     { id: 'lift', label: 'Vehicle lift', color: '#fbbf24', detail: 'Practice the sequence: inspect equipment and approved points, make a low lift, check stability, raise, then settle on the mechanical locks. Real operation requires training for the specific lift.' },
@@ -11060,6 +11091,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         ];
         var badgeCount = Object.keys(badges).length;
         var collapsedCats = d.collapsedCats || {};
+        var activityQuery = typeof d.menuSearch === 'string' ? d.menuSearch.slice(0, 120) : '';
+        var activitySearching = !!arActivitySearchText(activityQuery);
+        var activityCategories = arActivitySearch(categories, activityQuery);
+        var activityCount = activityCategories.reduce(function (sum, category) { return sum + category.modules.length; }, 0);
+        function setActivityQuery(value, focus) {
+          updMulti({ menuSearch: value.slice(0, 120), menuSearchCollapsed: {} });
+          if (focus) requestAnimationFrame(function () { var input = document.getElementById('ar-activity-search'); if (input) input.focus({ preventScroll: true }); });
+        }
+        function activityFinder() {
+          return h('form', { role: 'search', 'aria-label': 'Find an auto mechanic activity', 'data-ar-activity-finder': true,
+            onSubmit: function (event) {
+              event.preventDefault();
+              if (activitySearching) upd('menuSearchCollapsed', {});
+              requestAnimationFrame(function () { var result = document.querySelector('#ar-menu-categories [data-ar-module-card]'); if (result) result.focus(); });
+            }, style: { fontFamily: 'system-ui, -apple-system, sans-serif', margin: '12px 0 18px', padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.card } },
+            h('label', { htmlFor: 'ar-activity-search', style: { display: 'block', fontWeight: 800, marginBottom: 8, color: T.text } }, 'Find an activity'),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+              h('input', { id: 'ar-activity-search', type: 'search', value: activityQuery, maxLength: 120, autoComplete: 'off',
+                placeholder: 'Try oil change, battery, 3D, or costs', 'aria-controls': 'ar-menu-categories', 'aria-describedby': 'ar-activity-search-help ar-activity-search-status',
+                onChange: function (event) { setActivityQuery(event.target.value, false); },
+                onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); setActivityQuery('', true); } },
+                style: { flex: 1, minWidth: 0, width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16 } }),
+              activityQuery && h('button', { type: 'button', 'data-ar-search-clear': true, onClick: function () { setActivityQuery('', true); }, style: btnSecondary({ minHeight: 44 }) }, 'Clear')),
+            h('p', { id: 'ar-activity-search-help', style: { margin: '8px 0', fontSize: 12, color: T.muted } }, 'Search topics, tools, or activity names. Press Enter to reach the first result; Escape clears the search.'),
+            h('div', { role: 'group', 'aria-label': 'Suggested activity searches', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              ['Oil change', 'Battery', '3D', 'Repair costs', 'Career'].map(function (topic) {
+                return h('button', { key: topic, type: 'button', 'data-ar-search-topic': topic, 'aria-pressed': arActivitySearchText(activityQuery) === arActivitySearchText(topic),
+                  onClick: function () { setActivityQuery(topic, true); }, style: btnSecondary({ minHeight: 44, fontSize: 12, border: (arActivitySearchText(activityQuery) === arActivitySearchText(topic) ? '2px solid ' + T.accentHi : '1px solid ' + T.border) }) }, topic);
+              })),
+            h('p', { id: 'ar-activity-search-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-ar-search-count': activityCount,
+              style: { margin: '12px 0 0', fontWeight: 700, color: T.text } }, activitySearching ? (activityCount ? activityCount + ' matching ' + (activityCount === 1 ? 'activity' : 'activities') : 'No activities match “' + activityQuery + '”.') : activityCount + ' activities available'),
+            !activityCount && h('p', { 'data-ar-search-empty': true, style: { color: T.muted, marginBottom: 0 } }, 'Try fewer words or another topic, or clear the search to browse every activity.'));
+        }
 
         // Progress on the hands-on 3D modules is surfaced on the dashboard so
         // learners can immediately resume without opening each module first.
@@ -11372,6 +11436,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     onClick: function() { setView(primaryTarget); },
                     style: btnPrimary({ minHeight: 44, color: isDark || isContrast ? '#0f172a' : '#ffffff' })
                   }, primaryLabel, h('span', { 'aria-hidden': 'true' }, ' →')),
+                  h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-find-activity': true,
+                    onClick: function () { var input = document.getElementById('ar-activity-search'); if (input) { input.focus({ preventScroll: true }); input.scrollIntoView({ block: 'center', behavior: 'auto' }); } },
+                    style: btnSecondary({ minHeight: 44 }) }, 'Find an activity'),
                   h('button', {
                     type: 'button',
                     'data-ar-focusable': true,
@@ -11448,14 +11515,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
 
+          activityFinder(),
+
           h('div', {
             id: 'ar-menu-categories',
             role: 'group',
             tabIndex: -1,
             'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories')
           },
-            categories.map(function(cat, catIndex) {
-              var collapsed = !!collapsedCats[cat.id];
+            activityCategories.map(function(cat) {
+              var catIndex = categories.findIndex(function (original) { return original.id === cat.id; });
+              var collapsed = activitySearching ? !!(d.menuSearchCollapsed || {})[cat.id] : !!collapsedCats[cat.id];
               var tone = categoryTones[cat.id];
               var panelId = 'ar-category-panel-' + cat.id;
               var categoryNumber = (catIndex < 9 ? '0' : '') + String(catIndex + 1);
@@ -11471,9 +11541,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   'aria-expanded': collapsed ? 'false' : 'true',
                   'aria-controls': panelId,
                   onClick: function() {
-                    var nv = Object.assign({}, collapsedCats);
+                    var nv = Object.assign({}, activitySearching ? d.menuSearchCollapsed || {} : collapsedCats);
                     nv[cat.id] = !nv[cat.id];
-                    upd('collapsedCats', nv);
+                    upd(activitySearching ? 'menuSearchCollapsed' : 'collapsedCats', nv);
                   },
                   className: 'ar-menu-category-button',
                   style: {

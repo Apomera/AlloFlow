@@ -229,6 +229,19 @@ Validation: **104 workshop model/render tests passed** (4.88 seconds). **Three d
 - [Desktop moving wrench](../reports/automobile-workshop/moving-torque-wrench-desktop.png)
 - [Phone moving wrench](../reports/automobile-workshop/moving-torque-wrench-mobile.png)
 
+## Activity finder across the automobile tool
+
+The menu now offers a Find an activity shortcut and a search form above the activity library. Search combines words across visible activity/category names and descriptions plus authored topic aliases. Learners can find oil-change practice, battery diagnostics, repair costs, tools, careers and the four 3D activities without first knowing their menu titles. Tire/tyre spelling, capitalization, accents and punctuation are normalized; terms are matched as literal text. Suggested topic buttons start common searches.
+
+Matching categories initially expand. Search-specific collapse choices are separate from the normal category preferences, so clearing restores the original library arrangement. Enter focuses the first result and reopens matching sections; Escape and Clear reset the search and keep focus in the field. Empty results offer recovery guidance. Search stays available on return from another activity; module progress, primary resume actions and quick-start shortcuts remain intact. The new controls use the existing theme palette and wrap for phone screens.
+
+Validation: **125 tests passed across four affected suites** (finder, menu, menu bay and workshop; 119.87 seconds). The first run hit five existing render/hook deadlines; the rerun used local 60-second test/hook limits without relaxing functional assertions. **Three browser workflows passed**, then all three passed again after the font and selected-topic outline polish (final run 2.2 minutes). They verify real typing, focus retention, Enter/Escape/Clear behavior, category restoration, activity navigation and return, unchanged workshop progress, aliases, empty results, phone overflow, and dark/high-contrast rendering. An initial browser setup incorrectly expected a canvas on the menu; the tests now use the harness’s existing non-canvas mode. Four screenshots were reviewed, with final desktop and contrast visuals rechecked after polish. Syntax, source/public parity and scoped whitespace checks passed. Temporary browser configuration was removed. The broader automobile suite was not run; no deployment or installer build was performed.
+
+- [Desktop activity finder](../reports/automobile-workshop/activity-finder-desktop.png)
+- [Phone activity finder](../reports/automobile-workshop/activity-finder-mobile.png)
+- [Dark phone finder](../reports/automobile-workshop/activity-finder-dark.png)
+- [High-contrast phone finder](../reports/automobile-workshop/activity-finder-contrast.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
