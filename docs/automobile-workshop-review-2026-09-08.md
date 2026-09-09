@@ -242,6 +242,19 @@ Validation: **125 tests passed across four affected suites** (finder, menu, menu
 - [Dark phone finder](../reports/automobile-workshop/activity-finder-dark.png)
 - [High-contrast phone finder](../reports/automobile-workshop/activity-finder-contrast.png)
 
+## Recorded voltage evidence and reasoning lesson
+
+The slow-crank job now has a visual evidence panel connecting the initial loaded joint test, connection service and repeat test. Before/after bars share one scale and a dashed 0.2 V case-limit marker. Text equivalents identify each value and the measurement conditions. Values appear only when the learner completes the corresponding measurement task; a live capture alone does not populate the completed-record comparison, and the service action cannot reveal the verification result early.
+
+Completed instrument tasks now retain a numeric snapshot and a copy of their setup alongside the existing service-history prose. The electrical comparison accepts only finite, nonnegative volt readings taken with DC volts, joint probes and starter load, with the service record between the two tests. An expected repair conclusion requires an initial value at or above the case limit and a repeat value strictly below it. Existing text-only records remain intact and display an explicit missing-snapshot label. Later changes to live meter settings do not rewrite the historical comparison.
+
+An optional reasoning check opens after the recorded comparison supports the expected improvement. Learners distinguish repeat loaded-test evidence from visual cleanup and resting battery voltage, receive specific feedback and can revise their choice. The exercise does not advance, block or grade the repair work order. Its choice persists with that job and is included with the comparison in the downloaded work order. The lesson uses the existing authored case values and does not certify the rest of the starting system.
+
+Validation: **122 workshop model/render tests passed** in the final run (15.68 seconds), including snapshot provenance, setup independence, missing legacy data, incompatible units/settings, ordered service evidence, the strict limit boundary, optional reasoning, export text, theme rendering and finite chart geometry for exceptionally large saved values. **Two distinct WebGL workflows passed**: the existing physical-voltmeter flow and the new complete evidence lesson. The lesson verifies pending values until task completion, before/after capture, reasoning retries, unchanged history/progress, actual report download contents, per-job persistence, high-contrast phone layout, no overflow and final customer handoff. It passed again after the contrast chart correction (1.5 minutes). Visual review caught a track color that resembled a filled bar; contrast mode now uses empty outlined tracks and a marker with a contrasting outline. The desktop lesson, final contrast lesson and refreshed physical-meter screenshots were reviewed. Syntax, source/public parity and scoped whitespace checks passed. The shared viewer and broader automobile modules were unchanged; no broad full-tool regression run, deployment or installer build was performed. Temporary browser configuration was removed.
+
+- [Desktop voltage evidence](../reports/automobile-workshop/voltage-evidence-desktop.png)
+- [High-contrast phone evidence](../reports/automobile-workshop/voltage-evidence-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

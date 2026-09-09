@@ -9512,7 +9512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false, liftStopped: false, liftBayClear: false,
       brakeSpread: 0, brakePart: 'rotor', wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
       alignmentReady: false, alignment: { left: 30, right: 10, selected: 'left', tyres: false, targets: false, centered: false },
-      plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', feedback: '', history: [] };
+      plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', evidenceChoice: '', feedback: '', history: [] };
   }
   function arShopState(raw) {
     var state = Object.assign(arShopInitial(raw && raw.job), raw || {});
@@ -9534,6 +9534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       right: Number.isFinite(alignment.right) ? Math.max(-40, Math.min(40, Math.round(alignment.right))) : 10,
       selected: alignment.selected === 'right' ? 'right' : 'left', tyres: alignment.tyres === true, targets: alignment.targets === true, centered: alignment.centered === true };
     state.history = Array.isArray(state.history) ? state.history.slice(0, job.tasks.length) : [];
+    state.evidenceChoice = ['same-test', 'looks-clean', 'battery-alone'].indexOf(state.evidenceChoice) !== -1 ? state.evidenceChoice : '';
     return state;
   }
   // Instrument evidence belongs to the current task and exact setup. Changing a
@@ -9737,8 +9738,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
     var readiness = arShopReadiness(state);
     if (!readiness.ready) return Object.assign({}, state, { feedback: readiness.message });
+    var snapshot = state.reading && state.reading.valid === true && state.reading.key === arShopReadingKey(state) ?
+      { kind: arShopInstrumentKind(state), value: state.reading.value, unit: state.reading.unit, setup: Object.assign({}, state.instrument) } : null;
     return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', reading: null, feedback: 'Completed: ' + task.label,
-      history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
+      history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, evidence: snapshot, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
+  }
+
+  var SHOP_VOLTAGE_CHOICES = [
+    { id: 'looks-clean', label: 'The clamp looks clean after service.', correct: false, feedback: 'Appearance can guide an inspection, but it does not establish how the connection behaves under load. Compare the two recorded tests.' },
+    { id: 'same-test', label: 'The same loaded joint test fell below the case limit.', correct: true, feedback: 'Yes. Keeping the meter mode, probe location and starter load the same makes this comparison meaningful. The lower connection drop and the recorded cranking check support this connection repair; they do not certify every part of the battery or starting system.' },
+    { id: 'battery-alone', label: 'The battery showed 12.6 V at rest.', correct: false, feedback: 'Battery-post voltage at rest measures a different condition. It cannot replace a loaded measurement across the suspect joint when judging this repair.' }
+  ];
+  function arShopVoltageReview(raw) {
+    var state = arShopState(raw);
+    if (state.job !== 'electrical') return null;
+    function entry(id) { return state.history.findIndex(function (item) { return item && item.id === id; }); }
+    var first = entry('measure'), service = entry('service'), last = entry('verify');
+    function reading(index) {
+      var record = index < 0 ? null : state.history[index], e = record && record.evidence, setup = e && e.setup;
+      if (!record) return { value: null, status: 'Not recorded yet' };
+      if (!e) return { value: null, status: 'Older record: no numeric snapshot' };
+      if (e.kind !== 'meter' || e.unit !== 'V' || !Number.isFinite(e.value) || e.value < 0 || !setup || setup.mode !== 'dcv' || setup.contact !== 'joint' || setup.load !== 'starter')
+        return { value: null, status: 'No comparable loaded-joint snapshot' };
+      return { value: e.value, status: 'Recorded with DC volts, joint probes and starter load' };
+    }
+    var before = reading(first), after = reading(last), ordered = first >= 0 && service > first && last > service;
+    var paired = ordered && before.value !== null && after.value !== null;
+    var supported = paired && before.value >= 0.2 && after.value < 0.2 && after.value < before.value;
+    var choice = supported ? SHOP_VOLTAGE_CHOICES.filter(function (item) { return item.id === state.evidenceChoice; })[0] || null : null;
+    return { before: before, after: after, serviceRecorded: service > first && first >= 0, paired: paired, supported: supported, choice: choice,
+      maximum: Math.max(1.8, before.value || 0, after.value || 0),
+      message: supported ? 'The recorded drop is lower and below this case’s 0.2 V limit. The repeat test supports the connection repair.' :
+        paired ? 'These recorded values do not show the expected change from at or above the case limit to below it. Review the recorded tests before drawing a repair conclusion.' :
+        'Record the initial test, service the connection, then complete the same loaded test again. The chart fills from completed task records.' };
+  }
+  function arShopChooseVoltageEvidence(raw, id) {
+    var state = arShopState(raw), review = arShopVoltageReview(state);
+    if (!review || !review.supported || !SHOP_VOLTAGE_CHOICES.some(function (choice) { return choice.id === id; })) return state;
+    return Object.assign({}, state, { evidenceChoice: id });
+  }
+  function arShopVoltageReviewText(raw) {
+    var review = arShopVoltageReview(raw);
+    if (!review) return [];
+    return ['', 'VOLTAGE-DROP EVIDENCE COMPARISON', 'Same test: DC volts across the positive joint under starter load.',
+      'Before service: ' + (review.before.value === null ? review.before.status : review.before.value + ' V'),
+      'After service: ' + (review.after.value === null ? review.after.status : review.after.value + ' V'),
+      'Case limit: less than 0.2 V.', review.message,
+      'Optional reasoning check: ' + (review.choice ? review.choice.label + ' ' + review.choice.feedback : 'Not answered.')];
   }
 
   function arShop3DToken(state, id) { return 'shop-use-' + state.job + '-' + state.step + '-' + id; }
@@ -20558,13 +20604,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             control('Show equipment in 3D', focusServiceControls, { 'data-ar-shop-instrument-focus': true, style: btnGhost({ minHeight: 44, marginTop: 10, width: '100%' }) }));
         }
 
+        function voltageEvidencePanel() {
+          var review = arShopVoltageReview(shop);
+          if (!review) return null;
+          var limitX = 26 + 340 * 0.2 / review.maximum;
+          var stages = [{ label: 'Initial test', done: review.before.value !== null }, { label: 'Connection service', done: review.serviceRecorded }, { label: 'Repeat test', done: review.after.value !== null }];
+          return h('section', { 'data-ar-voltage-evidence': review.supported ? 'compared' : 'pending', 'aria-labelledby': 'ar-voltage-evidence-title',
+            style: { marginTop: 16, padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.cardAlt } },
+            h('h3', { id: 'ar-voltage-evidence-title', style: { margin: '0 0 8px', fontSize: 18 } }, 'What changed after the repair?'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.55, color: T.muted } }, 'Compare the same test: DC volts across the positive post-to-clamp joint, with the starter load on.'),
+            h('ol', { 'aria-label': 'Evidence sequence', style: { listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 6, padding: 0, margin: '0 0 12px' } }, stages.map(function (stage, i) {
+              return h('li', { key: stage.label, style: { flex: '1 1 75px', border: '1px solid ' + (stage.done ? T.good : T.border), borderRadius: 8, padding: 7, fontSize: 11 } },
+                h('strong', { style: { display: 'block', marginBottom: 3 } }, (stage.done ? '✓ ' : (i + 1) + '. ') + stage.label), stage.done ? 'Recorded' : 'Pending');
+            })),
+            h('figure', { style: { margin: 0 } },
+              h('svg', { viewBox: '0 0 400 186', width: '100%', 'aria-hidden': true, style: { display: 'block', overflow: 'visible' } },
+                [review.before, review.after].map(function (reading, i) {
+                  var y = 48 + i * 76, value = reading.value;
+                  return h('g', { key: i },
+                    h('text', { x: 26, y: y - 10, fill: T.text, fontSize: 14, fontWeight: 700 }, i ? 'After service' : 'Before service'),
+                    h('text', { x: 366, y: y - 10, fill: T.text, fontSize: 16, fontWeight: 800, textAnchor: 'end' }, value === null ? '—' : value + ' V'),
+                    h('rect', { x: 26, y: y, width: 340, height: 24, rx: 4, fill: isContrast ? '#000000' : T.borderSoft, stroke: isContrast ? '#ffffff' : 'none', strokeWidth: 1 }),
+                    value !== null && h('rect', { x: 26, y: y + 3, width: 340 * (value / review.maximum), height: 18, rx: 3, fill: value < 0.2 ? T.good : T.warn }),
+                    isContrast && h('line', { x1: limitX, x2: limitX, y1: y - 3, y2: y + 27, stroke: '#000000', strokeWidth: 5, strokeDasharray: '4 3' }),
+                    h('line', { x1: limitX, x2: limitX, y1: y - 3, y2: y + 27, stroke: T.text, strokeWidth: 2, strokeDasharray: '4 3' }));
+                }),
+                h('text', { x: 26, y: 178, fill: T.muted, fontSize: 12 }, '0 V'),
+                h('text', { x: 366, y: 178, fill: T.muted, fontSize: 12, textAnchor: 'end' }, review.maximum + ' V')),
+              h('figcaption', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, 'Both bars use the same scale. Dashed marker: 0.2 V case limit; the repeat result should be below it.')),
+            h('dl', { style: { fontSize: 12, lineHeight: 1.5, margin: '12px 0' } }, [review.before, review.after].map(function (reading, i) {
+              return h('div', { key: i, style: { marginTop: 7 } }, h('dt', { style: { fontWeight: 800 } }, i ? 'After service' : 'Before service'),
+                h('dd', { 'data-ar-evidence-value': i ? 'after' : 'before', style: { margin: 0 } }, reading.value === null ? reading.status : reading.value + ' V · ' + reading.status));
+            })),
+            h('p', { 'data-ar-evidence-conclusion': true, style: { padding: 10, borderLeft: '3px solid ' + (review.supported ? T.good : T.accentHi), background: T.card, fontSize: 12, lineHeight: 1.6 } }, review.message),
+            review.supported ? h('fieldset', { style: { border: 0, padding: 0, margin: '14px 0 0', minWidth: 0 } },
+              h('legend', { style: { fontWeight: 800, fontSize: 13, marginBottom: 8 } }, 'Optional reasoning check: which evidence supports this connection repair?'),
+              SHOP_VOLTAGE_CHOICES.map(function (choice) {
+                var selected = review.choice && review.choice.id === choice.id;
+                return control(choice.label, function () { var next = arShopChooseVoltageEvidence(shop, choice.id); save(next); arAnnounce(choice.feedback); },
+                  { key: choice.id, 'data-ar-evidence-choice': choice.id, 'aria-pressed': !!selected, style: btnSecondary({ display: 'block', width: '100%', minHeight: 44, whiteSpace: 'normal', textAlign: 'left', marginBottom: 7, fontSize: 12, border: (selected ? '2px solid ' + T.accentHi : '1px solid ' + T.border) }) });
+              }),
+              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-ar-evidence-feedback': review.choice ? (review.choice.correct ? 'supported' : 'rethink') : 'unanswered',
+                style: { fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, review.choice ? review.choice.feedback : 'Choose an explanation, then use the feedback to refine it. This practice check does not change task completion.')) :
+              h('p', { style: { fontSize: 12, color: T.muted } }, 'A reasoning check opens when both recorded tests support the case’s expected improvement.'));
+        }
+
         function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
         function downloadReport() {
           var text = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
             'Service sheet: ' + job.spec, '', 'Status: ' + (shop.released ? 'Training job completed' : 'In progress'),
             'Tasks: ' + shop.step + ' / ' + job.tasks.length, '', 'EVIDENCE & SERVICE RECORD'].concat(
               shop.history.map(function (entry, i) { return (i + 1) + '. ' + entry.label + '\n' + entry.result; }),
-              ['', 'CUSTOMER HANDOFF', shop.notes || '(No handoff recorded)', '', 'Educational simulation only. This report does not certify real service or vehicle safety.']).join('\n');
+              arShopVoltageReviewText(shop), ['', 'CUSTOMER HANDOFF', shop.notes || '(No handoff recorded)', '', 'Educational simulation only. This report does not certify real service or vehicle safety.']).join('\n');
           var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
           var link = document.createElement('a'); link.href = url; link.download = 'auto-workshop-' + job.id + '.txt'; link.click();
           setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
@@ -20650,6 +20741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('label', { htmlFor: 'ar-shop-notes' }, 'Customer handoff — finding, service and verification'),
               h('textarea', { id: 'ar-shop-notes', rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
                 onChange: function (e) { change({ notes: e.target.value }); } }),
+              voltageEvidencePanel(),
               h('details', { style: { marginTop: 12 } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Service record (' + shop.history.length + ' completed tasks)'),
                 h('ol', { style: { paddingLeft: 22, fontSize: 12, lineHeight: 1.6 } }, shop.history.map(function (entry) { return h('li', { key: entry.id }, h('strong', null, entry.label), h('p', null, entry.result)); }))),
               h('div', { className: 'ar-shop-actions' }, control('Download work order', downloadReport),

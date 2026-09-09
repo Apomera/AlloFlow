@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -720,5 +720,100 @@ describe('Control inspector fallback rendering', () => {
     expect(host.querySelector('[data-ar-control-preview]').textContent).toContain('Open hood');
     expect(host.querySelector('[data-ar-control-use]').textContent).toBe('Use selected control');
     expect(host.querySelector('[data-ar-control-inspector]').textContent).toContain('emergency stop stays immediate');
+  });
+});
+
+
+describe('Recorded voltage-drop evidence lesson', () => {
+  function completedComparison() { let state = model.initial('electrical'); for (let i = 0; i < 5; i++) state = step(state); return state; }
+  it('records comparable before/after snapshots only when the learner completes the tests', () => {
+    let state = model.initial('electrical'); state = step(step(state));
+    state = model.normalize({ ...state, tool: 'meter', station: 'engine', answer: '1.4', instrument: { contact: 'joint', load: 'starter' } });
+    state = model.operate(state, { type: 'read' });
+    expect(model.voltageReview(state).before.value).toBeNull();
+    state = model.advance(state);
+    expect(model.voltageReview(state)).toMatchObject({ before: { value: 1.6 }, after: { value: null }, supported: false });
+    state = step(state);
+    expect(model.voltageReview(state).after.value).toBeNull();
+    state = step(state);
+    expect(model.voltageReview(state)).toMatchObject({ before: { value: 1.6 }, after: { value: 0.08 }, paired: true, supported: true });
+  });
+  it('keeps recorded values and setup independent of live instrument changes', () => {
+    const state = completedComparison(), original = JSON.stringify(state);
+    const changed = model.normalize({ ...state, instrument: { mode: 'resistance', contact: 'posts', load: 'off' }, reading: { value: 999 } });
+    expect(model.voltageReview(changed).before.value).toBe(1.6);
+    expect(model.voltageReview(changed).after.value).toBe(0.08);
+    expect(JSON.stringify(state)).toBe(original);
+    expect(state.history.find(entry => entry.id === 'verify').evidence.setup).not.toBe(state.instrument);
+  });
+  it('does not invent snapshots from old prose or service-complete flags', () => {
+    const state = completedComparison();
+    state.history = state.history.map(({ evidence, ...entry }) => entry);
+    const review = model.voltageReview(state);
+    expect(review.before).toEqual({ value: null, status: 'Older record: no numeric snapshot' });
+    expect(review.after.value).toBeNull(); expect(review.supported).toBe(false);
+    expect(model.chooseEvidence(state, 'same-test').evidenceChoice).toBe('');
+  });
+  it.each([{ unit: 'mV' }, { kind: 'gauge' }, { value: Infinity }, { value: -0.08 }, { value: '0.08' }, { setup: { mode: 'dcv', contact: 'posts', load: 'starter' } }, { setup: { mode: 'dcv', contact: 'joint', load: 'off' } }])('rejects incompatible snapshot %j', patch => {
+    const state = completedComparison(), verify = state.history.find(entry => entry.id === 'verify');
+    verify.evidence = { ...verify.evidence, ...patch };
+    expect(model.voltageReview(state).after.value).toBeNull(); expect(model.voltageReview(state).supported).toBe(false);
+  });
+  it('requires the service between tests and a repeat value strictly below the limit', () => {
+    const state = completedComparison();
+    state.history.find(entry => entry.id === 'verify').evidence.value = 0.2;
+    expect(model.voltageReview(state)).toMatchObject({ paired: true, supported: false });
+    state.history.find(entry => entry.id === 'verify').evidence.value = 0.08;
+    state.history.reverse(); expect(model.voltageReview(state).paired).toBe(false);
+  });
+  it('offers specific retry feedback without changing work-order progress or granting completion', () => {
+    const state = completedComparison(), original = JSON.stringify(state);
+    const wrong = model.chooseEvidence(state, 'looks-clean');
+    expect(model.voltageReview(wrong).choice).toMatchObject({ correct: false });
+    const right = model.chooseEvidence(wrong, 'same-test');
+    expect(model.voltageReview(right).choice.correct).toBe(true);
+    expect({ ...right, evidenceChoice: '' }).toEqual(state); expect(JSON.stringify(state)).toBe(original);
+    expect(model.chooseEvidence(state, 'unknown').evidenceChoice).toBe('');
+    expect(model.voltageReview(model.initial('oil'))).toBeNull();
+  });
+  it('includes the comparison and chosen reasoning in the downloaded report text', () => {
+    const state = model.chooseEvidence(completedComparison(), 'same-test'), text = model.reviewText(state).join(' ');
+    expect(text).toContain('Before service: 1.6 V'); expect(text).toContain('After service: 0.08 V'); expect(text).toContain('Optional reasoning check: The same loaded joint test');
+    expect(model.reviewText(model.initial('brakes'))).toEqual([]);
+  });
+});
+
+describe('Voltage lesson accessible rendering', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  it('keeps uncaptured results and reasoning answers hidden', () => {
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', shop: model.initial('electrical') } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    const panel = host.querySelector('[data-ar-voltage-evidence]');
+    expect(panel.querySelector('[data-ar-evidence-value="before"]').textContent).toBe('Not recorded yet');
+    expect(panel.querySelector('[data-ar-evidence-value="after"]').textContent).toBe('Not recorded yet');
+    expect(panel.querySelector('[data-ar-evidence-choice]')).toBeNull();
+  });
+  it.each([{ isDark: false }, { isDark: true }, { isContrast: true }])('provides text equivalents and labeled choices in %j', theme => {
+    let state = model.initial('electrical'); for (let i=0; i<5; i++) state=step(state);
+    const host = document.createElement('div'); host.innerHTML = renderTool('autoRepair', { autoRepair: { view: 'workshop', shop: state } }, theme);
+    const panel = host.querySelector('[data-ar-voltage-evidence]');
+    expect(panel.getAttribute('data-ar-voltage-evidence')).toBe('compared'); expect(panel.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
+    expect(panel.querySelector('[data-ar-evidence-value="after"]').textContent).toContain('0.08 V');
+    expect(panel.querySelectorAll('button[aria-pressed]')).toHaveLength(3); expect(panel.querySelector('legend').textContent).toContain('Optional');
+  });
+});
+
+
+describe('Voltage chart numeric robustness', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  it('keeps chart geometry finite when a saved numeric snapshot is exceptionally large', () => {
+    let state = model.initial('electrical'); for (let i=0; i<5; i++) state=step(state);
+    state.history.find(entry => entry.id === 'verify').evidence.value = 1e308;
+    const host = document.createElement('div'); host.innerHTML = renderTool('autoRepair', { autoRepair: { view: 'workshop', shop: state } });
+    const panel = host.querySelector('[data-ar-voltage-evidence]');
+    expect(panel.getAttribute('data-ar-voltage-evidence')).toBe('pending');
+    for (const rect of panel.querySelectorAll('svg rect')) {
+      const width = Number(rect.getAttribute('width')); expect(Number.isFinite(width)).toBe(true); expect(width).toBeGreaterThanOrEqual(0); expect(width).toBeLessThanOrEqual(340);
+    }
   });
 });

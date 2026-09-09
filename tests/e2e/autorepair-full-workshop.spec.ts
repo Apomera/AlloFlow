@@ -948,3 +948,45 @@ test('moving 3D torque wrench, numbered targets and inspection share five delibe
   expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop)).toMatchObject({ step: 10, torqued: true, wheelRemoved: false });
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('voltage evidence lesson records before and after, supports reasoning retries and exports the comparison', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  const panel = page.locator('[data-ar-voltage-evidence]');
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toHaveText('Not recorded yet');
+  await expect(panel.locator('[data-ar-evidence-choice]')).toHaveCount(0);
+  await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toHaveText('Not recorded yet');
+  await page.locator('#ar-shop-answer').fill('1.4'); await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toContainText('1.6 V');
+  await perform(page, 'terminal-kit');
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toHaveText('Not recorded yet');
+  await page.locator('#ar-shop-tool').selectOption('meter'); await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toHaveText('Not recorded yet');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel).toHaveAttribute('data-ar-voltage-evidence', 'compared');
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toContainText('0.08 V');
+  const history = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop.history));
+  await page.locator('[data-ar-evidence-choice="looks-clean"]').click();
+  await expect(page.locator('[data-ar-evidence-feedback]')).toHaveAttribute('data-ar-evidence-feedback', 'rethink');
+  await page.locator('[data-ar-evidence-choice="same-test"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-evidence-feedback]')).toHaveAttribute('data-ar-evidence-feedback', 'supported');
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop.history))).toBe(history);
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.step)).toBe(5);
+  await panel.screenshot({ path: 'reports/automobile-workshop/voltage-evidence-desktop.png' });
+  const downloadEvent = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download work order', exact: true }).click();
+  const download = await downloadEvent; const stream = await download.createReadStream(); const chunks = [];
+  for await (const chunk of stream!) chunks.push(chunk); const report = Buffer.concat(chunks).toString('utf8');
+  expect(report).toContain('Before service: 1.6 V'); expect(report).toContain('After service: 0.08 V'); expect(report).toContain('Optional reasoning check: The same loaded joint test');
+  await page.locator('#ar-shop-job').selectOption('oil'); await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('electrical'); await expect(page.locator('[data-ar-evidence-choice="same-test"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.evaluate(() => { const w=window as any; w.__ctx.isDark=true; w.__ctx.isContrast=true; w.__ctx.update('autoRepair', 'shopInteraction', 'operate'); });
+  await panel.screenshot({ path: 'reports/automobile-workshop/voltage-evidence-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('#ar-shop-notes').fill('Found a high joint voltage drop, serviced the connection and repeated the same loaded test successfully.');
+  await perform(page, 'job-card'); await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
