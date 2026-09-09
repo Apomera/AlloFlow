@@ -792,3 +792,47 @@ test('physical fine-fill control changes the jug by 100 mL and coaching routes a
   await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.4');
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('battery close-up places probes on physical contacts and preserves unchanged evidence', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  const closeup = page.locator('[data-ar-meter-contacts-focus]');
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
+  await closeup.click();
+  await clickShop(page, 'workshop-probe-label-posts');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
+  await closeup.click();
+  await clickShop(page, 'positive-clamp-bolt');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await closeup.click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-meter-black-lead')?.data.contact === 'positive-clamp');
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-probe-target-joint').data.selected)).toBe(true);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-joint-contact.png' });
+  await page.locator('[data-ar-scene-action="meter-load"]').click();
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await closeup.click(); await clickShop(page, 'workshop-meter-black-probe');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await closeup.click(); await clickShop(page, 'negative-post');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');
+  await closeup.click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-meter-black-lead')?.data.contact === 'negative-post');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-post-contact.png' });
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('10.4 V');
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'false');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  const joint = page.locator('[data-ar-scene-action="meter-joint"]');
+  await joint.focus(); await page.keyboard.press('Enter');
+  await expect(joint).toHaveAttribute('aria-pressed', 'true');
+  await closeup.focus(); await page.keyboard.press('Enter');
+  await shopPoint(page, 'workshop-probe-label-joint');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-contacts-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

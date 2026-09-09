@@ -637,3 +637,33 @@ describe('Workshop instrument coaching', () => {
     expect(model.coach(model.initial('brakes'))).toBeNull();
   });
 });
+
+
+describe('Direct battery probe contacts', () => {
+  const use = (state, action) => model.direct(state, model.token(state, action));
+  const initial = () => model.normalize({ job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true });
+  it('places the black probe on a named contact and requires fresh evidence after moving it', () => {
+    let state = use(initial(), 'read'); expect(state.reading).toMatchObject({ value: 12.6, valid: false });
+    state = use(state, 'meter-joint'); expect(state.instrument.contact).toBe('joint'); expect(state.reading).toBeNull();
+    state = use(state, 'meter-load'); state = use(state, 'read'); expect(state.reading).toMatchObject({ value: 1.6, valid: true });
+    const captured = state.reading;
+    state = use(state, 'meter-joint'); expect(state.reading).toEqual(captured); expect(state.step).toBe(2);
+    state = use(state, 'meter-posts'); expect(state.instrument.contact).toBe('posts'); expect(state.reading).toBeNull();
+    state = use(state, 'read'); expect(state.reading).toMatchObject({ value: 10.4, valid: false });
+  });
+  it('preserves both valid and invalid captures when selecting an unchanged contact', () => {
+    let state = use(initial(), 'read'); const before = JSON.stringify(state);
+    const next = use(state, 'meter-posts'); expect(next.reading).toEqual(state.reading); expect(next.feedback).toContain('unchanged');
+    expect(JSON.stringify(state)).toBe(before);
+    state = use(use(state, 'meter-joint'), 'read');
+    expect(use(state, 'meter-joint').reading).toEqual(state.reading);
+  });
+  it('keeps contact selection behind equipment, hood and current-task gates', () => {
+    const state = initial();
+    for (const patch of [{ tool: 'lamp' }, { hood: false }]) expect(use({ ...state, ...patch }, 'meter-joint').instrument.contact).toBe('posts');
+    expect(use({ ...state, step: 3, measured: true, tool: 'terminal-kit' }, 'meter-joint').instrument.contact).toBe('posts');
+    const current = use(state, 'meter-joint');
+    expect(model.direct(current, model.token({ ...state, step: 1 }, 'meter-posts')).instrument.contact).toBe('joint');
+    expect(use(state, 'meter-unknown').instrument.contact).toBe('posts');
+  });
+});

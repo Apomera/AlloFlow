@@ -187,6 +187,22 @@ Validation: **539 tests across all 39 automobile suites passed**, including 92 w
 - [Phone instrument feedback](../reports/automobile-workshop/instrument-coach-mobile.png)
 - [Physical 100 mL jug control](../reports/automobile-workshop/jug-fine-control.png)
 
+## Direct battery contact placement
+
+Electrical diagnosis now offers a battery-contact close-up. The battery has a separate positive clamp collar, contact lug, bolt and cable. During meter use with the hood open, labeled negative-post and positive-clamp targets place the black probe explicitly; the red probe stays on the positive post. Target rings indicate the current selection, and the existing lead geometry moves to that selected contact. Contact geometry and spacing remain schematic.
+
+The physical post, clamp, target labels and matching keyboard controls share the existing task-scoped instrument dispatcher. Selecting a different contact invalidates the captured reading; selecting the same contact preserves it. Clicking the connected black probe also preserves its current contact. Tool, hood and task gates remain enforced. The existing PROBES toggle remains available on the instrument cart.
+
+The close-up changes the camera without taking a reading or completing a task. The instrument status card explains the contact choice and offers the close-up button; explicit contact buttons expose their selected state to assistive technology. Positive clamp geometry also participates in the authored connection-service action.
+
+Validation: **95 workshop model/render tests passed**, and **four targeted WebGL browser tests passed** in 2.7 minutes: existing voltage evidence, direct hood/tool/meter interactions, instrument coaching and the new physical battery-contact flow. The latter verifies physical clamp/negative-post clicks, lead endpoints, idempotent selection, invalidation when moving contacts, and keyboard/mobile use. Desktop and phone close-ups were visually reviewed. An initial label click hit the raised hood; moving the negative-post label into clear space resolved the actual raycast obstruction. Source/public parity, syntax and scoped diff checks passed. Temporary browser recording overrides and test instrumentation were removed.
+
+Full-regression limitation: two broad automobile runs were interrupted after existing screen tests exceeded timing limits. Nine used-car, learning-path, cold-weather, EV and career checks passed unchanged in isolation (19.94 seconds for the batch). Two tyre checks also passed in isolation; the remaining tyre-type test timed out at the 15-second limit, then completed its assertions in 8.924 seconds on a rerun configured with a 60-second deadline. These 12 isolated successes do not constitute a clean completed full-suite run. No test source or assertions were relaxed, and no unrelated screen implementation was changed. No deployment or installer build was performed.
+
+- [Positive clamp selected](../reports/automobile-workshop/battery-joint-contact.png)
+- [Negative post selected](../reports/automobile-workshop/battery-post-contact.png)
+- [Phone battery close-up](../reports/automobile-workshop/battery-contacts-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
