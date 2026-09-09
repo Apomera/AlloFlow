@@ -267,6 +267,19 @@ Validation: **132 workshop model/render tests passed** in the final run (5.02 se
 - [High-contrast phone diagram](../reports/automobile-workshop/toe-diagram-mobile.png)
 - [Narrow dark-phone diagram](../reports/automobile-workshop/toe-diagram-dark.png)
 
+## Graduated oil jug lesson
+
+The oil refill console now shows a calibrated jug with a proportional oil level, 100 mL divisions, capacity labels and a dashed 4600 mL target. Learners can switch the scale between litres and millilitres while the amount stays unchanged. Under-target, at-target and over-target feedback describes the next measurement action. An optional quantity explanation shows target minus current, decimal litre conversion, the number of 100 mL changes and the equivalence between one 500 mL addition and five 100 mL additions. It distinguishes preparing oil in the jug from completing the checked refill task. Working is initially hidden and uses the current quantity instead of a fixed initial answer.
+
+The 3D jug now has fine 100 mL graduations and a cyan target marker at the same authored quantity. An empty jug has no oil mesh, correcting the previous minimum visible layer. Existing physical +100, +500 and −100 controls, measurement capture and task gates remain in use. Unit/help preferences do not alter the work order or captured evidence; actual quantity changes still require a fresh capture. This extends the existing authored 4.6 L case and does not introduce vehicle-specific service specifications.
+
+Validation: **145 workshop model/render tests passed** (3.59 seconds), including thirteen new cases for proportional levels at empty/initial/target/over/full quantities, both unit scales, three themes, non-WebGL text, optional working, correction direction and normalized saved-value bounds. **Four real-WebGL workflows passed** (56.2 seconds): existing direct-jug/alignment controls and fine-fill coaching, the new unit/measurement lesson, and empty/full jug geometry. The new flows verify keyboard unit selection, unchanged state/capture for view preferences, four 100 mL additions followed by a physical 100 mL addition, fine-mark count and target/fill height agreement, overfill correction, stale evidence invalidation, job persistence, 390/320 px reflow and refill task completion. Capacity rejects an extra addition and a full jug produces invalid fill evidence. Desktop light, contrast phone, narrow dark-phone and physical 3D screenshots were visually reviewed. Syntax, byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Graduated jug with quantity working](../reports/automobile-workshop/jug-lesson-desktop.png)
+- [High-contrast phone jug](../reports/automobile-workshop/jug-lesson-contrast.png)
+- [Narrow dark-phone jug](../reports/automobile-workshop/jug-lesson-dark.png)
+- [Fine graduations and target in 3D](../reports/automobile-workshop/jug-graduations-3d.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

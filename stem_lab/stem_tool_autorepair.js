@@ -10279,9 +10279,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var jug = new THREE.Group(); jug.name = 'workshop-measuring-jug'; cart.add(jug);
         jug.userData.quantityMl = state.instrument.jugMl;
         box(jug, 'jug-clear-container', [0.31, 0.48, 0.28], [-2.40, 1.15, 1.0], new THREE.MeshPhongMaterial({ color: 0xd7ecf3, transparent: true, opacity: 0.22, depthWrite: false }));
-        var fillHeight = Math.max(0.002, state.instrument.jugMl / 5000 * 0.42);
-        box(jug, 'jug-oil-volume', [0.28, fillHeight, 0.25], [-2.40, 0.92 + fillHeight / 2, 1.0], api.trim(0xc88c24, 65));
+        var fillHeight = state.instrument.jugMl / 5000 * 0.42;
+        if (fillHeight > 0) box(jug, 'jug-oil-volume', [0.28, fillHeight, 0.25], [-2.40, 0.92 + fillHeight / 2, 1.0], api.trim(0xc88c24, 65));
         for (var mark = 0; mark <= 5; mark++) box(jug, 'jug-graduation-' + mark, [mark % 5 ? 0.07 : 0.13, 0.008, 0.008], [-2.30, 0.92 + mark * 0.084, 1.145], dark);
+        for (var fineMark = 1; fineMark < 50; fineMark++) if (fineMark % 10 !== 0) box(jug, 'jug-fine-graduation-' + fineMark, [fineMark % 5 === 0 ? 0.05 : 0.025, 0.002, 0.008], [-2.30, 0.92 + fineMark * 0.0084, 1.145], dark);
+        var jugTarget = box(jug, 'jug-target-line', [0.30, 0.004, 0.009], [-2.40, 0.92 + 4600 / 5000 * 0.42, 1.151], api.trim(0x22d3ee, 25));
+        jugTarget.userData.quantityMl = 4600;
         pipe(jug, 'jug-handle-top', [-2.23, 1.32, 1.0], [-2.10, 1.32, 1.0], 0.017, metal);
         pipe(jug, 'jug-handle-side', [-2.10, 1.32, 1.0], [-2.10, 1.02, 1.0], 0.017, metal);
         pipe(jug, 'jug-handle-bottom', [-2.10, 1.02, 1.0], [-2.23, 1.02, 1.0], 0.017, metal);
@@ -20594,6 +20597,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               alignmentDiagram(),
               h('p', { 'data-ar-alignment-result': toe.inSpec ? 'pass' : 'adjust', style: { fontWeight: 700 } }, toe.inSpec ? '✓ All three alignment checks pass. Capture this result.' : 'Compare both individual angles, total toe and left/right balance with the service sheet.')));
         }
+        function measuredJugPanel() {
+          var ml = shop.instrument.jugMl, gap = 4600 - ml, units = d.shopJugUnits === 'mL' ? 'mL' : 'L';
+          var currentY = 250 - ml / 25, targetY = 66;
+          function quantity(value) { return units === 'mL' ? value + ' mL' : (value / 1000).toFixed(1) + ' L'; }
+          return h('section', { 'data-ar-jug-lesson': gap === 0 ? 'ready' : gap > 0 ? 'under' : 'over', 'aria-label': 'Read the graduated jug', style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+            h('h5', { style: { fontSize: 14, margin: '0 0 8px' } }, 'Read the graduated jug'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Same amount, two units: 1 L = 1000 mL. Change the scale labels to compare them.'),
+            h('div', { role: 'group', 'aria-label': 'Jug scale units', className: 'ar-shop-actions' }, ['L', 'mL'].map(function (unit) {
+              return control(unit === 'L' ? 'Litres (L)' : 'Millilitres (mL)', function () { upd('shopJugUnits', unit); }, { key: unit, 'data-ar-jug-units': unit, 'aria-pressed': units === unit });
+            })),
+            h('svg', { viewBox: '0 0 360 290', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 420, margin: '8px auto' } },
+              h('path', { d: 'M238 103 H272 Q283 103 283 116 V191 Q283 204 272 204 H238', fill: 'none', stroke: T.text, strokeWidth: 5 }),
+              h('path', { d: 'M100 50 L82 35 H238 V251 Q238 261 228 261 H110 Q100 261 100 251 Z', fill: T.cardAlt, stroke: T.text, strokeWidth: 2 }),
+              h('rect', { 'data-ar-jug-fluid': ml, x: 102, y: currentY, width: 134, height: ml / 25, fill: isContrast ? '#ffffff' : isDark ? '#fbbf24' : '#b45309' }),
+              Array.from({ length: 51 }, function (_, mark) {
+                var y = 250 - mark * 4, major = mark % 10 === 0;
+                return h('g', { key: mark }, h('line', { x1: major ? 85 : mark % 5 === 0 ? 91 : 96, x2: 100, y1: y, y2: y, stroke: T.text, strokeWidth: major ? 2 : 1 }),
+                  major && h('text', { x: 78, y: y + 4, textAnchor: 'end', fill: T.text, fontSize: 14 }, quantity(mark * 100)));
+              }),
+              h('line', { x1: 101, x2: 237, y1: currentY, y2: currentY, stroke: isContrast ? '#000000' : T.text, strokeWidth: 2 }),
+              h('line', { x1: 102, x2: 247, y1: targetY, y2: targetY, stroke: isContrast ? '#000000' : T.card, strokeWidth: 5 }),
+              h('line', { 'data-ar-jug-target': 4600, x1: 102, x2: 247, y1: targetY, y2: targetY, stroke: isContrast ? '#ffff00' : T.link, strokeWidth: 2, strokeDasharray: '6 4' }),
+              h('text', { x: 254, y: 66, fill: T.text, fontSize: 14 }, quantity(4600)),
+              h('text', { x: 254, y: 83, fill: T.text, fontSize: 13 }, 'TARGET'),
+              h('text', { x: 170, y: 284, textAnchor: 'middle', fill: T.text, fontSize: 15, fontWeight: 700 }, 'In jug: ' + quantity(ml))),
+            h('p', { 'data-ar-jug-scale': units, style: { fontSize: 12, lineHeight: 1.5 } }, 'Each small division = ' + quantity(100) + '. Dashed line = this job’s ' + quantity(4600) + ' target. Capacity = ' + quantity(5000) + '.'),
+            h('p', { 'data-ar-jug-status': true, style: { fontSize: 12, lineHeight: 1.5, fontWeight: 700 } }, gap === 0 ? 'At the target. Capture a fresh reading before completing the refill task.' : gap > 0 ? 'Below target. Add measured oil to the jug.' : 'Above target. Remove measured oil from the jug before capturing.'),
+            control(d.shopJugWorking ? 'Hide quantity working' : 'Explain the quantity difference', function () { upd('shopJugWorking', !d.shopJugWorking); }, { 'data-ar-jug-working-toggle': true, 'aria-expanded': !!d.shopJugWorking, 'aria-controls': 'ar-jug-working' }),
+            d.shopJugWorking && h('div', { id: 'ar-jug-working', 'data-ar-jug-working': true, style: { fontSize: 12, lineHeight: 1.6, marginTop: 10 } },
+              h('p', null, 'Target − current = 4600 − ' + ml + ' = ' + gap + ' mL (' + (gap / 1000).toFixed(1) + ' L).'),
+              h('p', null, gap === 0 ? 'No quantity change needed. This is the prepared amount in the jug; it has not yet been transferred into the engine.' : (gap > 0 ? 'Add ' : 'Remove ') + Math.abs(gap) + ' mL = ' + (Math.abs(gap) / 1000).toFixed(1) + ' L. That is ' + Math.abs(gap / 100) + ' change' + (Math.abs(gap / 100) === 1 ? '' : 's') + ' of 100 mL.'),
+              h('p', null, 'A 500 mL addition equals five 100 mL additions. These controls prepare the jug; completing the checked refill task transfers the authored service quantity.')));
+        }
         function instrumentPanel() {
           var kind = arShopInstrumentKind(shop);
           if (!kind) return null;
@@ -20620,11 +20656,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', null, 'Measure the lining separately from the backing plate, then compare it with this job’s service limit.')),
             kind === 'jug' && h('div', null,
               h('p', null, 'Training fill: 4.6 L = 4600 mL. The jug starts at 4.1 L. Prepare the full service quantity, then capture the measurement.'),
-              h('meter', { min: 0, max: 5000, value: shop.instrument.jugMl, 'aria-label': 'Oil in the measured jug', style: { width: '100%', height: 22 } }),
               h('p', { 'data-ar-shop-jug-quantity': shop.instrument.jugMl }, h('strong', null, shop.instrument.jugMl + ' mL / ' + (shop.instrument.jugMl / 1000).toFixed(1) + ' L')),
               h('div', { className: 'ar-shop-actions' }, [[100, 'Add 100 mL'], [500, 'Add 500 mL'], [-100, 'Remove 100 mL']].map(function (amount) {
                 return control(amount[1], function () { operate({ type: 'quantity', delta: amount[0] }); }, { key: amount[0], 'data-ar-shop-jug-change': amount[0] });
-              }))),
+              })), measuredJugPanel()),
             kind === 'torque' ? h('div', null,
               h('p', null, 'Seat the wheel and start all fasteners by hand. This training diagram checks the cross-hub order 1 → 3 → 5 → 2 → 4. Each click represents a torque check against the vehicle service sheet; it does not simulate applied force.'),
               !shop.wheelSeated && control('Seat wheel and start fasteners', function () { operate({ type: 'seat-wheel' }); }, { 'data-ar-shop-seat-wheel': true }),

@@ -854,3 +854,42 @@ describe('Live alignment geometry explanation', () => {
     expect(panel.querySelector('[data-ar-toe-explanation]').textContent).toContain('Capture a fresh measurement');
   });
 });
+
+
+describe('Graduated oil jug lesson', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  function render(ml, prefs = {}, theme = {}) {
+    const host=document.createElement('div');
+    host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',instrument:{jugMl:ml}},...prefs}},theme);
+    return host.querySelector('[data-ar-jug-lesson]');
+  }
+  it.each([[0,'under',0],[4100,'under',164],[4600,'ready',184],[4700,'over',188],[5000,'over',200]])('shows honest volume and target status at %s mL', (ml,status,height) => {
+    const panel=render(ml); expect(panel.getAttribute('data-ar-jug-lesson')).toBe(status);
+    const fluid=panel.querySelector('[data-ar-jug-fluid]');expect(Number(fluid.getAttribute('height'))).toBe(height);
+    expect(Number(fluid.getAttribute('y'))+height).toBe(250);
+    expect(panel.querySelector('[data-ar-jug-target]').getAttribute('y1')).toBe('66');
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('keeps units and text equivalents readable without WebGL in %j',theme=>{
+    const panel=render(4100,{shopJugUnits:'mL',uh3dStatus:'failed'},theme);
+    expect(panel.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
+    expect(panel.querySelector('[data-ar-jug-units="mL"]').getAttribute('aria-pressed')).toBe('true');
+    expect(panel.querySelector('[data-ar-jug-scale]').textContent).toContain('Each small division = 100 mL');
+    expect(panel.textContent).toContain('4600 mL target');expect(panel.textContent).toContain('5000 mL');
+  });
+  it('starts with working hidden and provides decimal conversion when requested',()=>{
+    expect(render(4100).querySelector('[data-ar-jug-working]')).toBeNull();
+    const panel=render(4100,{shopJugWorking:true});
+    expect(panel.querySelector('[data-ar-jug-working]').textContent).toContain('4600 − 4100 = 500 mL (0.5 L)');
+    expect(panel.querySelector('[data-ar-jug-working]').textContent).toContain('5 changes of 100 mL');
+    expect(panel.querySelector('[data-ar-jug-scale]').textContent).toContain('0.1 L');
+  });
+  it('explains overfill as removal and distinguishes prepared oil from transferred oil',()=>{
+    expect(render(4700,{shopJugWorking:true}).textContent).toContain('Remove 100 mL = 0.1 L');
+    const panel=render(4600,{shopJugWorking:true});expect(panel.textContent).toContain('has not yet been transferred');
+    expect(panel.querySelector('[data-ar-jug-status]').textContent).toContain('Capture a fresh reading');
+  });
+  it.each([-900, Infinity, 9000])('keeps normalized diagram geometry bounded for saved quantity %s',ml=>{
+    const fluid=render(ml).querySelector('[data-ar-jug-fluid]');
+    expect(Number(fluid.getAttribute('height'))).toBeGreaterThanOrEqual(0);expect(Number(fluid.getAttribute('height'))).toBeLessThanOrEqual(200);
+  });
+});

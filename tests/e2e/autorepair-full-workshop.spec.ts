@@ -1035,3 +1035,62 @@ test('live toe diagram explains cancellation and keeps target overlays separate 
   await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-dark.png'});
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('graduated jug links unit scales, fine 3D fill and fresh measurement evidence', async ({ page }) => {
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,oilDrained:true,plugSecured:true}}});
+  const panel=page.locator('[data-ar-jug-lesson]');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  const initial=await state();
+  await panel.locator('[data-ar-jug-units="mL"]').focus();await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-jug-scale]')).toContainText('Each small division = 100 mL');
+  await panel.locator('[data-ar-jug-working-toggle]').click();
+  await expect(panel.locator('[data-ar-jug-working]')).toContainText('5 changes of 100 mL');
+  expect(await state()).toBe(initial);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-desktop.png'});
+  for(let i=0;i<4;i++)await page.locator('[data-ar-shop-jug-change="100"]').click();
+  await page.locator('[data-ar-scene-focus]').click();await clickShop(page,'workshop-control-jug-fine');
+  await expect(panel).toHaveAttribute('data-ar-jug-lesson','ready');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===4600);
+  const geometry=await page.evaluate(()=>{const s=(window as any).__shopScene;return{target:s.getObjectByName('jug-target-line').position.y,fill:s.getObjectByName('jug-oil-volume').geometry.parameters.height,marks:s.getObjectByName('workshop-measuring-jug').children.filter((o:any)=>o.name.startsWith('jug-fine-graduation-')).length};});
+  expect(geometry.target).toBeCloseTo(0.92+0.42*4600/5000);expect(geometry.fill).toBeCloseTo(0.42*4600/5000);expect(geometry.marks).toBe(45);
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/jug-graduations-3d.png'});
+  await page.locator('[data-ar-shop-instrument-read]').click();const captured=await state();
+  await panel.locator('[data-ar-jug-units="L"]').click();await panel.locator('[data-ar-jug-working-toggle]').click();
+  expect(await state()).toBe(captured);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await expect(panel).toHaveAttribute('data-ar-jug-lesson','over');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await panel.locator('[data-ar-jug-working-toggle]').click();await expect(panel.locator('[data-ar-jug-working]')).toContainText('Remove 100 mL');
+  await page.locator('[data-ar-shop-jug-change="-100"]').click();
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('#ar-shop-job').selectOption('alignment');await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(panel).toHaveAttribute('data-ar-jug-lesson','ready');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopJugUnits','mL');});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopJugUnits','L');});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-dark.png'});
+  await page.locator('#ar-shop-answer').fill('0.5');await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.refilled)).toBe(true);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('empty 3D measuring jug has no oil mesh and full capacity stays in bounds',async({page})=>{
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',serviced:true,plugSecured:true,instrument:{jugMl:0}}}});
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===0);
+  expect(await page.evaluate(()=>(window as any).__shopObject('jug-oil-volume'))).toBeNull();
+  await expect(page.locator('[data-ar-jug-fluid]')).toHaveAttribute('height','0');
+  await page.evaluate(()=>{const w=window as any;const s=w.__toolData.autoRepair.shop;w.__ctx.update('autoRepair','shop',{...s,instrument:{...s.instrument,jugMl:5000}});});
+  await page.locator('[data-ar-shop-instrument-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===5000);
+  expect(await page.evaluate(()=>(window as any).__shopScene.getObjectByName('jug-oil-volume').geometry.parameters.height)).toBeCloseTo(0.42);
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await expect(page.locator('[data-ar-jug-fluid]')).toHaveAttribute('height','200');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','false');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
