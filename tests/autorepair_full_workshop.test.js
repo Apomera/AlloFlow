@@ -1146,3 +1146,21 @@ describe('Lift support lesson rendering',()=>{
     expect(panel.textContent).toContain('Current: Supported on mechanical locks');expect(panel.querySelector('[data-ar-lift-motion]').textContent).toContain('support state shown above has not changed');
   });
 });
+
+
+describe('Workshop section shortcuts',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('offers named navigation and programmatic focus targets in %j',theme=>{
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'oil',step:9}}},theme);
+    const nav=host.querySelector('[data-ar-workshop-shortcuts]');expect(nav.getAttribute('aria-label')).toBe('Workshop section shortcuts');
+    expect([...nav.querySelectorAll('button')].map(b=>b.getAttribute('data-ar-workshop-jump'))).toEqual(['bay','equipment','order','notes']);
+    expect(nav.querySelectorAll('button[aria-label]')).toHaveLength(4);
+    expect(host.querySelector('#ar-shop-bay').getAttribute('tabindex')).toBe('-1');expect(host.querySelector('[data-ar-shop-instrument]').getAttribute('tabindex')).toBe('-1');
+    expect(host.querySelector('#ar-shop-work-order').getAttribute('tabindex')).toBe('-1');expect(host.querySelector('#ar-shop-notes')).not.toBeNull();
+  });
+  it.each([{job:'brakes',step:0},{job:'electrical',step:6,released:true,verified:true}])('retains section links when no instrument exists in %j',shop=>{
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop}});
+    expect(host.querySelector('[data-ar-shop-instrument]')).toBeNull();expect(host.querySelector('[data-ar-workshop-jump="equipment"]')).not.toBeNull();
+    expect(host.querySelector('#ar-shop-work-order')).not.toBeNull();
+  });
+});

@@ -346,6 +346,18 @@ Validation: **209 workshop model/render tests passed** (138.36 seconds on the lo
 - [High-contrast stopped/locked comparison](../reports/automobile-workshop/lift-support-contrast.png)
 - [Narrow dark-phone lesson](../reports/automobile-workshop/lift-support-dark.png)
 
+## Workshop section shortcuts
+
+A sticky section bar now keeps the 3D bay, Equipment, Work order and Handoff within reach as learners move through the workshop's longer learning panels. It uses four columns on desktop and two on narrow phones, with at least 44 px button heights and theme-matched surfaces. Keyboard activation explicitly focuses the destination, and scroll spacing keeps the destination below the bar.
+
+Equipment targets the current instrument when available, falls back to the tool chooser for other tasks, and returns to the work order after completion. The 3D bay destination names the scene and camera controls. Navigation preserves simulation state, captured measurements, answers, draft notes and camera framing. The existing Return to work order action shares the same behavior.
+
+Validation: **214 workshop model/render tests passed** (45.48 seconds), including five new section-navigation rendering cases. **Four real-WebGL workflows passed** (4.1 minutes): the new keyboard/navigation journey and equipment-fallback case, plus existing physical lift-stop and moving-wrench/inspection regressions. Checks cover unchanged captured evidence, answers, draft notes and camera pose; explicit destination focus; initial/completed work-order fallbacks; sticky button visibility and 44 px heights; destination clearance below the bar; and 390/320 px reflow. Desktop light, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Desktop shortcuts and handoff](../reports/automobile-workshop/shortcuts-desktop.png)
+- [High-contrast phone equipment navigation](../reports/automobile-workshop/shortcuts-contrast.png)
+- [Narrow dark-phone handoff](../reports/automobile-workshop/shortcuts-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

@@ -1325,3 +1325,48 @@ test('lift support diagram tracks physical stages while comparison and reset pre
   await page.locator('#ar-shop-job').selectOption('brakes');await expect(panel).toHaveAttribute('data-ar-lift-support','locked');
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('workshop shortcuts stay reachable and preserve evidence, drafts and camera framing',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4600},answer:'0.5',notes:'My unfinished customer explanation.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  const before=await state();const nav=page.locator('[data-ar-workshop-shortcuts]');
+  const jump=async(id:string,target:string)=>{await nav.locator('[data-ar-workshop-jump="'+id+'"]').focus();await page.keyboard.press('Enter');await expect(page.locator(target)).toBeFocused();};
+  await jump('bay','#ar-shop-bay');
+  const pose=await page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};});
+  await jump('equipment','[data-ar-shop-instrument]');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await jump('order','#ar-shop-work-order');await jump('notes','#ar-shop-notes');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('My unfinished customer explanation.');expect(await state()).toBe(before);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-desktop.png'});
+  await jump('bay','#ar-shop-bay');
+  expect(await page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};})).toEqual(pose);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await jump('equipment','[data-ar-shop-instrument]');
+  const bounds=await nav.evaluate((el:HTMLElement)=>{const r=el.getBoundingClientRect();return{top:r.top,bottom:r.bottom,height:r.height,targets:[...el.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.height>=44&&q.top>=0&&q.bottom<=innerHeight;})};});
+  expect(bounds.top).toBeGreaterThanOrEqual(0);expect(bounds.top).toBeLessThan(15);expect(bounds.height).toBeLessThan(130);expect(bounds.targets).toBe(true);
+  expect((await page.locator('[data-ar-shop-instrument]').boundingBox())!.y).toBeGreaterThanOrEqual(bounds.bottom);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await jump('notes','#ar-shop-notes');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-dark.png'});
+  expect(await state()).toBe(before);await jump('bay','#ar-shop-bay');
+  await page.getByRole('button',{name:'Return to work order',exact:true}).click();await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  expect(await state()).toBe(before);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('equipment shortcut falls back to the tool chooser and completed work order',async({page})=>{
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes'}}});
+  await page.locator('[data-ar-workshop-jump="equipment"]').click();await expect(page.locator('#ar-shop-tool')).toBeFocused();
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBeUndefined();
+  await page.evaluate(()=>(window as any).__ctx.update('autoRepair','shop',{job:'electrical',step:6,released:true,verified:true,notes:'My completed report.'}));
+  await page.locator('[data-ar-workshop-jump="equipment"]').click();await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await page.locator('[data-ar-workshop-jump="notes"]').click();await expect(page.locator('#ar-shop-notes')).toHaveValue('My completed report.');
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(6);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

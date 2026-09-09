@@ -20506,6 +20506,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
         }
+        function workshopJump(section) {
+          var root = document.querySelector('[data-ar-workshop]');
+          if (!root) return;
+          var selectors = { bay: '#ar-shop-bay', equipment: '[data-ar-shop-instrument], #ar-shop-tool', order: '#ar-shop-work-order', notes: '#ar-shop-notes' };
+          if (!selectors[section]) return;
+          var target = section === 'equipment' ? root.querySelector('[data-ar-shop-instrument]') || root.querySelector('#ar-shop-tool') : root.querySelector(selectors[section]);
+          if (!target) target = root.querySelector('#ar-shop-work-order');
+          if (!target) return;
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({ block: 'start', behavior: 'auto' });
+        }
+        function workshopShortcuts() {
+          return h('nav', { 'data-ar-workshop-shortcuts': true, 'aria-label': 'Workshop section shortcuts', className: 'ar-shop-shortcuts',
+            style: { background: T.panel, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 3px 12px rgba(0,0,0,.16)' } },
+            [['bay', '3D bay'], ['equipment', 'Equipment'], ['order', 'Work order'], ['notes', 'Handoff']].map(function (item) {
+              return control(item[1], function () { workshopJump(item[0]); }, { key: item[0], 'data-ar-workshop-jump': item[0],
+                'aria-label': 'Go to ' + item[1].toLowerCase(), style: btnSecondary({ minHeight: 44, fontSize: 12, padding: '8px 6px', whiteSpace: 'normal' }) });
+            }));
+        }
         function focusServiceControls() {
           if (!task) { stationCamera('engine'); return; }
           pick(task.station); stationCamera(task.station);
@@ -20862,7 +20881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 options.map(function (option) { return h('option', { key: option[0], value: option[0] }, option[1]); })));
           }
           var title = { meter: 'Connect the voltmeter', gauge: 'Position the thickness gauge', jug: 'Prepare the measured oil fill', torque: 'Refit and check the wheel', alignment: 'Wheel alignment console' }[kind];
-          return h('section', { 'data-ar-shop-instrument': kind, 'aria-label': title,
+          return h('section', { 'data-ar-shop-instrument': kind, tabIndex: -1, 'aria-label': title,
             style: { marginTop: 14, padding: 12, border: '2px solid ' + T.border, borderRadius: 10, background: T.cardAlt } },
             h('h4', { style: { margin: '0 0 10px', fontSize: 15 } }, title),
             kind === 'alignment' && alignmentPanel(),
@@ -21012,6 +21031,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { role: 'main', 'aria-label': 'Full mechanic workshop', 'data-ar-workshop': true,
           style: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', padding: 'clamp(12px,2.5vw,24px)', maxWidth: 1360, margin: '0 auto', background: T.bg, color: T.text, borderRadius: 16 } },
           h('style', null,
+            '.ar-shop-shortcuts{position:sticky;top:8px;z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;margin:0 0 14px;border-radius:10px}' +
+            '[data-ar-workshop] :where(button,input,select,textarea,[tabindex="-1"]){scroll-margin-top:140px}' +
+            '@media(max-width:480px){.ar-shop-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}' +
             '.ar-shop-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:18px;align-items:start}' +
             '.ar-shop-stations{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin:12px 0}' +
             '.ar-shop-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.ar-shop-metrics span{padding:7px 10px;border:1px solid currentColor;border-radius:8px;font-size:12px}' +
@@ -21029,9 +21051,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('span', { 'data-ar-shop-lift': shop.lift, style: { color: shop.lift === 'locked' ? T.good : T.accentHi } }, liftLabels[shop.lift]),
             h('span', null, shop.wheelRemoved ? (shop.wheelSeated ? 'Wheel seated — torque pending' : 'Front wheel on rack') : 'Wheels fitted'),
             h('span', null, shop.released ? 'Work order completed' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
+          workshopShortcuts(),
           h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
             h('section', { 'aria-label': 'Workshop scene and stations', style: { minWidth: 0 } },
-              h('div', { className: 'ar-bay-viewer-frame ar-shop-viewport' },
+              h('div', { id: 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': '3D workshop bay and camera controls', className: 'ar-bay-viewer-frame ar-shop-viewport' },
                 bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
                   label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
                 controlInspector(),
@@ -21039,7 +21062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('div', { className: 'ar-shop-actions' },
                   control('Whole shop', function () { SHOP3D.reset(); }),
                   shop.job === 'alignment' && control(shop.alignmentCutaway ? 'Show vehicle body' : 'Show chassis view', function () { change({ alignmentCutaway: !shop.alignmentCutaway }); }, { 'data-ar-alignment-cutaway': true, 'aria-pressed': !!shop.alignmentCutaway }),
-                  control('Return to work order', function () { var order = document.getElementById('ar-shop-work-order'); if (order) { order.focus({ preventScroll: true }); order.scrollIntoView({ block: 'start', behavior: 'auto' }); } }),
+                  control('Return to work order', function () { workshopJump('order'); }),
                   control('View selected station', function () { stationCamera(shop.station); }, { 'data-ar-shop-camera': 'station' }),
                   control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
                 h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Drag to orbit · scroll to zoom · arrow keys rotate · + / − zoom · 0 resets. Select a station below for the same content.')),
