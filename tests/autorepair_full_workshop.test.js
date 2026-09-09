@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1001,5 +1001,61 @@ describe('Handoff guide accessible rendering',()=>{
     const host=render({shop,shopHandoffHelp:true});const panel=host.querySelector('[data-ar-handoff-guide]');
     expect(panel.querySelector('img')).toBeNull();expect(panel.textContent).toContain('<img src=x onerror=alert(1)>');
     expect(host.querySelector('#ar-shop-notes').value).toBe('Keep my words');
+  });
+});
+
+
+describe('Workshop practice overview and resume',()=>{
+  it('shows all four skills without claiming proficiency or completion for a fresh learner',()=>{
+    const cards=model.practiceBoard(model.initial('brakes'),{});
+    expect(cards.map(c=>c.id)).toEqual(['brakes','oil','electrical','alignment']);
+    expect(cards.every(c=>c.status==='not-started'&&c.completed===0&&c.skills.length>20&&c.next.length>10)).toBe(true);
+    expect(cards.filter(c=>c.current).map(c=>c.id)).toEqual(['brakes']);
+  });
+  it.each(model.jobs)('shows truthful completion and next-step progress for $id',job=>{
+    let state=model.initial(job.id);state=step(state);
+    expect(model.practiceBoard(state,{})[model.jobs.indexOf(job)]).toMatchObject({status:'in-progress',completed:1,next:job.tasks[1].label});
+    while(state.step<job.tasks.length)state=step(state,{notes:'Found the condition, completed service and verified the authored checks.'});
+    expect(model.practiceBoard(state,{})[model.jobs.indexOf(job)]).toMatchObject({status:'complete',completed:job.tasks.length});
+    expect(model.practiceBoard({...state,verified:false},{})[model.jobs.indexOf(job)].status).toBe('review');
+    expect(model.practiceBoard({...state,released:'true'},{})[model.jobs.indexOf(job)].status).toBe('review');
+  });
+  it('prefers the active state over a stale saved copy and does not mutate either input',()=>{
+    const current=model.normalize({job:'brakes',step:7,notes:'Keep this draft'}),records={brakes:model.initial('brakes'),oil:{...model.initial('oil'),step:3}};
+    const original=JSON.stringify({current,records});const cards=model.practiceBoard(current,records);
+    expect(cards[0].completed).toBe(7);expect(cards[1].completed).toBe(3);expect(JSON.stringify({current,records})).toBe(original);
+  });
+  it('round-trips captured measurement, tool, position, answer and notes through another job',()=>{
+    let brake=model.normalize({job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,answer:'6',notes:'My brake draft'});
+    brake=model.operate(brake,{type:'read'});const oil=model.normalize({job:'oil',step:9,notes:'Oil draft',instrument:{jugMl:4500}}),records={oil};
+    const next=model.selectJob(brake,records,'oil');expect(next.shop).toEqual(oil);expect(next.shopRecords.brakes).toEqual(brake);
+    const back=model.selectJob(next.shop,next.shopRecords,'brakes');expect(back.shop).toEqual(brake);expect(model.ready(back.shop)).toBe(true);
+    expect(records).toEqual({oil});
+  });
+  it('keeps same-job selection intact and rejects unknown targets',()=>{
+    const state=model.normalize({job:'alignment',step:3,alignment:{left:11,right:10},notes:'My alignment draft'});
+    expect(model.selectJob(state,{},'alignment').shop).toEqual(state);expect(model.selectJob(state,{},'unknown')).toBeNull();
+  });
+  it('does not open a mismatched job stored under another key, but accepts legacy records without a job ID',()=>{
+    const state=model.initial('brakes'),wrong={oil:{...model.initial('electrical'),step:5,notes:'Electrical only'}};
+    expect(model.selectJob(state,wrong,'oil').shop).toEqual(model.initial('oil'));expect(wrong.oil.notes).toBe('Electrical only');
+    expect(model.selectJob(state,{oil:{step:3,notes:'Older oil draft'}},'oil').shop).toMatchObject({job:'oil',step:3,notes:'Older oil draft'});
+    expect(model.selectJob(state,{oil:[]},'oil').shop).toEqual(model.initial('oil'));
+  });
+});
+
+describe('Practice board accessible rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  it('starts compact and leaves the normal job chooser available',()=>{
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop'}});
+    expect(host.querySelector('[data-ar-practice-board]').getAttribute('data-ar-practice-board')).toBe('closed');
+    expect(host.querySelectorAll('[data-ar-practice-job]')).toHaveLength(0);expect(host.querySelector('#ar-shop-job')).not.toBeNull();
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('shows labels, progress and keyboard resume controls in %j',theme=>{
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shopPracticeBoard:true,shop:{job:'oil',step:9}}},theme);
+    const board=host.querySelector('[data-ar-practice-board]');expect(board.querySelectorAll('[data-ar-practice-job]')).toHaveLength(4);
+    expect(board.querySelectorAll('progress[aria-label]')).toHaveLength(4);expect(board.querySelectorAll('button[data-ar-practice-open][aria-label]')).toHaveLength(4);
+    expect(board.querySelector('[data-ar-practice-job="oil"]').textContent).toContain('Current job');
+    expect(board.querySelector('[data-ar-practice-job="oil"]').textContent).toContain('9/12');expect(board.textContent).toContain('not a proficiency score');
   });
 });

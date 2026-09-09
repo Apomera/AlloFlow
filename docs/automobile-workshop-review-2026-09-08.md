@@ -307,6 +307,18 @@ Validation: **169 workshop model/render tests passed** (12.71 seconds), includin
 - [High-contrast phone guide](../reports/automobile-workshop/handoff-guide-contrast.png)
 - [Narrow dark-phone guide](../reports/automobile-workshop/handoff-guide-dark.png)
 
+## Workshop practice board
+
+A collapsible practice board now shows all four service jobs with their learning focus, current saved task count, next step and start/resume/review controls. The active job is labeled and outlined. The completed-work-order count updates after release; completion requires the final task position together with explicit verification and release flags. A saved record at the final position without those confirmations is marked for review. Progress describes the saved attempt rather than proficiency.
+
+The board and existing job dropdown now share one selection path. The active state takes precedence over a stale saved copy, and switching stores that current state before restoring the selected job. Captured readings, tool choices, adjustments, answers and notes survive round trips. Selecting the current job preserves its state and camera. Record keys are checked against their stored job ID so a mismatched save cannot open the wrong vehicle job; older records without a job ID can still use their keyed job. Board buttons return keyboard focus to the work-order chooser after selection, and the normal dropdown stays available with the board collapsed.
+
+Validation: **182 workshop model/render tests passed** (25.16 seconds), including thirteen new cases for all job statuses, strict completion flags, next-task labels, active-state precedence, input purity, measurement/draft round trips, same-job selection, unknown targets, legacy/mismatched saves and three-theme accessible rendering. **Three real-WebGL workflows passed** (1.4 minutes): the new practice-board journey and existing alignment/handoff persistence regressions. The new journey preserves a captured brake reading, answer and draft through board/dropdown switching, resumes a partly filled oil jug, completes the oil service and handoff, updates the completion count, starts alignment, and returns to the completed oil job. Keyboard focus, unchanged same-job state, 390/320 px reflow and board collapse are checked. Desktop light, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Desktop practice board](../reports/automobile-workshop/practice-board-desktop.png)
+- [High-contrast phone board](../reports/automobile-workshop/practice-board-contrast.png)
+- [Narrow dark-phone board](../reports/automobile-workshop/practice-board-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

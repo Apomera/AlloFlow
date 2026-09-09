@@ -1189,3 +1189,51 @@ test('handoff support uses completed records and preserves learner writing throu
   expect(Buffer.concat(chunks).toString('utf8')).toContain('CUSTOMER HANDOFF\n'+notes);
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('practice board resumes exact saved work and updates after a completed oil handoff',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,answer:'6',notes:'My brake inspection draft'},shopRecords:{
+    oil:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4500},notes:'My oil draft'},
+    electrical:{job:'electrical',step:6,verified:true,released:true,notes:'Completed connection repair and verification.'}
+  }}});
+  const board=page.locator('[data-ar-practice-board]');
+  await expect(board).toHaveAttribute('data-ar-practice-board','closed');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await board.locator('[data-ar-practice-toggle]').focus();await page.keyboard.press('Enter');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await expect(board.locator('[data-ar-practice-completed]')).toContainText('1/4');
+  await expect(board.locator('[data-ar-practice-job="brakes"]')).toHaveAttribute('data-ar-practice-status','in-progress');
+  await expect(board.locator('[data-ar-practice-job="alignment"]')).toHaveAttribute('data-ar-practice-status','not-started');
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-desktop.png'});
+  await board.locator('[data-ar-practice-open="oil"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-job')).toBeFocused();await expect(page.locator('#ar-shop-job')).toHaveValue('oil');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity','4500');
+  await page.locator('#ar-shop-notes').fill('My edited oil draft');
+  await board.locator('[data-ar-practice-open="brakes"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('2 mm');await expect(page.locator('#ar-shop-answer')).toHaveValue('6');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('My brake inspection draft');
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('gauge');
+  const restored=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));expect(restored).toBe(before);
+  await board.locator('[data-ar-practice-open="brakes"]').click();expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(page.locator('#ar-shop-notes')).toHaveValue('My edited oil draft');
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('#ar-shop-answer').fill('0.5');await page.locator('[data-ar-shop-perform]').click();await perform(page,'checklist');
+  await page.locator('#ar-shop-notes').fill('Replaced the filter, prepared the 4.6 L service fill and verified the authored level, pressure indication and leak checks.');
+  await perform(page,'job-card');await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  await expect(board.locator('[data-ar-practice-completed]')).toContainText('2/4');
+  await expect(board.locator('[data-ar-practice-job="oil"]')).toHaveAttribute('data-ar-practice-status','complete');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopPracticeBoard',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopPracticeBoard',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-dark.png'});
+  await board.locator('[data-ar-practice-open="alignment"]').click();await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();
+  await board.locator('[data-ar-practice-open="oil"]').click();await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  await board.locator('[data-ar-practice-toggle]').click();await expect(board.locator('[data-ar-practice-job]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

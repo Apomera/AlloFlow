@@ -9787,6 +9787,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       'Optional reasoning check: ' + (review.choice ? review.choice.label + ' ' + review.choice.feedback : 'Not answered.')];
   }
 
+  function arShopSavedJob(current, records, id) {
+    if (!SHOP_JOBS.some(function (job) { return job.id === id; })) return null;
+    var active = arShopState(current);
+    if (active.job === id) return active;
+    var saved = records && Object.prototype.hasOwnProperty.call(records, id) ? records[id] : null;
+    return saved && typeof saved === 'object' && !Array.isArray(saved) && (!saved.job || saved.job === id)
+      ? arShopState(Object.assign({}, saved, { job: id })) : arShopInitial(id);
+  }
+  function arShopSelectJob(current, records, id) {
+    var next = arShopSavedJob(current, records, id);
+    if (!next) return null;
+    var saved = Object.assign({}, records || {}), active = arShopState(current);
+    saved[active.job] = active;
+    return { shop: next, shopRecords: saved };
+  }
+  function arShopPracticeBoard(current, records) {
+    var active = arShopState(current);
+    var skills = {
+      brakes: 'Measure lining wear, follow the lift sequence and check wheel reassembly.',
+      oil: 'Convert litres and millilitres, prepare the fill and verify service checks.',
+      electrical: 'Choose probe contacts and compare the same loaded test before and after service.',
+      alignment: 'Connect individual toe angles, their total and left/right balance.'
+    };
+    return SHOP_JOBS.map(function (job) {
+      var state = arShopSavedJob(active, records, job.id), total = job.tasks.length;
+      var complete = state.step === total && state.released === true && state.verified === true;
+      var status = complete ? 'complete' : state.step === total ? 'review' : state.step > 0 ? 'in-progress' : 'not-started';
+      return { id: job.id, title: job.title, skills: skills[job.id], current: active.job === job.id, completed: state.step, total: total,
+        status: status, next: complete ? 'Review your findings, service and customer handoff.' : state.step === total ? 'Review this saved work order: verification or release is not confirmed.' : job.tasks[state.step].label };
+    });
+  }
   function arShopHandoffGuide(raw) {
     var state = arShopState(raw), job = arShopJob(state.job);
     var prompts = {
@@ -20321,6 +20352,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           updMulti({ shop: next, shopRecords: records });
         }
         function change(patch) { save(Object.assign({}, shop, patch)); }
+        function selectJob(id, focusOrder) {
+          var next = arShopSelectJob(shop, d.shopRecords, id);
+          if (!next) return;
+          updMulti(next);
+          if (id !== shop.job) SHOP3D.reset();
+          arAnnounce(arShopJob(id).title + ' opened. Saved progress and notes retained.');
+          if (focusOrder) requestAnimationFrame(function () {
+            var field = document.querySelector('[data-ar-workshop] #ar-shop-job');
+            if (field) { field.focus({ preventScroll: true }); field.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          });
+        }
+        function practiceBoardPanel() {
+          var cards = arShopPracticeBoard(shop, d.shopRecords), open = !!d.shopPracticeBoard;
+          var complete = cards.filter(function (card) { return card.status === 'complete'; }).length;
+          var labels = { complete: 'Completed', 'in-progress': 'In progress', 'not-started': 'Not started', review: 'Review saved record' };
+          return h('section', { 'data-ar-practice-board': open ? 'open' : 'closed', 'aria-label': 'Workshop practice board',
+            style: { padding: 12, marginBottom: 14, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
+            h('h3', { style: { fontSize: 15, margin: '0 0 6px' } }, 'Your workshop practice'),
+            h('p', { 'data-ar-practice-completed': complete, style: { fontSize: 12, lineHeight: 1.5 } }, complete + '/4 training work orders completed. Choose a skill to practice or resume saved work.'),
+            control(open ? 'Hide practice board' : 'View practice board', function () { upd('shopPracticeBoard', !open); }, { 'data-ar-practice-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-practice-jobs' }),
+            open && h('div', { id: 'ar-practice-jobs' }, cards.map(function (card) {
+              return h('section', { key: card.id, 'data-ar-practice-job': card.id, 'data-ar-practice-status': card.status, style: { marginTop: 12, padding: 12, border: (card.current ? '2px solid ' + T.accentHi : '1px solid ' + T.border), borderRadius: 8, background: T.card } },
+                h('h4', { style: { fontSize: 14, margin: '0 0 8px' } }, card.title),
+                h('p', { style: { fontSize: 12, fontWeight: 700 } }, labels[card.status] + (card.current ? ' · Current job' : '')),
+                h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, card.skills),
+                h('progress', { value: card.completed, max: card.total, 'aria-label': card.title + ' saved task progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
+                h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, card.completed + '/' + card.total + ' task steps completed'),
+                h('p', { 'data-ar-practice-next': true, style: { fontSize: 12, lineHeight: 1.6 } }, (card.status === 'complete' || card.status === 'review' ? '' : 'Next: ') + card.next),
+                control(card.current ? 'Return to current job' : card.status === 'complete' || card.status === 'review' ? 'Review work order' : card.completed ? 'Resume job' : 'Start job', function () { selectJob(card.id, true); },
+                  { 'data-ar-practice-open': card.id, 'aria-label': (card.current ? 'Return to ' : card.status === 'complete' || card.status === 'review' ? 'Review ' : card.completed ? 'Resume ' : 'Start ') + card.title }));
+            })),
+            open && h('p', { style: { fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Progress tracks this saved training attempt. It is not a proficiency score. Opening a job keeps its measurements, adjustments and handoff draft.'));
+        }
         function pick(id) {
           if (typeof id === 'string' && id.indexOf('shop-use-') === 0) { var directNext = arShop3DPick(shop, id); save(directNext); arAnnounce(directNext.feedback); return; }
           if (/^shop-toe-(left|right)$/.test(id)) {
@@ -20905,11 +20969,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   control('Tire-change practice', function () { openActivity('tyre'); })))),
             h('section', { id: 'ar-shop-work-order', tabIndex: -1, className: 'ar-shop-card', 'aria-label': 'Training work order' },
               h('h2', { style: { fontSize: 19 } }, 'Your work order'),
+              practiceBoardPanel(),
               h('label', { htmlFor: 'ar-shop-job' }, 'Choose a service job'),
-              h('select', { id: 'ar-shop-job', value: job.id, onChange: function (e) {
-                var nextId = e.target.value, records = Object.assign({}, d.shopRecords || {}); records[shop.job] = shop;
-                updMulti({ shop: arShopState(records[nextId] || arShopInitial(nextId)), shopRecords: records }); SHOP3D.reset();
-              } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
+              h('select', { id: 'ar-shop-job', value: job.id, onChange: function (e) { selectJob(e.target.value, false); } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
               h('p', null, job.concern),
               h('details', { open: true }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Vehicle service sheet — simulation values'), h('p', null, job.spec)),
               h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': 'Work order progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
