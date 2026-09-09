@@ -1,0 +1,66 @@
+{
+  "cpuSlowdown": 4,
+  "scope": "one page; fixed before/after sources; one warmup and three measured runs per version; synthetic history, no production CSS",
+  "warmupRuns": [
+    {
+      "mode": "before",
+      "mountMs": 353.60000002384186,
+      "fourUpdatesMs": 689.6999999880791,
+      "rows": 400
+    },
+    {
+      "mode": "after",
+      "mountMs": 118.80000001192093,
+      "fourUpdatesMs": 221.5,
+      "rows": 400
+    }
+  ],
+  "measured": [
+    {
+      "mode": "before",
+      "mountMs": 157.69999998807907,
+      "fourUpdatesMs": 308.0999999642372,
+      "rows": 400
+    },
+    {
+      "mode": "after",
+      "mountMs": 55.19999998807907,
+      "fourUpdatesMs": 104.40000003576279,
+      "rows": 400
+    },
+    {
+      "mode": "after",
+      "mountMs": 48.5,
+      "fourUpdatesMs": 139.19999998807907,
+      "rows": 400
+    },
+    {
+      "mode": "before",
+      "mountMs": 96.80000001192093,
+      "fourUpdatesMs": 408.7999999523163,
+      "rows": 400
+    },
+    {
+      "mode": "before",
+      "mountMs": 138.89999997615814,
+      "fourUpdatesMs": 509.80000001192093,
+      "rows": 400
+    },
+    {
+      "mode": "after",
+      "mountMs": 85.60000002384186,
+      "fourUpdatesMs": 160.89999997615814,
+      "rows": 400
+    }
+  ],
+  "medians": {
+    "before": {
+      "mountMs": 138.89999997615814,
+      "fourUpdatesMs": 408.7999999523163
+    },
+    "after": {
+      "mountMs": 55.19999998807907,
+      "fourUpdatesMs": 139.19999998807907
+    }
+  }
+}

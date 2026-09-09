@@ -650,14 +650,25 @@ function HistoryPanel(props) {
       return null;
     }
   };
+  let historyDateFormatter = null;
+  const formatHistoryDate = (date) => {
+    if (!historyDateFormatter && typeof Intl === "object" && typeof Intl.DateTimeFormat === "function") {
+      historyDateFormatter = new Intl.DateTimeFormat(void 0, { month: "short", day: "numeric", year: "numeric" });
+    }
+    return historyDateFormatter ? historyDateFormatter.format(date) : date.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" });
+  };
+  const resourceTypeLabelCache = /* @__PURE__ */ new Map();
   const getResourceTypeLabel = (type) => {
+    if (resourceTypeLabelCache.has(type)) return resourceTypeLabelCache.get(type);
     let localizedTitle = "";
     try {
       localizedTitle = getDefaultTitle(type);
     } catch (_) {
     }
     const fallback = getSafeRowText(type, "resource", 100).replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-    return getSafeRowText(localizedTitle, fallback, 160);
+    const label = getSafeRowText(localizedTitle, fallback, 160);
+    resourceTypeLabelCache.set(type, label);
+    return label;
   };
   const resourceTypes = Array.from(new Set(unitFilteredHistory.map((item) => getSafeRowText(getSafeArtifactField(item, "type"), "", 100)).filter(Boolean))).sort((a, b) => getResourceTypeLabel(a).localeCompare(getResourceTypeLabel(b)));
   const displayedResourceTypes = resourceTypeFilter !== "all" && !resourceTypes.includes(resourceTypeFilter) ? [resourceTypeFilter, ...resourceTypes] : resourceTypes;
@@ -1090,7 +1101,7 @@ function HistoryPanel(props) {
       const itemTextBadge = getInstructionalTextBadge(item);
       const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
       const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
-      const itemDateLabel = itemDate ? itemDate.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" }) : "";
+      const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
       const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
       const itemUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
       const itemUnit = itemUnitId && Array.isArray(units) ? units.find((unit) => getSafeRowText(getSafeArtifactField(unit, "id"), "", 160) === itemUnitId) : null;

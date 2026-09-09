@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-09T04:36:45.1256540Z",
+  "testsPassed": 46,
+  "testsFailed": 0,
+  "dateLabelsMatch": true,
+  "dateLabelsCompared": 400,
+  "moduleSha256": "aedae97b0182138bd924ef45fe5806c25acfcfec606f2e1ca2e8180272e6ce31",
+  "loaderVersion": "aedae97b0",
+  "loaderReferencesChecked": 3,
+  "mirrors": [
+    {
+      "file": "desktop/web-app/public/view_history_panel_module.js",
+      "sha256": "aedae97b0182138bd924ef45fe5806c25acfcfec606f2e1ca2e8180272e6ce31",
+      "match": true
+    },
+    {
+      "file": "desktop/app-build/view_history_panel_module.js",
+      "sha256": "aedae97b0182138bd924ef45fe5806c25acfcfec606f2e1ca2e8180272e6ce31",
+      "match": true
+    }
+  ]
+}

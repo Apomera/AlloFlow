@@ -580,6 +580,7 @@ function HistoryPanel(props) {
   } catch (_) { unitFilteredHistoryCandidate = []; }
   const unitFilteredHistory = getSafeArraySnapshot(unitFilteredHistoryCandidate);
   const safeHistory = getSafeArraySnapshot(history);
+  // HISTORY_DISPLAY_FORMAT_START
   const getSafeRowText = (value, fallback = '', max = 240) => {
     const candidate = typeof value === 'string' || typeof value === 'number' ? String(value) : '';
     const fallbackText = typeof fallback === 'string' || typeof fallback === 'number' ? String(fallback) : '';
@@ -593,13 +594,29 @@ function HistoryPanel(props) {
       return candidate && Number.isFinite(candidate.getTime()) ? candidate : null;
     } catch (_) { return null; }
   };
+  // Keep caches local to this render so language and title-provider changes
+  // are reflected immediately, including providers whose function identity is stable.
+  let historyDateFormatter = null;
+  const formatHistoryDate = (date) => {
+    if (!historyDateFormatter && typeof Intl === 'object' && typeof Intl.DateTimeFormat === 'function') {
+      historyDateFormatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    return historyDateFormatter
+      ? historyDateFormatter.format(date)
+      : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+  const resourceTypeLabelCache = new Map();
   const getResourceTypeLabel = (type) => {
+    if (resourceTypeLabelCache.has(type)) return resourceTypeLabelCache.get(type);
     let localizedTitle = '';
     try { localizedTitle = getDefaultTitle(type); } catch (_) {}
     const fallback = getSafeRowText(type, 'resource', 100)
       .replace(/[-_]+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
-    return getSafeRowText(localizedTitle, fallback, 160);
+    const label = getSafeRowText(localizedTitle, fallback, 160);
+    resourceTypeLabelCache.set(type, label);
+    return label;
   };
+  // HISTORY_DISPLAY_FORMAT_END
   const resourceTypes = Array.from(new Set(unitFilteredHistory
     .map(item => getSafeRowText(getSafeArtifactField(item, 'type'), '', 100))
     .filter(Boolean)))
@@ -1205,7 +1222,7 @@ function HistoryPanel(props) {
                                     : 'border-slate-200 bg-white text-slate-600';
                         const itemDate = getSafeRowDate(getSafeArtifactField(item, 'timestamp'));
                         const itemDateLabel = itemDate
-                            ? itemDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                            ? formatHistoryDate(itemDate)
                             : '';
                         const itemDateTime = itemDateLabel ? itemDate.toISOString() : undefined;
                         const itemUnitId = getSafeRowText(getSafeArtifactField(item, 'unitId'), '', 160);
