@@ -537,6 +537,112 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   }, 120000);
 
+  async function openJournal(data = {}, width = 1280, theme = '') {
+    await mount(width, theme);
+    await page.evaluate(data => {
+      window.__alloflowSelToolData = { journal: { activeTab: 'journal', soundEnabled: false, earnedBadges: { first_journal: true }, ...data } };
+      window.dispatchEvent(new Event('alloflow-sel-tooldata-restored'));
+    }, data);
+    await page.locator('[data-sel-tool-card-id="journal"]').click();
+    return page.getByRole('region', { name: 'Journal writing and saved entries', exact: true });
+  }
+
+  it('journal keeps draft prompt attribution when browsing and allows an explicit change', async () => {
+    const region = await openJournal();
+    const prompt = (await page.locator('#sel-journal-prompt').innerText()).slice(1, -1);
+    await region.getByRole('textbox', { name: 'Journal entry', exact: true }).fill('A fictional learner asks for a practice turn.');
+    await region.getByRole('button', { name: 'Next writing prompt', exact: true }).click();
+    expect(await region.innerText()).toContain('Your draft is still linked to: ' + prompt);
+    await region.getByRole('button', { name: 'Save Entry', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.journalEntries[0].prompt)).toBe(prompt);
+    await region.getByRole('textbox', { name: 'Journal entry', exact: true }).fill('Another fictional reflection.');
+    await region.getByRole('button', { name: 'Next writing prompt', exact: true }).click();
+    const replacement = (await page.locator('#sel-journal-prompt').innerText()).slice(1, -1);
+    await region.getByRole('button', { name: 'Use this prompt for my draft', exact: true }).click();
+    expect(await region.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('Another fictional reflection.');
+    await region.getByRole('button', { name: 'Save Entry', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.journalEntries[1].prompt)).toBe(replacement);
+  }, 120000);
+
+  it('journal revisions preserve separate drafts, support cancel, and restore keyboard focus', async () => {
+    const original = { timestamp: 1000, prompt: 'A made-up situation', text: 'Original fictional reflection', extraField: 'preserved' };
+    const region = await openJournal({ journalEntries: [original], jText: 'Separate unfinished draft', jDraftPrompt: 'Draft prompt' });
+    const history = region.getByRole('button', { name: 'View saved journal entries (1)', exact: true });
+    await history.focus(); await page.keyboard.press('Enter');
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-history-title');
+    await region.getByRole('button', { name: 'Revise journal entry 1', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-edit-0-text');
+    await region.getByRole('textbox', { name: 'Revise entry 1', exact: true }).fill('Canceled revision');
+    await region.getByRole('button', { name: 'Cancel revision', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-edit-0');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.journalEntries[0])).toEqual(original);
+    await region.getByRole('button', { name: 'Revise journal entry 1', exact: true }).click();
+    await region.getByRole('textbox', { name: 'Revise entry 1', exact: true }).fill('   ');
+    expect(await region.getByRole('button', { name: 'Save revision', exact: true }).isDisabled()).toBe(true);
+    await region.getByRole('textbox', { name: 'Revise entry 1', exact: true }).fill('A revised fictional reflection');
+    await region.getByRole('button', { name: 'Back to journal writing', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-history-button');
+    expect(await region.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('Separate unfinished draft');
+    await history.click();
+    expect(await region.getByRole('textbox', { name: 'Revise entry 1', exact: true }).inputValue()).toBe('A revised fictional reflection');
+    await region.getByRole('button', { name: 'Save revision', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement.id === 'sel-journal-edit-0');
+    const saved = await page.evaluate(() => window.__alloflowSelToolData.journal);
+    expect(saved.journalEntries).toHaveLength(1);
+    expect(saved.journalEntries[0]).toMatchObject({ ...original, text: 'A revised fictional reflection' });
+    expect(saved.journalEntries[0].updatedAt).toBeGreaterThan(1000);
+    expect(saved.jText).toBe('Separate unfinished draft');
+    expect(saved.jDraftPrompt).toBe('Draft prompt');
+    expect(saved.earnedBadges).toEqual({ first_journal: true });
+    await openJournal(JSON.parse(JSON.stringify(saved)));
+    expect(await page.getByText('A revised fictional reflection', { exact: true }).count()).toBe(1);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('journal protects restored legacy drafts and does not overwrite a changed saved entry', async () => {
+    const region = await openJournal({ jText: 'Legacy draft without a stored prompt', journalEntries: [{ timestamp: 1000, prompt: 'Original prompt', text: 'Changed by another restore' }], jRevision: { index: 0, timestamp: 1000, originalText: 'Older text', text: 'Unsaved revision' } });
+    const prompt = (await page.locator('#sel-journal-prompt').innerText()).slice(1, -1);
+    await region.getByRole('button', { name: 'Next writing prompt', exact: true }).click();
+    await region.getByRole('button', { name: 'Next writing prompt', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.jDraftPrompt)).toBe(prompt);
+    await region.getByRole('button', { name: 'View saved journal entries (1)', exact: true }).click();
+    await region.getByRole('button', { name: 'Save revision', exact: true }).click();
+    expect(await region.getByRole('status').innerText()).toContain('This entry changed');
+    expect(await page.evaluate(() => window.__alloflowSelToolData.journal.journalEntries[0].text)).toBe('Changed by another restore');
+    expect(await region.getByRole('textbox', { name: 'Revise entry 1', exact: true }).inputValue()).toBe('Unsaved revision');
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('journal editing and reflection support fit a phone in %s', async theme => {
+    const region = await openJournal({ journalEntries: [{ timestamp: 1000, prompt: 'A fictional prompt', text: 'A learner asks for an example.' }] }, 320, theme);
+    await region.locator('details[aria-label="Help with reflection"] > summary').click();
+    expect(await region.innerText()).toContain('Made-up example:');
+    expect(await region.innerText()).toContain('You do not need to answer every question');
+    expect(await region.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('');
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    async function audit(stage) {
+      const result = await region.evaluate(async node => {
+        const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label'] } });
+        return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+      });
+      fs.writeFileSync(path.join(reports, (theme || 'light') + '-journal-' + stage + '-axe.json'), JSON.stringify(result, null, 2));
+      expect(result).toEqual([]);
+      expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+      const heights = await region.locator('button:visible, summary:visible').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
+      expect(heights.every(height => height >= 44)).toBe(true);
+      // The hub intentionally gives journal a dark shell in light/dark host themes.
+      const field = region.getByRole('textbox').first();
+      const expectedBackground = theme === 'theme-contrast' ? 'rgb(0, 0, 0)' : (stage === 'writing' ? 'rgb(15, 23, 42)' : 'rgb(30, 41, 59)');
+      expect(await field.evaluate(node => getComputedStyle(node).backgroundColor)).toBe(expectedBackground);
+      if (stage === 'writing') await region.locator('details[aria-label="Help with reflection"] > summary').click();
+      await field.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(reports, (theme || 'light') + '-journal-' + stage + '-phone.png') });
+    }
+    await audit('writing');
+    await region.getByRole('button', { name: 'View saved journal entries (1)', exact: true }).click();
+    await region.getByRole('button', { name: 'Revise journal entry 1', exact: true }).click();
+    await audit('revision');
+  }, 120000);
+
   it('keeps a real journal entry through save and reopening the activity', async () => {
     await mount();
     await page.locator('[data-sel-tool-card-id="journal"]').click();

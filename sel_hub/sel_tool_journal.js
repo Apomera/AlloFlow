@@ -676,6 +676,17 @@ window.SelHub = window.SelHub || {
         var jPromptIdx     = d.jPromptIdx || 0;
         var jText          = d.jText || '';
         var jViewingPast   = d.jViewingPast || false;
+        var jRevision      = d.jRevision || null;
+        var journalFocusRequest = React.useRef(null);
+        var journalFocus = function(id) { journalFocusRequest.current = id; };
+        // Wait for React to commit the destination before moving focus.
+        React.useEffect(function() {
+          var id = journalFocusRequest.current;
+          if (!id) return;
+          var node = document.getElementById(id);
+          if (node) { journalFocusRequest.current = null; node.focus(); }
+        });
+        var journalButton = { minHeight: 44, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _jouBd('#475569'), background: _jouBg('#1e293b'), color: _jouFg('#e2e8f0'), fontSize: 14, fontWeight: 600, cursor: 'pointer' };
 
         // Insights state
         var aiInsight      = d.aiInsight || '';
@@ -810,7 +821,7 @@ window.SelHub = window.SelHub || {
         var heroBand = (function() {
           var TAB_META = {
             checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 daily 1-minute pulse',                       hint: 'Mood + intensity + brief context. The act of LOGGING shifts behavior even before you analyze the data \u2014 self-monitoring (Latham 1981) is one of the most-replicated effects in behavior science.' },
-            journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 expressive writing as research',           hint: 'Pennebaker 1986: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism: turning chaos into narrative gives the brain handles.' },
+            journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 space for reflection',                    hint: 'A few words or a made-up example are enough. Use a prompt if it helps you understand a situation. You can skip a topic, change your approach, or stop whenever you choose.' },
             calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 streaks + heat map',                       hint: 'Visual streak ladders harness consistency-bias: missing one day stings; missing two stings less. Don\u2019t miss twice. Pattern visibility \u2014 when do you tend to skip? \u2014 is the diagnostic, not the goal.' },
             insights: { accent: _jouFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
             badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Self-determination theory (Deci + Ryan 1985): autonomy + competence + relatedness drive intrinsic motivation. Badges acknowledge competence without coercing \u2014 you set the streak, the system just notices.' }
@@ -1325,6 +1336,7 @@ window.SelHub = window.SelHub || {
         if (activeTab === 'journal') {
           var prompts = PROMPTS[band] || PROMPTS.elementary;
           var currentPrompt = prompts[jPromptIdx % prompts.length];
+          var draftPrompt = d.jDraftPrompt || currentPrompt;
 
           // ── Journal sub-mode selector ──
           var LETTER_TIME_OPTIONS = [
@@ -1334,37 +1346,37 @@ window.SelHub = window.SelHub || {
           ];
 
           var journalSubTabs = h('div', { style: { display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { 'aria-label': 'Free Write',
+            h('button', { 'aria-label': 'Free Write', 'aria-pressed': !letterMode && !letterViewingPast,
               onClick: function() { upd({ letterMode: null, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
-                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                minHeight: 44, padding: '6px 14px', borderRadius: 20, fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 border: !letterMode && !letterViewingPast ? '1px solid ' + ACCENT : '1px solid #334155',
                 background: !letterMode && !letterViewingPast ? ACCENT_DIM : _jouBg('#1e293b'),
-                color: !letterMode && !letterViewingPast ? ACCENT : _jouFg('#94a3b8')
+                color: _jouFg('#e2e8f0')
               }
             }, '\u270D\uFE0F Free Write'),
-            h('button', { 'aria-label': 'Letter to Future Self',
+            h('button', { 'aria-label': 'Letter to Future Self', 'aria-pressed': letterMode === 'future',
               onClick: function() { upd({ letterMode: 'future', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
-                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                minHeight: 44, padding: '6px 14px', borderRadius: 20, fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 border: letterMode === 'future' ? '1px solid #22c55e' : '1px solid #334155',
                 background: letterMode === 'future' ? '#22c55e22' : _jouBg('#1e293b'),
-                color: _jouFg(letterMode) === 'future' ? _jouFg('#22c55e') : _jouFg('#94a3b8')
+                color: _jouFg('#e2e8f0')
               }
             }, '\uD83D\uDD2E Letter to Future Self'),
-            h('button', { 'aria-label': 'Letter to Past Self',
+            h('button', { 'aria-label': 'Letter to Past Self', 'aria-pressed': letterMode === 'past',
               onClick: function() { upd({ letterMode: 'past', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
-                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                minHeight: 44, padding: '6px 14px', borderRadius: 20, fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 border: letterMode === 'past' ? '1px solid #f59e0b' : '1px solid #334155',
                 background: letterMode === 'past' ? '#f59e0b22' : _jouBg('#1e293b'),
-                color: _jouFg(letterMode) === 'past' ? _jouFg('#f59e0b') : _jouFg('#94a3b8')
+                color: _jouFg('#e2e8f0')
               }
             }, '\uD83D\uDC8C Letter to Past Self'),
             letterEntries.length > 0 && h('button', { 'aria-label': 'My Letters ( )',
               onClick: function() { upd({ letterViewingPast: true, letterMode: null, jViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
-                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                minHeight: 44, padding: '6px 14px', borderRadius: 20, fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 border: letterViewingPast ? '1px solid #8b5cf6' : '1px solid #334155',
                 background: letterViewingPast ? '#8b5cf622' : _jouBg('#1e293b'),
                 color: letterViewingPast ? _jouFg('#8b5cf6') : _jouFg('#94a3b8')
@@ -1421,7 +1433,7 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('letterText', e.target.value); },
                 placeholder: isFuture ? 'Dear future me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)' : 'Dear younger me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
                 rows: 10,
-                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
               h('button', { 'aria-label': '1month',
@@ -1496,13 +1508,15 @@ window.SelHub = window.SelHub || {
             );
           }
 
-          journalContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
+          journalContent = h('div', { role: 'region', 'aria-label': 'Journal writing and saved entries', style: { padding: 20, maxWidth: 520, margin: '0 auto', overflowWrap: 'anywhere' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? '\u270D\uFE0F Write About Your Feelings' : '\u270D\uFE0F Free-Write Journal'
             ),
 
             // Sub-tab navigation
             journalSubTabs,
+            h('p', { style: { color: _jouFg('#cbd5e1'), fontSize: 14, lineHeight: 1.6 } }, 'Write as much or as little as helps. You can use a made-up situation, reflect away from the screen, or pass. Sharing is optional.'),
+            h('p', { role: 'status', 'aria-live': 'polite', style: { color: _jouFg('#e2e8f0'), fontSize: 14, lineHeight: 1.5 } }, d.jNotice || ''),
 
             // Letter viewing mode
             letterViewingPast && letterEntries.length > 0 ? letterViewerContent :
@@ -1513,44 +1527,64 @@ window.SelHub = window.SelHub || {
             // Standard journal mode
             (!jViewingPast ? h('div', null,
 
+              h('details', { 'aria-label': 'Help with reflection', style: { marginBottom: 16, border: '1px solid ' + _jouBd('#475569'), borderRadius: 12, padding: 12, color: _jouFg('#e2e8f0'), fontSize: 14, lineHeight: 1.6 } },
+                h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Help with reflection'),
+                h('p', null, 'Try any one step. You do not need to answer every question or feel differently afterward.'),
+                h('ol', { style: { paddingLeft: 22 } },
+                  h('li', null, 'Notice: What happened? What feelings or needs might be present? It is okay to be unsure.'),
+                  h('li', null, 'Try: What could you or a fictional character try? What support or change to the situation might help?'),
+                  h('li', null, 'Reflect: What fit, and what would you change?'),
+                  h('li', null, 'Next time: Where could you try a small step again?')
+                ),
+                h('p', null, h('strong', null, 'Made-up example: '), band === 'elementary' ? 'A learner feels unsure about a new game. They ask to watch one turn. Watching helps them choose whether to join. Next time, they could ask for a practice turn.' : 'A learner is unsure where to start a group task. They ask for an example and a choice of roles. The example helps, but the room is still noisy. Next time, they could also ask for a quieter place to plan.'),
+                h('p', null, 'You can think, draw, speak, sign, or use AAC away from this form. Only text you enter and save here becomes a journal entry.')
+              ),
+
               // Prompt carousel
               h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
-                h('div', { style: { fontSize: 10, color: _jouFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Writing Prompt'),
-                h('p', { style: { fontSize: 14, color: _jouFg('#e2e8f0'), lineHeight: 1.5, marginBottom: 12, fontStyle: 'italic' } }, '\u201C' + currentPrompt + '\u201D'),
+                h('div', { style: { fontSize: 12, color: _jouFg('#e2e8f0'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Writing Prompt'),
+                h('p', { id: 'sel-journal-prompt', 'aria-live': 'polite', style: { fontSize: 14, color: _jouFg('#e2e8f0'), lineHeight: 1.5, marginBottom: 12, fontStyle: 'italic' } }, '\u201C' + currentPrompt + '\u201D'),
                 h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
-                  h('button', { 'aria-label': 'Prev',
-                    onClick: function() { upd('jPromptIdx', (jPromptIdx - 1 + prompts.length) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
+                  h('button', { 'aria-label': 'Previous writing prompt',
+                    onClick: function() { upd({ jPromptIdx: (jPromptIdx - 1 + prompts.length) % prompts.length, jDraftPrompt: jText.trim() ? draftPrompt : '' }); if (soundEnabled) sfxClick(); },
+                    style: journalButton
                   }, '\u2190 Prev'),
-                  h('button', { 'aria-label': 'Next',
-                    onClick: function() { upd('jPromptIdx', (jPromptIdx + 1) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
+                  h('button', { 'aria-label': 'Next writing prompt',
+                    onClick: function() { upd({ jPromptIdx: (jPromptIdx + 1) % prompts.length, jDraftPrompt: jText.trim() ? draftPrompt : '' }); if (soundEnabled) sfxClick(); },
+                    style: journalButton
                   }, 'Next \u2192')
+                ),
+                jText.trim() && draftPrompt !== currentPrompt && h('div', null,
+                  h('p', { style: { fontSize: 14, color: _jouFg('#e2e8f0') } }, 'Your draft is still linked to: ' + draftPrompt),
+                  h('button', { style: journalButton, onClick: function() { upd({ jDraftPrompt: currentPrompt, jNotice: 'The draft now uses the displayed prompt. Your writing is unchanged.' }); } }, 'Use this prompt for my draft')
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function() { speak(currentPrompt); },
-                  style: { marginTop: 8, background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 10, cursor: 'pointer' }
+                  style: Object.assign({}, journalButton, { marginTop: 8 })
                 }, '\uD83D\uDD0A Read aloud')
               ),
 
               // Text area
+              h('label', { htmlFor: 'sel-journal-entry', style: { display: 'block', color: _jouFg('#e2e8f0'), fontSize: 14, fontWeight: 700, marginBottom: 8 } }, 'Journal entry'),
+              h('p', { id: 'sel-journal-entry-help', style: { fontSize: 14, color: _jouFg('#cbd5e1'), lineHeight: 1.5 } }, 'Save Entry adds your writing to this activity. Use the Hub save/export controls to keep a project copy. Avoid identifying details about yourself or others.'),
               h('textarea', {
+                id: 'sel-journal-entry', 'aria-describedby': 'sel-journal-entry-help',
                 value: jText,
                 'aria-label': 'Journal entry',
-                onChange: function(e) { upd('jText', e.target.value); },
+                onChange: function(e) { upd({ jText: e.target.value, jDraftPrompt: jText.trim() ? draftPrompt : currentPrompt, jNotice: '' }); },
                 placeholder: band === 'elementary' ? 'Start writing here... You can use the prompt above or write about anything! Don\'t share personal info (like your full name).' : 'Write freely. Use the prompt above as a starting point, or write about whatever is on your mind... Don\'t share personal info (names, school, etc.).',
                 rows: 8,
-                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
-              h('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
                 h('button', { 'aria-label': 'Save Entry',
                   onClick: function() {
                     if (!jText.trim()) { addToast('Write something first!', 'warning'); return; }
-                    var entry = { timestamp: Date.now(), prompt: currentPrompt, text: jText };
+                    var entry = { timestamp: Date.now(), prompt: draftPrompt, text: jText };
                     var newEntries = journalEntries.concat([entry]);
                     var totalJournalCount = newEntries.length + letterEntries.length;
-                    upd({ journalEntries: newEntries, jText: '', jPromptIdx: (jPromptIdx + 1) % prompts.length });
+                    upd({ journalEntries: newEntries, jText: '', jDraftPrompt: '', jNotice: 'Entry added to this activity. You can review or revise it in Saved entries.', jPromptIdx: (jPromptIdx + 1) % prompts.length });
                     if (soundEnabled) sfxSave();
                     awardXP(15);
                     addToast('Journal entry saved!', 'success');
@@ -1562,13 +1596,13 @@ window.SelHub = window.SelHub || {
                   disabled: !jText.trim(),
                   style: {
                     flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none',
-                    background: jText.trim() ? ACCENT : '#334155', color: _jouFg('#fff'), fontWeight: 700,
+                    minHeight: 44, background: _jouHC ? '#ffff00' : '#9d174d', color: _jouHC ? '#000000' : '#ffffff', fontWeight: 700,
                     fontSize: 13, cursor: jText.trim() ? 'pointer' : 'not-allowed'
                   }
                 }, '\uD83D\uDCBE Save Entry'),
                 journalEntries.length > 0 && h('button', { 'aria-label': 'View saved journal entries (' + journalEntries.length + ')',
-                  onClick: function() { upd('jViewingPast', true); if (soundEnabled) sfxClick(); },
-                  style: { minHeight: 44, padding: '12px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: 'transparent', color: _jouFg(ACCENT), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  id: 'sel-journal-history-button', onClick: function() { upd('jViewingPast', true); journalFocus('sel-journal-history-title'); if (soundEnabled) sfxClick(); },
+                  style: { minHeight: 44, padding: '12px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#1e293b'), color: _jouFg('#e2e8f0'), fontWeight: 600, fontSize: 14, cursor: 'pointer' }
                 }, '\uD83D\uDCC3 Saved entries (' + journalEntries.length + ')')
               )
             ) :
@@ -1577,19 +1611,43 @@ window.SelHub = window.SelHub || {
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', marginBottom: 16 } },
                 h('button', { 'aria-label': 'Back to journal writing',
-                  onClick: function() { upd('jViewingPast', false); if (soundEnabled) sfxClick(); },
-                  style: { minHeight: 44, minWidth: 44, background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 14, cursor: 'pointer', marginRight: 8 }
+                  onClick: function() { upd('jViewingPast', false); journalFocus('sel-journal-history-button'); if (soundEnabled) sfxClick(); },
+                  style: { minHeight: 44, minWidth: 44, background: 'none', border: 'none', color: _jouFg('#e2e8f0'), fontSize: 14, cursor: 'pointer', marginRight: 8 }
                 }, '\u2190'),
-                h('h3', { style: { color: _jouFg('#f1f5f9'), fontSize: 16, margin: 0 } }, 'Past Journal Entries (' + journalEntries.length + ')')
+                h('h3', { id: 'sel-journal-history-title', tabIndex: -1, style: { color: _jouFg('#f1f5f9'), fontSize: 16, margin: 0 } }, 'Saved Journal Entries (' + journalEntries.length + ')')
               ),
               journalEntries.slice().reverse().map(function(entry, i) {
-                return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 10 } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                    h('span', { style: { fontSize: 10, color: _jouFg(ACCENT), fontWeight: 600 } }, new Date(entry.timestamp).toLocaleDateString()),
-                    h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, new Date(entry.timestamp).toLocaleTimeString())
-                  ),
-                  h('p', { style: { fontSize: 11, color: _jouFg('#94a3b8'), fontStyle: 'italic', marginBottom: 6 } }, 'Prompt: \u201C' + entry.prompt + '\u201D'),
-                  h('p', { style: { fontSize: 13, color: _jouFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
+                var index = journalEntries.length - 1 - i;
+                var editing = jRevision && jRevision.index === index;
+                var editId = 'sel-journal-edit-' + index;
+                return h('article', { key: index, 'aria-label': 'Journal entry ' + (index + 1), style: { padding: 14, borderRadius: 12, background: _jouBg('#0f172a'), border: '1px solid ' + _jouBd('#475569'), marginBottom: 12 } },
+                  h('p', { style: { fontSize: 14, color: _jouFg('#cbd5e1'), marginTop: 0 } }, new Date(entry.timestamp).toLocaleString()),
+                  h('p', { style: { fontSize: 14, color: _jouFg('#cbd5e1'), lineHeight: 1.5 } }, 'Prompt: ' + entry.prompt),
+                  entry.updatedAt && h('p', { style: { fontSize: 12, color: _jouFg('#cbd5e1') } }, 'Revised ' + new Date(entry.updatedAt).toLocaleString()),
+                  editing ? h('div', null,
+                    h('label', { htmlFor: editId + '-text', style: { color: _jouFg('#e2e8f0'), fontSize: 14, fontWeight: 700 } }, 'Revise entry ' + (index + 1)),
+                    h('textarea', { id: editId + '-text', value: jRevision.text, rows: 6, onChange: function(e) { upd('jRevision', Object.assign({}, jRevision, { text: e.target.value })); }, style: { display: 'block', width: '100%', margin: '8px 0', padding: 12, fontFamily: 'inherit', fontSize: 16, lineHeight: 1.6, borderRadius: 10, border: '1px solid ' + _jouBd('#475569'), background: _jouBg('#1e293b'), color: _jouFg('#e2e8f0'), resize: 'vertical' } }),
+                    h('p', { style: { fontSize: 14, color: _jouFg('#cbd5e1') } }, 'Your saved entry stays unchanged until you save this revision. Revisions do not earn extra points.'),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                      h('button', { style: journalButton, disabled: !jRevision.text.trim(), onClick: function() {
+                        if (!jRevision.text.trim()) return;
+                        if (entry.timestamp !== jRevision.timestamp || entry.text !== jRevision.originalText) {
+                          upd('jNotice', 'This entry changed while you were revising. Copy your revision before canceling and reopening the entry.'); return;
+                        }
+                        var revised = journalEntries.slice();
+                        revised[index] = Object.assign({}, entry, { text: jRevision.text, updatedAt: Date.now() });
+                        upd({ journalEntries: revised, jRevision: null, jNotice: 'Revision saved in this activity. Use the Hub save/export controls to update your project copy.' });
+                        journalFocus(editId);
+                      } }, 'Save revision'),
+                      h('button', { style: journalButton, onClick: function() { upd({ jRevision: null, jNotice: 'Revision canceled. The saved entry is unchanged.' }); journalFocus(editId); } }, 'Cancel revision')
+                    )
+                  ) : h('div', null,
+                    h('p', { style: { fontSize: 16, color: _jouFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text),
+                    h('button', { id: editId, style: journalButton, disabled: !!jRevision, 'aria-label': 'Revise journal entry ' + (index + 1), onClick: function() {
+                      upd({ jRevision: { index: index, timestamp: entry.timestamp, originalText: entry.text, text: entry.text }, jNotice: '' });
+                      journalFocus(editId + '-text');
+                    } }, 'Revise entry')
+                  )
                 );
               })
             ))

@@ -68,8 +68,12 @@
     }, 50);
   }
   function alloFocusToolStart() {
+    var origin = document.activeElement;
     setTimeout(function() {
       try {
+        // Do not steal focus if the learner already moved into the new view.
+        var active = document.activeElement;
+        if (active && active !== origin && active !== document.body && active.isConnected) return;
         var target = document.querySelector('[aria-label="Back to SEL tools"]')
           || document.querySelector('[aria-label="Back to tools"]')
           || document.querySelector('[aria-label="Back to Tools"]');

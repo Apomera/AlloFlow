@@ -1,0 +1,39 @@
+{
+  "pass": "fifth - journal reflections",
+  "regressions": {
+    "passed": 441,
+    "skipped": 2,
+    "log": "reports/sel-hub-journal-regression.log",
+    "timing": "Before final focus refinement; final focus behavior separately verified."
+  },
+  "final_verification": {
+    "browser_workflows_passed": 7,
+    "deterministic_focus_tests_passed": 3,
+    "log": "reports/sel-hub-journal-verified.log"
+  },
+  "initial_render_tools_passed": 72,
+  "render_log": "reports/sel-hub-journal-render.log",
+  "audits": {
+    "light-journal-revision-axe.json": [],
+    "light-journal-writing-axe.json": [],
+    "theme-contrast-journal-revision-axe.json": [],
+    "theme-contrast-journal-writing-axe.json": [],
+    "theme-dark-journal-revision-axe.json": [],
+    "theme-dark-journal-writing-axe.json": []
+  },
+  "sha256": {
+    "sel_hub_module.js": "41456f9a2cf49c88dc6a213a2f8db6e2342b02ee9ca338d403b07d9e3aff5482",
+    "sel_tool_journal.js": "d88cacb448642e2ae7785f36f2377675f78dc712c00c2d197a54555efc218d3b"
+  },
+  "mirror_parity": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "visual_review": [
+    "light-journal-writing-phone.png",
+    "theme-contrast-journal-revision-phone.png"
+  ],
+  "theme_note": "Journal uses its established dark shell in light and dark host themes, and a black/yellow palette in high contrast. Computed field backgrounds are asserted.",
+  "limits": "Local isolated browser harness with simulated host callbacks; packaged app, live classroom, AI responses, and full journal analytics not evaluated.",
+  "deployed": false,
+  "content_note": "Removed the old journal tab claim of guaranteed health gains and a brain mechanism; replaced with optional brief or fictional reflection guidance."
+}
