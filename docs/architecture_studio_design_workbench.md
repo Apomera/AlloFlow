@@ -2,6 +2,18 @@
 
 Open **Design workbench** from the workspace bar, or choose **Design a room** in an empty 3D view.
 
+## Choose shapes, materials, and colors
+
+The shape palette uses labeled schematic diagrams with a check mark on the current choice. Material cards use named, patterned swatches and show teaching credits when Budget is enabled. Choosing a material selects its default color. Mode and rotation buttons have 44px targets; shape cards are larger.
+
+**Current color** shows the active color as both a swatch and a hexadecimal value. Twelve quick choices are always available. **More colors** expands the same palette to all 26 swatches and reveals the native **Custom color** picker, **Use material color**, and **Paint with this color**. **Fewer colors** collapses those extra choices while keeping the current color.
+
+The picker follows material changes and colors copied with Pick; an older secondary color saved by the previous interface no longer overrides it. **Use material color** resets only the active color. **Paint with this color** selects Paint mode using the current material and color. Choosing palette settings never changes existing blocks or adds undo steps; a subsequent place or paint action edits the model.
+
+The **Colors** toolbar action, also available in **All tools**, reveals the sidebar and focuses the inline custom-color controls. The disclosure works with a keyboard and retains focus when toggled. During replay, palette choices remain available for preparation, while the Paint shortcut is disabled and explains that painting requires returning to the live build.
+
+Phone palettes scroll without a sticky mode card covering their controls. Color choices and the native picker have at least 44px targets. The earthquake intensity slider also has a 44px hit area.
+
 ## Build a structure
 
 Choose Room shell, Straight wall, or Floor slab. Set width, depth, wall height, and lower-corner coordinates. Room shells include a solid base with optional wood doors, glass windows, and a slab ceiling. Wall height counts layers above the base; a ceiling adds one layer. Dimensions and areas use grid units; costs use the studio's existing teaching credits.
@@ -152,6 +164,8 @@ The source and desktop public copy stay identical. New labels and feedback are r
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
 Results: all 16 Architecture Studio unit suites passed across targeted runs and final rechecks (451 tests), including 27 workspace checks. Sixteen distinct Chromium workflows passed: view/camera separation, expanded/collapsed sidebar state and focus, renderer identity, mode-specific summaries, keyboard floor editing and undo, replay guidance, automatic panel reveal from navigation and All tools, phone targets and layout, shorter desktop sizing, long populated review panels in normal/filtered views, and existing design, project, workspace, template, materials-schedule, tool-browser, and WebGL regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations with tools expanded and collapsed across light, dark, and high-contrast appearances. Desktop, final 320px phone, and populated long-advice screenshots were visually reviewed. Final review identified and corrected the long-advice overlap above camera controls. Browser validation disabled video and trace recording; unit runs used the existing longer local execution allowance.
+
+Palette refinement (September 9): all 468 unit checks across 17 Architecture Studio suites passed. Ten distinct local Chromium workflows passed across the main run and final rechecks, including color synchronization, place/paint/pick/undo, replay, sidebar focus, selected-object editing, workspace preservation, phone targets, and pointer reachability. Axe found no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the expanded palette across light, dark, and high-contrast themes; workspace expanded/collapsed states also passed. Forced-color keyboard selection and reduced-motion mode were exercised. Desktop material controls and final 320px phone shape/color screenshots were visually reviewed. The screenshots revealed and resolved the phone sticky-mode overlap; accessibility validation also led to a larger earthquake slider hit area. Unit worker startup and one timing failure on the busy local machine were resolved by the complete single-thread rerun with a longer execution allowance.
 
 No deployment or push was performed.
 

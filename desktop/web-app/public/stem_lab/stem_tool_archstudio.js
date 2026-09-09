@@ -2234,6 +2234,18 @@ function __alloAST(k, fb) {
   try { window.__alloArchToolbox = { catalog: getArchToolboxEntries, filter: filterArchToolbox }; } catch (e) {}
 
 
+  var ARCH_PALETTE_LABELS = {
+  "current_color": "Current color",
+  "more": "More colors",
+  "less": "Fewer colors",
+  "options": "Custom color options",
+  "reset": "Use material color",
+  "paint": "Paint with this color",
+  "help": "Choose a color for new blocks or painting. Existing blocks change when you edit them.",
+  "replay": "You can prepare a palette during replay. Return to the live build to paint.",
+  "cost": "{cost} credits"
+};
+
   var ARCH_WORKSPACE_LABELS = {
   "paint_help": "Paint material and color.",
   "erase_help": "Remove the block you choose.",
@@ -2309,7 +2321,7 @@ function __alloAST(k, fb) {
     var currentBuildSignature = getArchBuildSignature(blocks);
     var activeShape = d.activeShape || 'block';
     var activeMaterial = d.activeMaterial || 'stone';
-    var activeColor = d.activeColor || '#94a3b8';
+    var activeColor = normalizeArchColor(d.activeColor, activeMaterial);
     var mode = d.mode === 'erase' || d.mode === 'paint' || d.mode === 'pick' ? d.mode : 'place';
     var styleMode = d.styleMode || 'architect';
     var blueprintView = d.blueprintView || false;
@@ -3785,11 +3797,12 @@ function __alloAST(k, fb) {
     // ── Custom Color Palette ──
     // ══════════════════════════════════════════════════════════════
     var showColorPicker = d.showColorPicker || false;
-    var customColor = d.customColor || activeColor;
+    // Follow material changes and picked colors, rather than a stale second palette.
+    var customColor = activeColor;
     var colorSwatches = [
       '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
       '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
-      '#d946ef', '#ec4899', '#f43f5e', '#78716c', '#94a3b8', '#f1f5f9',
+      '#d946ef', '#ec4899', '#f43f5e', '#78716c', '#94a3b8', '#f1f5f9', '#f8fafc', '#64748b',
       '#1e293b', '#0f172a', '#fbbf24', '#fb923c', '#4ade80', '#38bdf8'
     ];
 
@@ -4391,6 +4404,47 @@ function __alloAST(k, fb) {
             }))));
     };
 
+
+
+    function paletteText(key, values) {
+      var text = t('stem.archstudio.palette_' + key, ARCH_PALETTE_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function choosePaletteColor(color) {
+      var normalized = normalizeArchColor(color, activeMaterial);
+      upd({ activeColor: normalized, customColor: normalized });
+    }
+    function togglePaletteColors(fromToolbar) {
+      var next = !showColorPicker;
+      upd('showColorPicker', next);
+      if (next && fromToolbar) setTimeout(function () {
+        var panel = document.getElementById('arch-color-options');
+        if (panel) { panel.focus(); panel.scrollIntoView({ block: 'nearest' }); }
+      }, 0);
+    }
+    function paletteMark(selected) {
+      return el('span', { className: 'arch-palette-check', 'aria-hidden': 'true', style: { visibility: selected ? 'visible' : 'hidden' } }, '\u2713');
+    }
+    // Schematic glyphs stay legible without emoji fonts or extra WebGL contexts.
+    function paletteShapeIcon(shape) {
+      var paths = {
+        block: 'M8 12 24 5 40 12 40 30 24 38 8 30Z M8 12 24 20 40 12 M24 20V38',
+        slab: 'M7 23 24 15 41 23 41 29 24 37 7 29Z M7 23 24 31 41 23 M24 31V37',
+        ramp: 'M8 30 28 8 40 14 40 31 20 38Z M8 30 20 38 40 14',
+        column: 'M17 10C17 5 31 5 31 10V33C31 38 17 38 17 33Z M17 10C17 15 31 15 31 10',
+        arch: 'M7 32C7 5 41 5 41 32L33 32C33 16 15 16 15 32Z',
+        roof: 'M6 31 19 12 31 5 43 24 30 32Z M19 12 30 32 M6 31 30 32',
+        pyramid: 'M7 30 24 6 41 30 24 38Z M24 6V38 M7 30 24 38 41 30',
+        dome: 'M7 29C7 3 41 3 41 29C38 37 10 37 7 29Z M7 29C12 23 36 23 41 29',
+        cylinder: 'M10 12C10 3 38 3 38 12V31C38 40 10 40 10 31Z M10 12C10 21 38 21 38 12',
+        lbeam: 'M8 22 20 22 20 8 33 8 40 13 40 34 15 37 8 32Z M8 22 15 27 27 27 27 13 40 13 M15 27V37 M27 13 20 8',
+        window: 'M11 10 32 6 37 10 37 34 16 38 11 34Z M11 10 16 14 37 10 M16 14V38',
+        door: 'M10 10 31 6 38 12 38 34 17 38 10 32Z M10 10 17 16 38 12 M17 16V38'
+      };
+      return el('svg', { className: 'arch-shape-icon', viewBox: '0 0 48 44', 'aria-hidden': 'true', focusable: 'false' },
+        el('path', { d: paths[shape] || paths.block, fill: 'currentColor', fillOpacity: .12, stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round', strokeLinecap: 'round' }));
+    }
 
     function workspaceText(key, values) {
       var text = t('stem.archstudio.workspace_' + key, ARCH_WORKSPACE_LABELS[key]);
@@ -5481,6 +5535,43 @@ function __alloAST(k, fb) {
         + '#arch-studio-region button:disabled{opacity:.66;}'
         + '#arch-studio-region .arch-studio-pill{white-space:nowrap;flex:0 0 auto;}'
         + '#arch-studio-region .arch-studio-title-row,#arch-studio-region .arch-studio-feature-strip,#arch-studio-region .arch-studio-stats{scrollbar-width:thin;scrollbar-color:#475569 transparent;}'
+        + '#arch-studio-region .arch-shape-choice{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:76px!important;padding:7px 3px!important;color:#cbd5e1!important;border-color:#61758e!important;background:#142338!important;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-shape-icon{width:40px;height:36px;display:block;color:#c6d7eb;}'
+        + '#arch-studio-region .arch-shape-choice[aria-pressed=true],#arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#7dd3fc!important;background:#203f59!important;color:#f8fafc!important;}'
+        + '#arch-studio-region .arch-shape-choice[aria-pressed=true] .arch-shape-icon{color:#a5e3ff;}'
+        + '#arch-studio-region .arch-palette-check{display:grid;place-items:center;width:17px;height:17px;box-sizing:border-box;border-radius:50%;background:#071421;color:#fff;border:1px solid #fff;font-size:12px;font-weight:850;flex:none;}'
+        + '#arch-studio-region .arch-shape-choice>.arch-palette-check{position:absolute;right:3px;top:3px;}'
+        + '#arch-studio-region .arch-palette-label{font-size:11px;line-height:1.3;min-width:0;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-material-choice{position:relative;min-height:56px!important;gap:7px!important;padding:8px 5px!important;border-color:#61758e!important;color:#cbd5e1!important;background:#142338!important;}'
+        + '#arch-studio-region .arch-material-choice .arch-palette-check{position:absolute;top:3px;right:3px;width:13px;height:13px;font-size:10px;}'
+        + '#arch-studio-region .arch-material-choice small{display:block;margin-top:3px;font-size:10px;color:#cbd5e1;line-height:1.3;}'
+        + '#arch-studio-region .arch-material-swatch{width:25px;height:28px;flex:none;border:1px solid #cbd5e1;border-radius:5px;box-shadow:inset 0 0 0 2px #0002;}'
+        + '#arch-studio-region .arch-material-stone{background-image:radial-gradient(#33415599 1px,transparent 1.5px);background-size:6px 7px;}'
+        + '#arch-studio-region .arch-material-brick{background-image:linear-gradient(#ffd7ad88 1px,transparent 1px),linear-gradient(90deg,#ffd7ad88 1px,transparent 1px);background-size:100% 7px,11px 100%;}'
+        + '#arch-studio-region .arch-material-wood{background-image:repeating-linear-gradient(100deg,transparent 0 5px,#fde68a66 6px,transparent 7px);}'
+        + '#arch-studio-region .arch-material-glass{background-image:linear-gradient(130deg,transparent 30%,#ffffffbb 31% 38%,transparent 39% 54%,#ffffff66 55% 60%,transparent 61%);}'
+        + '#arch-studio-region .arch-material-marble{background-image:repeating-linear-gradient(35deg,transparent 0 9px,#47556988 10px,transparent 12px);}'
+        + '#arch-studio-region .arch-material-metal{background-image:linear-gradient(105deg,#47556966,transparent 40%,#fff9 50%,transparent 70%,#47556966);}'
+        + '#arch-studio-region .arch-palette-heading{font-size:11px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:#cbd5e1;margin-bottom:7px;}'
+        + '#arch-studio-region .arch-color-current{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:9px;}'
+        + '#arch-studio-region .arch-color-current strong{font:700 12px ui-monospace,monospace;color:#f8fafc;}'
+        + '#arch-studio-region .arch-color-current-swatch{width:24px;height:24px;border:1px solid #cbd5e1;border-radius:6px;flex:none;}'
+        + '#arch-studio-region .arch-color-card button{min-height:44px;box-sizing:border-box;}'
+        + '#arch-studio-region #arch-color-toggle{flex:1;min-width:100%;background:#20344b;color:#e2e8f0;border:1px solid #7189a1;border-radius:7px;padding:7px;font-size:12px;font-weight:700;}'
+        + '#arch-studio-region .arch-color-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:6px;}'
+        + '#arch-studio-region .arch-color-choice{display:grid;place-items:center;border:2px solid #8295a8;border-radius:8px;padding:5px;min-width:44px;}'
+        + '#arch-studio-region .arch-color-choice[aria-pressed=true]{border-color:#fff;box-shadow:inset 0 0 0 2px #071421;}'
+        + '#arch-studio-region .arch-color-options{display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #64748b;}'
+        + '#arch-studio-region .arch-color-options[hidden]{display:none!important;}'
+        + '#arch-studio-region .arch-color-options p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:0;}'
+        + '#arch-studio-region .arch-color-native{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#e2e8f0;font-size:12px;}'
+        + '#arch-studio-region .arch-color-native input{width:52px;height:44px;flex:none;box-sizing:border-box;background:#142338;border:1px solid #8295a8;border-radius:6px;padding:3px;cursor:pointer;}'
+        + '#arch-studio-region .arch-color-options button{padding:8px;border:1px solid #8295a8;background:#20344b;color:#f1f5f9;border-radius:7px;font-size:12px;font-weight:700;}'
+        + '#arch-studio-region .arch-color-options .arch-color-paint{background:#075985;border-color:#7dd3fc;}'
+        + '#arch-studio-region .arch-color-options:focus{outline:2px solid #7dd3fc;outline-offset:2px;}'
+        + '@media(forced-colors:active){#arch-studio-region .arch-material-swatch,#arch-studio-region .arch-color-current-swatch,#arch-studio-region .arch-color-choice{forced-color-adjust:none;}#arch-studio-region .arch-palette-check{forced-color-adjust:none;}#arch-studio-region .arch-color-choice:focus-visible{outline-color:Highlight;}}'
+        + '.theme-contrast #arch-studio-region .arch-shape-choice,.theme-contrast #arch-studio-region .arch-material-choice{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
+        + '.theme-contrast #arch-studio-region .arch-shape-icon{color:#ffff00!important;}.theme-contrast #arch-studio-region .arch-shape-choice[aria-pressed=true],.theme-contrast #arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#00ff00!important;background:#142314!important;}'
         + '#arch-studio-region .arch-studio-sidebar{scrollbar-width:thin;scrollbar-color:#475569 transparent;}'
         + '#arch-studio-region .arch-studio-sidebar>div{padding:9px;border:1px solid rgba(71,85,105,.55);border-radius:11px;background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.48));box-shadow:0 8px 18px rgba(2,6,23,.13);}'
         + '#arch-studio-region .arch-studio-sidebar>div:hover{border-color:rgba(100,116,139,.8);}'
@@ -5513,7 +5604,7 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-studio-title-row>*{flex:0 0 auto;}'
         + '#arch-studio-region .arch-studio-main{flex-direction:column;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;}'
         + '#arch-studio-region .arch-studio-sidebar{width:auto!important;max-height:240px;flex:none;border-right:0!important;border-bottom:1px solid #334155;}'
-        + '#arch-studio-region .arch-studio-mode-card{position:sticky;top:0;z-index:4;}'
+        + '#arch-studio-region .arch-studio-mode-card{position:static;}'
         + '#arch-studio-region .arch-studio-viewport{min-height:420px;flex:none!important;overflow:visible;}'
         + '#arch-studio-region .arch-studio-stage{min-height:360px;flex:none!important;}'
         + '#arch-studio-region .arch-studio-help-overlay{display:none!important;}'
@@ -5655,7 +5746,7 @@ function __alloAST(k, fb) {
           { id: 'phases', node: pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }) },
           { id: 'share', node: pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }) },
           { id: 'generate', node: pillBtn('\uD83C\uDFB2 Generate', showRandomGen, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showRandomGen', !showRandomGen); }) },
-          { id: 'colors', node: pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { upd('showColorPicker', !showColorPicker); }) },
+          { id: 'colors', node: pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { togglePaletteColors(true); }) },
           { id: 'slice', node: pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }) },
           { id: 'heatmap', node: pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }) },
           { id: 'replay', node: pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }) },
@@ -5693,7 +5784,7 @@ function __alloAST(k, fb) {
                 var modeActive = mode === m.id;
                 var modeTone = modeVisuals[m.id] || modeVisuals.place;
                 return el('button', { key: m.id, type: 'button', 'aria-label': m.label + ' mode', 'aria-pressed': modeActive, title: m.label + ' mode' + (m.id === 'pick' ? ' (I)' : ''), onClick: function () { ArchGL.clearPreview(); upd('mode', m.id); }, style: {
-                  minHeight: 34, padding: '6px 4px', fontSize: 11, fontWeight: 700,
+                  minHeight: 44, padding: '8px 4px', fontSize: 12, fontWeight: 700,
                   border: '2px solid ' + (modeActive ? modeTone.border : '#475569'),
                   borderRadius: 8, background: modeActive ? modeTone.bg : 'rgba(30,41,59,.8)',
                   color: modeActive ? modeTone.color : '#94a3b8', cursor: 'pointer', textAlign: 'center',
@@ -5751,16 +5842,16 @@ function __alloAST(k, fb) {
           ),
 
           // Shape palette
-          el('div', null,
+          el('div', { className: 'arch-palette-section' },
             el('div', { id: 'arch-shapes-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
             el('div', { role: 'group', 'aria-labelledby': 'arch-shapes-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 4 } },
               shapes.map(function (s) {
-                return el('button', { key: s.id, type: 'button', 'aria-label': s.label + ' shape', 'aria-pressed': activeShape === s.id, onClick: function () { upd('activeShape', s.id); }, style: {
+                return el('button', { key: s.id, type: 'button', className: 'arch-shape-choice', 'aria-label': s.label + ' shape', 'aria-pressed': activeShape === s.id, onClick: function () { upd('activeShape', s.id); }, style: {
                   minHeight: 46, padding: '6px 3px', fontSize: 11, fontWeight: 650,
                   border: '2px solid ' + (activeShape === s.id ? '#60a5fa' : '#334155'),
                   borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent',
                   color: activeShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
-                } }, el('div', { style: { fontSize: 18 } }, s.icon), s.label);
+                } }, paletteShapeIcon(s.id), el('span', { className: 'arch-palette-label' }, s.label), paletteMark(activeShape === s.id));
               })
             )
           ),
@@ -5771,7 +5862,7 @@ function __alloAST(k, fb) {
             el('div', { role: 'group', 'aria-labelledby': 'arch-rotation-heading', style: { display: 'flex', gap: 3 } },
               rotations.map(function (r) {
                 return el('button', { key: r.deg, type: 'button', 'aria-label': 'Use ' + r.label + ' rotation', 'aria-pressed': activeRotation === r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
-                  flex: 1, padding: '4px 2px', fontSize: 10, fontWeight: 600,
+                  flex: 1, minHeight: 44, padding: '6px 2px', fontSize: 11, fontWeight: 650,
                   border: '2px solid ' + (activeRotation === r.deg ? '#f59e0b' : '#334155'),
                   borderRadius: 6, background: activeRotation === r.deg ? 'rgba(245,158,11,.12)' : 'transparent',
                   color: activeRotation === r.deg ? '#fbbf24' : '#94a3b8', cursor: 'pointer', textAlign: 'center'
@@ -5781,36 +5872,45 @@ function __alloAST(k, fb) {
           ),
 
           // Material palette
-          el('div', null,
+          el('div', { className: 'arch-palette-section' },
             el('div', { id: 'arch-materials-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
             el('div', { role: 'group', 'aria-labelledby': 'arch-materials-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 4 } },
               materials.map(function (m) {
-                return el('button', { key: m.id, type: 'button', 'aria-label': 'Use ' + m.label + ' material', 'aria-pressed': activeMaterial === m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
+                return el('button', { key: m.id, type: 'button', className: 'arch-material-choice', 'aria-label': 'Use ' + m.label + ' material', 'aria-pressed': activeMaterial === m.id, onClick: function () { var color = normalizeArchColor(m.color, m.id); upd({ activeMaterial: m.id, activeColor: color, customColor: color }); }, style: {
                   minHeight: 40, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 5px', fontSize: 10, fontWeight: 650,
                   border: '2px solid ' + (activeMaterial === m.id ? m.color : '#334155'),
                   borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
                   color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
                 } },
-                  el('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.2)' } }),
-                  m.icon + ' ' + m.label,
-                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + m.cost)
+                  el('span', { className: 'arch-material-swatch arch-material-' + m.id, 'aria-hidden': 'true', style: { backgroundColor: normalizeArchColor(m.color, m.id) } }),
+                  el('span', { className: 'arch-palette-label' }, m.label, budgetEnabled && el('small', null, paletteText('cost', { cost: m.cost }))),
+                  paletteMark(activeMaterial === m.id)
                 );
               })
             )
           ),
 
-          // Custom Color Palette
-          el('div', null,
-            el('div', { id: 'arch-colors-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
-            el('div', { role: 'group', 'aria-labelledby': 'arch-colors-heading', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
-              ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
-                return el('button', { key: c, type: 'button', onClick: function () { upd('activeColor', c); }, title: c, 'aria-label': 'Use custom color ' + c, 'aria-pressed': activeColor === c, style: {
-                  width: 28, height: 28, borderRadius: 6, background: c, cursor: 'pointer',
-                  border: '2px solid ' + (activeColor === c ? '#fff' : 'rgba(255,255,255,.2)'),
-                  boxShadow: activeColor === c ? '0 0 0 2px #0f172a,0 0 9px ' + c + '88' : 'none',
-                  transition: 'box-shadow 0.15s ease,border-color 0.15s ease'
-                } });
+          // Custom Color Palette: one active color across compact and expanded controls.
+          el('div', { className: 'arch-palette-section arch-color-card' },
+            el('div', { id: 'arch-colors-heading', className: 'arch-palette-heading' }, paletteText('current_color')),
+            el('div', { className: 'arch-color-current' },
+              el('span', { className: 'arch-color-current-swatch', 'aria-hidden': 'true', style: { backgroundColor: activeColor } }),
+              el('strong', { 'data-arch-palette-color': 'true' }, activeColor.toUpperCase()),
+              el('button', { id: 'arch-color-toggle', type: 'button', 'aria-expanded': !!showColorPicker, 'aria-controls': 'arch-color-options', onClick: function () { togglePaletteColors(false); } }, paletteText(showColorPicker ? 'less' : 'more'))
+            ),
+            el('div', { className: 'arch-color-grid', role: 'group', 'aria-labelledby': 'arch-colors-heading' },
+              colorSwatches.filter(function (c, index) { return showColorPicker || index < 12; }).map(function (c) {
+                return el('button', { key: c, type: 'button', className: 'arch-color-choice', onClick: function () { choosePaletteColor(c); }, title: c.toUpperCase(), 'aria-label': 'Use custom color ' + c, 'aria-pressed': activeColor === c, style: { backgroundColor: c } }, paletteMark(activeColor === c));
               })
+            ),
+            el('div', { id: 'arch-color-options', hidden: !showColorPicker, tabIndex: -1, role: 'group', 'aria-label': paletteText('options'), className: 'arch-color-options' },
+              el('p', null, paletteText('help')),
+              el('label', { className: 'arch-color-native' }, t('stem.archstudio.custom_color', 'Custom color'),
+                el('input', { type: 'color', 'aria-label': t('stem.archstudio.custom_color', 'Custom color'), value: customColor, onChange: function (e) { choosePaletteColor(e.target.value); } })
+              ),
+              el('button', { type: 'button', onClick: function () { choosePaletteColor(ARCH_MAT_COLOR[activeMaterial] || ARCH_MAT_COLOR.stone); } }, paletteText('reset')),
+              el('button', { type: 'button', className: 'arch-color-paint', disabled: showReplay, onClick: function () { if (!showReplay) { ArchGL.clearPreview(); upd('mode', 'paint'); } } }, paletteText('paint')),
+              showReplay && el('p', null, paletteText('replay'))
             )
           ),
 
@@ -5940,7 +6040,7 @@ function __alloAST(k, fb) {
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 20 } }, quakeIntensity + '/10'),
-              el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
+              el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, minWidth: 0, height: 44, accentColor: '#ef4444' } })
             ),
             el('button', { onClick: runEarthquake, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to run an earthquake test' : 'Run earthquake test', style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
@@ -6105,27 +6205,6 @@ function __alloAST(k, fb) {
                   )
                 );
               })
-            )
-          ),
-
-          // ── Custom Color Palette ──
-          showColorPicker && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Color Palette'),
-            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3, marginBottom: 6 } },
-              colorSwatches.map(function (c) {
-                return el('button', { key: c, type: 'button', 'aria-label': 'Use colour ' + c.toUpperCase(), 'aria-pressed': customColor === c, title: c.toUpperCase(), onClick: function () { upd({ activeColor: c, customColor: c }); }, style: {
-                  width: 24, height: 24, borderRadius: 4, border: customColor === c ? '2px solid #fff' : '1px solid #475569',
-                  background: c, cursor: 'pointer', padding: 0
-                } });
-              })
-            ),
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-              el('input', { type: 'color', 'aria-label': t('stem.archstudio.custom_color', 'Custom color'), value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
-              el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, customColor),
-              el('button', { type: 'button', onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
-                marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#be185d,#9d174d)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
-              } }, '\uD83C\uDFA8 Paint')
             )
           ),
 

@@ -119,7 +119,7 @@ describe('ArchStudio accessibility parity', () => {
       expect(shapePalette).toContain("'aria-label': s.label + ' shape'");
       expect(shapePalette).toContain("'aria-pressed': activeShape === s.id");
 
-      const optionalColorStart = source.indexOf('colorSwatches.map');
+      const optionalColorStart = source.indexOf("className: 'arch-color-grid'");
       const optionalColors = source.slice(optionalColorStart, source.indexOf('// ── Cross-Section Slicer', optionalColorStart));
       expect(optionalColors).toMatch(/'aria-label':\s*'Use (?:custom color|colour) '\s*\+\s*c(?:\.toUpperCase\(\))?/);
       expect(optionalColors).toMatch(/'aria-pressed':\s*(?:activeColor|customColor)\s*===\s*c/);

@@ -1,0 +1,11 @@
+{
+  "stem.archstudio.palette_current_color": "Current color",
+  "stem.archstudio.palette_more": "More colors",
+  "stem.archstudio.palette_less": "Fewer colors",
+  "stem.archstudio.palette_options": "Custom color options",
+  "stem.archstudio.palette_reset": "Use material color",
+  "stem.archstudio.palette_paint": "Paint with this color",
+  "stem.archstudio.palette_help": "Choose a color for new blocks or painting. Existing blocks change when you edit them.",
+  "stem.archstudio.palette_replay": "You can prepare a palette during replay. Return to the live build to paint.",
+  "stem.archstudio.palette_cost": "{cost} credits"
+}

@@ -17349,6 +17349,15 @@
       "crest_drag_onto_a_window": "crest — drag onto a window"
     },
     "archstudio": {
+      "palette_current_color": "Current color",
+      "palette_more": "More colors",
+      "palette_less": "Fewer colors",
+      "palette_options": "Custom color options",
+      "palette_reset": "Use material color",
+      "palette_paint": "Paint with this color",
+      "palette_help": "Choose a color for new blocks or painting. Existing blocks change when you edit them.",
+      "palette_replay": "You can prepare a palette during replay. Return to the live build to paint.",
+      "palette_cost": "{cost} credits",
       "workspace_bar": "Model workspace controls",
       "workspace_view": "Model view",
       "workspace_hide": "Hide tools",

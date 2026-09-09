@@ -2432,4 +2432,111 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
 
+  test('palette keeps material, custom color, and paint controls synchronized without editing the model', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 1000 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false, customColor: '#ff0000', activeColor: '#94a3b8', showColorPicker: true, budgetEnabled: true });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:960px}' });
+    const before = await page.evaluate(() => ({ blocks: (window as any).__bucket().blocks, history: (window as any).__bucket().undoStack }));
+    await page.evaluate(() => { (window as any).__paletteCanvas = document.querySelector('canvas[data-arch-gl]'); });
+    const native = page.getByLabel('Custom color', { exact: true });
+    await expect(native).toHaveValue('#94a3b8');
+    await page.getByRole('button', { name: 'Use Wood material', exact: true }).click();
+    await expect(native).toHaveValue('#92400e');
+    await page.getByRole('button', { name: 'Use custom color #06b6d4', exact: true }).click();
+    await expect(native).toHaveValue('#06b6d4');
+    await native.fill('#123456');
+    await expect(page.locator('[data-arch-palette-color]')).toHaveText('#123456');
+    await page.getByRole('button', { name: 'Use material color', exact: true }).click();
+    await expect(native).toHaveValue('#92400e');
+    await page.getByRole('button', { name: 'Use Glass material', exact: true }).click();
+    await expect(native).toHaveValue('#38bdf8');
+    await page.getByRole('button', { name: 'Paint with this color', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ mode: 'paint', activeMaterial: 'glass', activeColor: '#38bdf8' });
+    expect(await page.evaluate(() => ({ blocks: (window as any).__bucket().blocks, history: (window as any).__bucket().undoStack }))).toEqual(before);
+    expect(await page.evaluate(() => (window as any).__paletteCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    await page.getByRole('button', { name: 'Fewer colors', exact: true }).click();
+    await expect(native).toBeHidden();
+    await expect(page.locator('[data-arch-palette-color]')).toHaveText('#38BDF8');
+    await page.getByRole('button', { name: 'More colors', exact: true }).click();
+    await expect(native).toHaveValue('#38bdf8');
+    await page.locator('.arch-material-choice').first().scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('palette-materials-desktop.png'), fullPage: true });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('palette choices place, paint, pick, and undo with the same properties', async ({ page }) => {
+    await mount3d(page, { blocks: [], soundEnabled: false });
+    await page.getByRole('button', { name: 'Ramp shape', exact: true }).click();
+    await page.getByRole('button', { name: 'Use Wood material', exact: true }).click();
+    await page.getByRole('button', { name: 'Use 90° rotation', exact: true }).click();
+    await page.getByRole('button', { name: 'Use custom color #06b6d4', exact: true }).click();
+    await page.getByRole('button', { name: 'Floor Grid', exact: true }).click();
+    const cell = page.locator('button[data-arch-cell="0,0,0"]');
+    await cell.focus(); await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks)).toMatchObject([{ x: 0, y: 0, z: 0, shape: 'ramp', material: 'wood', color: '#06b6d4', rotation: 90 }]);
+    await page.getByRole('button', { name: 'Use Glass material', exact: true }).click();
+    await page.getByRole('button', { name: 'More colors', exact: true }).click();
+    await page.getByRole('button', { name: 'Paint with this color', exact: true }).click();
+    await cell.focus(); await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({ shape: 'ramp', material: 'glass', color: '#38bdf8', rotation: 90 });
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({ material: 'wood', color: '#06b6d4' });
+    await page.getByRole('button', { name: 'Pick mode', exact: true }).click();
+    await cell.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByLabel('Custom color', { exact: true })).toHaveValue('#06b6d4');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ activeShape: 'ramp', activeMaterial: 'wood', activeColor: '#06b6d4', activeRotation: 90, mode: 'place' });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('palette color navigation reveals the hidden sidebar and respects replay', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), soundEnabled: false, sidebarCollapsed: true, showReplay: true, undoStack: [[]], replayStep: 1 });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=colors]').click();
+    await expect(page.locator('#arch-studio-tools')).toBeVisible();
+    await expect(page.locator('#arch-color-options')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel('Custom color', { exact: true })).toBeFocused();
+    await page.getByLabel('Custom color', { exact: true }).fill('#123456');
+    await expect(page.getByRole('button', { name: 'Paint with this color', exact: true })).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(tower());
+    await page.locator('#arch-color-toggle').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#arch-color-toggle')).toBeFocused();
+    await expect(page.locator('#arch-color-options')).toBeHidden();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('palette fits phone touch targets and remains accessible in three themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false, activeShape: 'arch', activeMaterial: 'wood', activeColor: '#ef4444', budgetEnabled: true });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:860px}' });
+    await page.getByRole('button', { name: 'Roof shape', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Roof shape', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: testInfo.outputPath('palette-shapes-phone.png'), fullPage: true });
+    await page.getByRole('button', { name: 'More colors', exact: true }).click();
+    await page.getByRole('button', { name: 'Use custom color #f8fafc', exact: true }).click();
+    await page.getByRole('button', { name: 'Paint with this color', exact: true }).click();
+    const sizes = await page.locator('.arch-shape-choice,.arch-material-choice,.arch-color-card button,.arch-color-native input,[aria-labelledby=arch-rotation-heading] button,[aria-labelledby=arch-mode-heading] button').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, height: r.height }; }));
+    expect(sizes.filter(r => r.left < 0 || r.right > 320 || r.width < 44 || r.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByLabel('Custom color', { exact: true }).scrollIntoViewIfNeeded();
+    expect(await page.getByLabel('Custom color', { exact: true }).evaluate(el => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el; })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('palette-colors-phone.png'), fullPage: true });
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await page.addStyleTag({ content: '#wrap{height:1060px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await page.getByRole('button', { name: 'Use custom color #ef4444', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Use custom color #ef4444', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
 });
