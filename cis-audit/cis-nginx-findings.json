@@ -1,0 +1,492 @@
+{
+  "audit": {
+    "benchmark": "CIS NGINX Benchmark",
+    "version": "3.0.0",
+    "profile_level": "Level 1 primary; Level 2 controls evaluated where the config could answer them and labelled per finding",
+    "repo": "Apomera/AlloFlow",
+    "commit": "dcb39be6c",
+    "date": "2026-09-08",
+    "controls_in_benchmark": 44,
+    "controls_evaluated": 22,
+    "controls_out_of_scope": 22,
+    "scope_note": "Evaluated docker/nginx.conf and desktop/schoolbox/nginx.conf. Both are conf.d server-block fragments mounted into the stock nginx:alpine image, so controls governing installation, the service account, file ownership and dynamic module loading (sections 1.1, 1.2, 2.1, 2.2, 2.3) are properties of the base image and host rather than the repository. All of section 4.1 (TLS) is not applicable: this listener is plain HTTP on port 80 inside the container, with no TLS material in the repository.",
+    "status_counts": {
+      "pass": 9,
+      "fail": 10,
+      "manual": 3
+    },
+    "remediated_in_session": [
+      "2.4.3",
+      "2.5.1",
+      "2.5.3",
+      "2.5.4",
+      "3.4",
+      "5.3.1",
+      "5.3.3"
+    ],
+    "previous_audit": {
+      "commit": "2bfff494f",
+      "date": "2026-09-03"
+    },
+    "re_audit_note": "Repository synced from origin/main, 435 commits, before this pass. None of those commits touched an audited file, and no new container, IaC or web-server artifact appeared, so the scope is unchanged. Every evidence line number was re-anchored against the current files; statuses were re-verified rather than carried forward."
+  },
+  "findings": [
+    {
+      "control_id": "2.4.1",
+      "title": "Ensure NGINX only listens for network connections on authorized ports",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 25,
+          "excerpt": "listen 80;",
+          "note": "single listener on the expected port"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 18,
+          "excerpt": "listen 80;",
+          "note": "same"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "2.4.2",
+      "title": "Ensure requests for unknown host names are rejected",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 26,
+          "excerpt": "server_name localhost;",
+          "note": "this is the only server block, so it becomes the default server and answers requests for any Host header"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 19,
+          "excerpt": "server_name localhost;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Add a default server block that returns 444 for unmatched host names, leaving the named block to serve real traffic.",
+      "remediation_diff": "--- a/docker/nginx.conf\n+++ b/docker/nginx.conf\n@@\n+server {\n+    listen 80 default_server;\n+    server_name _;\n+    return 444;\n+}\n+\n server {\n     listen 80;\n     server_name localhost;\n",
+      "behavior_risk": "medium",
+      "behavior_note": "Clients reaching the box by IP address or by a hostname other than localhost will stop being served. Add each hostname actually used to server_name first."
+    },
+    {
+      "control_id": "2.4.3",
+      "title": "Ensure keepalive_timeout is 10 seconds or less, but not 0",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 131,
+          "excerpt": "keepalive_timeout 10s;",
+          "note": "added in this session"
+        }
+      ],
+      "remediation": "Set keepalive_timeout to 10s or less in the server block.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "keepalive_timeout set to 10s in both configs."
+    },
+    {
+      "control_id": "2.4.4",
+      "title": "Ensure send_timeout is set to 10 seconds or less, but not 0",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 86,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "no send_timeout directive; the built-in default of 60s applies"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 89,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Set send_timeout to 10s, as in the diff for 2.4.3.",
+      "behavior_risk": "medium",
+      "behavior_note": "Long-running proxied responses already carry their own proxy_read_timeout, but a 10s send_timeout can cut off slow clients downloading large audio or PDF assets. Validate against the largest asset served."
+    },
+    {
+      "control_id": "2.5.1",
+      "title": "Ensure server_tokens directive is set to `off`",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 134,
+          "excerpt": "server_tokens off;",
+          "note": "added in this session"
+        }
+      ],
+      "remediation": "Set server_tokens off in the server block.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "server_tokens off in both configs."
+    },
+    {
+      "control_id": "2.5.2",
+      "title": "Ensure default error and index.html pages do not reference NGINX",
+      "level": 1,
+      "status": "fail",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 28,
+          "excerpt": "index index.html;",
+          "note": "the app's own index.html is served, but no error_page directives are defined, so the stock nginx 404 and 50x pages branded with the server name remain in place"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 21,
+          "excerpt": "index index.html;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Define error_page handlers pointing at the application's own pages.",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "2.5.3",
+      "title": "Ensure hidden file serving is disabled",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 40,
+          "excerpt": "location ~ /\\. {",
+          "note": "added in this session"
+        },
+        {
+          "file": "docker/nginx.conf",
+          "line": 36,
+          "excerpt": "location ^~ /.well-known/ {",
+          "note": "carve-out so standard well-known paths stay reachable"
+        }
+      ],
+      "remediation": "Deny access to dot-prefixed paths.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Dot-prefixed paths denied, with a carve-out for /.well-known/."
+    },
+    {
+      "control_id": "2.5.4",
+      "title": "Ensure the NGINX reverse proxy does not enable information disclosure",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 49,
+          "excerpt": "proxy_hide_header Server;",
+          "note": "applied to all seven proxied locations"
+        }
+      ],
+      "remediation": "Hide upstream identifying headers on each proxied location.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Upstream identity headers hidden on every proxied location."
+    },
+    {
+      "control_id": "3.1",
+      "title": "Ensure detailed logging is enabled",
+      "level": 1,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 1,
+          "excerpt": "# AlloFlow School Box \u2014 Nginx Configuration",
+          "note": "these directives live in the main nginx.conf of the base image, not in this conf.d fragment; the fragment neither sets nor disables them"
+        }
+      ],
+      "remediation": "Verify in the running container that the base image's logging defaults are active and shipped somewhere durable.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "3.2",
+      "title": "Ensure access logging is enabled",
+      "level": 1,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 1,
+          "excerpt": "# AlloFlow School Box \u2014 Nginx Configuration",
+          "note": "these directives live in the main nginx.conf of the base image, not in this conf.d fragment; the fragment neither sets nor disables them"
+        }
+      ],
+      "remediation": "Verify in the running container that the base image's logging defaults are active and shipped somewhere durable.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "3.3",
+      "title": "Ensure error logging is enabled and set to the info logging level",
+      "level": 1,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 1,
+          "excerpt": "# AlloFlow School Box \u2014 Nginx Configuration",
+          "note": "these directives live in the main nginx.conf of the base image, not in this conf.d fragment; the fragment neither sets nor disables them"
+        }
+      ],
+      "remediation": "Verify in the running container that the base image's logging defaults are active and shipped somewhere durable.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "3.4",
+      "title": "Ensure proxies pass source IP information",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 82,
+          "excerpt": "proxy_set_header X-Real-IP $remote_addr;",
+          "note": "added to the flux, tts and piper locations that previously omitted it, plus X-Forwarded-For"
+        }
+      ],
+      "remediation": "Set X-Real-IP and X-Forwarded-For consistently on every proxied location, or hoist them into a shared snippet included by each.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Source IP now passed consistently on every proxied location."
+    },
+    {
+      "control_id": "5.1.1",
+      "title": "Ensure allow and deny filters limit access to specific IP addresses",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 47,
+          "excerpt": "location /api/ollama/ {",
+          "note": "no allow or deny rules on the proxied API locations; any client that can reach port 80 can drive the LLM, the database API and the search backend"
+        }
+      ],
+      "remediation": "Restrict the API locations to the classroom subnet if the deployment is not already isolated.",
+      "behavior_risk": "medium",
+      "behavior_note": "An allow list will lock out clients on other subnets, including staff devices on a separate VLAN."
+    },
+    {
+      "control_id": "5.1.2",
+      "title": "Ensure only approved HTTP methods are allowed",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 59,
+          "excerpt": "location /api/pocketbase/ {",
+          "note": "no limit_except or method filtering; every method including DELETE is forwarded to the PocketBase API"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 47,
+          "excerpt": "location /api/pocketbase/ {",
+          "note": "same"
+        }
+      ],
+      "remediation": "Constrain each location to the methods the application actually issues.",
+      "remediation_diff": "--- a/docker/nginx.conf\n+++ b/docker/nginx.conf\n@@\n     location / {\n+        limit_except GET HEAD POST { deny all; }\n         try_files $uri $uri/ /index.html;\n     }\n",
+      "behavior_risk": "high",
+      "behavior_note": "The PocketBase and Ollama proxies need more than GET and POST for normal CRUD. Enumerate the methods the data layer issues before applying this to the API locations."
+    },
+    {
+      "control_id": "5.2.1",
+      "title": "Ensure timeout values for reading the client header and body are set correctly",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 86,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "neither client_header_timeout nor client_body_timeout is set; defaults of 60s apply"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 89,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Set client_header_timeout and client_body_timeout to 10s.",
+      "remediation_diff": "--- a/docker/nginx.conf\n+++ b/docker/nginx.conf\n@@\n     client_max_body_size 50M;\n+    client_header_timeout 10s;\n+    client_body_timeout 10s;\n",
+      "behavior_risk": "medium",
+      "behavior_note": "A 10s body timeout can abort legitimate uploads of the 50M assets this config explicitly allows, over a slow classroom link. Consider a longer body timeout scoped to the upload locations."
+    },
+    {
+      "control_id": "5.2.2",
+      "title": "Ensure the maximum request body size is set correctly",
+      "level": 1,
+      "status": "pass",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 86,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "explicitly set rather than left at the default, and the 50M ceiling is justified in-file by image and PDF upload paths"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 89,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "same"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.2.3",
+      "title": "Ensure the maximum buffer size for URIs is defined",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 86,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "no large_client_header_buffers directive; defaults apply"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 89,
+          "excerpt": "client_max_body_size 50M;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Define large_client_header_buffers explicitly.",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "5.2.4",
+      "title": "Ensure the number of connections per IP address is limited",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 24,
+          "excerpt": "server {",
+          "note": "no limit_conn zone or directive anywhere in either config"
+        }
+      ],
+      "remediation": "Define a limit_conn zone and apply it, particularly to the LLM and image generation proxies.",
+      "behavior_risk": "medium",
+      "behavior_note": "Streaming responses hold connections open. Set the ceiling above the number of concurrent streams a single classroom device legitimately opens."
+    },
+    {
+      "control_id": "5.2.5",
+      "title": "Ensure rate limits by IP address are set",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 77,
+          "excerpt": "location /api/flux/ {",
+          "note": "no limit_req zone or directive; the image generation and LLM endpoints accept unlimited request rates from any client"
+        }
+      ],
+      "remediation": "Define a limit_req zone and apply it to the generation endpoints.",
+      "behavior_risk": "medium",
+      "behavior_note": "Rate limits set too tight will interrupt normal lesson generation bursts. Measure typical classroom usage first."
+    },
+    {
+      "control_id": "5.3.1",
+      "title": "Ensure X-Content-Type-Options header is configured and enabled",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 125,
+          "excerpt": "add_header X-Content-Type-Options \"nosniff\" always;",
+          "note": "the add_header inheritance gap is closed; js, css, image and font responses now carry the headers"
+        }
+      ],
+      "remediation": "Repeat the security headers inside the static asset location, or move them to the http level and repeat them wherever a location sets its own add_header.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Security headers repeated inside the static-asset location."
+    },
+    {
+      "control_id": "5.3.2",
+      "title": "Ensure that Content Security Policy (CSP) is enabled and configured properly",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 133,
+          "excerpt": "# Security headers",
+          "note": "no Content-Security-Policy header in either config"
+        },
+        {
+          "file": "desktop/schoolbox/nginx.conf",
+          "line": 84,
+          "excerpt": "add_header X-Frame-Options \"SAMEORIGIN\" always;",
+          "note": "same"
+        }
+      ],
+      "remediation": "Add a Content-Security-Policy header once the application's script and style sources have been enumerated.",
+      "behavior_risk": "high",
+      "behavior_note": "This application loads modules dynamically at runtime and pulls libraries from CDNs, so a strict policy will break it. Build the policy in report-only mode first."
+    },
+    {
+      "control_id": "5.3.3",
+      "title": "Ensure the Referrer Policy is enabled and configured properly",
+      "level": 2,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/nginx.conf",
+          "line": 126,
+          "excerpt": "add_header Referrer-Policy \"no-referrer-when-downgrade\" always;",
+          "note": "added in this session"
+        }
+      ],
+      "remediation": "Add a Referrer-Policy header alongside the existing security headers.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Referrer-Policy added at server level and in the static-asset location."
+    }
+  ]
+}

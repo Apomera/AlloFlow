@@ -1,0 +1,921 @@
+{
+  "audit": {
+    "benchmark": "CIS Docker Benchmark",
+    "version": "1.8.0",
+    "profile_level": "Level 1 primary; Level 2 controls evaluated where the repo could answer them and labelled per finding",
+    "repo": "Apomera/AlloFlow",
+    "commit": "dcb39be6c",
+    "date": "2026-09-08",
+    "controls_in_benchmark": 117,
+    "controls_evaluated": 44,
+    "controls_out_of_scope": 73,
+    "scope_note": "Evaluated sections 4 (container images and build file) and 5 (container runtime) against 4 Dockerfiles, 4 Compose files. Sections 1-3 (62 controls) govern host and daemon state the repository cannot express. Section 6 (2 controls) is operational. Section 7 (9 controls) is Swarm, which this deployment does not use. Copies under .claude/worktrees/ were excluded as agent scratch duplicates of the same files.",
+    "status_counts": {
+      "fail": 14,
+      "pass": 25,
+      "manual": 3,
+      "not-applicable": 2
+    },
+    "remediated_in_session": [
+      "4.10",
+      "4.6",
+      "5.11",
+      "5.26",
+      "5.29"
+    ],
+    "previous_audit": {
+      "commit": "2bfff494f",
+      "date": "2026-09-03"
+    },
+    "re_audit_note": "Repository synced from origin/main, 435 commits, before this pass. None of those commits touched an audited file, and no new container, IaC or web-server artifact appeared, so the scope is unchanged. Every evidence line number was re-anchored against the current files; statuses were re-verified rather than carried forward."
+  },
+  "findings": [
+    {
+      "control_id": "4.1",
+      "title": "Ensure that a user for the container has been created",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/Dockerfile",
+          "line": 76,
+          "excerpt": "CMD [\"nginx\", \"-g\", \"daemon off;\"]",
+          "note": "final stage has no USER directive; nginx master process starts as root"
+        },
+        {
+          "file": "docker/edge-tts-server/Dockerfile",
+          "line": 11,
+          "excerpt": "CMD [\"python\", \"server.py\"]",
+          "note": "no USER directive in the file; Flask server runs as root"
+        },
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 38,
+          "excerpt": "CMD [\"python3\", \"flux_server.py\"]",
+          "note": "no USER directive in the file; server runs as root"
+        },
+        {
+          "file": "services/alloflow-remote-mcp/runner/Dockerfile",
+          "line": 28,
+          "excerpt": "USER node",
+          "note": "compliant - this image drops to a non-root user before CMD"
+        }
+      ],
+      "remediation": "Add a dedicated non-root user to the three non-compliant images, following the pattern already used in the remote-MCP runner image.",
+      "remediation_diff": "--- a/docker/edge-tts-server/Dockerfile\n+++ b/docker/edge-tts-server/Dockerfile\n@@\n FROM python:3.11-slim\n WORKDIR /app\n RUN pip install --no-cache-dir edge-tts flask flask-cors\n COPY server.py .\n+RUN useradd --system --create-home --shell /usr/sbin/nologin appuser \\\n+    && chown -R appuser:appuser /app\n+USER appuser\n EXPOSE 5001\n CMD [\"python\", \"server.py\"]\n",
+      "behavior_risk": "medium",
+      "behavior_note": "The nginx image binds port 80 as root. Running it unprivileged requires switching to nginx-unprivileged or moving the listener above 1024 and adjusting the published port mapping."
+    },
+    {
+      "control_id": "4.2",
+      "title": "Ensure that containers use only trusted base images",
+      "level": 1,
+      "status": "fail",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 39,
+          "excerpt": "image: ghcr.io/muchobien/pocketbase:latest",
+          "note": "personal GHCR namespace, mutable tag; this service stores the student database"
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 124,
+          "excerpt": "image: rhasspy/wyoming-piper:latest",
+          "note": "community image on a mutable tag"
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 139,
+          "excerpt": "image: searxng/searxng:latest",
+          "note": "community image on a mutable tag"
+        },
+        {
+          "file": "docker/allosheet-grist/docker-compose.yml",
+          "line": 4,
+          "excerpt": "image: gristlabs/grist-oss:1.7.13",
+          "note": "compliant - vendor image pinned to an explicit version with a comment requiring intentional updates"
+        }
+      ],
+      "remediation": "Pin every third-party image to an immutable digest, or at minimum an explicit version tag, following the pattern already used for Grist.",
+      "remediation_diff": "--- a/docker-compose.yml\n+++ b/docker-compose.yml\n@@\n   pocketbase:\n-    image: ghcr.io/muchobien/pocketbase:latest\n+    # Review and intentionally update this pin.\n+    image: ghcr.io/muchobien/pocketbase:0.22.21\n",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "4.3",
+      "title": "Ensure that unnecessary packages are not installed in the container",
+      "level": 1,
+      "status": "fail",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 13,
+          "excerpt": "python3 python3-pip python3-dev git \\",
+          "note": "git is installed but no dependency in requirements.txt is fetched from a git remote"
+        },
+        {
+          "file": "docker/flux-server/requirements.txt",
+          "line": 1,
+          "excerpt": "torch",
+          "note": "no git+ URLs anywhere in the requirements file"
+        }
+      ],
+      "remediation": "Drop git from the flux-server apt install unless a transitive pip build requires it. Verify with a clean build before merging.",
+      "remediation_diff": "--- a/docker/flux-server/Dockerfile\n+++ b/docker/flux-server/Dockerfile\n@@\n RUN apt-get update && apt-get install -y --no-install-recommends \\\n-    python3 python3-pip python3-dev git \\\n+    python3 python3-pip python3-dev \\\n     && rm -rf /var/lib/apt/lists/*\n",
+      "behavior_risk": "low",
+      "behavior_note": "A transitive pip dependency that builds from source could require git. Confirm with a clean build."
+    },
+    {
+      "control_id": "4.4",
+      "title": "Ensure images are scanned and rebuilt to include security patches",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": ".github/workflows/verify.yml",
+          "line": 1,
+          "excerpt": "(absence of evidence - no matching directive in any workflow)",
+          "note": "re-checked after sync: no trivy, grype, snyk, cosign or docker scan invocation in any of the seven workflow files"
+        }
+      ],
+      "remediation": "Add an image scanning step to CI for the four locally built images, failing the build on fixable high or critical findings.",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "4.5",
+      "title": "Ensure Content trust for Docker is Enabled",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 39,
+          "excerpt": "image: ghcr.io/muchobien/pocketbase:latest",
+          "note": "DOCKER_CONTENT_TRUST is not set anywhere in the repo or CI environment"
+        }
+      ],
+      "remediation": "Set DOCKER_CONTENT_TRUST=1 in build and deploy environments, or adopt digest pinning as the equivalent control for registries without Notary.",
+      "behavior_risk": "medium",
+      "behavior_note": "Enabling content trust breaks pulls of any unsigned image, which includes most community images used here."
+    },
+    {
+      "control_id": "4.6",
+      "title": "Ensure that HEALTHCHECK instructions have been added to container images",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/Dockerfile",
+          "line": 73,
+          "excerpt": "HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\",
+          "note": "added in this session; busybox wget is present in nginx:alpine"
+        },
+        {
+          "file": "docker/edge-tts-server/Dockerfile",
+          "line": 8,
+          "excerpt": "HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\",
+          "note": "added in this session, probing /health at server.py:94"
+        }
+      ],
+      "remediation": "Add a HEALTHCHECK to the frontend and edge-tts images so health is a property of the image rather than of one compose file.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "All four images now carry a HEALTHCHECK."
+    },
+    {
+      "control_id": "4.7",
+      "title": "Ensure update instructions are not used alone in Dockerfiles",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 12,
+          "excerpt": "RUN apt-get update && apt-get install -y --no-install-recommends \\",
+          "note": "update chained with install in a single layer"
+        },
+        {
+          "file": "services/alloflow-remote-mcp/runner/Dockerfile",
+          "line": 17,
+          "excerpt": "RUN apt-get update \\",
+          "note": "chained with install via && on lines 17-22"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "4.8",
+      "title": "Ensure setuid and setgid permissions are removed",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 38,
+          "excerpt": "CMD [\"python3\", \"flux_server.py\"]",
+          "note": "no directive removes setuid or setgid bits in any of the four images"
+        }
+      ],
+      "remediation": "Strip setuid and setgid bits from binaries not required to hold them, as a build step in each image.",
+      "behavior_risk": "medium",
+      "behavior_note": "Removing setuid indiscriminately can break tooling such as ping or su inside the image. Scope the find to the paths the service actually uses."
+    },
+    {
+      "control_id": "4.9",
+      "title": "Ensure that COPY is used instead of ADD in Dockerfiles",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/Dockerfile",
+          "line": 17,
+          "excerpt": "COPY desktop/web-app/package*.json ./",
+          "note": "all four Dockerfiles use COPY exclusively; no ADD instruction anywhere"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "4.10",
+      "title": "Ensure secrets are not stored in Dockerfiles",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": ".dockerignore",
+          "line": 9,
+          "excerpt": ".git/",
+          "note": "created in this session at the context root, where Docker actually reads it"
+        },
+        {
+          "file": ".dockerignore",
+          "line": 16,
+          "excerpt": "**/.env",
+          "note": "developer .env files are now excluded from the build context, so local keys stop reaching the image"
+        }
+      ],
+      "remediation": "Move .dockerignore to the repository root so it applies to the build context actually used, and exclude .env explicitly. Note that REACT_APP_* values are compiled into the client bundle by design, so treat any key placed there as public regardless.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "A root .dockerignore now governs the build context both compose files actually use."
+    },
+    {
+      "control_id": "4.11",
+      "title": "Ensure only verified packages are installed",
+      "level": 2,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/edge-tts-server/Dockerfile",
+          "line": 3,
+          "excerpt": "RUN pip install --no-cache-dir edge-tts flask flask-cors",
+          "note": "no version pins and no hash verification"
+        },
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 19,
+          "excerpt": "RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu121",
+          "note": "unpinned"
+        },
+        {
+          "file": "docker/flux-server/requirements.txt",
+          "line": 1,
+          "excerpt": "torch",
+          "note": "only diffusers carries a version constraint; the rest float"
+        },
+        {
+          "file": "services/alloflow-remote-mcp/runner/Dockerfile",
+          "line": 20,
+          "excerpt": "&& npm ci --omit=dev --no-audit --no-fund \\",
+          "note": "compliant - npm ci installs from a committed lockfile with integrity hashes"
+        }
+      ],
+      "remediation": "Pin the Python dependencies to explicit versions in a requirements file, and generate hashes with pip-compile so installs are verifiable.",
+      "behavior_risk": "medium",
+      "behavior_note": "Pinning torch and CUDA wheels can surface incompatibilities that the floating versions currently mask."
+    },
+    {
+      "control_id": "4.12",
+      "title": "Ensure all signed artifacts are validated",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/Dockerfile",
+          "line": 12,
+          "excerpt": "FROM node:20-alpine AS builder",
+          "note": "no digest and no signature verification on any FROM instruction across the four images"
+        },
+        {
+          "file": "docker/flux-server/Dockerfile",
+          "line": 5,
+          "excerpt": "FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04",
+          "note": "version tag but no digest, so the underlying image can change"
+        }
+      ],
+      "remediation": "Pin base images by digest so the build validates content on pull.",
+      "remediation_diff": "--- a/docker/Dockerfile\n+++ b/docker/Dockerfile\n@@\n-FROM node:20-alpine AS builder\n+FROM node:20-alpine@sha256:<pin-current-digest> AS builder\n@@\n-FROM nginx:alpine\n+FROM nginx:alpine@sha256:<pin-current-digest>\n",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "5.1",
+      "title": "Ensure swarm mode is not Enabled, if not needed",
+      "level": 1,
+      "status": "pass",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no swarm stack, replicas or manager configuration in any compose file; the deploy keys present are GPU device reservations"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.2",
+      "title": "Ensure that, if applicable, an AppArmor Profile is enabled",
+      "level": 1,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no security_opt entry disables AppArmor, so the docker-default profile would apply on an AppArmor-enabled host"
+        }
+      ],
+      "remediation": "Confirm on the deployment host that AppArmor is enabled and the docker-default profile is loaded.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.3",
+      "title": "Ensure that, if applicable, SELinux security options are set",
+      "level": 2,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no SELinux label options set; whether SELinux is enforcing is host state the repo cannot express"
+        }
+      ],
+      "remediation": "Confirm the host's SELinux mode and set label options if the deployment targets an enforcing host.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.4",
+      "title": "Ensure that Linux kernel capabilities are restricted within containers",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 18,
+          "excerpt": "frontend:",
+          "note": "no cap_drop on any service in any of the four compose files; every container keeps Docker's default capability set"
+        }
+      ],
+      "remediation": "Drop all capabilities by default and add back only what each service needs.",
+      "remediation_diff": "--- a/docker-compose.yml\n+++ b/docker-compose.yml\n@@\n   pocketbase:\n     image: ghcr.io/muchobien/pocketbase:latest\n     container_name: alloflow-pocketbase\n+    cap_drop:\n+      - ALL\n",
+      "behavior_risk": "medium",
+      "behavior_note": "The nginx frontend needs CAP_NET_BIND_SERVICE to bind port 80, and Ollama with GPU access may need additional capabilities. Drop all, then add back per service and test."
+    },
+    {
+      "control_id": "5.5",
+      "title": "Ensure that privileged containers are not used",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no privileged: true in any of the four compose files"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.6",
+      "title": "Ensure sensitive host system directories are not mounted on containers",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 45,
+          "excerpt": "- ./docker/pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro",
+          "note": "bind mounts are limited to project-local config files and a build directory, all read-only where mounted from the host"
+        },
+        {
+          "file": "desktop/schoolbox/docker-compose.yml",
+          "line": 10,
+          "excerpt": "- ../app-build:/usr/share/nginx/html:ro",
+          "note": "project-local, read-only"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.7",
+      "title": "Ensure sshd is not run within containers",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker/edge-tts-server/Dockerfile",
+          "line": 11,
+          "excerpt": "CMD [\"python\", \"server.py\"]",
+          "note": "no sshd installed or started in any of the four images"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.8",
+      "title": "Ensure privileged ports are not mapped within containers",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 27,
+          "excerpt": "- \"${WEB_PORT:-3000}:80\"",
+          "note": "every published host port defaults above 1024 across all four compose files"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.9",
+      "title": "Ensure that only needed ports are open on the container",
+      "level": 1,
+      "status": "pass",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker/Dockerfile",
+          "line": 71,
+          "excerpt": "EXPOSE 80",
+          "note": "each image exposes only the port its service listens on"
+        },
+        {
+          "file": "services/alloflow-remote-mcp/runner/Dockerfile",
+          "line": 30,
+          "excerpt": "EXPOSE 8080",
+          "note": "single exposed port"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.10",
+      "title": "Ensure that the host's network namespace is not shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no network_mode: host in any compose file"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.11",
+      "title": "Ensure that the memory usage for containers is limited",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 73,
+          "excerpt": "mem_limit: ${OLLAMA_MEM_LIMIT:-8g}",
+          "note": "added in this session; default sized for a single classroom box, raise for larger models"
+        },
+        {
+          "file": "docker/.env.example",
+          "line": 51,
+          "excerpt": "OLLAMA_MEM_LIMIT=8g",
+          "note": "documented alongside the existing port variables"
+        }
+      ],
+      "remediation": "Set a memory limit on each service, sized for the target hardware.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "Memory limit set on all 20 service definitions, operator-tunable via environment variables."
+    },
+    {
+      "control_id": "5.12",
+      "title": "Ensure that CPU priority is set appropriately on containers",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no cpus or cpu_shares setting on any service in any compose file"
+        }
+      ],
+      "remediation": "Set a CPU share or quota per service so one workload cannot starve the rest of the box.",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "5.13",
+      "title": "Ensure that the container's root filesystem is mounted as read only",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no read_only: true on any service in any compose file"
+        }
+      ],
+      "remediation": "Mount root filesystems read-only and grant tmpfs for the paths each service writes to.",
+      "remediation_diff": "--- a/desktop/schoolbox/docker-compose.yml\n+++ b/desktop/schoolbox/docker-compose.yml\n@@\n   frontend:\n     image: nginx:alpine\n+    read_only: true\n+    tmpfs:\n+      - /var/cache/nginx\n+      - /var/run\n",
+      "behavior_risk": "high",
+      "behavior_note": "Every service that writes to its root filesystem will fail to start until its writable paths are mounted as tmpfs or volumes. Roll out one service at a time."
+    },
+    {
+      "control_id": "5.14",
+      "title": "Ensure that incoming container traffic is bound to a specific host interface",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 63,
+          "excerpt": "- \"${OLLAMA_PORT:-11434}:11434\"",
+          "note": "binds to every host interface, publishing an unauthenticated LLM API to the whole network"
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 42,
+          "excerpt": "- \"${PB_PORT:-8090}:8090\"",
+          "note": "the student database is published on all interfaces"
+        },
+        {
+          "file": "desktop/schoolbox/docker-compose.yml",
+          "line": 25,
+          "excerpt": "- \"${PB_PORT:-8090}:8090\"",
+          "note": "same pattern in the schoolbox deployment"
+        },
+        {
+          "file": "docker/allosheet-grist/docker-compose.yml",
+          "line": 11,
+          "excerpt": "- \"127.0.0.1:8484:8484\"",
+          "note": "compliant - the only mapping in the repo that binds to loopback"
+        }
+      ],
+      "remediation": "Bind every published port to a specific interface. For a single-box classroom deployment that is loopback plus whatever the frontend needs; only the frontend port should reach the LAN.",
+      "remediation_diff": "--- a/docker-compose.yml\n+++ b/docker-compose.yml\n@@\n   pocketbase:\n     ports:\n-      - \"${PB_PORT:-8090}:8090\"\n+      - \"127.0.0.1:${PB_PORT:-8090}:8090\"\n@@\n   ollama:\n     ports:\n-      - \"${OLLAMA_PORT:-11434}:11434\"\n+      - \"127.0.0.1:${OLLAMA_PORT:-11434}:11434\"\n",
+      "behavior_risk": "high",
+      "behavior_note": "Anything reaching these services from another machine breaks, including a browser talking directly to Ollama or PocketBase rather than through the nginx proxy. The nginx config already proxies all of them, so the in-app path is unaffected."
+    },
+    {
+      "control_id": "5.15",
+      "title": "Ensure that the 'on-failure' container restart policy is set to '5'",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 35,
+          "excerpt": "restart: unless-stopped",
+          "note": "all 21 service definitions across the four compose files use unless-stopped, which retries indefinitely"
+        },
+        {
+          "file": "docker/allosheet-grist/docker-compose.yml",
+          "line": 9,
+          "excerpt": "restart: unless-stopped",
+          "note": "same"
+        }
+      ],
+      "remediation": "Use an on-failure policy with a bounded retry count so a crash-looping service stops rather than restarting forever.",
+      "remediation_diff": "--- a/docker-compose.yml\n+++ b/docker-compose.yml\n@@\n   frontend:\n-    restart: unless-stopped\n+    restart: on-failure:5\n",
+      "behavior_risk": "medium",
+      "behavior_note": "unless-stopped restarts a service after a host reboot; on-failure does not. For an appliance-style classroom box that reboot behavior may be wanted, in which case document the deviation rather than changing it."
+    },
+    {
+      "control_id": "5.16",
+      "title": "Ensure that the host's process namespace is not shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no pid: host in any compose file"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.17",
+      "title": "Ensure that the host's IPC namespace is not shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no ipc: host in any compose file"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.18",
+      "title": "Ensure that host devices are not directly exposed to containers",
+      "level": 1,
+      "status": "pass",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 69,
+          "excerpt": "devices:",
+          "note": "the only devices keys are nested under deploy.resources.reservations for GPU access, which is the supported Compose GPU mechanism rather than raw host device passthrough"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.19",
+      "title": "Ensure that the default ulimit is overwritten at runtime if needed",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no ulimits override; the daemon defaults apply"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.20",
+      "title": "Ensure mount propagation mode is not set to shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 43,
+          "excerpt": "volumes:",
+          "note": "no bind mount uses a shared propagation flag"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.21",
+      "title": "Ensure that the host's UTS namespace is not shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no uts: host in any compose file"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.22",
+      "title": "Ensure the default seccomp profile is not Disabled",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no security_opt entry sets seccomp=unconfined"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.23",
+      "title": "Ensure that docker exec commands are not used with the privileged option",
+      "level": 2,
+      "status": "not-applicable",
+      "remediation": "Operator behavior at runtime. No docker exec invocation appears in the repo's scripts.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.24",
+      "title": "Ensure that docker exec commands are not used with the user=root option",
+      "level": 2,
+      "status": "not-applicable",
+      "remediation": "Operator behavior at runtime. No docker exec invocation appears in the repo's scripts.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.25",
+      "title": "Ensure that cgroup usage is confirmed",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no cgroup_parent override; services use the default cgroup"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.26",
+      "title": "Ensure that the container is restricted from acquiring additional privileges",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 33,
+          "excerpt": "security_opt:\n      - no-new-privileges:true",
+          "note": "added to every service across all four compose files"
+        },
+        {
+          "file": "docker/allosheet-grist/docker-compose.yml",
+          "line": 7,
+          "excerpt": "security_opt:",
+          "note": "same"
+        }
+      ],
+      "remediation": "Set no-new-privileges on every service.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "no-new-privileges set on all 20 service definitions."
+    },
+    {
+      "control_id": "5.27",
+      "title": "Ensure that container health is checked at runtime",
+      "level": 1,
+      "status": "fail",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 18,
+          "excerpt": "frontend:",
+          "note": "the frontend has no healthcheck in either compose file, yet other services depend on it being up"
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 59,
+          "excerpt": "ollama:",
+          "note": "root compose defines healthchecks only for pocketbase; ollama, flux, edge-tts, piper and searxng have none"
+        },
+        {
+          "file": "docker/docker-compose.yml",
+          "line": 114,
+          "excerpt": "healthcheck:",
+          "note": "the docker/ compose is better, covering pocketbase, flux and edge-tts, but still omits ollama, piper and searxng"
+        }
+      ],
+      "remediation": "Add healthchecks for the remaining services, or add HEALTHCHECK to the images so every compose file inherits it.",
+      "behavior_risk": "low"
+    },
+    {
+      "control_id": "5.28",
+      "title": "Ensure that Docker commands always make use of the latest version of their image",
+      "level": 1,
+      "status": "manual",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 39,
+          "excerpt": "image: ghcr.io/muchobien/pocketbase:latest",
+          "note": "the :latest tag resolves to whatever the registry currently holds; whether a running deployment has pulled it is host state"
+        }
+      ],
+      "remediation": "Establish a scheduled rebuild and repull so pinned images, once adopted under 4.2, do not go stale.",
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.29",
+      "title": "Ensure that the PIDs cgroup limit is used",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 74,
+          "excerpt": "pids_limit: 1024",
+          "note": "literal integer, since pids_limit is an int field in the compose spec"
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 32,
+          "excerpt": "pids_limit: 128",
+          "note": "static frontend gets a much tighter ceiling than the inference services"
+        }
+      ],
+      "remediation": "Set a PID limit per service to bound fork-bomb impact.",
+      "behavior_risk": "none",
+      "remediated_in_session": true,
+      "remediation_applied": "PID limit set on all 20 service definitions."
+    },
+    {
+      "control_id": "5.30",
+      "title": "Ensure that Docker's default bridge \"docker0\" is not used",
+      "level": 2,
+      "status": "pass",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no compose file declares a custom network, so Compose creates a per-project bridge network rather than attaching services to docker0"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.31",
+      "title": "Ensure that the host's user namespaces are not shared",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 16,
+          "excerpt": "services:",
+          "note": "no userns_mode: host in any compose file"
+        }
+      ],
+      "behavior_risk": "none"
+    },
+    {
+      "control_id": "5.32",
+      "title": "Ensure that the Docker socket is not mounted inside any containers",
+      "level": 1,
+      "status": "pass",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "docker-compose.yml",
+          "line": 43,
+          "excerpt": "volumes:",
+          "note": "no compose file mounts /var/run/docker.sock into any container"
+        }
+      ],
+      "behavior_risk": "none"
+    }
+  ]
+}
