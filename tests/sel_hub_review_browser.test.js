@@ -242,6 +242,114 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   }, 120000);
 
+  it('adapts station copies without changing original prompts or learner records, and saves activity and step order', async () => {
+    const station = { id: 'source', name: 'Original routine', tools: ['journal', 'zones'], teacherNote: 'Use a fictional example.', quests: [
+      { qid: 'reflect', type: 'freeResponse', label: 'Original reflection', params: { prompt: 'Original prompt', selfCheck: true } },
+      { qid: 'practice', type: 'manualComplete', label: 'Original practice', toolId: 'journal', params: {} },
+    ] };
+    const progress = { source: { reflect: { response: 'Private original note', complete: true, markedComplete: true } } };
+    await mount(1280, '', { stations: [station], progress });
+    const adapt = () => page.getByRole('button', { name: 'Adapt a copy of station Original routine', exact: true });
+    await adapt().click();
+    await page.waitForFunction(() => document.activeElement?.id === 'sel-station-name-input');
+    const builder = page.getByRole('region', { name: 'Station Builder', exact: true });
+    await builder.getByRole('textbox', { name: 'Station name', exact: true }).fill('Discarded draft');
+    await builder.getByRole('button', { name: 'Cancel station builder', exact: true }).click();
+    expect(await page.evaluate(() => window.__alloflowSelStations)).toEqual([station]);
+    await adapt().click();
+    await builder.getByRole('textbox', { name: 'Station name', exact: true }).fill('Adapted routine');
+    await builder.getByRole('textbox', { name: 'Teacher note', exact: true }).fill('Model, then invite a chosen response.');
+    const moveActivity = builder.getByRole('button', { name: 'Move activity Feelings Journal later', exact: true });
+    await moveActivity.focus(); await page.keyboard.press('Enter');
+    expect(await builder.locator('[data-builder-tool-id]').evaluateAll(nodes => nodes.map(n => n.dataset.builderToolId))).toEqual(['zones', 'journal']);
+    let step = builder.locator('[data-builder-step-id]').first();
+    await step.locator('summary').click();
+    const reflectionId = await step.getAttribute('data-builder-step-id');
+    await step.getByRole('textbox', { name: 'Step title', exact: true }).fill('Notice and choose');
+    await step.getByRole('textbox', { name: 'Reflection prompt', exact: true }).fill('What could help in a new situation?');
+    await step.getByRole('combobox', { name: 'Related activity' }).selectOption('zones');
+    await step.getByRole('button', { name: 'Move step 1 later', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    expect(await builder.locator('[data-builder-step-id]').last().getAttribute('data-builder-step-id')).toBe(reflectionId);
+    expect(await builder.locator('[data-builder-step-id]').last().getByRole('textbox', { name: 'Reflection prompt' }).inputValue()).toBe('What could help in a new situation?');
+    await builder.getByRole('button', { name: '+ Add practice step', exact: true }).click();
+    step = builder.locator('[data-builder-step-id]').last();
+    await step.getByRole('textbox', { name: 'Step title', exact: true }).fill('Model one example');
+    await step.getByRole('button', { name: 'Move step 3 earlier', exact: true }).click();
+    await builder.getByRole('button', { name: '+ Add reflection step', exact: true }).click();
+    step = builder.locator('[data-builder-step-id]').last();
+    await step.getByRole('button', { name: /^Remove quest/ }).click();
+    expect(await builder.locator('[data-builder-step-id]').count()).toBe(3);
+    await builder.getByRole('button', { name: 'Save this station', exact: true }).click();
+    const guide = page.getByRole('region', { name: 'Active SEL Station: Adapted routine', exact: true });
+    await guide.waitFor();
+    const saved = await page.evaluate(() => ({ stations: window.__alloflowSelStations, progress: window.__alloflowSelProgress }));
+    expect(saved.stations).toHaveLength(2);
+    expect(saved.stations[0]).toEqual(station);
+    expect(saved.progress.source).toEqual(progress.source);
+    const copy = saved.stations[1];
+    expect(copy.id).not.toBe(station.id);
+    expect(copy.tools).toEqual(['zones', 'journal']);
+    expect(copy.quests.map(q => q.label)).toEqual(['Original practice', 'Model one example', 'Notice and choose']);
+    expect(copy.quests.every(q => !['reflect', 'practice'].includes(q.qid))).toBe(true);
+    expect(copy.quests[2].params.prompt).toBe('What could help in a new situation?');
+    expect(copy.quests[2].toolId).toBe('zones');
+    expect(await guide.innerText()).toContain('0 of 3 steps recorded');
+    expect(await guide.getByRole('textbox').inputValue()).toBe('');
+    await mount(1280, '', saved);
+    await page.getByRole('button', { name: 'Activate station Adapted routine', exact: true }).click();
+    expect(await page.locator('[data-sel-tool-card-id]').evaluateAll(nodes => nodes.map(n => n.dataset.selToolCardId))).toEqual(['zones', 'journal']);
+    expect(await page.getByRole('region', { name: 'Active SEL Station: Adapted routine', exact: true }).innerText()).toContain('What could help in a new situation?');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('lets copied legacy steps become optional self-checks and prevents untargeted timed steps', async () => {
+    const station = { id: 'legacy-copy', name: 'Legacy routine', tools: ['journal'], quests: [
+      { qid: 'timed', type: 'timeSpent', label: 'Spend time', toolId: 'journal', params: { minutes: 3 } },
+      { qid: 'written', type: 'freeResponse', label: 'Write', params: { minLength: 70, prompt: 'Original question' } },
+    ] };
+    await mount(1280, '', { stations: [station] });
+    await page.getByRole('button', { name: 'Adapt a copy of station Legacy routine', exact: true }).click();
+    const builder = page.getByRole('region', { name: 'Station Builder', exact: true });
+    let step = builder.locator('[data-builder-step-id]').first();
+    await step.locator('summary').click();
+    await step.getByRole('combobox', { name: 'Related activity' }).selectOption('');
+    expect(await builder.getByRole('button', { name: 'Save this station' }).isDisabled()).toBe(true);
+    await step.getByRole('button', { name: 'Use learner self-check', exact: true }).click();
+    expect(await builder.getByRole('button', { name: 'Save this station' }).isEnabled()).toBe(true);
+    step = builder.locator('[data-builder-step-id]').last();
+    await step.locator('summary').click();
+    expect(await step.innerText()).toContain('70 characters');
+    await step.getByRole('button', { name: 'Use learner self-check', exact: true }).click();
+    await builder.getByRole('button', { name: 'Save this station', exact: true }).click();
+    await page.getByRole('region', { name: 'Active SEL Station: Legacy routine — adapted', exact: true }).waitFor();
+    const saved = await page.evaluate(() => window.__alloflowSelStations);
+    expect(saved[0]).toEqual(station);
+    expect(saved[1].quests[0].type).toBe('manualComplete');
+    expect(saved[1].quests[1].params).toEqual({ prompt: 'Original question', selfCheck: true });
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('keeps the station authoring controls accessible at 320px in %s', async theme => {
+    await mount(320, theme, { stations: [{ id: 'builder-phone', name: 'A small practice', tools: ['journal', 'zones'], quests: [] }] });
+    await page.getByRole('button', { name: 'Adapt a copy of station A small practice', exact: true }).click();
+    const builder = page.getByRole('region', { name: 'Station Builder', exact: true });
+    await builder.getByRole('button', { name: '+ Add reflection step', exact: true }).click();
+    const layout = await builder.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth, buttons: [...el.querySelectorAll('button')].filter(b => b.getBoundingClientRect().height > 0).map(b => b.getBoundingClientRect().height) }));
+    expect(layout.scroll).toBeLessThanOrEqual(layout.client + 1);
+    expect(layout.buttons.every(height => height >= 44)).toBe(true);
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const audit = await page.evaluate(async () => {
+      const result = await window.axe.run(document.querySelector('[aria-label="Station Builder"]'), { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-builder-axe.json'), JSON.stringify(audit, null, 2));
+    expect(audit).toEqual([]);
+    await builder.locator('[data-builder-step-id]').last().evaluate(el => el.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-builder-phone.png') });
+    expect(errors).toEqual([]);
+  }, 120000);
+
   it.each(['', 'theme-dark', 'theme-contrast'])('keeps station reflection accessible at 320px in %s', async theme => {
     const station = { id: 'phone-station', name: 'One small practice', tools: ['zones', 'journal'], quests: [
       { qid: 'reflection', type: 'freeResponse', label: 'Choose a next step', params: { selfCheck: true, prompt: 'When could this help? What support could you ask for?' } },

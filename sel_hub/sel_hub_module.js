@@ -1593,6 +1593,56 @@
       var _builderQuests = React.useState([]);
       var builderQuests = _builderQuests[0]; var setBuilderQuests = _builderQuests[1];
 
+      var builderStepCounter = React.useRef(0);
+      function prepareBuilderSteps(steps) {
+        return steps.map(function (q) {
+          return Object.assign({}, q, {
+            qid: 'draft_' + Date.now() + '_' + (++builderStepCounter.current),
+            params: Object.assign({}, q.params || {})
+          });
+        });
+      }
+      function adaptStationCopy(station) {
+        var selected = {};
+        (station.tools || []).forEach(function (id) { selected[id] = true; });
+        alloSaveFocus();
+        setBuilderName(station.name + ' — adapted');
+        setBuilderNote(station.teacherNote || '');
+        setBuilderTools(selected);
+        setBuilderQuests(prepareBuilderSteps(station.quests || []));
+        setBuilderOpen(true);
+        announceToSR('Station copy ready to adapt. The original station and its progress are kept.');
+        alloFocusStationNameInput();
+      }
+      function updateBuilderStep(qid, patch) {
+        setBuilderQuests(function (prev) {
+          return prev.map(function (q) { return q.qid === qid ? Object.assign({}, q, patch) : q; });
+        });
+      }
+      function moveBuilderStep(qid, direction) {
+        setBuilderQuests(function (prev) {
+          var next = prev.slice();
+          var index = next.findIndex(function (q) { return q.qid === qid; });
+          var target = index + direction;
+          if (index < 0 || target < 0 || target >= next.length) return prev;
+          next.splice(target, 0, next.splice(index, 1)[0]);
+          return next;
+        });
+        announceToSR('Practice step moved ' + (direction < 0 ? 'earlier.' : 'later.'));
+      }
+      function moveBuilderTool(id, direction) {
+        setBuilderTools(function (prev) {
+          var ids = Object.keys(prev).filter(function (key) { return prev[key]; });
+          var index = ids.indexOf(id), target = index + direction;
+          if (index < 0 || target < 0 || target >= ids.length) return prev;
+          ids.splice(target, 0, ids.splice(index, 1)[0]);
+          var next = {};
+          ids.forEach(function (key) { next[key] = true; });
+          return next;
+        });
+        announceToSR('Activity moved ' + (direction < 0 ? 'earlier.' : 'later.'));
+      }
+
       // Persist saved stations to localStorage AND to the window slot the
       // host save pipeline reads. Without the window mirror, executeSaveFile
       // can't include stations in the project JSON, so they vanish whenever
@@ -1812,6 +1862,10 @@
           if (typeof addToast === 'function') addToast('Pick at least one tool first', 'info');
           return;
         }
+        if (builderQuests.some(function (q) { return q.type === 'timeSpent' && selectedToolIds.indexOf(q.toolId) < 0; })) {
+          announceToSR('Choose a related activity for every timed step, or switch it to a learner self-check.');
+          return;
+        }
         _savingStation.current = true;
         try {
           var station = {
@@ -1820,7 +1874,7 @@
             tools: selectedToolIds,
             teacherNote: builderNote,
             quests: builderQuests.map(function (q, i) {
-              return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()) });
+              return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()), label: (q.label || '').trim() || ('Practice step ' + (i + 1)), toolId: selectedToolIds.indexOf(q.toolId) >= 0 ? q.toolId : null });
             }),
             createdAt: new Date().toISOString(),
             source: 'sel-hub-builder'
@@ -2368,7 +2422,7 @@
         setBuilderName(plan.name || 'SEL classroom routine');
         setBuilderNote(_teacherPlanBuilderNote(plan));
         setBuilderTools(nextTools);
-        setBuilderQuests(_teacherPlanQuests(plan, selectedToolIds));
+        setBuilderQuests(prepareBuilderSteps(_teacherPlanQuests(plan, selectedToolIds)));
         setBuilderOpen(true);
         setActivePathway(null);
         setActiveStationId(null);
@@ -4191,7 +4245,13 @@
                       },
                       'aria-label': 'Activate station ' + st.name,
                       style: { marginTop: 4, minHeight: 44, padding: '9px 12px', borderRadius: 8, border: 'none', background: _t.pinkAccent, color: _t.onPink, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-                    }, 'Start station')
+                    }, 'Start station'),
+                    h('button', {
+                      type: 'button', disabled: builderOpen,
+                      onClick: function () { adaptStationCopy(st); },
+                      'aria-label': 'Adapt a copy of station ' + st.name,
+                      style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.text, fontSize: 13, fontWeight: 700, cursor: builderOpen ? 'not-allowed' : 'pointer' }
+                    }, 'Adapt a copy')
                   );
                 })
               ),
@@ -4223,6 +4283,12 @@
                     pendingRegistration: true
                   }));
                 });
+                var builderControlStyle = { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', maxWidth: '100%' };
+                var builderActionStyle = Object.assign({}, builderControlStyle, { cursor: 'pointer', fontWeight: 700 });
+                function builderMoveStyle(disabled) {
+                  return Object.assign({}, builderActionStyle, { opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' });
+                }
+                var hasUnassignedTimedStep = builderQuests.some(function (q) { return q.type === 'timeSpent' && selectedBuilderToolIds.indexOf(q.toolId) < 0; });
                 var builderEstimatedMinutes = selectedBuilderToolIds.length ? Math.max(5, (selectedBuilderToolIds.length * 4) + (builderQuests.length * 2)) : 0;
                 var selectedBuilderToolLabels = selectedBuilderToolIds.map(function(toolId) {
                   var found = registry.filter(function(tool) { return tool.id === toolId; })[0] || _selToolById(toolId);
@@ -4261,11 +4327,11 @@
                 ];
                 return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: _t.accentSoftText } }, '🧑‍🏫 Station Builder'),
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: _t.accentSoftText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
                       onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); alloRestoreOrFocusSelHubStart(); },
                       'aria-label': 'Cancel station builder',
-                      style: { fontSize: 13, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
+                      style: Object.assign({}, builderActionStyle, { color: _t.textMuted })
                     }, '✕ Cancel')
                   ),
                   h('div', {
@@ -4294,22 +4360,25 @@
                       h('div', null, builderNoteLine('Sharing boundary', 'Student saves and share packets stay student-controlled.'))
                     )
                   ),
+                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: _t.textMuted } }, 'Save creates a new station with its own practice record. Adapt the sequence to your learners; model one small step, offer response choices, and invite a next use.'),
                   // Name
+                  h('label', { htmlFor: 'sel-station-name-input', style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'Station name'),
                   h('input', {
                     id: 'sel-station-name-input',
                     type: 'text', value: builderName,
                     onChange: function (ev) { setBuilderName(ev.target.value); },
                     placeholder: 'Station name (e.g. "Friday SEL Routine")',
                     'aria-label': 'Station name',
-                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 12, boxSizing: 'border-box' }
+                    style: builderControlStyle
                   }),
                   // Teacher note
-                  h('textarea', { 'aria-label': 'Teacher note',
+                  h('label', { htmlFor: 'sel-station-note-input', style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'Instructions learners will see (optional)'),
+                  h('textarea', { 'aria-label': 'Teacher note', id: 'sel-station-note-input',
                     value: builderNote,
                     onChange: function (ev) { setBuilderNote(ev.target.value); },
                     placeholder: 'Optional teacher note (instructions students see when they activate this station)',
                     rows: 4,
-                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
+                    style: Object.assign({}, builderControlStyle, { resize: 'vertical' })
                   }),
                   h('div', {
                     role: 'status',
@@ -4329,7 +4398,7 @@
                         type: 'button',
                         onClick: function () { setBuilderTools({}); },
                         'aria-label': 'Clear selected station tools',
-                        style: { border: 'none', background: 'none', color: _t.textMuted, cursor: 'pointer', fontSize: 13, fontWeight: 800, textDecoration: 'underline' }
+                        style: { minHeight: 44, border: 'none', background: 'none', color: _t.textMuted, cursor: 'pointer', fontSize: 13, fontWeight: 800, textDecoration: 'underline' }
                       }, 'Clear')
                     ),
                     registry.length === 0
@@ -4338,7 +4407,7 @@
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
                             var pending = !!tool.pendingRegistration;
-                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isContrast ? '#000000' : (isDark ? '#3b1026' : '#fce7f3')) : 'transparent', border: checked ? '1px solid ' + _t.pinkAccent : '1px solid transparent', fontSize: 13, color: _t.text } },
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isContrast ? '#000000' : (isDark ? '#3b1026' : '#fce7f3')) : 'transparent', border: checked ? '1px solid ' + _t.pinkAccent : '1px solid transparent', fontSize: 13, color: _t.text } },
                               h('input', {
                                 type: 'checkbox', checked: checked,
                                 onChange: function () {
@@ -4353,6 +4422,19 @@
                           })
                         )
                   ),
+                  selectedBuilderToolIds.length > 0 && h('section', { 'aria-label': 'Station activity order' },
+                    h('h3', { style: { fontSize: 14, margin: '0 0 6px', color: _t.text } }, 'Activity order'),
+                    h('ol', { style: { margin: 0, paddingLeft: 24, color: _t.text } }, selectedBuilderToolIds.map(function (id, index) {
+                      var name = selectedBuilderToolLabels[index] || id;
+                      return h('li', { key: id, 'data-builder-tool-id': id, style: { padding: '5px 0', fontSize: 14 } },
+                        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' } },
+                          h('span', { style: { flex: '1 1 150px', overflowWrap: 'anywhere' } }, name),
+                          h('button', { type: 'button', disabled: index === 0, onClick: function () { moveBuilderTool(id, -1); }, 'aria-label': 'Move activity ' + name + ' earlier', style: builderMoveStyle(index === 0) }, '↑ Earlier'),
+                          h('button', { type: 'button', disabled: index === selectedBuilderToolIds.length - 1, onClick: function () { moveBuilderTool(id, 1); }, 'aria-label': 'Move activity ' + name + ' later', style: builderMoveStyle(index === selectedBuilderToolIds.length - 1) }, '↓ Later')
+                        )
+                      );
+                    }))
+                  ),
                   // Quest presets + manual quest add
                   h('div', null,
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Practice steps (optional):'),
@@ -4366,7 +4448,7 @@
                               if (typeof addToast === 'function') addToast('Pick tools first, then add quests', 'info');
                               return;
                             }
-                            setBuilderQuests(preset.build());
+                            setBuilderQuests(prepareBuilderSteps(preset.build()));
                             if (typeof addToast === 'function') addToast('Applied "' + preset.name + '" quest preset!', 'success');
                           },
                           'aria-label': 'Apply preset: ' + preset.name + '. ' + preset.desc,
@@ -4380,32 +4462,68 @@
                     ),
                     builderQuests.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                       builderQuests.map(function (q, qi) {
-                        var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '🎯';
-                        return h('div', { key: qi, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, background: _t.bgCard, border: '1px solid ' + _t.border, fontSize: 13, color: _t.text } },
-                          h('span', { 'aria-hidden': 'true', style: { fontSize: 13 } }, qIcon),
-                          h('span', { style: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, q.label),
-                          h('button', {
-                            onClick: function () { setBuilderQuests(function (prev) { return prev.filter(function (_, i) { return i !== qi; }); }); },
-                            'aria-label': 'Remove quest "' + q.label + '"',
-                            style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-                          }, '✕')
+                        var isReflection = q.type === 'freeResponse';
+                        var legacyCriteria = q.type === 'xpThreshold' || q.type === 'timeSpent' || (isReflection && !(q.params || {}).selfCheck);
+                        var inputId = 'sel-builder-step-' + q.qid;
+                        return h('details', { key: q.qid, 'data-builder-step-id': q.qid, style: { padding: '8px 10px', borderRadius: 8, background: _t.bgCard, border: '1px solid ' + _t.border, color: _t.text } },
+                          h('summary', { style: { minHeight: 44, padding: '10px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', overflowWrap: 'anywhere' } }, (qi + 1) + '. ' + (q.label || 'Untitled practice step')),
+                          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                            h('label', { htmlFor: inputId, style: { fontSize: 14, fontWeight: 700 } }, 'Step title'),
+                            h('input', { id: inputId, value: q.label || '', onChange: function (ev) { updateBuilderStep(q.qid, { label: ev.target.value }); }, style: builderControlStyle }),
+                            isReflection && h('label', { htmlFor: inputId + '-prompt', style: { fontSize: 14, fontWeight: 700 } }, 'Reflection prompt'),
+                            isReflection && h('textarea', { id: inputId + '-prompt', rows: 3, value: (q.params || {}).prompt || '', onChange: function (ev) { updateBuilderStep(q.qid, { params: Object.assign({}, q.params || {}, { prompt: ev.target.value }) }); }, style: Object.assign({}, builderControlStyle, { resize: 'vertical' }) }),
+                            h('label', { htmlFor: inputId + '-tool', style: { fontSize: 14, fontWeight: 700 } }, 'Related activity'),
+                            h('select', { id: inputId + '-tool', value: selectedBuilderToolIds.indexOf(q.toolId) >= 0 ? q.toolId : '', onChange: function (ev) { updateBuilderStep(q.qid, { toolId: ev.target.value || null }); }, style: builderControlStyle },
+                              h('option', { value: '' }, q.type === 'timeSpent' ? 'Choose an activity for this timed step' : 'Whole station'),
+                              selectedBuilderToolIds.map(function (id, index) { return h('option', { key: id, value: id }, selectedBuilderToolLabels[index] || id); })
+                            ),
+                            h('p', { style: { fontSize: 13, lineHeight: 1.5, margin: 0, color: _t.textMuted } }, legacyCriteria ? 'This saved step uses an activity target: ' + (q.type === 'xpThreshold' ? ((q.params || {}).threshold || 30) + ' XP overall (including earlier activity).' : q.type === 'timeSpent' ? ((q.params || {}).minutes || 5) + ' minutes.' : ((q.params || {}).minLength || 30) + ' characters.') + ' You can switch this copy to a learner self-check.' : 'Learners can mark this step complete or pass. Reflection notes are optional; thinking, drawing, speaking, signing, or AAC are welcome.'),
+                            legacyCriteria && h('button', { type: 'button', onClick: function () { updateBuilderStep(q.qid, { type: isReflection ? 'freeResponse' : 'manualComplete', params: isReflection ? { prompt: (q.params || {}).prompt || '', selfCheck: true } : {} }); }, style: builderActionStyle }, 'Use learner self-check'),
+                            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                              h('button', { type: 'button', disabled: qi === 0, onClick: function () { moveBuilderStep(q.qid, -1); }, 'aria-label': 'Move step ' + (qi + 1) + ' earlier', style: builderMoveStyle(qi === 0) }, '↑ Earlier'),
+                              h('button', { type: 'button', disabled: qi === builderQuests.length - 1, onClick: function () { moveBuilderStep(q.qid, 1); }, 'aria-label': 'Move step ' + (qi + 1) + ' later', style: builderMoveStyle(qi === builderQuests.length - 1) }, '↓ Later'),
+                              h('button', {
+                                type: 'button',
+                                onClick: function () {
+                                  setBuilderQuests(function (prev) { return prev.filter(function (step) { return step.qid !== q.qid; }); });
+                                  setTimeout(function () { var add = document.getElementById('sel-add-practice-step'); if (add) add.focus(); }, 0);
+                                  announceToSR('Practice step removed from this draft.');
+                                },
+                                'aria-label': 'Remove quest "' + q.label + '"', style: builderActionStyle
+                              }, 'Remove step')
+                            )
+                          )
                         );
                       }),
                       h('button', {
                         onClick: function () { setBuilderQuests([]); },
                         'aria-label': 'Clear all quests',
-                        style: { fontSize: 13, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'flex-start', textDecoration: 'underline' }
+                        style: { minHeight: 44, fontSize: 13, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'flex-start', textDecoration: 'underline' }
                       }, 'Clear all quests')
                     )
                   ),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                    ['manualComplete', 'freeResponse'].map(function (type) {
+                      return h('button', {
+                        key: type, id: type === 'manualComplete' ? 'sel-add-practice-step' : 'sel-add-reflection-step', type: 'button', style: builderActionStyle,
+                        onClick: function () {
+                          var step = prepareBuilderSteps([{ type: type, toolId: null, label: type === 'freeResponse' ? 'Reflect and choose a next use' : 'Try one small practice', params: type === 'freeResponse' ? { selfCheck: true, prompt: 'What helped or needs changing? When could you try it again? You may use a fictional example.' } : {} }])[0];
+                          setBuilderQuests(function (prev) { return prev.concat([step]); });
+                          setTimeout(function () { var input = document.getElementById('sel-builder-step-' + step.qid); if (input) { input.closest('details').open = true; input.focus(); } }, 0);
+                          announceToSR('New step added. Edit its title and guidance.');
+                        }
+                      }, type === 'freeResponse' ? '+ Add reflection step' : '+ Add practice step');
+                    })
+                  ),
+                  hasUnassignedTimedStep && h('p', { role: 'status', style: { margin: 0, fontSize: 14, color: _t.text } }, 'Before saving, choose a related activity for every timed step, or switch it to a learner self-check.'),
                   // Save button
                   h('button', {
                     type: 'button',
-                    disabled: selectedBuilderToolIds.length === 0,
+                    disabled: selectedBuilderToolIds.length === 0 || hasUnassignedTimedStep,
                     onClick: _saveBuilderAsStation,
                     'aria-label': 'Save this station',
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 ? _t.btnBg : _t.pinkAccent, color: selectedBuilderToolIds.length === 0 ? _t.textMuted : _t.onPink, fontSize: 12, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
-                  }, '💾 Save Station')
+                    style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 || hasUnassignedTimedStep ? _t.btnBg : _t.pinkAccent, color: selectedBuilderToolIds.length === 0 || hasUnassignedTimedStep ? _t.textMuted : _t.onPink, fontSize: 14, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 || hasUnassignedTimedStep ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
+                  }, '💾 Save new station')
                 );
               })()
             )

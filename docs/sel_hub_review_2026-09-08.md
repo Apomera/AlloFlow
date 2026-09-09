@@ -62,3 +62,16 @@ Existing saved XP, time, and length-target tasks retain their criteria. Their di
 The station guide uses legible type, wrapping controls, native disclosures, 44 px buttons, and theme-aware colors. Browser coverage exercises voluntary blank completion, reopening, passing, long notes that do not auto-complete, legacy completion with continued editing, tool switching, serialized save/reload, teacher launches, all three custom presets, and 320 px views in light, dark, and high-contrast themes. Station screenshots and axe results are stored beside the original captures in `reports/sel-hub-review/`.
 
 Second-pass validation: **156 regression tests, 12 Chromium workflows, and all 72 initial tool renders passed.** The station guide had zero violations in the focused contrast/label checks across three themes. Source/public parity, syntax, and scoped whitespace checks passed. The archived summary is `reports/sel-hub-review/validation-stations.json`; detailed local logs use the `reports/sel-hub-stations-` prefix.
+
+
+## Third enhancement pass: adaptable station authoring
+
+Saved stations now offer **Adapt a copy**. The builder clones the activity sequence and prompts into a draft with fresh step identifiers. Saving creates a separate station; original instructions, learner notes, and completion records remain attached to the original. Cancel discards the draft.
+
+Teachers can add practice or reflection steps, edit titles and reflection prompts, associate a step with an included activity, and move both activities and steps earlier or later with named buttons. Step editors use native disclosures, visible field labels, and 44 px controls. Newly added steps open and receive focus. New reflection steps offer optional writing and explicit completion/passing; author guidance encourages modeling, response choices, and transfer to another situation.
+
+Copied legacy XP, time, and writing targets remain visible. Teachers can explicitly convert a copied step to a learner self-check, preserving its reflection prompt. Timed steps require a selected related activity before saving so removing an activity cannot produce an unreachable time requirement. XP targets are labeled as cumulative, including earlier activity. No original criterion is rewritten by adapting a copy.
+
+Third-pass validation: **156 regression checks passed across the main run and the corrected accessibility recheck; all 17 Chromium workflows passed; all 72 tool renders passed.** After the final disabled-button styling adjustment, the five affected authoring workflows passed again. Builder contrast/label audits found zero violations in light, dark, and high-contrast themes at 320 px. Visual review covered all three editor themes. Syntax, mirror parity, and scoped whitespace checks passed. Browser coverage adds draft cancellation, original-record isolation, keyboard ordering, edited-prompt persistence, step addition/removal, save/reload, explicit legacy conversion, timed-step validation, and mobile authoring contrast and labels in three themes. The change is local; nothing has been pushed or deployed.
+
+The archived authoring summary is `reports/sel-hub-review/validation-authoring.json`; detailed local logs use the `reports/sel-hub-authoring-` prefix.

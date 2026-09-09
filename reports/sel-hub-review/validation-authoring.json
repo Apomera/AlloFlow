@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-08",
+  "scope": "Adaptable SEL station authoring",
+  "regressions": {
+    "checks": 156,
+    "initial_passed": 155,
+    "initial_failed": 1,
+    "failure": "Source-string accessibility assertion expected aria-label before the new id attribute. Preserved attribute order; all six controls accessibility tests then passed.",
+    "focused_recheck_passed": 6
+  },
+  "browser": {
+    "full_workflows_passed": 17,
+    "final_authoring_recheck_passed": 5
+  },
+  "tool_renders_passed": 72,
+  "builder_audits": {
+    "light": [],
+    "theme-dark": [],
+    "theme-contrast": []
+  },
+  "visual_review": [
+    "light-builder-phone.png",
+    "theme-dark-builder-phone.png",
+    "theme-contrast-builder-phone.png"
+  ],
+  "hub_sha256": "ba4a8858cd2050dbfb70d30c8ed26af6758dce56b73e5558be80c3d0b7939b67",
+  "source_public_mirror_identical": true,
+  "syntax": "passed",
+  "scoped_diff_check": "passed",
+  "deployed": false,
+  "logs": [
+    "reports/sel-hub-authoring-browser.log",
+    "reports/sel-hub-authoring-browser-recheck.log",
+    "reports/sel-hub-authoring-regression.log",
+    "reports/sel-hub-authoring-a11y-recheck.log",
+    "reports/sel-hub-authoring-render.log"
+  ]
+}
