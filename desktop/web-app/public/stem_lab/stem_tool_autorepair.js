@@ -20515,6 +20515,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('textarea', { id: 'ar-shop-scene-notes', rows: 3, maxLength: 2000, value: shop.notes, onChange: function (e) { change({ notes: e.target.value }); }, style: { width: '100%', boxSizing: 'border-box', padding: 10, background: '#fff', color: '#102033', borderRadius: 6 } })),
             h('p', { 'data-ar-scene-feedback': true, style: { fontSize: 13, color: '#a5f3fc', marginBottom: 0, minHeight: 20 } }, shop.feedback || 'Choose equipment, then focus the service controls.'));
         }
+        function alignmentDiagram() {
+          var toe = arShopAlignment(shop), targets = !!d.shopToeTargets;
+          var difference = Math.abs(shop.alignment.left - shop.alignment.right) / 100;
+          function signed(value) { return (value >= 0 ? '+' : '') + value.toFixed(2) + '°'; }
+          var explanation = toe.inSpec
+            ? 'Both wheels, their sum and their balance meet this training sheet. Capture a fresh measurement to record the result.'
+            : toe.totalInSpec
+              ? 'The total passes, but the pair does not. Adding two angles can hide an individual angle or balance problem; check all three conditions shown here.'
+              : 'The total is outside the training range. Use each wheel’s angle to decide which tie rod to adjust, then check the sum and balance again.';
+          var checks = [
+            ['individual', 'Each wheel', toe.individual, 'Left ' + signed(toe.left) + ' · right ' + signed(toe.right), 'Each +0.08° to +0.12°'],
+            ['total', 'Total toe', toe.totalInSpec, signed(toe.left) + ' + (' + signed(toe.right) + ') = ' + signed(toe.total), '+0.18° to +0.22°'],
+            ['balance', 'Left/right difference', toe.balanced, '|' + signed(toe.left) + ' − (' + signed(toe.right) + ')| = ' + difference.toFixed(2) + '°', 'No more than 0.02°']
+          ];
+          return h('section', { 'data-ar-toe-diagram': true, 'aria-label': 'Live toe geometry', style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } },
+            h('h5', { style: { fontSize: 14, margin: '0 0 8px' } }, 'See the two angles together'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Top view · vehicle front points up. Inward-pointing wheel fronts mean positive toe. Solid wheels follow your live adjustments.'),
+            control(targets ? 'Hide target overlay' : 'Show target overlay', function () { upd('shopToeTargets', !targets); }, { 'data-ar-toe-overlay': true, 'aria-pressed': targets }),
+            h('svg', { viewBox: '0 0 360 218', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 440, margin: '8px auto' } },
+              h('rect', { x: 120, y: 65, width: 120, height: 110, rx: 20, fill: T.cardAlt, stroke: T.border }),
+              h('path', { d: 'M180 54 V24 M173 33 L180 24 L187 33', fill: 'none', stroke: T.text, strokeWidth: 2 }),
+              h('text', { x: 180, y: 16, textAnchor: 'middle', fill: T.text, fontSize: 14 }, 'FRONT'),
+              ['left', 'right'].map(function (side, index) {
+                var x = index ? 270 : 90, value = toe[side], direction = index ? -1 : 1;
+                var angle = value * 24 * direction, selected = task.id === 'service' && shop.alignment.selected === side;
+                var pass = shop.alignment[side] >= 8 && shop.alignment[side] <= 12;
+                return h('g', { key: side },
+                  h('line', { x1: x, x2: x, y1: 38, y2: 174, stroke: T.muted, strokeDasharray: '2 5', strokeWidth: 1 }),
+                  h('g', { 'data-ar-toe-wheel': side, transform: 'rotate(' + angle + ' ' + x + ' 106)' },
+                    h('line', { x1: x, x2: x, y1: 42, y2: 170, stroke: T.text, strokeWidth: 2 }),
+                    h('rect', { x: x - 12, y: 62, width: 24, height: 88, rx: 7, fill: T.text, stroke: T.text, strokeWidth: selected ? 4 : 1 }),
+                    h('line', { x1: x, x2: x, y1: 70, y2: 142, stroke: T.card, strokeWidth: 2 })),
+                  targets && h('rect', { 'data-ar-toe-target': side, x: x - 20, y: 57, width: 40, height: 98, rx: 9, fill: 'none', stroke: isContrast ? T.text : T.accentHi, strokeWidth: 2, strokeDasharray: '6 4', transform: 'rotate(' + (2.4 * direction) + ' ' + x + ' 106)' }),
+                  h('text', { x: x, y: 192, textAnchor: 'middle', fill: T.text, fontSize: 15, fontWeight: 700 }, (index ? 'Right ' : 'Left ') + signed(value)),
+                  h('text', { x: x, y: 210, textAnchor: 'middle', fill: T.text, fontSize: 13 }, selected ? 'Adjusting this side' : pass ? 'Individual: in range' : 'Individual: adjust'));
+              })),
+            h('p', { 'data-ar-toe-legend': true, style: { fontSize: 12, lineHeight: 1.5 } }, 'Dotted lines: straight reference. ' + (targets ? 'Dashed outlines: +0.10° target on each side. ' : '') + 'Angles shown at 24×, matching the 3D view; numbers are actual model angles.'),
+            h('dl', { style: { margin: 0 } }, checks.map(function (check) {
+              return h('div', { key: check[0], 'data-ar-toe-check': check[0], 'data-ar-toe-pass': String(check[2]), style: { borderTop: '1px solid ' + T.border, padding: '9px 0', fontSize: 12, lineHeight: 1.5 } },
+                h('dt', { style: { fontWeight: 700 } }, (check[2] ? '✓ In range · ' : '↺ Adjust · ') + check[1]),
+                h('dd', { style: { margin: '3px 0 0', overflowWrap: 'anywhere' } }, check[3]),
+                h('dd', { style: { margin: '3px 0 0' } }, 'Training range: ' + check[4]));
+            })),
+            h('p', { 'data-ar-toe-explanation': toe.inSpec ? 'ready' : toe.totalInSpec ? 'misleading-total' : 'outside-total', style: { fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, explanation));
+        }
         function alignmentPanel() {
           var toe = arShopAlignment(shop), setup = task.id === 'alignment-setup';
           function operate(action) { var next = arShopOperate(shop, action); save(next); arAnnounce(next.feedback); }
@@ -20546,6 +20591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('div', { className: 'ar-shop-actions' }, [-5, -1, 1, 5].map(function (delta) {
                   return control((delta > 0 ? '+' : '−') + (Math.abs(delta) / 100).toFixed(2) + '°', function () { operate({ type: 'alignment-adjust', delta: delta }); }, { key: delta, 'data-ar-alignment-adjust': delta });
                 }))),
+              alignmentDiagram(),
               h('p', { 'data-ar-alignment-result': toe.inSpec ? 'pass' : 'adjust', style: { fontWeight: 700 } }, toe.inSpec ? '✓ All three alignment checks pass. Capture this result.' : 'Compare both individual angles, total toe and left/right balance with the service sheet.')));
         }
         function instrumentPanel() {

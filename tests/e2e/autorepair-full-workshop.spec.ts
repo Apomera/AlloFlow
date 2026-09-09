@@ -990,3 +990,48 @@ test('voltage evidence lesson records before and after, supports reasoning retri
   await perform(page, 'job-card'); await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('live toe diagram explains cancellation and keeps target overlays separate from evidence', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 30, right: -10, tyres: true, targets: true, centered: true } } } });
+  const panel = page.locator('[data-ar-toe-diagram]');
+  await expect(panel.locator('[data-ar-toe-check="total"]')).toHaveAttribute('data-ar-toe-pass', 'true');
+  await expect(panel.locator('[data-ar-toe-explanation]')).toHaveAttribute('data-ar-toe-explanation','misleading-total');
+  const original = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-toe-overlay]').focus(); await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-toe-target]')).toHaveCount(2);
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(original);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-desktop.png'});
+  for (let i=0;i<4;i++) await page.locator('[data-ar-alignment-adjust="-5"]').click();
+  await page.locator('[data-ar-alignment-side="right"]').click();
+  for (let i=0;i<4;i++) await page.locator('[data-ar-alignment-adjust="5"]').click();
+  await expect(panel.locator('[data-ar-toe-explanation]')).toHaveAttribute('data-ar-toe-explanation','ready');
+  await expect(panel.locator('[data-ar-toe-check="balance"]')).toContainText('= 0.00°');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('mounted-wheel--1.3-0.79')?.data.toeDegrees === 0.1);
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const captured = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-toe-overlay]').click();
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(captured);
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','true');
+  await page.locator('[data-ar-alignment-adjust="1"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await expect(panel.locator('[data-ar-toe-check="balance"]')).toContainText('= 0.01°');
+  await page.locator('#ar-shop-job').selectOption('oil');
+  await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('alignment');
+  await expect(panel.locator('[data-ar-toe-check="total"]')).toContainText('= +0.21°');
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('#wrap').evaluate((el: HTMLElement) => {el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(() => { const w=window as any; w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopToeTargets',true); });
+  await expect(panel.locator('[data-ar-toe-target]')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-mobile.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(() => { const w=window as any; w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopToeTargets',true); });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-dark.png'});
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

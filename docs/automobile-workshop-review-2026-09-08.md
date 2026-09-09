@@ -255,6 +255,18 @@ Validation: **122 workshop model/render tests passed** in the final run (15.68 s
 - [Desktop voltage evidence](../reports/automobile-workshop/voltage-evidence-desktop.png)
 - [High-contrast phone evidence](../reports/automobile-workshop/voltage-evidence-mobile.png)
 
+## Live alignment geometry lesson
+
+The alignment console now connects the existing tie-rod controls to a live top-down wheel diagram. Solid wheels show the current left/right angles, with the same explicitly labeled 24× visual exaggeration as the 3D vehicle. An optional dashed target overlay shows +0.10° on each side; dotted lines retain a straight reference. The selected side is labeled during adjustment, and all angles remain available as text.
+
+Three independent checks show each wheel's permitted range, signed addition for total toe, and the absolute left/right difference. Live feedback explains why opposite-signed angles can produce an acceptable total while individual angles and balance fail. It also covers pairs whose individual angles pass but whose total or balance does not. Passing geometry prompts a fresh measurement instead of claiming that the result is already recorded. The overlay is a separate UI preference and does not change the work order, 3D geometry, capture, history or progress. Actual tie-rod adjustment still invalidates the captured reading. Existing authored ranges and service gates are unchanged.
+
+Validation: **132 workshop model/render tests passed** in the final run (5.02 seconds), including ten new cases covering independent tolerance checks, signed cancellation, absolute difference, wheel direction, theme rendering, fallback labels and an initially hidden overlay. **Three distinct WebGL browser workflows passed** (1.5 minutes): the existing complete alignment job, the misleading-total mobile workflow and the new diagram workflow. The new workflow passed again after label/copy polish (17.4 seconds), checking keyboard activation, unchanged state and evidence on overlay toggles, live adjustment/3D wheel agreement, capture invalidation, job switching and reflow at 390 px and 320 px. Final desktop light, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build.
+
+- [Desktop diagram with a misleading total](../reports/automobile-workshop/toe-diagram-desktop.png)
+- [High-contrast phone diagram](../reports/automobile-workshop/toe-diagram-mobile.png)
+- [Narrow dark-phone diagram](../reports/automobile-workshop/toe-diagram-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

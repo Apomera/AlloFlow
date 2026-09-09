@@ -817,3 +817,40 @@ describe('Voltage chart numeric robustness', () => {
     }
   });
 });
+
+
+describe('Live alignment geometry explanation', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  function render(left, right, options = {}, theme = {}) {
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('autoRepair', { autoRepair: { view: 'workshop', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', alignment: { left, right } }, ...options } }, theme);
+    return host.querySelector('[data-ar-toe-diagram]');
+  }
+  it.each([[30,-10,false,true,false], [8,12,true,true,false], [8,8,true,false,true], [10,10,true,true,true], [-40,40,false,false,false]])('explains the three independent checks for %s / %s', (left,right,individual,total,balance) => {
+    const panel=render(left,right);
+    for(const [id, pass] of [['individual',individual],['total',total],['balance',balance]]) expect(panel.querySelector('[data-ar-toe-check="'+id+'"]').getAttribute('data-ar-toe-pass')).toBe(String(pass));
+    expect(panel.querySelector('[data-ar-toe-explanation]').getAttribute('data-ar-toe-explanation')).toBe(individual&&total&&balance?'ready':total?'misleading-total':'outside-total');
+  });
+  it('shows opposite-signed cancellation and a numeric absolute difference', () => {
+    const panel=render(30,-10);
+    expect(panel.querySelector('[data-ar-toe-check="total"]').textContent).toContain('+0.30° + (-0.10°) = +0.20°');
+    expect(panel.querySelector('[data-ar-toe-check="balance"]').textContent).toContain('= 0.40°');
+    expect(panel.querySelector('[data-ar-toe-explanation]').textContent).toContain('total passes, but the pair does not');
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('renders labeled geometry and an optional target without WebGL in %j', theme => {
+    const panel=render(30,-10,{shopToeTargets:true,uh3dStatus:'failed'},theme);
+    expect(panel.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
+    expect(panel.querySelector('[data-ar-toe-overlay]').getAttribute('aria-pressed')).toBe('true');
+    expect(panel.querySelectorAll('[data-ar-toe-target]')).toHaveLength(2);
+    expect(Number(panel.querySelector('[data-ar-toe-wheel="left"]').getAttribute('transform').match(/rotate\(([^ ]+)/)[1])).toBeCloseTo(7.2);
+    expect(Number(panel.querySelector('[data-ar-toe-wheel="right"]').getAttribute('transform').match(/rotate\(([^ ]+)/)[1])).toBeCloseTo(2.4);
+    expect(panel.textContent).toContain('24×'); expect(panel.textContent).toContain('+0.10° target on each side');
+    for(const line of panel.querySelectorAll('svg line')) expect(line.getAttribute('stroke')).toMatch(/^#/);
+  });
+  it('starts with the overlay hidden and never labels live angles as recorded evidence', () => {
+    const panel=render(10,10);
+    expect(panel.querySelector('[data-ar-toe-overlay]').getAttribute('aria-pressed')).toBe('false');
+    expect(panel.querySelectorAll('[data-ar-toe-target]')).toHaveLength(0);
+    expect(panel.querySelector('[data-ar-toe-explanation]').textContent).toContain('Capture a fresh measurement');
+  });
+});
