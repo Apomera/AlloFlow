@@ -173,3 +173,15 @@ If you keep that frame, the Hub is a useful piece of a thoughtful SEL practice. 
 - [988 Suicide & Crisis Lifeline](https://988lifeline.org/) and [Crisis Text Line](https://www.crisistextline.org/) — verify current contact methods and adapt for your country or region.
 
 Record the date, reviewer, deployment, and policy decision whenever this guide is approved for student use.
+
+## Choosing, adapting, and recovering practice
+
+Use **Help me choose an activity** to choose a goal, time for a first step, and response format. These suggestions use the selected options; they do not assess a learner's feelings. A two-minute first step is not a promise that the entire activity takes two minutes. Thinking, speaking, drawing, signing, or AAC away from a form are valid ways to practice; they do not automatically fill or submit that form.
+
+Each pathway offers elementary, middle-school, and high-school examples. Learners and educators can switch the example level and adapt the context, language, and support. The examples are authored scaffolds, not developmental norms or an assessment of ability. Model a small action, invite rehearsal, ask what helped or needs changing, and identify a possible next use. Use fictional situations and keep personal disclosure optional.
+
+**Research labels describe the underlying approach.** Evidence for a therapy, framework, or full school program does not automatically transfer to an app activity inspired by it. Check the cited research, study populations, setting, required support, and outcomes before selecting activities. The hub's labels do not establish effectiveness of its digital adaptations. See [CASEL's program selection guidance](https://schoolguide.casel.org/focus-area-3/school/adopt-an-evidence-based-program-for-sel/) and [CAST's choice and autonomy guidance](https://udlguidelines.cast.org/engagement/interests-identities/choice-autonomy/).
+
+Station builder drafts are stored on the current device for recovery. Resume an unfinished draft before starting another, or discard it. **Cancel discards the draft.** Save it as a station to include it in the data available to a project save. Undo for removed steps lasts while the draft is open; undo for station removal lasts while the hub is mounted. Restoring a station keeps its existing practice records. A full SEL data reset clears recovery state too.
+
+The **Saving and sharing** panel reports failures for hub stations, station notes, checkpoints, portfolio artifacts, and authoring drafts. It does not verify every input in every individual tool. A failed local save can leave an older copy on the device. Keep the hub open, retry, and use the main app's project-save flow. A save request is not confirmation that a file was written. Drafts remain device-local until saved as stations. Live sessions and optional AI have separate data flows; review the Share Packet preview before sharing.

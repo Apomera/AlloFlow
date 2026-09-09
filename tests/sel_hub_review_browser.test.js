@@ -28,6 +28,22 @@ async function mount(width = 1280, theme = '', fixture = null) {
   if (fixture) await page.evaluate(seed => {
     localStorage.setItem('alloflow_sel_stations', JSON.stringify(seed.stations || []));
     localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(seed.progress || {}));
+    if (seed.draft) localStorage.setItem('alloflow_sel_builder_draft', JSON.stringify(seed.draft));
+    window.reviewGrade = seed.grade || '8th Grade';
+    window.reviewSession = seed.session || null;
+    window.reviewBlockedWrites = seed.blockWrites || [];
+    window.reviewExportFails = !!seed.exportFails;
+    window.reviewBlockedRemovals = seed.blockRemovals || [];
+    const remove = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function (key) {
+      if (window.reviewBlockedRemovals.includes(key)) throw new DOMException('Storage unavailable', 'SecurityError');
+      return remove.call(this, key);
+    };
+    const write = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (window.reviewBlockedWrites.includes(key)) throw new DOMException('Storage full', 'QuotaExceededError');
+      return write.call(this, key, value);
+    };
   }, fixture);
   await page.addScriptTag({ content: hub });
   await page.addScriptTag({ content: read('sel_hub/sel_standards_alignment.js') });
@@ -39,9 +55,9 @@ async function mount(width = 1280, theme = '', fixture = null) {
       const [tab, setTab] = R.useState('explore');
       return R.createElement(window.AlloModules.SelHub, {
         showSelHub: true, setShowSelHub: noop, selHubTool: tool, setSelHubTool: setTool,
-        selHubTab: tab, setSelHubTab: setTab, addToast: noop, gradeLevel: '8th Grade',
+        selHubTab: tab, setSelHubTab: setTab, addToast: noop, gradeLevel: window.reviewGrade || '8th Grade', activeSessionCode: window.reviewSession || null,
         callGemini: null, onSafetyFlag: noop, studentCodename: 'review', t: (key, fallback) => fallback || key,
-        ArrowLeft: Icon, X: Icon, Sparkles: Icon, Heart: Icon, GripVertical: Icon, onExportRequested: noop,
+        ArrowLeft: Icon, X: Icon, Sparkles: Icon, Heart: Icon, GripVertical: Icon, onExportRequested: () => { if (window.reviewExportFails) throw new Error('Save unavailable'); if (window.reviewExportRejects) return Promise.reject(new Error('Save rejected')); window.reviewExportRequests = (window.reviewExportRequests || 0) + 1; },
       });
     }
     window.reviewRoot = R.createElement(ReviewApp);
@@ -347,6 +363,221 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(audit).toEqual([]);
     await builder.locator('[data-builder-step-id]').last().evaluate(el => el.scrollIntoView({ block: 'start' }));
     await page.screenshot({ path: path.join(reports, (theme || 'light') + '-builder-phone.png') });
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('recovers an interrupted draft and undoes removals without overwriting later edits', async () => {
+    await mount();
+    await page.locator('details[aria-label="Teacher launch routines"] > summary').click();
+    await page.getByRole('button', { name: 'Load teacher launch plan: Morning advisory check-in', exact: true }).click();
+    let builder = page.getByRole('region', { name: 'Station Builder', exact: true });
+    await builder.getByRole('textbox', { name: 'Station name', exact: true }).fill('Recover this draft');
+    const before = await builder.locator('[data-builder-step-id]').count();
+    await builder.getByRole('button', { name: 'Clear all quests', exact: true }).click();
+    await builder.getByRole('button', { name: '+ Add practice step', exact: true }).click();
+    await builder.getByRole('textbox', { name: 'Step title', exact: true }).fill('A later addition');
+    await builder.getByRole('button', { name: 'Undo removed steps', exact: true }).click();
+    expect(await builder.locator('[data-builder-step-id]').count()).toBe(before + 1);
+    expect(await builder.getByRole('textbox', { name: 'Step title', exact: true }).inputValue()).toBe('A later addition');
+    const draft = await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_sel_builder_draft')));
+    expect(draft.quests.at(-1).label).toBe('A later addition');
+    await mount(1280, '', { draft });
+    await page.getByRole('button', { name: 'Resume station draft', exact: true }).click();
+    builder = page.getByRole('region', { name: 'Station Builder', exact: true });
+    expect(await builder.getByRole('textbox', { name: 'Station name', exact: true }).inputValue()).toBe('Recover this draft');
+    expect(await builder.locator('[data-builder-step-id]').count()).toBe(before + 1);
+    await builder.getByRole('button', { name: 'Save this station', exact: true }).click();
+    await page.getByRole('region', { name: 'Active SEL Station: Recover this draft', exact: true }).waitFor();
+    expect(await page.evaluate(() => localStorage.getItem('alloflow_sel_builder_draft'))).toBe(null);
+    const saved = await page.evaluate(() => window.__alloflowSelStations.at(-1));
+    expect(saved.quests.at(-1).label).toBe('A later addition');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('undoes multiple station deletions with original records intact', async () => {
+    const stations = ['First', 'Second'].map((name, index) => ({ id: 'undo-' + index, name, tools: ['journal'], quests: [] }));
+    const progress = { 'undo-0': { old: { response: 'Keep this original note', complete: true } } };
+    await mount(1280, '', { stations, progress });
+    for (const name of ['First', 'Second']) await page.getByRole('button', { name: 'Delete station ' + name, exact: true }).click();
+    expect(await page.getByRole('button', { name: /^Undo removal:/ }).count()).toBe(2);
+    await page.getByRole('button', { name: 'Undo removal: First', exact: true }).click();
+    await page.getByRole('button', { name: 'Undo removal: Second', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    const saved = await page.evaluate(() => ({ stations: window.__alloflowSelStations, progress: window.__alloflowSelProgress }));
+    expect(saved.stations).toEqual(stations);
+    expect(saved.progress).toEqual(progress);
+    expect(await page.getByRole('region', { name: 'Removed stations', exact: true }).count()).toBe(0);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('reports local saving failures, retries, and distinguishes requested from completed project saves', async () => {
+    const station = { id: 'save-failure', name: 'Save failure', tools: ['journal'], quests: [] };
+    await mount(1280, '', { stations: [station], blockWrites: ['alloflow_sel_stations', 'alloflow_sel_station_progress'], exportFails: true });
+    const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
+    expect(await saving.getByRole('alert').innerText()).toContain('could not be saved');
+    await saving.locator('summary').click();
+    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    expect(await saving.getByRole('status').innerText()).toContain('request failed');
+    await page.evaluate(() => { window.reviewBlockedWrites = []; window.reviewExportFails = false; });
+    await saving.getByRole('button', { name: 'Retry local saving', exact: true }).click();
+    expect(await saving.getByRole('alert').count()).toBe(0);
+    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    expect(await saving.getByRole('status').innerText()).toContain('a saved file has not been confirmed');
+    expect(await page.evaluate(() => window.reviewExportRequests)).toBe(1);
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_sel_stations')))).toEqual([station]);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('matches stated goals, time and response choices and explains empty matches', async () => {
+    await mount();
+    const chooser = page.locator('details[aria-label="Help me choose an activity"]');
+    await chooser.locator('summary').click();
+    await chooser.getByRole('combobox', { name: 'What would help?' }).selectOption('conversation');
+    await chooser.getByRole('combobox', { name: 'Time for a first step' }).selectOption('2');
+    expect(await chooser.getByRole('status').innerText()).toContain('No starting option');
+    await chooser.getByRole('combobox', { name: 'Time for a first step' }).selectOption('5');
+    await chooser.getByRole('combobox', { name: 'How would you like to respond?' }).selectOption('offline');
+    expect(await chooser.locator('article').count()).toBe(1);
+    expect(await chooser.locator('article').innerText()).toContain('Why this option: prepare a conversation');
+    expect(await chooser.locator('article').innerText()).toContain('without typing');
+    await chooser.getByRole('button', { name: /^Open / }).focus(); await page.keyboard.press('Enter');
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    expect(await support.innerText()).toContain('do not fill or submit');
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    expect(await page.locator('[data-sel-tool-card-id]').count()).toBeGreaterThan(70);
+    expect(await page.evaluate(() => Object.keys(localStorage).some(key => /chooseNeed|chooseTime|chooseResponse/.test(key)))).toBe(false);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('offers all 24 pathway examples and defaults to the configured grade without locking learner choice', async () => {
+    await mount(1280, '', { grade: '2nd Grade' });
+    for (const name of ['Morning Check-In', 'Calm Down Corner', 'Conflict Resolution Unit', 'Empathy & Perspective Week', 'Decision-Making Deep Dive', 'Self-Discovery Journey', 'Friendship & Social Skills', 'Navigating Change']) {
+      await startPathway(name);
+      const guide = page.getByRole('region', { name: 'Pathway practice guide' });
+      await guide.getByText('Model, practice, and reflect', { exact: true }).click();
+      const examples = guide.getByRole('region', { name: 'Adaptable practice example' });
+      const texts = [];
+      for (const level of ['elementary', 'middle', 'high']) {
+        await examples.getByRole('combobox').selectOption(level);
+        texts.push(await examples.locator('p').first().innerText());
+      }
+      expect(new Set(texts).size).toBe(3);
+      expect(texts.every(text => text.includes('Model:'))).toBe(true);
+      await guide.getByRole('button', { name: 'Exit pathway mode' }).click();
+    }
+    await mount(1280, '', { grade: '2nd Grade' });
+    await startPathway('Morning Check-In');
+    await page.getByText('Model, practice, and reflect', { exact: true }).click();
+    expect(await page.getByRole('combobox', { name: 'Choose an example level' }).inputValue()).toBe('elementary');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('keeps research qualifications visible and live-session sharing status accurate', async () => {
+    await mount(1280, '', { session: 'REVIEW' });
+    const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
+    await saving.locator('summary').click();
+    expect(await saving.innerText()).toContain('A live session is connected');
+    expect(await saving.innerText()).toContain('may send progress or safety signals');
+    const research = page.locator('details[aria-label="About research labels"]');
+    await research.locator('summary').click();
+    expect(await research.innerText()).toContain('does not establish that this digital activity has the same effects');
+    expect(await page.getByText('Strong evidence', { exact: true }).count()).toBe(0);
+    expect(await page.getByText('Research-informed approach', { exact: true }).count()).toBeGreaterThan(0);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('retries a failed draft discard without silently recreating that draft', async () => {
+    const draft = { version: 1, name: 'Discard me', note: '', tools: { journal: true }, quests: [] };
+    await mount(1280, '', { draft, blockRemovals: ['alloflow_sel_builder_draft'] });
+    await page.getByRole('button', { name: 'Discard station draft', exact: true }).click();
+    const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
+    expect(await saving.getByRole('alert').count()).toBe(1);
+    expect(await page.getByRole('button', { name: 'Resume station draft', exact: true }).count()).toBe(1);
+    await page.evaluate(() => { window.reviewBlockedRemovals = []; });
+    await saving.locator(':scope > details > summary').click();
+    await saving.getByRole('button', { name: 'Retry local saving', exact: true }).click();
+    expect(await page.evaluate(() => localStorage.getItem('alloflow_sel_builder_draft'))).toBe(null);
+    expect(await page.getByRole('button', { name: 'Resume station draft', exact: true }).count()).toBe(0);
+    expect(await saving.getByRole('alert').count()).toBe(0);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('uses honest feedback from existing save controls and only confirms on a host acknowledgement', async () => {
+    await mount(1280, '', { exportFails: true });
+    await page.getByRole('button', { name: 'Save or export SEL work now', exact: true }).click();
+    const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
+    expect(await saving.getByRole('status').innerText()).toContain('request failed');
+    await page.evaluate(() => { window.reviewExportFails = false; window.reviewExportRejects = true; });
+    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('[aria-label="SEL saving and sharing"] [role="status"]').textContent.includes('request failed'));
+    await page.evaluate(() => { window.reviewExportRejects = false; });
+    await page.locator('[data-sel-tool-card-id="journal"]').click();
+    await page.getByRole('button', { name: 'Export SEL project file now', exact: true }).click();
+    expect(await saving.getByRole('status').innerText()).toContain('a saved file has not been confirmed');
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('alloflow-project-saved')));
+    expect(await saving.getByRole('status').innerText()).toContain('host reported a completed project save');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('clears recovery state with a full SEL data reset', async () => {
+    const draft = { version: 1, name: 'Draft to clear', note: 'Fictional authoring note', tools: { journal: true }, quests: [{ qid: 'clear', type: 'manualComplete', label: 'Example', params: {} }] };
+    await mount(1280, '', { draft, stations: [{ id: 'clear-station', name: 'Clear station', tools: ['journal'], quests: [] }] });
+    await page.getByRole('button', { name: 'Delete station Clear station', exact: true }).click();
+    await page.getByRole('button', { name: 'Resume station draft', exact: true }).click();
+    await page.getByRole('button', { name: 'Clear all quests', exact: true }).click();
+    await page.getByRole('button', { name: 'For Educators: how to use this Hub responsibly', exact: true }).click();
+    await page.locator('#sel-clear-all-data-button').click();
+    await page.getByRole('button', { name: 'Permanently delete all SEL data', exact: true }).click();
+    expect(await page.getByRole('button', { name: /^Undo removal:/ }).count()).toBe(0);
+    expect(await page.getByRole('button', { name: 'Undo removed steps', exact: true }).count()).toBe(0);
+    expect(await page.getByRole('button', { name: 'Resume station draft', exact: true }).count()).toBe(0);
+    expect(await page.evaluate(() => localStorage.getItem('alloflow_sel_builder_draft'))).toBe(null);
+    expect(await page.evaluate(() => window.__alloflowSelStations || [])).toEqual([]);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('keeps a real journal entry through save and reopening the activity', async () => {
+    await mount();
+    await page.locator('[data-sel-tool-card-id="journal"]').click();
+    await page.getByRole('tab', { name: /Journal$/ }).click();
+    const entry = 'A fictional learner asks for an example before trying a new task.';
+    await page.getByRole('textbox', { name: 'Journal entry', exact: true }).fill(entry);
+    await page.getByRole('button', { name: 'Save Entry', exact: true }).click();
+    expect(await page.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('');
+    await page.getByRole('alertdialog', { name: /^Badge earned:/ }).getByRole('button', { name: 'Nice', exact: true }).click();
+    const support = page.locator('details[aria-label="Practice support"]');
+    await support.locator(':scope > summary').click();
+    await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
+    await page.locator('[data-sel-tool-card-id="journal"]').click();
+    await page.getByRole('tab', { name: /Journal$/ }).click();
+    const savedEntries = page.getByRole('button', { name: 'View saved journal entries (1)', exact: true });
+    expect((await savedEntries.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await savedEntries.focus(); await page.keyboard.press('Enter');
+    expect(await page.getByText(entry, { exact: true }).count()).toBe(1);
+    await page.getByText(entry, { exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, 'journal-saved-entry.png') });
+    await page.getByRole('button', { name: 'Back to journal writing', exact: true }).click();
+    expect(await page.getByRole('textbox', { name: 'Journal entry', exact: true }).inputValue()).toBe('');
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('keeps discovery and saving feedback usable at 320px in %s', async theme => {
+    await mount(320, theme);
+    const chooser = page.locator('details[aria-label="Help me choose an activity"]');
+    await chooser.locator('summary').click();
+    const layout = await chooser.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth, controls: [...el.querySelectorAll('button,select')].map(c => c.getBoundingClientRect().height) }));
+    expect(layout.scroll).toBeLessThanOrEqual(layout.client + 1);
+    expect(layout.controls.every(height => height >= 44)).toBe(true);
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const audit = await page.evaluate(async () => {
+      const result = await window.axe.run(document.querySelector('details[aria-label="Help me choose an activity"]'), { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-chooser-axe.json'), JSON.stringify(audit, null, 2));
+    expect(audit).toEqual([]);
+    await chooser.evaluate(el => el.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-chooser-phone.png') });
     expect(errors).toEqual([]);
   }, 120000);
 

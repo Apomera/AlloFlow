@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-08",
+  "scope": "SEL recovery, discovery, adaptable instruction, evidence context, saving feedback, journal history navigation",
+  "regressions": {
+    "distinct_passed": 156,
+    "main_passed": 152,
+    "bypass_recheck_passed": 4,
+    "note": "Shared-workstation setup timeout resolved by a focused rerun with a 60-second hook timeout."
+  },
+  "browser": {
+    "distinct_workflows_passed": 30,
+    "main_passed": 29,
+    "journal_recheck_passed": 1,
+    "note": "The journal test now dismisses the achievement dialog and opens saved entries before checking content. No persistence defect was found in this journey."
+  },
+  "tool_renders": {
+    "passed": 72,
+    "latest_journal_label_recheck": "passed"
+  },
+  "chooser_audits": {
+    "light": [],
+    "theme-dark": [],
+    "theme-contrast": []
+  },
+  "visual_review": [
+    "light-chooser-phone.png",
+    "theme-dark-chooser-phone.png",
+    "theme-contrast-chooser-phone.png",
+    "journal-saved-entry.png"
+  ],
+  "sha256": {
+    "sel_hub_module.js": "1bd83fb8d9befaeafdc1b75de52cc3fa4539db5e5d886f09f44db863421a5fa8",
+    "sel_tool_journal.js": "b02889db0f7c0ed33b8f16789375d696f0d146ac60b43f6e1ef4924bb149780b"
+  },
+  "mirrors_identical": true,
+  "logs": [
+    "reports/sel-hub-recovery-regression-final.log",
+    "reports/sel-hub-recovery-bypass-recheck.log",
+    "reports/sel-hub-recovery-browser-verified.log",
+    "reports/sel-hub-recovery-journal-recheck.log",
+    "reports/sel-hub-recovery-render-final.log"
+  ],
+  "classroom_and_packaged_app_verification": "Not performed; see docs/sel_hub_classroom_validation_plan.md",
+  "deployed": false,
+  "syntax": "passed",
+  "scoped_diff_check": "passed"
+}

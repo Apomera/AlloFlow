@@ -1566,19 +1566,19 @@ window.SelHub = window.SelHub || {
                     fontSize: 13, cursor: jText.trim() ? 'pointer' : 'not-allowed'
                   }
                 }, '\uD83D\uDCBE Save Entry'),
-                journalEntries.length > 0 && h('button', { 'aria-label': 'Past ( )',
+                journalEntries.length > 0 && h('button', { 'aria-label': 'View saved journal entries (' + journalEntries.length + ')',
                   onClick: function() { upd('jViewingPast', true); if (soundEnabled) sfxClick(); },
-                  style: { padding: '12px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: 'transparent', color: _jouFg(ACCENT), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-                }, '\uD83D\uDCC3 Past (' + journalEntries.length + ')')
+                  style: { minHeight: 44, padding: '12px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: 'transparent', color: _jouFg(ACCENT), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                }, '\uD83D\uDCC3 Saved entries (' + journalEntries.length + ')')
               )
             ) :
 
             // Past entries viewer
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', marginBottom: 16 } },
-                h('button', { 'aria-label': 'Past Journal Entries ( )',
+                h('button', { 'aria-label': 'Back to journal writing',
                   onClick: function() { upd('jViewingPast', false); if (soundEnabled) sfxClick(); },
-                  style: { background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 14, cursor: 'pointer', marginRight: 8 }
+                  style: { minHeight: 44, minWidth: 44, background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 14, cursor: 'pointer', marginRight: 8 }
                 }, '\u2190'),
                 h('h3', { style: { color: _jouFg('#f1f5f9'), fontSize: 16, margin: 0 } }, 'Past Journal Entries (' + journalEntries.length + ')')
               ),

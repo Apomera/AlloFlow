@@ -291,7 +291,7 @@
 
           function requestSave() {
             if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
-              try { ctx.props.onExportRequested(); } catch (e) {}
+              try { if (ctx.props.onExportRequested() === false) return; } catch (e) { return; }
             } else {
               try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested', { detail: { source: 'sel-tool-shell', toolId: id } })); } catch (e) {}
             }
@@ -742,6 +742,50 @@
       transitions: { goal: 'Identify what is changing, what can stay steady, and one source of support.', model: 'A new class feels uncertain. I can find the room beforehand and ask who can help.', practice: 'Choose a real or fictional change. Name one uncertainty, one steady support, and one small next step.', reflect: 'Which part is within your control? What help or accommodation would be useful?', transfer: 'Before the change, I can ____. If the plan needs to change, I can ____.' }
     };
 
+    // Authored examples, not age norms or a developmental assessment.
+    var SEL_PATHWAY_EXAMPLES = {
+  "morning_check": [
+    "A character is starting a busy school day. Model: \"I can point to a feeling and choose one thing to start.\" Try choosing a picture, a word, or a small first action.",
+    "A student arrives after a noisy bus ride. Model: \"I need a quieter start; I can ask for a minute and choose the first task.\" Rehearse an ask and an alternative if quiet space is unavailable.",
+    "A student is balancing coursework and an after-school responsibility. Model: \"My energy is limited; I can choose one priority and ask about flexibility.\" Compare two realistic supports and their tradeoffs."
+  ],
+  "calm_down": [
+    "A character finds the room too noisy. Model: \"I can look at something still or ask for a quieter spot.\" Try or point to one comfortable option; a grown-up can model it first.",
+    "A student feels overloaded before group work. Model: \"Breathing does not fit today; I can try looking around or ask for space.\" Compare two options without requiring a calmer feeling.",
+    "A student has little recovery time between commitments. Model: \"I can notice my limits and adjust the setting or ask for support.\" Plan an option that fits the setting and a backup if it does not help."
+  ],
+  "conflict_unit": [
+    "Two fictional characters want the same marker. Model: \"Can we take turns, or find another marker?\" Rehearse one request and listen to a possible answer.",
+    "A fictional project group disagrees about who does which task. Model: \"What does each person need to contribute?\" Compare two fair arrangements and rehearse a listening question.",
+    "A fictional team disagrees about credit for shared work. Model: \"Let us describe contributions and agree on fair credit.\" Consider roles and power, then rehearse a response and when to involve support."
+  ],
+  "empathy_week": [
+    "A character does not join a game. Model: \"Maybe they want to watch. I can ask.\" Think of two possibilities and practice a question instead of guessing.",
+    "A classmate gives a short reply in a fictional chat. Model: \"I do not know their reason yet.\" Separate an observation from an assumption and suggest a respectful question.",
+    "A fictional team interprets a missed deadline differently. Model: \"We may have different constraints or expectations.\" Compare perspectives, identify missing context, and plan how to check it without demanding private information."
+  ],
+  "decision_making": [
+    "A character finds a lost pencil case. Model: \"I can give it to a trusted grown-up.\" Compare two choices and who each might affect.",
+    "A fictional group wants to share a photo. Model: \"Let us ask everyone pictured before posting.\" Compare consent, audience, and what could happen next.",
+    "A fictional club must choose how to use limited funds. Model: \"Who benefits, who is left out, and what do we still need to know?\" Compare two options, tradeoffs, and a way to revisit the decision."
+  ],
+  "self_discovery": [
+    "A character asks useful questions while building a tower. Model: \"Asking helped us learn.\" Point to or draw one strength in action and a person who could help next.",
+    "A fictional student notices they explain ideas well to a partner. Model: \"That strength shows up when I have preparation time.\" Give an example and name a support that helps it appear.",
+    "A fictional student considers a new role. Model: \"My strengths depend on context, and I can keep learning.\" Connect a strength to evidence from an experience, a growth area, and a realistic support."
+  ],
+  "friendship": [
+    "A character invites someone to play. Model: \"Would you like to join? It is okay to say no.\" Rehearse an invitation and a kind response to either answer.",
+    "A fictional friend wants an immediate reply during homework. Model: \"I care about our friendship, and I will reply later.\" Practice a boundary that leaves both people a real choice.",
+    "A fictional friendship group has different expectations about time and privacy. Model: \"Let us name what we can offer and what we want kept private.\" Rehearse a boundary and consider consent and reciprocity."
+  ],
+  "transitions": [
+    "A character is moving to a new classroom. Model: \"I can find the door and ask who will help.\" Draw or point to one thing that changes and one support that stays.",
+    "A fictional student is joining an unfamiliar club. Model: \"I can ask what to expect and plan a first visit.\" Name one uncertainty, one available support, and a backup plan.",
+    "A fictional student is preparing for a new school, job, or training program. Model: \"I can separate what I control from what requires support.\" Plan a first step, an accommodation or question, and when to review the plan."
+  ]
+};
+
     var SEL_TEACHER_TOOL_META = {
       zones: { time: '5-8 min', format: 'Solo or group', cue: 'Useful first check-in before any sharing.' },
       emotions: { time: '5-8 min', format: 'Solo or pair', cue: 'Good vocabulary warm-up.' },
@@ -1030,7 +1074,19 @@
       "- [Google: Gemini Apps Privacy Hub](https://support.google.com/gemini/answer/13594961) — current activity, retention, and privacy disclosures.",
       "- [988 Suicide & Crisis Lifeline](https://988lifeline.org/) and [Crisis Text Line](https://www.crisistextline.org/) — verify current contact methods and adapt for your country or region.",
       "",
-      "Record the date, reviewer, deployment, and policy decision whenever this guide is approved for student use."
+      "Record the date, reviewer, deployment, and policy decision whenever this guide is approved for student use.",
+      "",
+      "## Choosing, adapting, and recovering practice",
+      "",
+      "Use **Help me choose an activity** to choose a goal, time for a first step, and response format. These suggestions use the selected options; they do not assess a learner's feelings. A two-minute first step is not a promise that the entire activity takes two minutes. Thinking, speaking, drawing, signing, or AAC away from a form are valid ways to practice; they do not automatically fill or submit that form.",
+      "",
+      "Each pathway offers elementary, middle-school, and high-school examples. Learners and educators can switch the example level and adapt the context, language, and support. The examples are authored scaffolds, not developmental norms or an assessment of ability. Model a small action, invite rehearsal, ask what helped or needs changing, and identify a possible next use. Use fictional situations and keep personal disclosure optional.",
+      "",
+      "**Research labels describe the underlying approach.** Evidence for a therapy, framework, or full school program does not automatically transfer to an app activity inspired by it. Check the cited research, study populations, setting, required support, and outcomes before selecting activities. The hub's labels do not establish effectiveness of its digital adaptations. See [CASEL's program selection guidance](https://schoolguide.casel.org/focus-area-3/school/adopt-an-evidence-based-program-for-sel/) and [CAST's choice and autonomy guidance](https://udlguidelines.cast.org/engagement/interests-identities/choice-autonomy/).",
+      "",
+      "Station builder drafts are stored on the current device for recovery. Resume an unfinished draft before starting another, or discard it. **Cancel discards the draft.** Save it as a station to include it in the data available to a project save. Undo for removed steps lasts while the draft is open; undo for station removal lasts while the hub is mounted. Restoring a station keeps its existing practice records. A full SEL data reset clears recovery state too.",
+      "",
+      "The **Saving and sharing** panel reports failures for hub stations, station notes, checkpoints, portfolio artifacts, and authoring drafts. It does not verify every input in every individual tool. A failed local save can leave an older copy on the device. Keep the hub open, retry, and use the main app's project-save flow. A save request is not confirmation that a file was written. Drafts remain device-local until saved as stations. Live sessions and optional AI have separate data flows; review the Share Packet preview before sharing."
     ].join('\n');
 
     // ── Minimal markdown-to-HTML-element converter ──
@@ -1218,6 +1274,26 @@
       var pathwayCheck = _selPathwayCheck[0];
       var setPathwayCheck = _selPathwayCheck[1];
 
+      var _saveHealth = React.useState({});
+      var saveHealth = _saveHealth[0], setSaveHealth = _saveHealth[1];
+      var _projectSaveNotice = React.useState('');
+      var projectSaveNotice = _projectSaveNotice[0], setProjectSaveNotice = _projectSaveNotice[1];
+      function writeLocalSel(key, value, remove) {
+        var ok = true;
+        try { if (remove) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value)); } catch (e) { ok = false; }
+        setSaveHealth(function (prev) { if (prev[key] === ok) return prev; var next = Object.assign({}, prev); next[key] = ok; return next; });
+        return ok;
+      }
+      var _chooseNeed = React.useState('reset');
+      var chooseNeed = _chooseNeed[0], setChooseNeed = _chooseNeed[1];
+      var _chooseTime = React.useState('5');
+      var chooseTime = _chooseTime[0], setChooseTime = _chooseTime[1];
+      var _chooseResponse = React.useState('any');
+      var chooseResponse = _chooseResponse[0], setChooseResponse = _chooseResponse[1];
+      var _exampleBand = React.useState(gradeBand(gradeLevel));
+      var exampleBand = _exampleBand[0], setExampleBand = _exampleBand[1];
+      React.useEffect(function () { setExampleBand(gradeBand(gradeLevel)); }, [gradeLevel]);
+
       // Tool snapshots (save/load)
       var _selSnapshots = React.useState(function () {
         try {
@@ -1341,6 +1417,7 @@
       // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
       React.useEffect(function() {
         function onExported() {
+          setProjectSaveNotice('The host reported a completed project save. Unfinished station drafts remain on this device.');
           setIsDirty(false);
           _lastExportRef.current = Date.now();
           try { sessionStorage.setItem('alloflow_sel_last_export_at', String(Date.now())); } catch (e) {}
@@ -1513,7 +1590,7 @@
 
       // Persist tool snapshots locally and mirror them to the host save slot.
       React.useEffect(function () {
-        try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(selSnapshots || [])); } catch (e) {}
+        writeLocalSel('alloflow_sel_snapshots', selSnapshots || []);
         try { window.__alloflowSelSnapshots = Array.isArray(selSnapshots) ? selSnapshots : []; } catch (e) {}
       }, [selSnapshots]);
 
@@ -1521,7 +1598,7 @@
       // AlloHaven reads the registry as a read-only portfolio shelf.
       React.useEffect(function () {
         var artifacts = Array.isArray(studentArtifacts) ? studentArtifacts : [];
-        try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(artifacts)); } catch (e) {}
+        writeLocalSel('alloflow_student_artifacts', artifacts);
         try {
           window.__alloflowStudentArtifacts = artifacts;
           window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub' } }));
@@ -1593,6 +1670,63 @@
       var _builderQuests = React.useState([]);
       var builderQuests = _builderQuests[0]; var setBuilderQuests = _builderQuests[1];
 
+      var _recoverableDraft = React.useState(function () {
+        try {
+          var draft = JSON.parse(localStorage.getItem('alloflow_sel_builder_draft') || 'null');
+          if (!draft || draft.version !== 1 || typeof draft.name !== 'string' || typeof draft.note !== 'string' || !draft.tools || Array.isArray(draft.tools) || typeof draft.tools !== 'object' || !Array.isArray(draft.quests)) return null;
+          if (!draft.quests.every(function (q) { return q && typeof q.qid === 'string' && typeof q.type === 'string'; })) return null;
+          return draft;
+        } catch (e) { return null; }
+      });
+      var recoverableDraft = _recoverableDraft[0], setRecoverableDraft = _recoverableDraft[1];
+      var _builderUndo = React.useState([]);
+      var builderUndo = _builderUndo[0], setBuilderUndo = _builderUndo[1];
+      var _removedStations = React.useState([]);
+      var removedStations = _removedStations[0], setRemovedStations = _removedStations[1];
+      var stationRemovalOrder = React.useRef([]);
+      var draftRemovalPending = React.useRef(false);
+      React.useEffect(function () {
+        if (!builderOpen) return;
+        draftRemovalPending.current = false;
+        var draft = { version: 1, name: builderName, note: builderNote, tools: builderTools, quests: builderQuests };
+        writeLocalSel('alloflow_sel_builder_draft', draft);
+        setRecoverableDraft(draft);
+      }, [builderOpen, builderName, builderNote, builderTools, builderQuests]);
+      function discardBuilderDraft() {
+        // Only remove the recovery prompt when storage deletion succeeds.
+        draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true);
+        if (!draftRemovalPending.current) setRecoverableDraft(null);
+        setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); setBuilderUndo([]);
+      }
+      function restoreBuilderDraft() {
+        if (!recoverableDraft) return;
+        setBuilderName(recoverableDraft.name); setBuilderNote(recoverableDraft.note);
+        setBuilderTools(recoverableDraft.tools); setBuilderQuests(prepareBuilderSteps(recoverableDraft.quests));
+        setBuilderUndo([]); setBuilderOpen(true); alloFocusStationNameInput();
+        announceToSR('Authoring draft restored.');
+      }
+      function removeBuilderSteps(ids) {
+        var removed = [];
+        builderQuests.forEach(function (q, index) { if (ids.indexOf(q.qid) >= 0) removed.push({ step: q, index: index }); });
+        if (!removed.length) return;
+        setBuilderUndo(function (prev) { return prev.concat([removed]); });
+        setBuilderQuests(function (prev) { return prev.filter(function (q) { return ids.indexOf(q.qid) < 0; }); });
+        announceToSR('Steps removed. Undo is available while this draft is open.');
+      }
+      function undoBuilderRemoval() {
+        var removed = builderUndo[builderUndo.length - 1];
+        if (!removed) return;
+        setBuilderQuests(function (prev) {
+          var next = prev.slice();
+          removed.forEach(function (item) {
+            if (!next.some(function (q) { return q.qid === item.step.qid; })) next.splice(Math.min(item.index, next.length), 0, item.step);
+          });
+          return next;
+        });
+        setBuilderUndo(function (prev) { return prev.slice(0, -1); });
+        announceToSR('Removed steps restored; later edits are kept.');
+        setTimeout(function () { var el = document.querySelector('[data-builder-step-id] > summary'); if (el) el.focus(); }, 0);
+      }
       var builderStepCounter = React.useRef(0);
       function prepareBuilderSteps(steps) {
         return steps.map(function (q) {
@@ -1603,6 +1737,8 @@
         });
       }
       function adaptStationCopy(station) {
+        if (builderOpen || recoverableDraft) return;
+        setBuilderUndo([]);
         var selected = {};
         (station.tools || []).forEach(function (id) { selected[id] = true; });
         alloSaveFocus();
@@ -1648,14 +1784,14 @@
       // can't include stations in the project JSON, so they vanish whenever
       // Canvas wipes localStorage between sessions.
       React.useEffect(function () {
-        try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(savedStations)); } catch (e) {}
+        writeLocalSel('alloflow_sel_stations', savedStations);
         try { window.__alloflowSelStations = savedStations; } catch (e) {}
       }, [savedStations]);
 
       // Persist quest progress to localStorage AND to the window slot. Same
       // Canvas-survival reason as savedStations above.
       React.useEffect(function () {
-        try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(questProgress)); } catch (e) {}
+        writeLocalSel('alloflow_sel_station_progress', questProgress);
         try { window.__alloflowSelProgress = questProgress; } catch (e) {}
       }, [questProgress]);
 
@@ -1882,8 +2018,7 @@
           setSavedStations(savedStations.concat([station]));
           setActiveStationId(station.id);
           // Reset builder
-          setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]);
-          setBuilderOpen(false);
+          discardBuilderDraft();
           if (typeof addToast === 'function') addToast('SEL Station saved!', 'success');
           announceToSR('Custom SEL Station saved and activated.');
           // Surface to parent so the resource sidebar can show it.
@@ -1999,7 +2134,7 @@
         { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '3-12' },
         { id: 'bigFeelings', icon: '\uD83D\uDD25', label: 'Big Feelings (Anger)', desc: 'Anger-specific psychoeducation and skill-building. Anger as information, not the problem; reactive aggression as the trap. Built on Lochman\'s Coping Power tradition + the CBT-for-anger evidence base. Hassle log, trigger inventory, the choice point, personalized cool-downs.', color: 'orange', recommendedRange: '5-12' },
         { id: 'substancePsychoed', icon: '\u2697\uFE0F', label: 'Substance Use', desc: 'Harm-reduction psychoeducation about substances (alcohol, cannabis, nicotine, opioids, stimulants, benzos, hallucinogens). Adolescent brain risks. Naloxone education. NOT a screener, NOT abstinence-only. Strong SAMHSA referral. MI-aligned reflection space.', color: 'slate', recommendedRange: '6-12' },
-        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Mood follows action more than action follows mood. One of the most evidence-supported treatments for low mood and depression. From Lewinsohn, Jacobson, Martell.', color: 'emerald', recommendedRange: '5-12' },
+        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Notice what fits and choose a manageable next step. This planning activity draws on behavioral activation; it does not deliver or evaluate a course of therapy.', color: 'emerald', recommendedRange: '5-12' },
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
@@ -2017,7 +2152,7 @@
         { id: 'griefLoss',   icon: '\uD83D\uDD6F\uFE0F', label: 'Grief & Loss',         desc: 'A guided self-companion for grief. Death of a person or pet, family changes, friend losses, identity losses, ambiguous loss \u2014 all count. Walk through Worden\'s four tasks of mourning, write a letter, plan rituals. Strong safety framing pointing to Crisis Companion / 988 for severe or complicated grief.', color: 'rose', recommendedRange: '5-12' },
         { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
         { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
-        { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. The strongest evidence-based upstream youth suicide prevention framework (Wyman et al.). Builds protective factors BEFORE crisis hits. Complements Crisis Companion on the protective side.', color: 'amber', recommendedRange: '6-12' },
+        { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. Explore protective supports inspired by the Sources of Strength program. This self-guided map is an adaptation, not delivery of the evaluated school program.', color: 'amber', recommendedRange: '6-12' },
         { id: 'crisiscompanion', icon: '\uD83E\uDEC2', label: 'Crisis Companion', desc: 'Peer support and suicide-prevention skills: what to do if you or a friend is depressed, in crisis, or thinking about self-harm \u2014 recognizing the signs, what to say (and not say), telling a trusted adult, plus 988 and a personal safety plan. Content-warning gated. Aligned with NEDA, AFSP, Sources of Strength, and 988. The acute-support counterpart to Sources of Strength.', color: 'teal', recommendedRange: '6-12' },
         { id: 'identitySupport', icon: '\uD83C\uDF08', label: 'Identity Support', desc: 'Inclusive, affirming space for gender identity, sexual orientation, romantic orientation, and broader identity questions. Vocabulary, identity development, finding community, safety for trans youth, ally guidance. Built on Trevor Project, GLSEN, PFLAG.', color: 'pink', recommendedRange: '5-12' },
         { id: 'disabilityVoices', icon: '\uD83C\uDFA4', label: 'Disability Voices', desc: 'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, Patty Berne.', color: 'pink', recommendedRange: '6-12' },
@@ -2128,8 +2263,8 @@
       // and to screen readers. This table is meant to be reviewed as a whole.
       // ══════════════════════════════════════════════════════════════
       var _evidenceTiers = {
-        strong:    { label: 'Strong evidence',     color: '#15803d', bg: '#dcfce7', title: 'Well-replicated empirical support' },
-        emerging:  { label: 'Emerging evidence',   color: '#a16207', bg: '#fef9c3', title: 'Promising but limited or mixed evidence' },
+        strong:    { label: 'Research-informed approach',     color: '#15803d', bg: '#dcfce7', title: 'Research relates to the underlying approach; this digital adaptation has not been evaluated here' },
+        emerging:  { label: 'Limited approach evidence',   color: '#a16207', bg: '#fef9c3', title: 'Promising but limited or mixed evidence' },
         contested: { label: 'Contested model',     color: '#c2410c', bg: '#ffedd5', title: 'Popular but scientifically disputed; best used as metaphor, not mechanism' },
         practice:  { label: 'Reflective practice', color: '#475569', bg: '#f1f5f9', title: 'A structured practice or heuristic, not an empirical efficacy claim' }
       };
@@ -2340,7 +2475,7 @@
           ? ['zones', 'emotions', 'coping', 'friendship']
           : band === 'middle'
             ? ['coping', 'journal', 'perspective', 'goals']
-            : ['thoughtRecord', 'valuesCommittedAction', 'advocacy', 'sleep'];
+            : ['advocacy', 'goals', 'perspective', 'journal'];
         for (var i = 0; i < ids.length; i++) {
           var found = _allSelTools.find(function(t) { return t.id === ids[i] && !t.category; });
           if (found) return found;
@@ -2410,6 +2545,8 @@
       }
 
       function _applyTeacherLaunchPlan(plan) {
+        if (builderOpen || recoverableDraft) { announceToSR('Finish or discard your existing station draft first.'); return; }
+        setBuilderUndo([]);
         var selectedToolIds = _teacherPlanCatalogTools(plan);
         var pendingLabels = _teacherPlanPendingLabels(plan);
         if (selectedToolIds.length === 0 || pendingLabels.length) {
@@ -2973,16 +3110,7 @@
               h('button', {
                 onClick: function() {
                   setShowDirtyTooltip(false);
-                  // Prefer parent-supplied export handler; otherwise dispatch
-                  // a window event that the host app can listen for.
-                  if (typeof props.onExportRequested === 'function') {
-                    try { props.onExportRequested(); } catch (e) {}
-                  } else {
-                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
-                  }
-                  // Optimistically clear dirty (host will confirm with
-                  // alloflow-sel-exported if/when the file actually writes).
-                  if (typeof addToast === 'function') addToast('Exporting your work\u2026', 'info');
+                  requestProjectSave();
                 },
                 style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
               }, '\uD83D\uDCBE Export now')
@@ -3068,6 +3196,8 @@
           }
           toRemove.forEach(function(k) { try { localStorage.removeItem(k); } catch (e) {} });
         } catch (e) {}
+        // Recovery must never bring back data after an explicit full reset.
+        discardBuilderDraft(); setRemovedStations([]); setProjectSaveNotice('');
         // Reset in-memory hub state.
         try { setSelToolData({}); } catch (e) {}
         try { setSavedStations([]); } catch (e) {}
@@ -3433,6 +3563,125 @@
         );
       })();
 
+      function renderExampleChoice(pathwayId, suffix) {
+        var examples = SEL_PATHWAY_EXAMPLES[pathwayId];
+        if (!examples) return null;
+        var levels = ['elementary', 'middle', 'high'];
+        var labels = ['Elementary example', 'Middle-school example', 'High-school example'];
+        return h('section', { 'aria-label': 'Adaptable practice example', style: { marginTop: 12, padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, fontSize: 14, lineHeight: 1.6, color: _t.text, background: _t.bgCard } },
+          h('label', { htmlFor: 'sel-example-level-' + suffix, style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, 'Choose an example level'),
+          h('select', { id: 'sel-example-level-' + suffix, value: exampleBand, onChange: function (e) { setExampleBand(e.target.value); }, style: { minHeight: 44, maxWidth: '100%', padding: 8, background: _t.bgInput, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8, fontSize: 14 } },
+            levels.map(function (level, i) { return h('option', { key: level, value: level }, labels[i]); })),
+          h('p', { style: { margin: '8px 0' } }, examples[levels.indexOf(exampleBand)] || examples[0]),
+          h('p', { style: { margin: 0, color: _t.textMuted, fontSize: 13 } }, 'Adapt names, settings, and language together. These examples are choices, not measures of ability. Use fiction; personal disclosure is optional.')
+        );
+      }
+      function renderResearchContext(toolId) {
+        var ev = _evidenceBase[toolId];
+        return h('details', { 'aria-label': 'About research labels', style: { margin: '10px 0', color: _t.text, fontSize: 14, lineHeight: 1.5 } },
+          h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'What the research labels mean'),
+          ev && h('p', null, 'Approach context: ' + _evidenceTiers[ev.tier].label + '.'),
+          h('p', null, 'Research on a therapy, curriculum, or framework does not establish that this digital activity has the same effects. The labels describe the approach; they do not rate this app or a learner.'),
+          h('p', null, 'Before choosing an activity, check its cited sources, the ages and settings studied, the support needed, and the outcomes measured. Population fit and effectiveness of this adaptation have not been established by these labels.'),
+          h('a', { href: 'https://schoolguide.casel.org/focus-area-3/school/adopt-an-evidence-based-program-for-sel/', target: '_blank', rel: 'noopener noreferrer', style: { color: _t.accentSoftText, textDecoration: 'underline' } }, 'CASEL: choosing and evaluating an SEL program')
+        );
+      }
+      function requestProjectSave() {
+        function reportFailure() { setProjectSaveNotice('The project save request failed. Keep this hub open and try Save / Export in the main app.'); }
+        setProjectSaveNotice('Project save requested. Complete the save flow in the main app; a saved file has not been confirmed here.');
+        try {
+          var result;
+          if (typeof props.onExportRequested === 'function') result = props.onExportRequested();
+          else window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested'));
+          if (result === false) { reportFailure(); return false; }
+          if (result && typeof result.then === 'function') result.then(function (value) { if (value === false) reportFailure(); }, reportFailure);
+          return true;
+        } catch (e) { reportFailure(); return false; }
+      }
+      function renderSavingStatus() {
+        var failed = Object.keys(saveHealth).some(function (key) { return saveHealth[key] === false; });
+        var action = { minHeight: 44, padding: '8px 12px', background: _t.bgCard, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8, cursor: 'pointer', fontSize: 14 };
+        return h('section', { 'aria-label': 'SEL saving and sharing', style: { margin: 12, padding: '8px 12px', border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, background: _t.bgSoft, fontSize: 13, lineHeight: 1.5 } },
+          failed && h('p', { role: 'alert', style: { margin: '4px 0', fontWeight: 700 } }, 'Some SEL changes could not be saved on this device. Keep this hub open and save a project copy; station drafts must be saved as stations to join that copy.'),
+          h('details', { open: !!projectSaveNotice },
+            h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, failed ? 'Saving needs attention' : 'Saving and sharing'),
+            h('p', null, failed ? 'The current work remains available in this open hub. A failed local save may leave an older copy on this device.' : 'Saved stations, station notes, and hub checkpoints are being stored on this device. Individual activities have their own save controls; this status does not confirm every activity input was saved.'),
+            h('p', null, 'Station drafts stay on this device for recovery. Saving a station adds it to the project data available to Save / Export; requesting a project save does not confirm that a file was written.'),
+            h('p', null, activeSessionCode ? 'A live session is connected. It may send progress or safety signals to the host. Optional AI sends activity text to the configured service. Review a Share Packet before choosing to share it.' : 'Optional AI sends activity text to the configured service. A Share Packet contains the items and detail levels you select; review its preview before sharing.'),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              failed && h('button', { type: 'button', style: action, onClick: function () {
+                writeLocalSel('alloflow_sel_stations', savedStations); writeLocalSel('alloflow_sel_station_progress', questProgress);
+                writeLocalSel('alloflow_sel_snapshots', selSnapshots || []); writeLocalSel('alloflow_student_artifacts', studentArtifacts || []);
+                if (draftRemovalPending.current) { draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true); if (!draftRemovalPending.current) setRecoverableDraft(null); }
+                else if (builderOpen) writeLocalSel('alloflow_sel_builder_draft', { version: 1, name: builderName, note: builderNote, tools: builderTools, quests: builderQuests });
+                else if (recoverableDraft) writeLocalSel('alloflow_sel_builder_draft', recoverableDraft);
+                else writeLocalSel('alloflow_sel_builder_draft', null, true);
+              } }, 'Retry local saving'),
+              h('button', { type: 'button', style: action, onClick: requestProjectSave }, 'Request project save')
+            ),
+            h('p', { role: 'status', style: { margin: '8px 0 0' } }, projectSaveNotice)
+          )
+        );
+      }
+      function renderStationRecovery() {
+        if (!removedStations.length) return null;
+        return h('section', { 'aria-label': 'Removed stations', style: { margin: 12, padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgSoft, color: _t.text, fontSize: 14 } },
+          h('p', { style: { margin: '0 0 8px' } }, 'Undo station removal while this hub is open. Existing practice records are kept.'),
+          removedStations.map(function (item) { return h('button', { key: item.station.id, id: 'sel-undo-station-' + item.station.id, type: 'button', style: { minHeight: 44, maxWidth: '100%', margin: 4, padding: 10, border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, background: _t.bgCard, fontSize: 14 }, onClick: function () {
+            setSavedStations(function (prev) { if (prev.some(function (st) { return st.id === item.station.id; })) return prev; var next = prev.slice(); var nextId = item.order.slice(item.index + 1).find(function (id) { return next.some(function (st) { return st.id === id; }); }); var at = nextId ? next.findIndex(function (st) { return st.id === nextId; }) : next.length; next.splice(at, 0, item.station); return next; });
+            setRemovedStations(function (prev) { return prev.filter(function (entry) { return entry.station.id !== item.station.id; }); });
+            announceToSR('Station restored: ' + item.station.name);
+            setTimeout(function () { var btn = Array.prototype.find.call(document.querySelectorAll('button'), function (el) { return el.getAttribute('aria-label') === 'Activate station ' + item.station.name; }); if (btn) btn.focus(); }, 0);
+          } }, 'Undo removal: ' + item.station.name); })
+        );
+      }
+      function renderActivitySupport() {
+        if (!selHubTool) return null;
+        var pathway = SEL_PATHWAYS.find(function (pw) { return pw.tools.indexOf(selHubTool) >= 0; });
+        return h('details', { key: selHubTool, 'aria-label': 'Practice support', style: { margin: 12, padding: '0 12px', border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, background: _t.bgSoft, fontSize: 14, lineHeight: 1.6 } },
+          h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, 'Ways to practice and get support'),
+          h('p', null, 'Choose one small step. You may think quietly, sketch, speak, sign, or use AAC away from the form. These alternatives do not fill or submit the activity form. A written answer or a particular feeling is not required for your own practice.'),
+          h('p', null, 'Before taking a break, use any active timer or audio stop control. Save anything you want to keep using the activity’s controls. You can return to the catalog without marking a step complete.'),
+          !activePathway && renderExampleChoice(pathway ? pathway.id : 'self_discovery', 'activity'),
+          renderResearchContext(selHubTool),
+          h('button', { type: 'button', onClick: function () { setSelHubTool(null); alloFocusToolCard(selHubTool); announceToSR('Returned to activities. No practice completion was recorded by this action.'); }, style: { minHeight: 44, padding: 10, background: _t.bgCard, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8, fontSize: 14 } }, 'Return to activities')
+        );
+      }
+      function renderActivityChooser() {
+        var choices = [
+          { need: 'reset', tool: 'coping', min: 2, mode: 'offline', first: 'Choose one comfortable grounding option. Notice whether it fits; stopping is allowed.' },
+          { need: 'reset', tool: 'journal', min: 5, mode: 'write', first: 'Write one thing that would make the next few minutes more manageable. No personal story is needed.' },
+          { need: 'feelings', tool: 'zones', min: 2, mode: 'offline', first: 'Point to a feeling or quietly notice. Choose one support; there is no correct zone to reach.' },
+          { need: 'feelings', tool: 'emotions', min: 5, mode: 'offline', first: 'Explore two feeling words for a fictional character. More than one answer can fit.' },
+          { need: 'feelings', tool: 'journal', min: 5, mode: 'write', first: 'Write a word or short reflection about a fictional or everyday situation.' },
+          { need: 'conversation', tool: 'advocacy', min: 5, mode: 'offline', first: 'Use a fictional situation to rehearse one request aloud, with AAC, or quietly, away from the form.' },
+          { need: 'conversation', tool: 'journal', min: 5, mode: 'write', first: 'Draft one respectful request for a safe, everyday situation; you do not have to send it.' },
+          { need: 'decision', tool: 'decisions', min: 5, mode: 'offline', first: 'Think through two choices in a fictional situation and one possible effect of each.' },
+          { need: 'decision', tool: 'goals', min: 10, mode: 'write', first: 'Draft one realistic next step and a support you could ask for.' }
+        ];
+        var needLabels = { reset: 'Try a reset', feelings: 'Understand a feeling', conversation: 'Prepare a conversation', decision: 'Choose a next step' };
+        var options = choices.filter(function (item) { return item.need === chooseNeed && item.min <= Number(chooseTime) && (chooseResponse === 'any' || item.mode === chooseResponse); }).slice(0, 2);
+        var control = { minHeight: 44, width: '100%', minWidth: 0, padding: 8, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgInput, color: _t.text, fontSize: 14 };
+        return h('details', { 'aria-label': 'Help me choose an activity', style: { marginBottom: 12, padding: 12, border: '1px solid ' + _t.border, borderRadius: 10, background: _t.bgSoft, color: _t.text } },
+          h('summary', { style: { minHeight: 44, padding: '10px 0', cursor: 'pointer', fontSize: 15, fontWeight: 700 } }, 'Help me choose an activity'),
+          h('p', { style: { fontSize: 14, lineHeight: 1.5 } }, 'Choose what you want to try. Suggestions use only these choices; they do not assess your feelings. Times describe a first step, not the full activity.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3,minmax(0,1fr))', gap: 10 } },
+            h('label', { style: { fontSize: 14 } }, 'What would help?', h('select', { value: chooseNeed, onChange: function (e) { setChooseNeed(e.target.value); }, style: control }, Object.keys(needLabels).map(function (key) { return h('option', { key: key, value: key }, needLabels[key]); }))),
+            h('label', { style: { fontSize: 14 } }, 'Time for a first step', h('select', { value: chooseTime, onChange: function (e) { setChooseTime(e.target.value); }, style: control }, ['2', '5', '10'].map(function (mins) { return h('option', { key: mins, value: mins }, mins + ' minutes'); }))),
+            h('label', { style: { fontSize: 14 } }, 'How would you like to respond?', h('select', { value: chooseResponse, onChange: function (e) { setChooseResponse(e.target.value); }, style: control }, h('option', { value: 'any' }, 'Any way'), h('option', { value: 'offline' }, 'Think, speak, draw, or AAC'), h('option', { value: 'write' }, 'Write a short response')))
+          ),
+          h('p', { role: 'status', style: { fontSize: 14 } }, options.length ? options.length + ' starting ' + (options.length === 1 ? 'option' : 'options') + ' for your choices.' : 'No starting option matches yet. Try more time or another response format; the full catalog is still available.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2,minmax(0,1fr))', gap: 8 } }, options.map(function (item) {
+            var tool = _selToolById(item.tool);
+            return h('article', { key: item.tool, style: { padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, fontSize: 14, lineHeight: 1.5 } },
+              h('strong', null, tool ? tool.label : item.tool),
+              h('p', null, 'Why this option: ' + needLabels[item.need].toLowerCase() + ', with a suggested ' + item.min + '-minute first step and ' + (item.mode === 'write' ? 'a short written response.' : 'a way to practice without typing.')),
+              h('p', null, item.first),
+              h('button', { type: 'button', disabled: !window.SelHub.isRegistered(item.tool), onClick: function () { openSelToolById(item.tool, tool ? tool.label : item.tool); }, style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, 'Open ' + (tool ? tool.label : item.tool))
+            );
+          }))
+        );
+      }
       function renderPathwayGuide() {
         if (!activePathway) return null;
         var lesson = SEL_PATHWAY_PRACTICE[activePathway.id];
@@ -3464,6 +3713,7 @@
           h('p', { style: { margin: '8px 0', fontSize: 13, lineHeight: 1.5, color: _t.textMuted } }, 'Choose one activity or follow the suggested order. You can pass, use a fictional example, or respond by speaking, drawing, writing, or AAC. Sharing is optional.'),
           h('details', { key: activePathway.id + ':' + (selHubTool || 'catalog'), style: { marginTop: 10 } },
             h('summary', { style: { cursor: 'pointer', minHeight: 44, padding: '12px 0', boxSizing: 'border-box', fontSize: 14, fontWeight: 700 } }, 'Model, practice, and reflect'),
+            renderExampleChoice(activePathway.id, 'pathway'),
             h('div', { style: { display: 'grid', gap: 12, gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', fontSize: 14, lineHeight: 1.6 } },
               [['An example', lesson.model], ['Try one step', lesson.practice], ['Notice and adjust', lesson.reflect], ['Take it with you', lesson.transfer]].map(function(item) {
                 return h('div', { key: item[0], style: { background: _t.bgCard, borderRadius: 8, padding: 12 } }, h('strong', null, item[0]), h('p', { style: { margin: '5px 0 0' } }, item[1]));
@@ -3595,9 +3845,9 @@
         var _gradePick = _selGradePick();
         var _startHereCards = [
           { key: 'continue', icon: _recentSelTool ? _recentSelTool.icon : '\u21A9', label: 'Continue', desc: _recentSelTool ? _recentSelTool.label : 'Resume the last SEL tool you opened.', tool: _recentSelTool, disabled: !_recentSelTool },
-          { key: 'recommended', icon: _gradePick ? _gradePick.icon : '\u2728', label: 'Recommended', desc: _gradePick ? _gradePick.label + ' fits this grade band.' : 'Open a grade-friendly starting point.', tool: _gradePick, disabled: !_gradePick },
-          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm Down', desc: 'Try a quick regulation practice.', tool: _allSelTools.find(function(t) { return t.id === 'coping'; }) || _allSelTools.find(function(t) { return t.id === 'mindfulness'; }) },
-          { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a private reflection.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
+          { key: 'recommended', icon: _gradePick ? _gradePick.icon : '\u2728', label: 'Starting idea', desc: _gradePick ? _gradePick.label + ': a suggested activity for this grade band, with examples you can adapt.' : 'Open a grade-friendly starting point.', tool: _gradePick, disabled: !_gradePick },
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Try a reset', desc: 'Explore a comfortable strategy; feeling calm is not required.', tool: _allSelTools.find(function(t) { return t.id === 'coping'; }) || _allSelTools.find(function(t) { return t.id === 'mindfulness'; }) },
+          { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a reflection; review saving and sharing choices.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
           { key: 'browse', icon: '\uD83D\uDD0D', label: 'Browse All', desc: 'Search or filter the full catalog.', browse: true, disabled: false }
         ];
         var _selNeedChips = [
@@ -3790,6 +4040,8 @@
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Start here'),
               h('span', { style: { fontSize: 13, color: _t.textMuted } }, 'Pick a quick route, or browse below.')
             ),
+            renderActivityChooser(),
+            renderResearchContext(null),
             h('div', {
               style: {
                 display: 'grid',
@@ -3797,7 +4049,7 @@
                 gap: 8
               }
             },
-              _startHereCards.map(function(card) {
+              _startHereCards.filter(function (card) { return card.key !== 'continue' || card.tool; }).map(function(card) {
                 var disabled = card.disabled || (!card.browse && !card.tool);
                 return h('button', {
                   key: card.key,
@@ -3849,14 +4101,7 @@
             },
               h('span', null, 'Some SEL work is stored on this device. AI features use your configured service. Choose what to save or share, especially on a shared device.'),
               h('button', {
-                onClick: function() {
-                  if (typeof props.onExportRequested === 'function') {
-                    try { props.onExportRequested(); } catch (e) {}
-                  } else {
-                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
-                  }
-                  if (typeof addToast === 'function') addToast('Preparing to save your SEL work...', 'info');
-                },
+                onClick: requestProjectSave,
                 'aria-label': 'Save or export SEL work now',
                 style: { border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText, borderRadius: 8, padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', minHeight: 44 }
               }, 'Save now')
@@ -3936,11 +4181,11 @@
                     ) : null,
                     h('button', {
                       type: 'button',
-                      disabled: disabled,
+                      disabled: disabled || builderOpen || !!recoverableDraft,
                       onClick: function() { _applyTeacherLaunchPlan(plan); },
                       'aria-label': 'Load teacher launch plan: ' + plan.name,
                       style: { marginTop: 'auto', minHeight: 44, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 900, padding: '6px 10px' }
-                    }, pendingLabels.length ? 'Waiting for tools' : disabled ? 'Loading' : 'Load into Station Builder')
+                    }, builderOpen || recoverableDraft ? 'Finish or discard the current draft first' : pendingLabels.length ? 'Waiting for tools' : disabled ? 'Loading' : 'Load into Station Builder')
                   );
                 })
               )
@@ -4209,7 +4454,7 @@
           ),
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           !activeStation && !activePathway && h('details', {
-            open: builderOpen || savedStations.length > 0,
+            open: builderOpen || !!recoverableDraft || savedStations.length > 0,
             style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
@@ -4224,13 +4469,17 @@
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: _t.text, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📌 ' + st.name),
                       h('button', {
                         onClick: function () {
+                          if (!removedStations.length) stationRemovalOrder.current = savedStations.map(function (item) { return item.id; });
+                          setRemovedStations(function (prev) { return prev.concat([{ station: st, index: stationRemovalOrder.current.indexOf(st.id), order: stationRemovalOrder.current.slice() }]); });
+                          announceToSR('Station removed. Undo is available until this hub closes.');
+                          setTimeout(function () { var undo = document.getElementById('sel-undo-station-' + st.id); if (undo) undo.focus(); }, 0);
                           var keep = savedStations.filter(function (s) { return s.id !== st.id; });
                           setSavedStations(keep);
                           if (activeStationId === st.id) setActiveStationId(null);
                           if (typeof addToast === 'function') addToast('Station removed', 'info');
                         },
                         'aria-label': 'Delete station ' + st.name,
-                        style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 14, fontWeight: 700, cursor: 'pointer', padding: '8px 12px', minWidth: 36, minHeight: 36 }
+                        style: { background: 'none', border: 'none', color: _t.dangerText, fontSize: 14, fontWeight: 700, cursor: 'pointer', padding: '8px 12px', minWidth: 44, minHeight: 44 }
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 13, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
@@ -4247,7 +4496,7 @@
                       style: { marginTop: 4, minHeight: 44, padding: '9px 12px', borderRadius: 8, border: 'none', background: _t.pinkAccent, color: _t.onPink, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
                     }, 'Start station'),
                     h('button', {
-                      type: 'button', disabled: builderOpen,
+                      type: 'button', disabled: builderOpen || !!recoverableDraft,
                       onClick: function () { adaptStationCopy(st); },
                       'aria-label': 'Adapt a copy of station ' + st.name,
                       style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.text, fontSize: 13, fontWeight: 700, cursor: builderOpen ? 'not-allowed' : 'pointer' }
@@ -4255,8 +4504,15 @@
                   );
                 })
               ),
+              !builderOpen && recoverableDraft && h('section', { 'aria-label': 'Recoverable station draft', style: { padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, fontSize: 14 } },
+                h('p', { style: { margin: '0 0 8px' } }, 'An unfinished station draft is saved on this device: ' + (recoverableDraft.name || 'Untitled station') + '. Resume or discard it before starting another.'),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', { type: 'button', onClick: restoreBuilderDraft, style: { minHeight: 44, padding: 10, background: _t.bgCard, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8 } }, 'Resume station draft'),
+                  h('button', { type: 'button', onClick: discardBuilderDraft, style: { minHeight: 44, padding: 10, background: _t.bgCard, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8 } }, 'Discard station draft')
+                )
+              ),
               // Open builder button
-              !builderOpen && h('button', {
+              !builderOpen && !recoverableDraft && h('button', {
                 onClick: function () { alloSaveFocus(); setBuilderOpen(true); announceToSR('Station builder opened'); alloFocusStationNameInput(); },
                 'aria-label': 'Build a new custom SEL Station',
                 style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.05)', color: _t.accentSoftText, fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
@@ -4329,7 +4585,7 @@
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
                     h('div', { style: { fontSize: 14, fontWeight: 800, color: _t.accentSoftText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
-                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); alloRestoreOrFocusSelHubStart(); },
+                      onClick: function () { discardBuilderDraft(); alloRestoreOrFocusSelHubStart(); },
                       'aria-label': 'Cancel station builder',
                       style: Object.assign({}, builderActionStyle, { color: _t.textMuted })
                     }, '✕ Cancel')
@@ -4360,7 +4616,7 @@
                       h('div', null, builderNoteLine('Sharing boundary', 'Student saves and share packets stay student-controlled.'))
                     )
                   ),
-                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: _t.textMuted } }, 'Save creates a new station with its own practice record. Adapt the sequence to your learners; model one small step, offer response choices, and invite a next use.'),
+                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: _t.textMuted } }, 'Save creates a new station with its own practice record. Draft edits are saved on this device for recovery; Cancel discards the draft. Model one small step, offer response choices, and invite a next use.'),
                   // Name
                   h('label', { htmlFor: 'sel-station-name-input', style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'Station name'),
                   h('input', {
@@ -4485,7 +4741,7 @@
                               h('button', {
                                 type: 'button',
                                 onClick: function () {
-                                  setBuilderQuests(function (prev) { return prev.filter(function (step) { return step.qid !== q.qid; }); });
+                                  removeBuilderSteps([q.qid]);
                                   setTimeout(function () { var add = document.getElementById('sel-add-practice-step'); if (add) add.focus(); }, 0);
                                   announceToSR('Practice step removed from this draft.');
                                 },
@@ -4496,7 +4752,7 @@
                         );
                       }),
                       h('button', {
-                        onClick: function () { setBuilderQuests([]); },
+                        onClick: function () { removeBuilderSteps(builderQuests.map(function (q) { return q.qid; })); },
                         'aria-label': 'Clear all quests',
                         style: { minHeight: 44, fontSize: 13, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'flex-start', textDecoration: 'underline' }
                       }, 'Clear all quests')
@@ -4516,6 +4772,7 @@
                     })
                   ),
                   hasUnassignedTimedStep && h('p', { role: 'status', style: { margin: 0, fontSize: 14, color: _t.text } }, 'Before saving, choose a related activity for every timed step, or switch it to a learner self-check.'),
+                  builderUndo.length > 0 && h('button', { type: 'button', onClick: undoBuilderRemoval, style: builderActionStyle }, 'Undo removed steps'),
                   // Save button
                   h('button', {
                     type: 'button',
@@ -4657,7 +4914,7 @@
                   if (!ev) return null;
                   var tierMeta = _evidenceTiers[ev.tier];
                   if (!tierMeta) return null;
-                  var srText = 'Evidence base: ' + tierMeta.label + '. ' + tierMeta.title + (ev.note ? '. ' + ev.note : '') + '.';
+                  var srText = 'Approach context: ' + tierMeta.label + '. ' + tierMeta.title + '. This badge does not establish effectiveness for this app or for a particular learner.';
                   return h('span', {
                     'aria-label': srText,
                     title: srText,
@@ -4670,7 +4927,7 @@
                 activePathway && h('span', { style: { fontSize: 12, color: _t.textMuted, fontWeight: 700 } }, 'Step ' + (activePathway.tools.indexOf(tool.id) + 1) + (pathwayProgress[tool.id] ? ' · Opened' : ' · Not opened')),
                 tool.recommendedRange && h('span', {
                   style: { fontSize: 12, color: _t.accentSoftText, fontWeight: 600, marginTop: 4 }
-                }, 'Grades ' + tool.recommendedRange),
+                }, 'Suggested grades ' + tool.recommendedRange),
                 // Left accent bar
                 h('div', { style: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 3, background: cardColor } })
               );
@@ -4818,7 +5075,7 @@
           themePalette: _t,
 
           // ── Full props passthrough ──
-          props: props || {}
+          props: Object.assign({}, props || {}, { onExportRequested: requestProjectSave })
         };
 
         console.log('[SelHub] Rendering plugin: ' + selHubTool);
@@ -4898,7 +5155,10 @@
         h('div', {
           style: { flex: 1, overflow: 'auto', position: 'relative' }
         },
+          renderSavingStatus(),
+          renderStationRecovery(),
           toolGrid,
+          selHubTool && renderActivitySupport(),
           selHubTool && renderPathwayGuide(),
           selHubTool && renderStationGuide(),
           toolContent
