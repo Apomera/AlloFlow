@@ -2,6 +2,10 @@ services:
   grist:
     # FOSS-only Grist Core image. Review and intentionally update this pin.
     image: gristlabs/grist-oss:1.7.13
+    mem_limit: ${GRIST_MEM_LIMIT:-2g}
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     ports:
       - "127.0.0.1:8484:8484"

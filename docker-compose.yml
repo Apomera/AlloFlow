@@ -28,6 +28,10 @@ services:
     depends_on:
       pocketbase:
         condition: service_healthy
+    mem_limit: ${WEB_MEM_LIMIT:-256m}
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Local Database (PocketBase) ────────────────────────────────
@@ -39,6 +43,10 @@ services:
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./docker/pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
+    mem_limit: ${PB_MEM_LIMIT:-512m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
@@ -62,6 +70,10 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    mem_limit: ${OLLAMA_MEM_LIMIT:-8g}
+    pids_limit: 1024
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Image Gen (Flux — GPU required) ───────────────────────────
@@ -85,6 +97,10 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    mem_limit: ${FLUX_MEM_LIMIT:-8g}
+    pids_limit: 1024
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     profiles:
       - gpu
@@ -97,6 +113,10 @@ services:
     container_name: alloflow-edge-tts
     ports:
       - "${TTS_PORT:-5001}:5001"
+    mem_limit: ${TTS_MEM_LIMIT:-512m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── TTS (Piper — offline fallback) ────────────────────────────
@@ -108,6 +128,10 @@ services:
     volumes:
       - piper_data:/data
     command: --voice en_US-amy-medium --data-dir /data --download-dir /data
+    mem_limit: ${PIPER_MEM_LIMIT:-1g}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Web Search (SearXNG) ──────────────────────────────────────
@@ -121,6 +145,10 @@ services:
     volumes:
       - ./docker/searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng
+    mem_limit: ${SEARCH_MEM_LIMIT:-1g}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:

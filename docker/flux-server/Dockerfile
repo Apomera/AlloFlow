@@ -31,7 +31,8 @@ COPY flux_server.py .
 
 EXPOSE 7860
 
+# This image installs no curl; probe with python3, which it does install.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD curl -f http://localhost:7860/health || exit 1
+    CMD ["python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:7860/health',timeout=8).status==200 else 1)"]
 
 CMD ["python3", "flux_server.py"]

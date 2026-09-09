@@ -1,0 +1,21 @@
+# Docker reads .dockerignore from the BUILD CONTEXT ROOT. Both compose files set
+# that context to the repository root (docker-compose.yml uses `context: .`,
+# docker/docker-compose.yml uses `context: ..`), so docker/.dockerignore is never
+# consulted for those builds. This file is the one that applies.
+#
+# Keep this conservative: docker/Dockerfile copies module files from the repo root
+# (COPY *_module.js, stem_lab/, sel_hub/, src/), so do not exclude those.
+
+.git/
+.gitignore
+
+node_modules/
+**/node_modules/
+
+# Never ship developer secrets into the build context.
+**/.env
+**/.env.*
+!**/.env.example
+
+desktop/web-app/build/
+.claude/worktrees/

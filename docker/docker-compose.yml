@@ -36,6 +36,10 @@ services:
     depends_on:
       pocketbase:
         condition: service_healthy
+    mem_limit: ${WEB_MEM_LIMIT:-256m}
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Local Database (PocketBase — replaces Firebase) ────────────
@@ -47,6 +51,10 @@ services:
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
+    mem_limit: ${PB_MEM_LIMIT:-512m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
@@ -70,6 +78,10 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    mem_limit: ${OLLAMA_MEM_LIMIT:-8g}
+    pids_limit: 1024
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Image Generation (Flux.1-schnell — requires GPU) ──────────
@@ -94,9 +106,13 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    mem_limit: ${FLUX_MEM_LIMIT:-8g}
+    pids_limit: 1024
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:7860/health',timeout=5).status==200 else 1)"]
       interval: 30s
       timeout: 10s
       start_period: 120s
@@ -112,9 +128,13 @@ services:
     container_name: alloflow-edge-tts
     ports:
       - "${TTS_PORT:-5001}:5001"
+    mem_limit: ${TTS_MEM_LIMIT:-512m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5001/health',timeout=5).status==200 else 1)"]
       interval: 30s
       timeout: 5s
       start_period: 10s
@@ -132,6 +152,10 @@ services:
       --voice en_US-amy-medium
       --data-dir /data
       --download-dir /data
+    mem_limit: ${PIPER_MEM_LIMIT:-1g}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # ── Web Search (SearXNG — privacy-first, no tracking) ─────────
@@ -145,6 +169,10 @@ services:
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng
+    mem_limit: ${SEARCH_MEM_LIMIT:-1g}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:
