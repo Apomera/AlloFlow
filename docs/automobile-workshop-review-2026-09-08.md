@@ -203,6 +203,19 @@ Full-regression limitation: two broad automobile runs were interrupted after exi
 - [Negative post selected](../reports/automobile-workshop/battery-post-contact.png)
 - [Phone battery close-up](../reports/automobile-workshop/battery-contacts-mobile.png)
 
+## Optional 3D control inspection mode
+
+The viewport now offers Operate and Inspect modes. Operate remains the default. In Inspect mode, a 3D click identifies the selected station, tool or control and explains its action. A keyboard-accessible chooser exposes the same catalogue. Use selected control invokes the existing dispatcher, preserving equipment, evidence and vehicle-access requirements. Dismissing a preview leaves the work order untouched, and keyboard focus returns to the chooser after use or dismissal.
+
+Preview selection is separate from the saved work order. Descriptions are derived from the current authored catalogue; no simulated instrument operation is run to generate a preview. Each selection is bound to the current normalized workshop state. A changed job, task, setting, tool, access condition, calculation or other work-order state expires it, removing the Use action until a current control is inspected again.
+
+The physical red lift stop remains immediate in both click modes. That exception is stated beside the mode controls. Labeled controls in the work panels continue to operate directly. Dragging the 3D view still orbits and does not select a preview. The shared viewer was not modified.
+
+Validation: **104 workshop model/render tests passed** (39.13 seconds), including preview purity, stale-state rejection, current-catalogue descriptions, available fastener targets and the no-WebGL chooser. **Five targeted WebGL workflows passed**: existing direct electrical, lift and jug/alignment controls plus both new inspection flows. These verify actual canvas previewing without state changes, explicit use, expiry after setup changes, keyboard focus, phone overflow, immediate physical stopping and drag-versus-click behavior. The first browser batch passed four workflows; the electrical case timed out waiting for screenshot stability, then passed unchanged on its focused rerun (59 seconds). Desktop and phone preview screenshots were visually reviewed. Syntax, source/public parity and scoped diff checks passed. Validation was limited to the affected workshop paths; the previously documented broad-suite timing limitation is not represented as resolved. Temporary browser recording overrides were removed. No deployment or installer build was performed.
+
+- [Desktop control preview](../reports/automobile-workshop/control-inspector-desktop.png)
+- [Phone control preview](../reports/automobile-workshop/control-inspector-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

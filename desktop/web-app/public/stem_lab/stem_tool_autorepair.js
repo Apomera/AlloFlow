@@ -9760,6 +9760,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     }
     return actions;
   }
+  function arShopControlCatalog(raw) {
+    var state = arShopState(raw), task = arShopJob(state.job).tasks[state.step];
+    var list = SHOP_STATIONS.map(function (station) { return { id: station.id, label: 'Explore ' + station.label, detail: station.detail }; });
+    arShop3DTools(state).forEach(function (tool) {
+      list.push({ id: arShop3DToken(state, 'equip-' + tool[0]), label: 'Pick up ' + tool[1], detail: 'Select this item from the tool bench. Return to the task station to use it.' });
+    });
+    arShop3DActions(state).forEach(function (action) {
+      var detail = 'Use this control with the equipment and access required by the current task.';
+      if (action.id === 'task') detail = 'Perform the current work-order step: ' + task.label + '. Required setup, equipment, calculations and evidence still apply.';
+      else if (action.id === 'read') detail = 'Capture the instrument output using its current setup. Check whether the captured evidence is valid before completing the task.';
+      else if (action.id === 'hood') detail = 'Change hood access. Opening or closing the hood clears the current instrument capture.';
+      else if (action.id === 'lift-stop') detail = 'Latch the lift stop at its current position. A click on the red 3D stop always acts immediately, including in Inspect mode.';
+      else if (action.id === 'lift-clear') detail = 'Record or reopen the simulated bay-clear check. The lift remains stopped.';
+      else if (action.id === 'lift-reset') detail = 'Reset the latched stop after the bay-clear check. Resetting does not move the vehicle or resume a command.';
+      else if (action.explore) detail = action.explore.type === 'part' ? SHOP_BRAKE_PARTS.filter(function (part) { return part.id === action.explore.id; })[0].detail : 'Change the spacing of the brake parts for inspection. This view does not perform brake service.';
+      else if (action.action && action.action.type === 'configure') detail = 'Change an instrument setting. Capture fresh evidence after a setup change.';
+      else if (action.action && action.action.type === 'quantity') detail = 'Change the measured quantity in the jug. Transferring oil into the engine is a separate work-order step.';
+      else if (action.action && action.action.type === 'alignment-adjust') detail = 'Adjust the selected front toe angle by the displayed increment. Capture a new measurement after adjusting.';
+      else if (action.action && action.action.type === 'alignment-check') detail = 'Record or reopen this alignment preparation check.';
+      else if (action.id === 'seat') detail = 'Seat the wheel and start its fasteners before checking the cross-hub sequence.';
+      list.push({ id: arShop3DToken(state, action.id), label: action.label, detail: detail });
+    });
+    if (arShopInstrumentKind(state) === 'torque' && state.wheelSeated) for (var i = 0; i < 5; i++) list.push({ id: 'shop-lug-' + i, label: 'Check fastener ' + (i + 1), detail: 'Check this fastener against the training cross-hub sequence. A repeated or out-of-order check will not advance reassembly.' });
+    if (state.job === 'alignment') ['left', 'right'].forEach(function (side) { list.push({ id: 'shop-toe-' + side, label: 'Select ' + side + ' front tie rod', detail: 'Choose which front toe angle to adjust. Selecting a side does not change its angle.' }); });
+    return list;
+  }
+  function arShopControlPreview(raw, id) {
+    var state = arShopState(raw), item = arShopControlCatalog(state).filter(function (control) { return control.id === id; })[0];
+    return item ? { id: item.id, key: JSON.stringify(state) } : null;
+  }
+  function arShopCurrentPreview(raw, preview) {
+    var state = arShopState(raw);
+    if (!preview || preview.key !== JSON.stringify(state)) return null;
+    return arShopControlCatalog(state).filter(function (control) { return control.id === preview.id; })[0] || null;
+  }
+
   function arShop3DPick(raw, token) {
     var state = arShopState(raw), prefix = arShop3DToken(state, '');
     function blocked(text) { return Object.assign({}, state, { feedback: text }); }
@@ -20112,6 +20148,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           change({ station: id, feedback: '' });
           arAnnounce(SHOP_STATIONS.filter(function (p) { return p.id === id; })[0].label + ' selected.');
         }
+        function inspectControl(id) {
+          var preview = arShopControlPreview(shop, id), info = arShopCurrentPreview(shop, preview);
+          upd('shopInspectPick', preview);
+          arAnnounce(info ? 'Inspecting: ' + info.label + '. ' + info.detail : 'That control is no longer available. Choose a current control.');
+        }
+        function scenePick(id) {
+          if (d.shopInteraction === 'inspect' && id !== arShop3DToken(shop, 'lift-stop')) inspectControl(id);
+          else pick(id);
+        }
+        function clearControlPreview() {
+          upd('shopInspectPick', null);
+          requestAnimationFrame(function () { var chooser = document.getElementById('ar-shop-inspect-target'); if (chooser) chooser.focus({ preventScroll: true }); });
+        }
+        function controlInspector() {
+          var inspecting = d.shopInteraction === 'inspect', info = arShopCurrentPreview(shop, d.shopInspectPick);
+          return h('section', { 'data-ar-control-inspector': inspecting ? 'inspect' : 'operate', 'aria-label': '3D click mode',
+            style: { margin: '8px 0', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#102033', color: '#e2e8f0' } },
+            h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': '3D click mode' }, ['operate', 'inspect'].map(function (mode) {
+              return control(mode === 'operate' ? 'Operate 3D controls' : 'Inspect 3D controls', function () { updMulti({ shopInteraction: mode, shopInspectPick: null }); },
+                { key: mode, 'data-ar-shop-interaction': mode, 'aria-pressed': (inspecting ? 'inspect' : 'operate') === mode });
+            })),
+            inspecting && h('div', null,
+              h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Click a 3D control to inspect it, then use the selected control below. The red 3D emergency stop stays immediate. Labeled controls in the work panels operate directly.'),
+              h('label', { htmlFor: 'ar-shop-inspect-target', style: { display: 'block', fontSize: 12, marginBottom: 6 } }, 'Or choose a control to inspect'),
+              h('select', { id: 'ar-shop-inspect-target', value: info ? info.id : '', onChange: function (event) { inspectControl(event.target.value); },
+                style: { minHeight: 44, width: '100%', boxSizing: 'border-box', background: '#fff', color: '#102033', padding: 8 } },
+                h('option', { value: '' }, 'Choose a current control'), arShopControlCatalog(shop).map(function (item) { return h('option', { key: item.id, value: item.id }, item.label); })),
+              h('div', { 'data-ar-control-preview': info ? info.id : '', role: 'status', 'aria-atomic': 'true', style: { fontSize: 13, lineHeight: 1.5, marginTop: 8 } },
+                info ? h('div', null, h('strong', null, info.label), h('p', { style: { margin: '6px 0' } }, info.detail)) :
+                  d.shopInspectPick ? 'The workshop changed. Inspect a current control again.' : 'Select a control to read what it does.'),
+              info && control('Use selected control', function () {
+                var current = arShopCurrentPreview(shop, d.shopInspectPick);
+                if (current) pick(current.id);
+                clearControlPreview();
+              }, { 'data-ar-control-use': true }),
+              info && control('Dismiss preview', clearControlPreview, { 'data-ar-control-dismiss': true })));
+        }
         function stationCamera(id) {
           if (!SHOP3D.focus) return;
           var viewport = document.querySelector('[data-ar-workshop] .ar-bay-viewport');
@@ -20135,7 +20208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var sceneState = [shop.job, shop.step, shop.tool, shop.brakeSpread, shop.brakePart, shop.lift, shop.liftStopped, shop.liftBayClear, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
-          onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
+          onPick: scenePick, onStatus: function (next) { upd('uh3dStatus', next); } });
         function control(label, fn, attrs) {
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
@@ -20417,6 +20490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('div', { className: 'ar-bay-viewer-frame ar-shop-viewport' },
                 bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
                   label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
+                controlInspector(),
                 bayControls({ viewer: SHOP3D, selected: shop.station, selectedLabel: station.label }),
                 h('div', { className: 'ar-shop-actions' },
                   control('Whole shop', function () { SHOP3D.reset(); }),

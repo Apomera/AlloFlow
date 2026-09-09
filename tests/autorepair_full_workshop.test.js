@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -665,5 +665,60 @@ describe('Direct battery probe contacts', () => {
     const current = use(state, 'meter-joint');
     expect(model.direct(current, model.token({ ...state, step: 1 }, 'meter-posts')).instrument.contact).toBe('joint');
     expect(use(state, 'meter-unknown').instrument.contact).toBe('posts');
+  });
+});
+
+
+describe('Workshop control inspection', () => {
+  it.each(model.jobs)('describes available $id controls without operating or mutating them', job => {
+    const state = model.initial(job.id), before = JSON.stringify(state), controls = model.controls(state);
+    expect(new Set(controls.map(control => control.id)).size).toBe(controls.length);
+    for (const control of controls) {
+      const preview = model.preview(state, control.id);
+      expect(model.currentPreview(state, preview)).toEqual(control);
+      expect(control.label).toBeTruthy(); expect(control.detail).toBeTruthy();
+    }
+    expect(JSON.stringify(state)).toBe(before); expect(state.history).toHaveLength(0);
+  });
+  it('expires previews when equipment, access, calculations, job or instrument setup changes', () => {
+    const state = model.normalize({ job: 'electrical', step: 2, hood: true, tool: 'meter', station: 'engine' });
+    const preview = model.preview(state, model.token(state, 'read'));
+    for (const patch of [{ tool: 'lamp' }, { hood: false }, { answer: '1.4' }, { step: 3 }, { job: 'oil' }, { station: 'tools' }, { instrument: { ...state.instrument, load: 'starter' } }]) {
+      expect(model.currentPreview({ ...state, ...patch }, preview)).toBeNull();
+    }
+    expect(model.currentPreview(model.normalize(JSON.parse(JSON.stringify(state))), preview).label).toBe('Capture instrument reading');
+  });
+  it('rejects unknown and old tokens and derives labels from the current catalogue', () => {
+    const state = model.initial('brakes');
+    expect(model.preview(state, 'unknown')).toBeNull();
+    expect(model.preview(state, model.token({ ...state, step: 99 }, 'task'))).toBeNull();
+    const preview = model.preview(state, model.token(state, 'hood'));
+    expect(model.currentPreview(state, { ...preview, label: 'Injected label', detail: 'Injected detail' }).label).toBe('Open hood');
+    expect(model.currentPreview(state, { ...preview, key: '' })).toBeNull();
+  });
+  it('describes readings without generating evidence or revealing an uncaptured value', () => {
+    const state = model.normalize({ job: 'electrical', step: 2, hood: true, tool: 'meter', station: 'engine', instrument: { contact: 'joint', load: 'starter' } });
+    const item = model.currentPreview(state, model.preview(state, model.token(state, 'read')));
+    expect(item.detail).not.toContain('1.6'); expect(state.reading).toBeNull();
+    expect(model.direct(state, item.id).reading).toMatchObject({ value: 1.6, valid: true });
+  });
+  it('includes accessible fastener and tie-rod targets only in their relevant context', () => {
+    const refit = model.normalize({ job: 'brakes', step: 9, tool: 'torque', lift: 'locked', serviced: true, wheelRemoved: true });
+    expect(model.controls(refit).filter(control => control.id.startsWith('shop-lug-'))).toHaveLength(0);
+    expect(model.controls({ ...refit, wheelSeated: true }).filter(control => control.id.startsWith('shop-lug-'))).toHaveLength(5);
+    expect(model.controls(model.initial('alignment')).filter(control => control.id.startsWith('shop-toe-'))).toHaveLength(2);
+  });
+});
+
+describe('Control inspector fallback rendering', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  it('offers keyboard inspection and explicit use when WebGL is unavailable', () => {
+    const shop = model.initial('brakes'), preview = model.preview(shop, model.token(shop, 'hood'));
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', shop, shopInteraction: 'inspect', shopInspectPick: preview, uh3dStatus: 'failed' } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelector('label[for="ar-shop-inspect-target"]')).not.toBeNull();
+    expect(host.querySelector('[data-ar-control-preview]').textContent).toContain('Open hood');
+    expect(host.querySelector('[data-ar-control-use]').textContent).toBe('Use selected control');
+    expect(host.querySelector('[data-ar-control-inspector]').textContent).toContain('emergency stop stays immediate');
   });
 });

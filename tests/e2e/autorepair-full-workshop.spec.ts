@@ -836,3 +836,60 @@ test('battery close-up places probes on physical contacts and preserves unchange
   await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('3D inspection previews controls, expires changed state and explicitly applies a current selection', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  await page.locator('[data-ar-scene-focus]').click();
+  const before = await page.evaluate(() => JSON.stringify((window as any).__ctx.toolData.autoRepair.shop));
+  await clickShop(page, 'workshop-control-meter-load');
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('Apply simulated starter load');
+  expect(await page.evaluate(() => JSON.stringify((window as any).__ctx.toolData.autoRepair.shop))).toBe(before);
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('off');
+  await page.locator('[data-ar-control-inspector]').screenshot({ path: 'reports/automobile-workshop/control-inspector-desktop.png' });
+  await page.locator('[data-ar-control-use]').click();
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('starter');
+  await expect(page.locator('#ar-shop-inspect-target')).toBeFocused();
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-read');
+  await page.locator('[data-ar-scene-action="meter-contact"]').click();
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('workshop changed');
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-read');
+  await page.locator('[data-ar-control-use]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-meter-posts');
+  await page.locator('[data-ar-control-inspector]').screenshot({ path: 'reports/automobile-workshop/control-inspector-mobile.png' });
+  await page.locator('[data-ar-control-dismiss]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-inspect-target')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('inspection keeps the physical stop immediate and retains lift gates and drag behavior', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('Perform the current work-order step');
+  await page.locator('[data-ar-control-use]').click();
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Choose Lift controls');
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toHaveCount(1);
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'lift-emergency-stop');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('[data-ar-lift-focus]').click();
+  const point = await shopPoint(page, 'workshop-control-task');
+  await page.mouse.move(point.x, point.y); await page.mouse.down(); await page.mouse.move(point.x + 65, point.y + 10, { steps: 6 }); await page.mouse.up();
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('[data-ar-shop-interaction="operate"]').click();
+  await expect(page.locator('#ar-shop-inspect-target')).toHaveCount(0);
+  await page.locator('[data-ar-lift-focus]').click(); await clickShop(page, 'workshop-control-lift-clear');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('bay-clear check recorded');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
