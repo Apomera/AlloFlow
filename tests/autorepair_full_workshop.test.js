@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -946,5 +946,60 @@ describe('Brake layer cross-section and recorded limit comparison',()=>{
     const state=model.normalize({job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true});
     const capture=model.operate(state,{type:'read'}).reading;
     expect(render({surface:'backing',patch:{reading:capture}}).getAttribute('data-ar-brake-measurement')).toBe('pending');
+  });
+});
+
+
+describe('Evidence-based handoff writing guide',()=>{
+  it.each(model.jobs)('uses only completed records for $id and never changes the draft',job=>{
+    let state=model.initial(job.id);state.notes='My own unfinished draft';
+    expect(model.handoffGuide(state).every(group=>group.status==='pending')).toBe(true);
+    while(job.tasks[state.step].id!=='release')state=step(state);
+    const original=JSON.stringify(state),guide=model.handoffGuide(state);
+    expect(guide.map(group=>group.id)).toEqual(['finding','service','verification']);
+    expect(guide.every(group=>group.status==='recorded')).toBe(true);
+    expect(guide.every(group=>group.prompt.length>20)).toBe(true);
+    expect(JSON.stringify(state)).toBe(original);expect(state.notes).toBe('My own unfinished draft');
+  });
+  it('does not infer evidence from flags, a live capture or an ahead-of-step record',()=>{
+    let state=model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true,serviced:true,verified:true,instrument:{contact:'joint',load:'starter'}});
+    state=model.operate(state,{type:'read'});
+    state.history=[{id:'measure',result:'An ahead-of-step entry'},{id:'verify',result:'Not completed'}];
+    expect(model.handoffGuide(state).every(group=>group.status==='pending')).toBe(true);
+  });
+  it('shows partial oil service and retains exact older record text without numeric invention',()=>{
+    let state=model.initial('oil');for(let i=0;i<7;i++)state=step(state);
+    const service=model.handoffGuide(state)[1];expect(service).toMatchObject({recorded:1,total:3,status:'partial'});
+    state.history=state.history.map(({evidence,...entry})=>entry);
+    const guide=model.handoffGuide(state);expect(guide[1].entries[0].result).toBe(state.history.find(e=>e.id==='drain').result);
+    expect(guide[2].entries[0]).toMatchObject({recorded:false,result:''});
+  });
+  it('ignores unknown, empty and malformed records and uses canonical task labels',()=>{
+    const state=model.normalize({job:'electrical',step:5,history:[null,{id:'unknown',result:'unrelated'},{id:'measure',label:'misleading label',result:'Recorded baseline'},{id:'service',result:5},{id:'verify',result:'   '}]});
+    const guide=model.handoffGuide(state);expect(guide[0].entries[0]).toMatchObject({recorded:true,label:'Compare voltage-drop evidence',result:'Recorded baseline'});
+    expect(guide[1].status).toBe('pending');expect(guide[2].status).toBe('pending');
+  });
+});
+
+describe('Handoff guide accessible rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(prefs={},theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:model.initial('electrical'),...prefs}},theme);return host;}
+  it('starts collapsed and keeps the original notes field available',()=>{
+    const host=render();expect(host.querySelector('[data-ar-handoff-guide]').getAttribute('data-ar-handoff-guide')).toBe('closed');
+    expect(host.querySelectorAll('[data-ar-handoff-group]')).toHaveLength(0);expect(host.querySelector('#ar-shop-notes')).not.toBeNull();
+    expect(host.querySelector('#ar-shop-notes').hasAttribute('aria-describedby')).toBe(false);
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('shows missing records and linked writing prompts in %j',theme=>{
+    const host=render({shopHandoffHelp:true,shopHandoffFocus:'verification'},theme);
+    expect(host.querySelectorAll('[data-ar-handoff-group]')).toHaveLength(3);expect(host.querySelectorAll('[data-ar-handoff-write]')).toHaveLength(3);
+    expect(host.querySelector('#ar-handoff-writing-prompt').textContent).toContain('repeat test compare under the same conditions');
+    expect(host.querySelector('#ar-shop-notes').getAttribute('aria-describedby')).toBe('ar-handoff-writing-prompt');
+    expect(host.querySelector('[data-ar-handoff-group="verification"]').textContent).toContain('Not recorded yet');
+  });
+  it('escapes record markup and does not replace the saved customer explanation',()=>{
+    const shop=model.normalize({job:'electrical',step:3,notes:'Keep my words',history:[{id:'measure',label:'Baseline',result:'<img src=x onerror=alert(1)>'}]});
+    const host=render({shop,shopHandoffHelp:true});const panel=host.querySelector('[data-ar-handoff-guide]');
+    expect(panel.querySelector('img')).toBeNull();expect(panel.textContent).toContain('<img src=x onerror=alert(1)>');
+    expect(host.querySelector('#ar-shop-notes').value).toBe('Keep my words');
   });
 });

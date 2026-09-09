@@ -9787,6 +9787,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       'Optional reasoning check: ' + (review.choice ? review.choice.label + ' ' + review.choice.feedback : 'Not answered.')];
   }
 
+  function arShopHandoffGuide(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job);
+    var prompts = {
+      brakes: ['What did the lining measurement show compared with this job’s limit? Distinguish lining from steel backing.', 'What front-axle service and wheel reassembly did you complete?', 'Which recorded brake-operation and fastener checks support your handoff?'],
+      oil: ['What service did the customer request, and which service sheet guided the fill?', 'What did you drain, replace and refill? Include the measured quantity only when recorded.', 'Which recorded level, pressure-indication and leak checks did you complete?'],
+      electrical: ['Where were the probes, what load was applied, and what did the initial joint test show?', 'Which connection did you service? Explain what changed without assuming the battery was replaced.', 'How did the repeat test compare under the same conditions? Keep the conclusion specific to this connection.'],
+      alignment: ['What did the initial left, right and total toe show against this training sheet?', 'Which toe adjustments did you make? Distinguish individual angles, total and balance.', 'What did the repeat alignment measurement confirm after adjustment?']
+    }[state.job];
+    var ids = state.job === 'oil' ? [['intake'], ['drain', 'filter', 'refill'], ['verify']]
+      : state.job === 'brakes' ? [['measure'], ['service', 'refit'], ['verify']] : [['measure'], ['service'], ['verify']];
+    return ['finding', 'service', 'verification'].map(function (id, groupIndex) {
+      var entries = ids[groupIndex].map(function (taskId) {
+        var taskIndex = job.tasks.findIndex(function (task) { return task.id === taskId; });
+        var record = taskIndex >= 0 && taskIndex < state.step ? state.history.find(function (entry) { return entry && entry.id === taskId && typeof entry.result === 'string' && entry.result.trim(); }) : null;
+        return { id: taskId, label: job.tasks[taskIndex].label, recorded: !!record, result: record ? record.result : '' };
+      });
+      var recorded = entries.filter(function (entry) { return entry.recorded; }).length;
+      return { id: id, title: ['Finding', 'Service', 'Verification'][groupIndex], prompt: prompts[groupIndex], entries: entries,
+        recorded: recorded, total: entries.length, status: recorded === entries.length ? 'recorded' : recorded ? 'partial' : 'pending' };
+    });
+  }
   function arShop3DToken(state, id) { return 'shop-use-' + state.job + '-' + state.step + '-' + id; }
   function arShop3DTools(state) {
     var task = arShopJob(state.job).tasks[state.step], required = task ? task.tool : 'lamp';
@@ -20785,6 +20806,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
+        function handoffGuidePanel() {
+          var groups = arShopHandoffGuide(shop), open = !!d.shopHandoffHelp;
+          return h('section', { 'data-ar-handoff-guide': open ? 'open' : 'closed', 'aria-label': 'Customer handoff writing support', style: { margin: '14px 0', padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Explain the work to your customer'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Connect the finding, the service and the verification in your own words. Use completed records to support your explanation.'),
+            control(open ? 'Hide handoff support' : 'Show records and writing prompts', function () { upd('shopHandoffHelp', !open); }, { 'data-ar-handoff-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-handoff-support' }),
+            open && h('div', { id: 'ar-handoff-support' },
+              h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'These are completed simulation records, not a grade for your writing. Missing records stay marked as missing; a live instrument reading is not yet a completed task.'),
+              groups.map(function (group, index) {
+                return h('section', { key: group.id, 'data-ar-handoff-group': group.id, 'data-ar-handoff-status': group.status,
+                  style: { marginTop: 12, padding: 12, background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8 } },
+                  h('h5', { style: { fontSize: 14, margin: '0 0 7px' } }, (index + 1) + ' · ' + group.title),
+                  h('p', { style: { fontSize: 12, fontWeight: 700 } }, group.recorded + '/' + group.total + ' supporting task records available'),
+                  h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, group.prompt),
+                  group.entries.map(function (entry) {
+                    return h('div', { key: entry.id, 'data-ar-handoff-record': entry.id, style: { margin: '8px 0', fontSize: 12, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+                      entry.recorded ? h('details', null, h('summary', { style: { cursor: 'pointer', padding: '8px 0' } }, 'Recorded: ' + entry.label), h('p', null, entry.result))
+                        : h('p', null, 'Not recorded yet: ' + entry.label));
+                  }),
+                  control('Write about ' + group.title.toLowerCase(), function () {
+                    upd('shopHandoffFocus', group.id);
+                    requestAnimationFrame(function () {
+                      var field = document.querySelector('[data-ar-workshop] #ar-shop-notes');
+                      if (field) { field.focus({ preventScroll: true }); field.setSelectionRange(field.value.length, field.value.length); field.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+                    });
+                    arAnnounce(group.prompt);
+                  }, { 'data-ar-handoff-write': group.id }));
+              })));
+        }
+        function handoffWritingPrompt() {
+          if (!d.shopHandoffHelp) return null;
+          var selected = arShopHandoffGuide(shop).filter(function (group) { return group.id === d.shopHandoffFocus; })[0];
+          return h('p', { id: 'ar-handoff-writing-prompt', style: { fontSize: 12, lineHeight: 1.6, padding: 10, borderLeft: '3px solid ' + T.accentHi } },
+            selected ? selected.title + ': ' + selected.prompt : 'Write your own finding, service and verification. Name what remains unchecked when the record is incomplete.');
+        }
         function downloadReport() {
           var text = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
             'Service sheet: ' + job.spec, '', 'Status: ' + (shop.released ? 'Training job completed' : 'In progress'),
@@ -20873,8 +20929,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: btnPrimary({ marginTop: 14, minHeight: 46, width: '100%', fontSize: 14 }) }, task.id === 'release' ? 'Complete training work order' : 'Perform simulated task'))
                 : h('div', { 'data-ar-shop-complete': true }, h('h3', { style: { color: T.good, marginTop: 15 } }, 'Work order completed'), h('p', null, 'Your findings, service and verification are recorded below. Choose another job to continue practicing.')),
               h('p', { role: 'status', 'aria-live': 'polite', 'data-ar-shop-feedback': true, style: { color: T.accentHi, minHeight: 20 } }, shop.feedback),
+              handoffGuidePanel(),
+              handoffWritingPrompt(),
               h('label', { htmlFor: 'ar-shop-notes' }, 'Customer handoff — finding, service and verification'),
-              h('textarea', { id: 'ar-shop-notes', rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
+              h('textarea', { id: 'ar-shop-notes', 'aria-describedby': d.shopHandoffHelp ? 'ar-handoff-writing-prompt' : undefined, rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
                 onChange: function (e) { change({ notes: e.target.value }); } }),
               voltageEvidencePanel(),
               h('details', { style: { marginTop: 12 } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Service record (' + shop.history.length + ' completed tasks)'),

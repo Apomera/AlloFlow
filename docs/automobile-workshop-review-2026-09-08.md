@@ -294,6 +294,19 @@ Validation: **157 workshop model/render tests passed** in the final run (22.73 s
 - [Narrow dark-phone lesson](../reports/automobile-workshop/brake-layer-dark.png)
 - [Selected pad in the 3D explorer](../reports/automobile-workshop/brake-layer-3d.png)
 
+## Evidence-based customer handoff guide
+
+An optional writing guide now groups the current job's supporting records into Finding, Service and Verification. Each group has a job-specific prompt, an explicit count of available task records and expandable completed record text. Missing and partial records stay visible as missing; completion flags, live captures and records ahead of the current task do not become evidence. Existing text-only records are retained without inventing numeric snapshots. Canonical task names identify the records, and record text is rendered as escaped text.
+
+The guide starts collapsed. Each writing shortcut selects a relevant prompt, focuses the existing customer handoff field and places the caret at the end without changing the draft. The prompt is linked to the field for assistive technology. Prompts and counts are writing support rather than a grade or an extra completion gate. The learner's own explanation remains per-job, and the existing report download exports those exact words. The guide covers all four work orders, including the oil job's multi-step drain/filter/refill service record.
+
+Validation: **169 workshop model/render tests passed** (12.71 seconds), including twelve new cases for all job mappings, completed-record provenance, partial oil service, older records, malformed/unknown data, canonical labels, source-state purity, collapsed presentation, theme/accessibility linkage and escaped record text. **Three real-WebGL workflows passed** (4.6 minutes): the complete brake-service/handoff flow, the existing voltage-evidence/report flow and the new handoff guide journey. The new journey checks keyboard navigation, caret position, unchanged draft/state before writing, pending live captures until task completion, recorded before/after readings, untouched history, per-job notes, job-specific prompts, 390/320 px reflow, three themes, guide collapse and actual final report contents. Pending/completed desktop, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Partially completed record guide](../reports/automobile-workshop/handoff-guide-pending.png)
+- [Completed evidence and writing prompts](../reports/automobile-workshop/handoff-guide-desktop.png)
+- [High-contrast phone guide](../reports/automobile-workshop/handoff-guide-contrast.png)
+- [Narrow dark-phone guide](../reports/automobile-workshop/handoff-guide-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
