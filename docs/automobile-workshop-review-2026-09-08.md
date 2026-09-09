@@ -280,6 +280,20 @@ Validation: **145 workshop model/render tests passed** (3.59 seconds), including
 - [Narrow dark-phone jug](../reports/automobile-workshop/jug-lesson-dark.png)
 - [Fine graduations and target in 3D](../reports/automobile-workshop/jug-graduations-3d.png)
 
+## Brake layer measurement lesson
+
+The brake measurement console now includes a labeled pad cross-section whose bracket follows the selected gauge surface. Explicit steel-backing and friction-lining controls use the same guarded actions as the 3D workshop. In the spread view, the exposed pad layer meshes are separately selectable and the selected measurement surface is highlighted. Layer placement also selects the pad in the parts explorer so the close-up control follows the measurement target. Selecting the same layer preserves captured evidence; changing layers clears it. Tool, lift and wheel-access gates remain enforced, and stale action tokens cannot operate a later task.
+
+A numeric limit comparison appears only for a current valid lining capture. Before capture, the lesson explicitly distinguishes the schematic from recorded evidence. A steel reading explains why the model's 5 mm backing plate cannot establish lining wear and prompts a new lining capture. A captured 2 mm lining is compared visually and in text with this case's 3 mm replacement limit. An above-limit capture does not claim that the whole brake repair is verified. Existing task calculations, service history, inspection mode and repair gates remain unchanged. The lesson uses authored model dimensions, not universal vehicle service specifications.
+
+Validation: **157 workshop model/render tests passed** in the final run (22.73 seconds), including twelve new cases for explicit placement, same-layer capture retention, changed-layer invalidation, equipment/access interlocks, stale actions, inspection preview, pending/wrong-layer states, theme/fallback rendering and above-limit interpretation. **Three distinct real-WebGL workflows passed** (1.3 minutes): existing brake separation/service and detailed geometry/close-up regressions, plus the new lesson. The new lesson passed again after the explorer-selection refinement (1.7 minutes including setup/teardown). It checks a physical steel-layer click, both mesh bindings, keyboard lining placement, pending and captured states, same-layer evidence preservation, job switching, 390/320 px reflow, three themes and progression to service. Desktop invalid/valid readings, high-contrast phone, narrow dark-phone and selected 3D pad screenshots were reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression images were preserved outside this commit.
+
+- [Why a steel reading cannot establish lining wear](../reports/automobile-workshop/brake-layer-wrong.png)
+- [Captured lining and case limit](../reports/automobile-workshop/brake-layer-desktop.png)
+- [High-contrast phone lesson](../reports/automobile-workshop/brake-layer-contrast.png)
+- [Narrow dark-phone lesson](../reports/automobile-workshop/brake-layer-dark.png)
+- [Selected pad in the 3D explorer](../reports/automobile-workshop/brake-layer-3d.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

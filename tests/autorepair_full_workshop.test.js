@@ -893,3 +893,58 @@ describe('Graduated oil jug lesson', () => {
     expect(Number(fluid.getAttribute('height'))).toBeGreaterThanOrEqual(0);expect(Number(fluid.getAttribute('height'))).toBeLessThanOrEqual(200);
   });
 });
+
+
+describe('Explicit brake-layer measurement', () => {
+  const ready=()=>model.normalize({job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true});
+  const place=(state,surface)=>model.direct(state,model.token(state,'gauge-'+surface));
+  it('places each layer deliberately, preserves same-layer capture and clears a changed setup',()=>{
+    let state=model.operate(ready(),{type:'read'});const reading=state.reading;
+    state=place(state,'lining');expect(state.reading).toEqual(reading);expect(state.step).toBe(7);
+    state=place({...state,brakePart:'rotor'},'backing');expect(state.instrument.surface).toBe('backing');expect(state.reading).toBeNull();expect(state.brakePart).toBe('pad');
+    state=model.operate(state,{type:'read'});expect(state.reading).toMatchObject({value:5,valid:false});
+    const wrong=state.reading;expect(place(state,'backing').reading).toEqual(wrong);
+    expect(model.advance({...state,answer:'6'}).step).toBe(7);
+    state=place(state,'lining');state=model.operate(state,{type:'read'});expect(model.advance({...state,answer:'6'}).step).toBe(8);
+  });
+  it.each([{tool:'lamp'},{lift:'raised'},{wheelRemoved:false}])('keeps direct placement behind equipment and access gates for %j',patch=>{
+    const state=model.normalize({...ready(),...patch});expect(place(state,'backing').instrument.surface).toBe('lining');
+  });
+  it('rejects stale layer picks after a task change and keeps inspection non-operating',()=>{
+    const state=ready(),token=model.token(state,'gauge-backing');
+    expect(model.preview(state,token)).not.toBeNull();expect(state.instrument.surface).toBe('lining');
+    const after=step(state);expect(model.direct(after,token).instrument.surface).toBe('lining');
+  });
+});
+
+describe('Brake layer cross-section and recorded limit comparison',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render({surface='lining',capture=false,serviced=false,theme={},patch={}}={}){
+    let state=model.normalize({job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,serviced,instrument:{surface}});
+    if(capture)state=model.operate(state,{type:'read'});state={...state,...patch};
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',uh3dStatus:'failed',shop:state}},theme);return host.querySelector('[data-ar-brake-measurement]');
+  }
+  it('withholds the numeric limit chart before a current capture',()=>{
+    const panel=render();expect(panel.getAttribute('data-ar-brake-measurement')).toBe('pending');expect(panel.querySelector('[data-ar-brake-limit-review]')).toBeNull();
+    expect(panel.textContent).toContain('not a recorded measurement');
+  });
+  it('does not treat a thick steel reading as passing wear evidence',()=>{
+    const panel=render({surface:'backing',capture:true});expect(panel.getAttribute('data-ar-brake-measurement')).toBe('wrong-layer');
+    expect(panel.textContent).toContain('5 mm reading measures steel support');expect(panel.querySelector('[data-ar-brake-limit-review]')).toBeNull();
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('explains captured lining and keeps labeled fallbacks in %j',theme=>{
+    const panel=render({capture:true,theme});expect(panel.getAttribute('data-ar-brake-measurement')).toBe('lining');
+    expect(panel.textContent).toContain('below this job’s 3 mm replacement limit');expect(panel.textContent).toContain('Captured lining: 2 mm');
+    expect(panel.querySelector('[data-ar-gauge-span]').getAttribute('data-ar-gauge-span')).toBe('lining');
+    expect(panel.querySelectorAll('button[data-ar-gauge-layer]')).toHaveLength(2);
+    for(const svg of panel.querySelectorAll('svg'))expect(svg.getAttribute('aria-hidden')).toBe('true');
+  });
+  it('does not claim complete repair verification from an above-limit lining measurement',()=>{
+    const panel=render({capture:true,serviced:true,theme:{isContrast:true}});expect(panel.textContent).toContain('Captured lining: 8 mm');expect(panel.textContent).toContain('Thickness alone does not verify');
+  });
+  it('hides a capture whose setup key is stale',()=>{
+    const state=model.normalize({job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true});
+    const capture=model.operate(state,{type:'read'}).reading;
+    expect(render({surface:'backing',patch:{reading:capture}}).getAttribute('data-ar-brake-measurement')).toBe('pending');
+  });
+});

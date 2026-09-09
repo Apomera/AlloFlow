@@ -9819,7 +9819,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       operate('meter-contact', state.instrument.contact === 'posts' ? 'Move probes across positive joint' : 'Move probes across battery posts', { type: 'configure', field: 'contact', value: state.instrument.contact === 'posts' ? 'joint' : 'posts' });
       operate('meter-load', state.instrument.load === 'off' ? 'Apply simulated starter load' : 'Switch simulated starter load off', { type: 'configure', field: 'load', value: state.instrument.load === 'off' ? 'starter' : 'off' });
     }
-    if (kind === 'gauge') operate('gauge-surface', state.instrument.surface === 'lining' ? 'Move gauge to backing plate' : 'Move gauge to friction lining', { type: 'configure', field: 'surface', value: state.instrument.surface === 'lining' ? 'backing' : 'lining' });
+    if (kind === 'gauge') {
+      operate('gauge-surface', state.instrument.surface === 'lining' ? 'Move gauge to backing plate' : 'Move gauge to friction lining', { type: 'configure', field: 'surface', value: state.instrument.surface === 'lining' ? 'backing' : 'lining' });
+      operate('gauge-lining', 'Place gauge on friction lining', { type: 'configure', field: 'surface', value: 'lining' });
+      operate('gauge-backing', 'Place gauge on steel backing', { type: 'configure', field: 'surface', value: 'backing' });
+    }
     if (kind === 'jug') {
       operate('jug-add', 'Add 500 mL to jug', { type: 'quantity', delta: 500 });
       operate('jug-fine', 'Add 100 mL to jug', { type: 'quantity', delta: 100 });
@@ -9900,6 +9904,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; })) return blocked('Complete the vehicle access and setup prerequisites before operating this control.');
     if ((id === 'meter-posts' || id === 'meter-joint') && state.instrument.contact === action.action.value)
       return Object.assign({}, atStation, { feedback: 'The black probe is already on that contact. The current capture is unchanged.' });
+    if (id === 'gauge-lining' || id === 'gauge-backing') atStation = Object.assign({}, atStation, { brakePart: 'pad' });
+    if ((id === 'gauge-lining' || id === 'gauge-backing') && state.instrument.surface === action.action.value)
+      return Object.assign({}, atStation, { feedback: 'The gauge is already on that layer. The current capture is unchanged.' });
     return arShopOperate(atStation, action.action);
   }
 
@@ -10467,6 +10474,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             if (mesh.material.emissive) mesh.material.emissive.setHex(part.id === state.brakePart ? 0x286b73 : 0x000000);
           });
           bindControl(object, 'brake-part-' + part.id);
+          if (part.id === 'pad' && instrumentReady && instrumentKind === 'gauge') {
+            [['lining', 'pad-friction-lining'], ['backing', 'pad-steel-backing']].forEach(function (layer) {
+              var surface = object.getObjectByName(layer[1]);
+              if (!surface) return;
+              bindControl(surface, 'gauge-' + layer[0]);
+              surface.userData.gaugeSurface = layer[0]; surface.userData.selectedForMeasurement = state.instrument.surface === layer[0];
+              if (surface.material.emissive) surface.material.emissive.setHex(surface.userData.selectedForMeasurement ? 0x286b73 : 0x000000);
+            });
+          }
           var marker = instrumentDisplay(brakes, part.id.toUpperCase(), [object.position.x, 0.28, object.position.z], 0.34);
           if (marker) marker.rotation.y = -0.90;
           bindControl(marker, 'brake-part-' + part.id);
@@ -20630,6 +20646,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', null, gap === 0 ? 'No quantity change needed. This is the prepared amount in the jug; it has not yet been transferred into the engine.' : (gap > 0 ? 'Add ' : 'Remove ') + Math.abs(gap) + ' mL = ' + (Math.abs(gap) / 1000).toFixed(1) + ' L. That is ' + Math.abs(gap / 100) + ' change' + (Math.abs(gap / 100) === 1 ? '' : 's') + ' of 100 mL.'),
               h('p', null, 'A 500 mL addition equals five 100 mL additions. These controls prepare the jug; completing the checked refill task transfers the authored service quantity.')));
         }
+        function brakeMeasurementPanel() {
+          var surface = shop.instrument.surface, lining = shop.serviced ? 8 : 2, layerWidth = lining * 15;
+          var reading = shop.reading && shop.reading.key === arShopReadingKey(shop) && shop.reading.kind === 'gauge' && shop.reading.unit === 'mm' && Number.isFinite(shop.reading.value) && shop.reading.value >= 0 ? shop.reading : null;
+          var valid = !!(reading && reading.valid && surface === 'lining'), start = surface === 'lining' ? 151 : 76, end = surface === 'lining' ? 151 + layerWidth : 151;
+          var message = !reading ? 'Capture a reading after placing the gauge. The diagram shows the selected layer; it is not a recorded measurement.'
+            : !valid ? 'This ' + reading.value + ' mm reading measures steel support, not friction material. It cannot establish pad wear. Place the gauge on the lining and capture again.'
+            : reading.value < 3 ? 'The captured lining is below this job’s 3 mm replacement limit. Use that evidence for the brake service decision.'
+            : reading.value === 3 ? 'The captured lining is at this job’s 3 mm limit. Compare with the work order before making a service decision.'
+            : 'The captured lining is above this job’s 3 mm limit. Thickness alone does not verify the complete brake repair.';
+          var maximum = valid ? Math.max(10, reading.value) : 10;
+          return h('section', { 'data-ar-brake-measurement': !reading ? 'pending' : valid ? 'lining' : 'wrong-layer', 'aria-label': 'Brake pad measurement lesson', style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+            h('h5', { style: { margin: '0 0 8px', fontSize: 14 } }, 'Which thickness counts?'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'The steel plate supports the friction lining. Measure the lining separately to judge wear against this job’s service sheet.'),
+            h('div', { role: 'group', 'aria-label': 'Place gauge on a pad layer', className: 'ar-shop-actions' }, [['backing', 'Steel backing'], ['lining', 'Friction lining']].map(function (layer) {
+              return control(layer[1], function () { pick(arShop3DToken(shop, 'gauge-' + layer[0])); }, { key: layer[0], 'data-ar-gauge-layer': layer[0], 'aria-pressed': surface === layer[0] });
+            })),
+            h('svg', { viewBox: '0 0 340 195', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 440, margin: '10px auto' } },
+              h('rect', { x: 76, y: 65, width: 75, height: 90, rx: 2, fill: T.muted, stroke: T.text, strokeWidth: 2 }),
+              h('rect', { x: 151, y: 76, width: layerWidth, height: 68, fill: T.accentHi, stroke: T.text, strokeWidth: 2 }),
+              h('path', { 'data-ar-gauge-span': surface, d: 'M' + start + ' 57 V38 H' + end + ' V57', fill: 'none', stroke: isContrast ? '#ffff00' : T.link, strokeWidth: 3 }),
+              h('text', { x: 170, y: 19, textAnchor: 'middle', fill: T.text, fontSize: 14, fontWeight: 700 }, 'Gauge: ' + (surface === 'lining' ? 'lining only' : 'steel backing')),
+              h('path', { d: 'M110 157 V171 H69', fill: 'none', stroke: T.text, strokeWidth: 1 }),
+              h('text', { x: 69, y: 190, textAnchor: 'middle', fill: T.text, fontSize: 14 }, 'Steel backing'),
+              h('path', { d: 'M' + (151 + layerWidth / 2) + ' 146 V171 H267', fill: 'none', stroke: T.text, strokeWidth: 1 }),
+              h('text', { x: 267, y: 190, textAnchor: 'middle', fill: T.text, fontSize: 14 }, 'Friction lining')),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Schematic pad cross-section. The bracket marks the selected layer. In the spread 3D view, rotate the pad and click its lining or steel surface to place the gauge; the selected surface is highlighted.'),
+            h('p', { 'data-ar-brake-measurement-feedback': true, role: 'status', 'aria-atomic': 'true', style: { fontSize: 12, lineHeight: 1.6, fontWeight: 700 } }, message),
+            valid && h('div', { 'data-ar-brake-limit-review': true },
+              h('p', { style: { fontSize: 12 } }, 'Captured lining: ' + reading.value + ' mm · case limit: 3 mm'),
+              h('svg', { viewBox: '0 0 340 90', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%' } },
+                h('rect', { x: 20, y: 26, width: 300, height: 24, fill: T.cardAlt, stroke: T.border }),
+                h('rect', { 'data-ar-brake-measured-bar': true, x: 20, y: 26, width: 300 * (reading.value / maximum), height: 24, fill: isContrast ? '#ffffff' : T.accentHi }),
+                isContrast && h('line', { x1: 20 + 900 / maximum, x2: 20 + 900 / maximum, y1: 14, y2: 57, stroke: '#000000', strokeWidth: 5 }),
+                h('line', { x1: 20 + 900 / maximum, x2: 20 + 900 / maximum, y1: 14, y2: 57, stroke: T.text, strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('text', { x: Math.max(55, 20 + 900 / maximum), y: 12, textAnchor: 'middle', fill: T.text, fontSize: 14 }, '3 mm limit'),
+                h('text', { x: 20, y: 76, fill: T.text, fontSize: 14 }, '0'),
+                h('text', { x: 320, y: 76, textAnchor: 'end', fill: T.text, fontSize: 14 }, maximum + ' mm'))));
+        }
         function instrumentPanel() {
           var kind = arShopInstrumentKind(shop);
           if (!kind) return null;
@@ -20653,7 +20707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', null, 'Compare the battery voltage with the loss across one connection. A reading with no starter load cannot establish that a joint carries starter current.')),
             kind === 'gauge' && h('div', null,
               setting('surface', 'Place the gauge on', [['lining', 'Friction lining only'], ['backing', 'Steel backing plate']]),
-              h('p', null, 'Measure the lining separately from the backing plate, then compare it with this job’s service limit.')),
+              brakeMeasurementPanel()),
             kind === 'jug' && h('div', null,
               h('p', null, 'Training fill: 4.6 L = 4600 mL. The jug starts at 4.1 L. Prepare the full service quantity, then capture the measurement.'),
               h('p', { 'data-ar-shop-jug-quantity': shop.instrument.jugMl }, h('strong', null, shop.instrument.jugMl + ' mL / ' + (shop.instrument.jugMl / 1000).toFixed(1) + ' L')),

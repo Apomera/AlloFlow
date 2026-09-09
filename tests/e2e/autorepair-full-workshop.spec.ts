@@ -1094,3 +1094,44 @@ test('empty 3D measuring jug has no oil mesh and full capacity stays in bounds',
   await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','false');
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('brake layer lesson connects physical pad selection to valid lining evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  const panel=page.locator('[data-ar-brake-measurement]');
+  await expect(panel).toHaveAttribute('data-ar-brake-measurement','pending');
+  await page.locator('[data-ar-brake-closeup]').click();
+  await clickShop(page,'pad-steel-backing');
+  await expect(page.locator('#ar-shop-instrument-surface')).toHaveValue('backing');
+  await expect(panel.locator('[data-ar-gauge-layer="backing"]')).toHaveAttribute('aria-pressed','true');
+  const bindings=await page.evaluate(()=>{const s=(window as any).__shopScene;return ['pad-steel-backing','pad-friction-lining'].map(n=>s.getObjectByName(n).userData.gaugeSurface);});
+  expect(bindings).toEqual(['backing','lining']);
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel).toHaveAttribute('data-ar-brake-measurement','wrong-layer');
+  await expect(panel.locator('[data-ar-brake-limit-review]')).toHaveCount(0);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-wrong.png'});
+  await panel.locator('[data-ar-gauge-layer="lining"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await expect(panel).toHaveAttribute('data-ar-brake-measurement','pending');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel).toHaveAttribute('data-ar-brake-measurement','lining');
+  const capture=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.reading));
+  await panel.locator('[data-ar-gauge-layer="lining"]').click();
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.reading))).toBe(capture);
+  await expect(panel).toContainText('Captured lining: 2 mm');
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-desktop.png'});
+  await page.locator('[data-ar-brake-closeup]').click();await shopPoint(page,'pad-steel-backing');
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/brake-layer-3d.png'});
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('brakes');await expect(panel).toHaveAttribute('data-ar-brake-measurement','lining');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-dark.png'});
+  await page.locator('#ar-shop-answer').fill('6');await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
