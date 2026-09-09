@@ -332,6 +332,20 @@ Validation: **194 workshop model/render tests passed** in the final run (5.05 se
 - [High-contrast phone sequence](../reports/automobile-workshop/wheel-path-contrast.png)
 - [Narrow dark-phone sequence](../reports/automobile-workshop/wheel-path-dark.png)
 
+## Live lift support lesson
+
+The brake and oil work orders now show a live schematic of the lift's support state, with separate explanations for floor/setup, low lift before/after the stability check, raised-but-unlocked and settled-on-locks positions. An optional raised/locked comparison is explicitly labeled as examples and does not move the lift or record a task. The same pure state description supplies the existing authored 3D heights, preserving their values. Diagram positions are deliberately exaggerated and labeled as schematic.
+
+The 3D lift has a separate text display for ON FLOOR, LOW CHECK, NOT LOCKED or LOCKS SET. This complements the existing stop indicator and colored lock markers. The lesson independently reports a latched stop, so a stopped vehicle can still be visibly supported on locks; resetting the stop leaves the support state and height unchanged. Existing motion controls, access gates, emergency-stop behavior and specific-lift training language remain intact. Floor-based electrical and alignment jobs do not show this extra lesson.
+
+Validation: **209 workshop model/render tests passed** (138.36 seconds on the loaded host), including fifteen new cases covering all six lift states, same-height distinctions, settling height, independent stop state, job applicability, unknown-state normalization, optional comparison labels, themes and a stopped/locked vehicle. **Three real-WebGL workflows passed** (5.1 minutes including slow setup): the existing physical stop/reset and inspection-mode regressions, and the new staged support lesson. The new flow covers setup/low/stability/raised/locked transitions, actual vehicle heights of 0.18/1.68/1.58 model units, independent 3D lock-state data, unchanged state on comparison toggle, blocked commands while stopped, reset without motion, 390/320 px reflow, three themes, comparison collapse and job persistence. Raised/locked desktop, physical 3D label, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Raised but not locked](../reports/automobile-workshop/lift-support-raised.png)
+- [Supported on locks](../reports/automobile-workshop/lift-support-locked.png)
+- [Separate support label in 3D](../reports/automobile-workshop/lift-support-3d.png)
+- [High-contrast stopped/locked comparison](../reports/automobile-workshop/lift-support-contrast.png)
+- [Narrow dark-phone lesson](../reports/automobile-workshop/lift-support-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

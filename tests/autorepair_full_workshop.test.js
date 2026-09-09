@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1102,5 +1102,47 @@ describe('Responsive wheel path rendering',()=>{
     expect(render([],false).querySelectorAll('[data-ar-wheel-path]')).toHaveLength(0);
     const host=render([0,2,4,1,3]);expect(host.querySelectorAll('[data-ar-wheel-path="next"]')).toHaveLength(0);expect(host.querySelectorAll('[data-ar-wheel-path="checked"]')).toHaveLength(4);
     expect(host.querySelector('[data-ar-wheel-move]').textContent).toContain('Complete the reassembly task');
+  });
+});
+
+
+describe('Live lift support state',()=>{
+  it.each([['ground',0,false],['prepared',0,false],['low',0.18,false],['checked',0.18,false],['raised',1.68,false],['locked',1.58,true]])('describes %s without changing the lift', (lift,height,locked)=>{
+    const state=model.normalize({job:'brakes',lift}),before=JSON.stringify(state);
+    expect(model.liftStatus(state)).toMatchObject({state:lift,height,locked,motionStopped:false,applicable:true});expect(JSON.stringify(state)).toBe(before);
+  });
+  it('distinguishes equal-height preparation states and raised-versus-supported states',()=>{
+    expect(model.liftStatus({job:'brakes',lift:'low'}).label).toContain('needed');
+    expect(model.liftStatus({job:'brakes',lift:'checked'}).label).toContain('checked');
+    expect(model.liftStatus({job:'brakes',lift:'raised'}).explanation).toContain('Height alone');
+    expect(model.liftStatus({job:'brakes',lift:'locked'}).height).toBeLessThan(model.liftStatus({job:'brakes',lift:'raised'}).height);
+  });
+  it.each(['raised','locked'])('keeps the %s support state independent of the latched stop',lift=>{
+    const status=model.liftStatus({job:'oil',lift,liftStopped:true});expect(status.motionStopped).toBe(true);expect(status.locked).toBe(lift==='locked');
+    expect(model.liftStatus({job:'oil',lift,liftStopped:false}).height).toBe(status.height);
+  });
+  it('limits lift teaching to lift jobs and normalizes unknown positions',()=>{
+    expect(model.liftStatus({job:'electrical'}).applicable).toBe(false);expect(model.liftStatus({job:'alignment'}).applicable).toBe(false);
+    expect(model.liftStatus({job:'oil',lift:'flying'})).toMatchObject({state:'ground',height:0});
+  });
+});
+
+describe('Lift support lesson rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(lift='raised',prefs={},theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'brakes',step:5,station:'lift',tool:'lift-controls',lift},...prefs}},theme);return host;}
+  it('shows current state and starts with comparison examples hidden',()=>{
+    const panel=render().querySelector('[data-ar-lift-support]');expect(panel.getAttribute('data-ar-lift-support')).toBe('raised');
+    expect(panel.querySelector('[data-ar-lift-support-label]').textContent).toContain('locks not set');expect(panel.querySelectorAll('[data-ar-lift-example]')).toHaveLength(0);
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('labels comparison examples without presenting them as the live state in %j',theme=>{
+    const panel=render('low',{shopLiftCompare:true},theme).querySelector('[data-ar-lift-support]');
+    expect(panel.getAttribute('data-ar-lift-support')).toBe('low');expect(panel.querySelectorAll('[data-ar-lift-example]')).toHaveLength(2);
+    expect(panel.textContent).toContain('Examples only');expect(panel.textContent).toContain('does not move the lift');
+    expect(panel.querySelector('[data-ar-lift-compare]').getAttribute('aria-expanded')).toBe('true');
+    for(const svg of panel.querySelectorAll('svg'))expect(svg.getAttribute('aria-hidden')).toBe('true');
+  });
+  it('explains a stopped but locked vehicle without claiming that resetting moves it',()=>{
+    const host=render('locked',{shop:{job:'brakes',step:6,lift:'locked',liftStopped:true}}),panel=host.querySelector('[data-ar-lift-support]');
+    expect(panel.textContent).toContain('Current: Supported on mechanical locks');expect(panel.querySelector('[data-ar-lift-motion]').textContent).toContain('support state shown above has not changed');
   });
 });

@@ -9787,6 +9787,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       'Optional reasoning check: ' + (review.choice ? review.choice.label + ' ' + review.choice.feedback : 'Not answered.')];
   }
 
+  function arShopLiftStatus(raw) {
+    var state = arShopState(raw);
+    var stages = {
+      ground: ['On the floor', 0, 'The vehicle is on the floor. Follow the current work order before operating the lift.'],
+      prepared: ['Setup checked', 0, 'Setup is recorded; the vehicle has not risen. The initial low lift comes before the stability check.'],
+      low: ['Low lift: stability check needed', 0.18, 'The vehicle is just clear of the floor. Record the stability check before raising further.'],
+      checked: ['Low lift: stability checked', 0.18, 'The stability check is recorded. This is still the low check height, not the locked service position.'],
+      raised: ['Raised: locks not set', 1.68, 'Height alone does not open this simulation’s underbody tasks. Complete the step that settles the vehicle onto its mechanical locks.'],
+      locked: ['Supported on mechanical locks', 1.58, 'The vehicle has settled onto the mechanical locks. This is the support state required by this simulation’s underbody service tasks.']
+    }, stage = stages[state.lift];
+    return { state: state.lift, label: stage[0], height: stage[1], explanation: stage[2], locked: state.lift === 'locked',
+      motionStopped: state.liftStopped, applicable: state.job === 'brakes' || state.job === 'oil' };
+  }
   function arShopWheelSequence(raw) {
     var state = arShopState(raw), valid = state.lugs.every(function (index, order) { return index === TIRE_LUG_PATTERN[order]; });
     var count = state.wheelSeated && valid ? state.lugs.length : 0;
@@ -9977,7 +9990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   function buildWorkshopScene(THREE, api) {
     var state = arShopState(api.sceneProps), scene = api.scene;
     var meshes = {}, picks = [];
-    var height = state.lift === 'locked' ? 1.58 : state.lift === 'raised' ? 1.68 : (state.lift === 'low' || state.lift === 'checked') ? 0.18 : 0;
+    var height = arShopLiftStatus(state).height;
     if (scene.fog) { scene.fog.near = 12; scene.fog.far = 26; }
     var room = new THREE.Group(); room.name = 'full-workshop-environment'; scene.add(room);
     var paint = api.trim(0x246b8e, 90), rubber = api.trim(0x171e29, 8), metal = api.trim(0xa4b3c1, 75);
@@ -10285,6 +10298,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var stopDisplay = instrumentDisplay(lift, state.liftStopped ? 'STOP' : 'READY', [-0.13, 1.60, 1.61], 0.32);
     if (stopDisplay) stopDisplay.name = 'lift-stop-status-display';
     cylinder(lift, 'lift-stop-status-light', 0.025, 0.020, [0.10, 1.60, 1.61], state.liftStopped ? red : green, 'z');
+    if (state.job === 'brakes' || state.job === 'oil') {
+      var supportState = arShopLiftStatus(state);
+      var supportDisplay = label(lift, supportState.locked ? 'LOCKS SET' : state.lift === 'raised' ? 'NOT LOCKED' : state.lift === 'low' || state.lift === 'checked' ? 'LOW CHECK' : 'ON FLOOR', [-0.13, 1.12, 1.68], 0.56, supportState.locked ? '#34d399' : '#fbbf24');
+      if (supportDisplay) { supportDisplay.name = 'lift-support-state-display'; supportDisplay.userData.liftState = state.lift; supportDisplay.userData.locked = supportState.locked; }
+    }
     register('lift', lift, [0.05, 1.75, 1.36]);
     if (state.job === 'alignment') {
       var toe = arShopAlignment(state), alignmentRig = new THREE.Group(); alignmentRig.name = 'workshop-alignment-rig'; brakes.add(alignmentRig);
@@ -20552,6 +20570,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (coach.panel) return '[data-ar-alignment-panel]';
           return coach.action ? '[data-ar-scene-action="' + coach.action + '"]' : '#ar-shop-work-order';
         }
+        function liftSupportPanel() {
+          var status = arShopLiftStatus(shop);
+          if (!status.applicable) return null;
+          function picture(liftState) {
+            var locked = liftState === 'locked';
+            var top = liftState === 'raised' ? 32 : locked ? 42 : liftState === 'low' || liftState === 'checked' ? 77 : 94;
+            var padY = top + 49, color = locked ? T.good : T.accentHi;
+            return h('svg', { viewBox: '0 0 300 178', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 380, margin: '0 auto' } },
+              h('line', { x1: 15, x2: 285, y1: 165, y2: 165, stroke: T.text, strokeWidth: 2 }),
+              [35, 255].map(function (x) { return h('g', { key: x },
+                h('rect', { x: x, y: 13, width: 10, height: 151, fill: T.border }),
+                h('rect', { x: x - 5, y: padY - 13, width: 20, height: 25, fill: color }),
+                h('path', { d: x < 100 ? 'M45 ' + padY + ' H103' : 'M255 ' + padY + ' H197', stroke: color, strokeWidth: 6, fill: 'none' }),
+                h('path', { d: 'M' + (x-4) + ' ' + (padY+14) + ' H' + (x+14), stroke: locked ? T.good : T.muted, strokeWidth: locked ? 6 : 2, strokeDasharray: locked ? undefined : '3 3' })); }),
+              h('g', { transform: 'translate(0 ' + top + ')' },
+                h('rect', { x: 75, y: 29, width: 24, height: 37, rx: 8, fill: T.text }),
+                h('rect', { x: 201, y: 29, width: 24, height: 37, rx: 8, fill: T.text }),
+                h('path', { d: 'M82 45 V22 L104 0 H196 L218 22 V45 Z', fill: T.cardAlt, stroke: T.text, strokeWidth: 2 }),
+                h('path', { d: 'M110 7 H190 L204 22 H96 Z', fill: T.link, stroke: T.text, strokeWidth: 1 }),
+                h('rect', { x: 92, y: 29, width: 21, height: 8, rx: 2, fill: T.accentHi }),
+                h('rect', { x: 187, y: 29, width: 21, height: 8, rx: 2, fill: T.accentHi })));
+          }
+          return h('section', { 'data-ar-lift-support': status.state, 'aria-label': 'Live lift support state', style: { marginTop: 12, padding: 12, color: T.text, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14 } }, 'Height and support are different checks'),
+            h('p', { 'data-ar-lift-support-label': true, style: { fontSize: 13, fontWeight: 700 } }, 'Current: ' + status.label),
+            picture(status.state),
+            h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, status.explanation),
+            h('p', { 'data-ar-lift-motion': status.motionStopped ? 'stopped' : 'not-stopped', style: { fontSize: 12, lineHeight: 1.6, fontWeight: 700 } }, status.motionStopped ? 'Stop latched: lift commands are blocked. The support state shown above has not changed.' : 'Stop released. Lift motion still requires the current task’s equipment and checks.'),
+            control(d.shopLiftCompare ? 'Hide support comparison' : 'Compare raised and locked', function () { upd('shopLiftCompare', !d.shopLiftCompare); }, { 'data-ar-lift-compare': true, 'aria-expanded': !!d.shopLiftCompare, 'aria-controls': 'ar-lift-support-comparison' }),
+            d.shopLiftCompare && h('div', { id: 'ar-lift-support-comparison', style: { marginTop: 12 } },
+              h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Examples only: opening this comparison does not move the lift or record a check.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } }, ['raised', 'locked'].map(function (state) {
+                return h('div', { key: state, 'data-ar-lift-example': state, style: { padding: 6, border: '1px solid ' + T.border, borderRadius: 6 } },
+                  h('strong', { style: { display: 'block', fontSize: 12 } }, state === 'raised' ? 'Raised' : 'On locks'), picture(state),
+                  h('p', { style: { fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, state === 'raised' ? 'Not yet settled onto locks. Underbody tasks stay blocked.' : 'Settled onto mechanical locks. Follow the current service task.'));
+              }))),
+            h('p', { style: { fontSize: 11, lineHeight: 1.5, marginBottom: 0 } }, 'Schematic positions are exaggerated. The real lift’s instructions and training determine its operation.'));
+        }
         function instrumentCoachPanel() {
           var coach = arShopInstrumentGuide(shop);
           if (!coach) return null;
@@ -20616,6 +20672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('div', { className: 'ar-shop-actions' },
               control('Focus service controls', focusServiceControls, { 'data-ar-scene-focus': true }),
               control('Choose tools in 3D', focusToolControls, { 'data-ar-scene-tools-focus': true })),
+            liftSupportPanel(),
             h('div', { 'data-ar-lift-stop-panel': true, style: { padding: 10, marginTop: 10, border: '1px solid ' + (shop.liftStopped ? '#f87171' : '#64748b'), borderRadius: 8 } },
               h('strong', { 'data-ar-lift-stop-status': shop.liftStopped ? 'stopped' : 'ready', style: { display: 'block', color: shop.liftStopped ? '#fca5a5' : '#a7f3d0' } }, shop.liftStopped ? 'Lift stop latched — commands blocked' : 'Lift stop released'),
               h('p', { style: { fontSize: 12, margin: '6px 0' } }, shop.liftStopped ? 'Vehicle remains: ' + liftLabels[shop.lift] + '. Check the simulated bay, then reset. Resetting does not resume a command.' : 'The red 3D button latches the stop at the current height. This authored control exercise does not replace instructions for a specific lift.'),
