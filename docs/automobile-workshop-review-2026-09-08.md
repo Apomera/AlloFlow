@@ -216,6 +216,19 @@ Validation: **104 workshop model/render tests passed** (39.13 seconds), includin
 - [Desktop control preview](../reports/automobile-workshop/control-inspector-desktop.png)
 - [Phone control preview](../reports/automobile-workshop/control-inspector-mobile.png)
 
+## Moving wrench and numbered wheel controls
+
+During wheel reassembly, the physical wrench now seats its socket on the next fastener in the authored 1 → 3 → 5 → 2 → 4 sequence. Clicking the handle checks that fastener through the existing service dispatcher. Each accepted check moves the wrench; five accepted checks park it beside the wheel. Clicking the parked wrench selects the brake station without repeating a check or completing the work-order step.
+
+Five numbered physical targets expose the same choices as the accessible diagram. A cyan ring marks the next fastener, checked fasteners turn green, and a display below the tyre reports the next number and recorded count. The diagram announces the current step with aria-current. The wheel equipment camera gives a closer frontal view, and the brake station label moves above the controls during reassembly so it does not cover fastener 1. Inspect mode previews the wrench's current fastener before explicit use.
+
+This remains a sequence exercise: clicks represent checks against the fictional job's service sheet, without modeling applied torque, wrench force or thread engagement. Existing prerequisites, out-of-order and repeat rejection, and explicit work-order completion remain in force. No shared viewer changes.
+
+Validation: **104 workshop model/render tests passed** (4.88 seconds). **Three distinct WebGL workflows passed** across focused runs: physical fasteners with the accessible diagram, full brake service through handoff, and the new moving-wrench desktop/phone workflow. The latter verifies socket relocation, numbered target picking, wrong/repeated choice rejection, Inspect preview plus explicit use, a non-operating progress display, all five checks, a parked wrench that does not advance the job, and explicit reassembly completion. The initial phone test retained the harness’s fixed desktop width; its setup was corrected and horizontal overflow is now asserted. Visual review also identified and resolved overlap between the progress display, NEXT button and top fastener number. Desktop and phone screenshots were reviewed. Source/public SHA-256 parity, syntax and scoped whitespace checks passed. The shared viewer is unchanged; the broader automobile suite was not rerun. Temporary browser configuration was removed. No deployment or installer build was performed.
+
+- [Desktop moving wrench](../reports/automobile-workshop/moving-torque-wrench-desktop.png)
+- [Phone moving wrench](../reports/automobile-workshop/moving-torque-wrench-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

@@ -10098,7 +10098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       pipe(car, 'axle-' + x, [x, 0.40, -0.65], [x, 0.40, 0.65], 0.052, dark);
     });
     if (state.wheelRemoved && !state.wheelSeated) wheel(rack, 'removed-front-wheel', 3.2, 0.64, -1.9);
-    register('brakes', brakes, [-1.3, 0.65 + height, 0.99]);
+    register('brakes', brakes, [-1.3, (arShopInstrumentKind(state) === 'torque' && state.wheelSeated ? 1.14 : 0.65) + height, 0.99]);
     var oil = new THREE.Group(); oil.name = 'workshop-oil-station'; car.add(oil);
     var sump = box(oil, 'engine-oil-sump', [0.73, 0.20, 0.55], [-1.2, 0.40, 0], metal);
     sump.userData.fluidState = state.refilled ? 'filled' : state.oilDrained ? 'drained' : 'used-oil';
@@ -10219,6 +10219,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       instrumentDisplay(gauge, captured ? captured.value + ' mm' : '— mm', [-1.15, 0.73, 1.073], 0.28);
       [-1.30, -1.12].forEach(function (x) { box(gauge, 'gauge-jaw-' + x, [0.018, 0.19, 0.025], [x, 0.54, 1.02], metal); });
     }
+    // The wrench follows the same cross-hub sequence as the accessible diagram.
+    var nextWheelLug = instrumentKind === 'torque' && state.wheelSeated && state.lugs.length < 5 ? TIRE_LUG_PATTERN[state.lugs.length] : null;
     // Five physical fasteners share hit targets with the keyboard button diagram.
     if (state.wheelSeated || state.torqued) {
       for (var lugIndex = 0; lugIndex < 5; lugIndex++) {
@@ -10227,18 +10229,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         lugMaterial.userData._keepOpaqueOnRecede = true;
         var lug = cylinder(brakes, 'workshop-wheel-fastener-' + lugIndex, 0.026, 0.035,
           [-1.30 + Math.cos(angle) * 0.13, 0.40 + Math.sin(angle) * 0.13, 0.962], lugMaterial, 'z');
-        lug.userData.partId = instrumentKind === 'torque' ? 'shop-lug-' + lugIndex : 'brakes'; lug.userData.checked = state.lugs.indexOf(lugIndex) !== -1; picks.push(lug);
+        lug.userData.partId = instrumentKind === 'torque' ? 'shop-lug-' + lugIndex : 'brakes'; lug.userData.checked = state.lugs.indexOf(lugIndex) !== -1; lug.userData.next = lugIndex === nextWheelLug; picks.push(lug);
+        if (instrumentKind === 'torque' && instrumentReady) {
+          var badgeCanvas = document.createElement('canvas'); badgeCanvas.width = badgeCanvas.height = 128;
+          var badgeContext = badgeCanvas.getContext('2d');
+          if (badgeContext) {
+            badgeContext.fillStyle = '#102033'; badgeContext.fillRect(0, 0, 128, 128);
+            badgeContext.strokeStyle = lug.userData.checked ? '#34d399' : lug.userData.next ? '#67e8f9' : '#fbbf24';
+            badgeContext.lineWidth = 10; badgeContext.strokeRect(5, 5, 118, 118);
+            badgeContext.fillStyle = '#ffffff'; badgeContext.font = 'bold 88px sans-serif'; badgeContext.textAlign = 'center'; badgeContext.textBaseline = 'middle';
+            badgeContext.fillText(String(lugIndex + 1), 64, 69);
+            var badge = new THREE.Mesh(new THREE.PlaneGeometry(0.085, 0.085), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(badgeCanvas), side: THREE.DoubleSide }));
+            badge.name = 'workshop-wheel-number-' + lugIndex;
+            badge.position.set(-1.30 + Math.cos(angle) * 0.23, 0.40 + Math.sin(angle) * 0.23, 1.055);
+            badge.userData.partId = lug.userData.partId; badge.userData.next = lug.userData.next;
+            brakes.add(badge); picks.push(badge);
+          }
+          if (lug.userData.next) {
+            var nextRing = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.007, 8, 32), new THREE.MeshBasicMaterial({ color: 0x67e8f9 }));
+            nextRing.name = 'workshop-wheel-next-ring'; nextRing.position.copy(lug.position); nextRing.position.z = 1.02;
+            nextRing.userData.partId = lug.userData.partId; brakes.add(nextRing); picks.push(nextRing);
+          }
+        }
       }
       if (instrumentKind === 'torque' && instrumentReady) {
-      var lastLug = state.lugs.length ? state.lugs[state.lugs.length - 1] : 0;
-      var wrenchAngle = Math.PI / 2 - lastLug * Math.PI * 2 / 5;
-      var wx = -1.30 + Math.cos(wrenchAngle) * 0.13, wy = 0.40 + Math.sin(wrenchAngle) * 0.13;
-      var torqueShaft = pipe(brakes, 'workshop-torque-wrench-shaft', [wx, wy, 1.015], [wx + 0.36, wy - 0.12, 1.015], 0.015, metal);
-      torqueShaft.material = torqueShaft.material.clone(); torqueShaft.material.userData._keepOpaqueOnRecede = true;
-      torqueShaft.userData.partId = 'shop-lug-' + lastLug; picks.push(torqueShaft);
-      var torqueGrip = pipe(brakes, 'workshop-torque-wrench-grip', [wx + 0.27, wy - 0.09, 1.015], [wx + 0.44, wy - 0.15, 1.015], 0.028, dark);
-      torqueGrip.material = torqueGrip.material.clone(); torqueGrip.material.userData._keepOpaqueOnRecede = true;
-      torqueGrip.userData.partId = 'shop-lug-' + lastLug; picks.push(torqueGrip);
+        var wrench = new THREE.Group(); wrench.name = 'workshop-torque-wrench'; brakes.add(wrench);
+        wrench.userData.nextLug = nextWheelLug; wrench.userData.checkedCount = state.lugs.length;
+        // Park beside the wheel once all checks are recorded; do not repeat the last lug.
+        var wrenchAngle = nextWheelLug === null ? 0 : Math.PI / 2 - nextWheelLug * Math.PI * 2 / 5;
+        var wx = nextWheelLug === null ? -0.90 : -1.30 + Math.cos(wrenchAngle) * 0.13;
+        var wy = nextWheelLug === null ? 0.10 : 0.40 + Math.sin(wrenchAngle) * 0.13;
+        var wrenchPick = nextWheelLug === null ? 'brakes' : 'shop-lug-' + nextWheelLug;
+        var torqueSocket = cylinder(wrench, 'workshop-torque-wrench-socket', 0.032, 0.07, [wx, wy, 1.015], metal, 'z');
+        var torqueShaft = pipe(wrench, 'workshop-torque-wrench-shaft', [wx, wy, 1.055], [wx + 0.36, wy - 0.12, 1.055], 0.015, metal);
+        var torqueGrip = pipe(wrench, 'workshop-torque-wrench-grip', [wx + 0.27, wy - 0.09, 1.055], [wx + 0.44, wy - 0.15, 1.055], 0.028, dark);
+        [torqueSocket, torqueShaft, torqueGrip].forEach(function (part) {
+          part.material = part.material.clone(); part.material.userData._keepOpaqueOnRecede = true;
+          part.userData.partId = wrenchPick; picks.push(part);
+        });
+        var wheelStatus = label(brakes, nextWheelLug === null ? '5/5 CHECKED' : 'NEXT ' + (nextWheelLug + 1) + '   |   ' + state.lugs.length + '/5', [-1.30, -0.10, 1.06], 0.70, nextWheelLug === null ? '#34d399' : '#67e8f9');
+        if (wheelStatus) { wheelStatus.name = 'workshop-wheel-progress'; wheelStatus.userData.partId = 'brakes'; picks.push(wheelStatus); }
+
       }
     }
 
@@ -20217,7 +20248,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (!task) { stationCamera('engine'); return; }
           pick(task.station); stationCamera(task.station);
           var kind = arShopInstrumentKind(shop);
-          if (kind === 'alignment') {
+          if (kind === 'torque' && shop.wheelSeated) {
+            SHOP3D.reset(); SHOP3D.nudge(0.65, 0.10);
+            SHOP3D.focus('brakes', { distance: 2.0, target: { x: -1.15, y: 2.00, z: 1.02 }, immediate: true });
+          } else if (kind === 'alignment') {
             SHOP3D.reset(); SHOP3D.nudge(-0.50, 0.12);
             SHOP3D.focus('brakes', { distance: 5.8, target: { x: -1.60, y: 0.65, z: 0 }, immediate: true });
           } else if (kind === 'meter' || kind === 'jug') {
@@ -20441,10 +20475,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   var checked = shop.lugs.indexOf(i) !== -1;
                   return h('div', { key: i, style: { position: 'absolute', left: 'calc(' + point[0] + '% - 22px)', top: 'calc(' + point[1] + '% - 22px)' } },
                     control((checked ? '✓ ' : '') + (i + 1), function () { operate({ type: 'lug', index: i }); },
-                      { 'data-ar-shop-lug': i, 'aria-label': 'Check fastener ' + (i + 1) + (checked ? ', already checked' : ''), 'aria-pressed': checked, disabled: !shop.wheelSeated,
+                      { 'data-ar-shop-lug': i, 'aria-label': 'Check fastener ' + (i + 1) + (checked ? ', already checked' : ''), 'aria-pressed': checked, 'aria-current': shop.wheelSeated && TIRE_LUG_PATTERN[shop.lugs.length] === i ? 'step' : undefined, disabled: !shop.wheelSeated,
                         style: btnSecondary({ minHeight: 44, minWidth: 44, padding: 5, borderRadius: '50%', border: '2px solid ' + (checked ? T.good : T.border), background: T.card, fontSize: 12 }) }));
                 })),
-              h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. You can also select the exposed fasteners in the 3D wheel view.'))
+              h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. ' + (shop.wheelSeated && shop.lugs.length < 5 ? 'Next: fastener ' + (TIRE_LUG_PATTERN[shop.lugs.length] + 1) + '. ' : '') + 'In 3D, select a numbered fastener or click the wrench handle to check its current fastener. The wrench moves to the next position after each accepted check.'))
               : (kind === 'alignment' && task.id === 'alignment-setup') ? null : h('div', null,
                 h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': 'Captured instrument reading',
                   style: { display: 'block', marginTop: 12, padding: 14, borderRadius: 8, background: isContrast ? '#000' : '#10262c', color: '#e3fff2', fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 27, fontWeight: 700 } },
