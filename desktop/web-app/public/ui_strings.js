@@ -43726,6 +43726,10 @@
       "wave_evidence_placeholder": "Name two saved settings. Use the graph and measurements to explain the effect you observed."
     },
     "galaxy": {
+      "radio_velocity_hidden_aria": "Radio observation key. Velocity map hidden. Line orientation shows magnetic-field direction; ribbon colors distinguish Faraday depth.",
+      "radio_velocity_hidden": "Velocity map hidden",
+      "radio_velocity_toggle": "Velocity map",
+      "radio_velocity_toggle_hint": "Compare the gas with or without its blue-to-red motion overlay.",
       "focus_entered": "Focus view. Drag to orbit and scroll or pinch to zoom. Press H or Escape to show controls.",
       "focus_exited": "Controls restored. Your view and appearance settings are unchanged.",
       "caption_zoom_in": "Zoom +",

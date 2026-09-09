@@ -1136,6 +1136,14 @@
     "text": "Graded work: turn the assignment switch off. Adventure is practice and engagement, not assessment. XP worries: XP earned in an adventure spends in the same place as all other XP. Removing the adventure does not take away anything a student already earned. Teachers in family mode see the Adventure panel pre-expanded in the sidebar rather than the student presentation."
   },
   {
+    "id": "adventure-mode:setting-up-an-adventure",
+    "title": "Setting up an adventure",
+    "chapter": "Adventure Mode: a story your lesson can carry",
+    "level": 2,
+    "url": "adventure-mode.html#setting-up-an-adventure",
+    "text": "The teacher sidebar and the student launch screen both keep their settings controls. They now share the same layout and permission checks. Students can adjust the options you allow; selecting Lock student settings makes their setup read-only, including cloud image storage. Teachers can choose a starting profile: Profile Episode length Responses Guided Story 12 decisions 3 suggested choices Evidence Debate 12 decisions Write or dictate Systems Challenge 20 decisions 4 suggested choices Social Practice 12 decisions 4 suggested choices A short six-decision episode is still available in Episode length, alongside 12, 20, and open-ended play. These are decision counts, not estimated minutes. Choosing a preset does not rewrite previously saved adventures. Adjusting its settings marks the selected preset as Customized. Reapplying Systems Challenge preserves manually authored resources. Essential setup contains interaction mode, language, student responses, episode length, suggested-choice count, and the final challenge. The choice-count field is hidden for written responses. The earliest-finale setting appears only for open-ended play with a final challenge enabled. Social Practice exposes the target social skill here. Systems mode exposes resource tracking, automatic or manual resource setup, and editable starting resources. Expand Learning supports, Story & game rules, Visuals, Story guidance, or Saving & permissions for the remaining options. The old Difficulty control is labeled Energy & rewards to reflect what it changes; the underlying multipliers and lesson expectations are unchanged. Automatic reading is available under Learning supports before starting. During a story, teacher finale controls remain available in the sidebar under Teacher story controls. Gameplay status and the gameplay toolbar appear after the first scene starts."
+  },
+  {
     "id": "family-mode:family-mode-alloflow-for-a-parent-at-home",
     "title": "Family mode: AlloFlow for a parent at home",
     "chapter": "Family mode: AlloFlow for a parent at home",

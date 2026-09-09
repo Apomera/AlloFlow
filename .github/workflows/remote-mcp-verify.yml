@@ -76,6 +76,9 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Install pinned runner dependencies
         run: npm ci --prefix runner --no-audit --no-fund
+      - name: Materialize manifest-verified EPUBCheck dependencies
+        working-directory: ${{ github.workspace }}
+        run: node desktop/mcp/fetch_epubcheck.cjs
       - name: Stage the canonical isolated runner
         run: npm run runner:stage
       - name: Verify generated bindings, types, tests, preflight, and bundle

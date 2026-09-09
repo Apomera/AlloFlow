@@ -660,6 +660,7 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyTourActive = !!d.galaxyTourActive && !galaxyReducedMotion;
           var galaxyQuality = d.galaxyQuality || 'auto';
           var galaxyBrightness = Number.isFinite(d.galaxyBrightness) ? Math.min(1.2, Math.max(0.7, d.galaxyBrightness)) : 1;
+          var galaxyVelocityOverlay = d.galaxyVelocityOverlay !== false;
           var galaxyGlow = Number.isFinite(d.galaxyGlow) ? Math.min(1.4, Math.max(0, d.galaxyGlow)) : 1;
           var galaxyScienceOverlay = d.galaxyScienceOverlay !== false;
 
@@ -2046,6 +2047,7 @@ if (!window._galaxyHasLoadedOnce) {
             galaxyType: galaxyType,
             galaxyQuality: galaxyQuality,
             galaxyGlow: galaxyGlow,
+            galaxyVelocityOverlay: galaxyVelocityOverlay,
             initGalaxy: initGalaxy,
             loadGalaxyPP: loadGalaxyPP,
             starCount: starCount,
@@ -2820,7 +2822,7 @@ if (!window._galaxyHasLoadedOnce) {
             var dopplerVelocityFieldMaterial = null, dopplerVelocitySampleMaterial = null;
             var radioPolarizationGroup = new THREE.Group(); radioPolarizationGroup.name = 'radioMagneticPolarizationField'; radioGroup.add(radioPolarizationGroup);
             var radioPolarizationMaterial = null, faradayRibbonMaterials = [], faradayRibbonObjects = [];
-            dopplerVelocityFieldGroup.visible = isSpiralMorphology;
+            dopplerVelocityFieldGroup.visible = isSpiralMorphology && galaxyVelocityOverlay;
             radioPolarizationGroup.visible = isSpiralMorphology;
             var infraredPointMaterial = null, radioPointMaterial = null, xrayPointMaterial = null, jetMat = null, adaptiveOverlayPointMaterials = [], adaptiveDensePointMaterials = [];
             var extendedInstrumentDetail = 1, resolvedInstrumentDetail = 1, xrayBeaconVisibility = 1;
@@ -4860,10 +4862,27 @@ if (!window._galaxyHasLoadedOnce) {
               var thermalLaneCount = isSpiralMorphology ? (resolvedQuality === 'cinematic' ? 18 : 11) : 0;
               for (var tl = 0; tl < thermalLaneCount; tl++) { var thermalLanePoints = [], thermalLaneSegments = resolvedQuality === 'cinematic' ? 84 : 52; for (var tls = 0; tls <= thermalLaneSegments; tls++) { var tlf = tls / thermalLaneSegments, tlRadius = 0.18 + tlf * 0.7, tlAngle = galaxyType === 'irregular' || galaxyType === 'elliptical' ? tl * 1.17 + tlf * 0.8 : spiralPatternAngle(tl % spiralLayout.armCount, tlRadius, (tl % 3 - 1) * 0.055); thermalLanePoints.push(new THREE.Vector3(Math.cos(tlAngle) * tlRadius, 0.01, Math.sin(tlAngle) * tlRadius)); } var thermalLaneMat = new THREE.LineBasicMaterial({ color: tl % 3 === 0 ? 0xfde68a : tl % 2 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.08 + (tl % 4) * 0.012, depthWrite: false, blending: THREE.AdditiveBlending }); thermalLaneMat.userData = { baseOpacity: thermalLaneMat.opacity, phase: tl * 0.9, lodClass: 'resolved' }; var thermalLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(thermalLanePoints), thermalLaneMat); thermalLane.renderOrder = 4; infraredThermalGroup.add(thermalLane); infraredThermalMats.push(thermalLaneMat); }
 
+              // A shared angular/radial strip gives the radio gas bands soft edges and a seamless circumference.
+              var radioGasTexture = null;
+              if (isSpiralMorphology) {
+                var radioGasCanvas = document.createElement('canvas'); radioGasCanvas.setAttribute('aria-hidden', 'true'); radioGasCanvas.width = 128; radioGasCanvas.height = 32;
+                var radioGasContext = radioGasCanvas.getContext('2d'), radioGasPixels = radioGasContext.getImageData(0, 0, 128, 32);
+                for (var rgy = 0; rgy < 32; rgy++) for (var rgx = 0; rgx < 128; rgx++) {
+                  var gasAngle = rgx / 127 * Math.PI * 2, gasAcross = rgy / 31;
+                  var gasEdge = rgy === 0 || rgy === 31 ? 0 : Math.pow(Math.sin(gasAcross * Math.PI), 1.4);
+                  var gasClumps = 0.42 + 0.4 * Math.pow(0.5 + 0.5 * Math.sin(gasAngle * 5), 2) + 0.18 * Math.pow(0.5 + 0.5 * Math.cos(gasAngle * 11), 3);
+                  var gasPixel = (rgy * 128 + rgx) * 4;
+                  radioGasPixels.data[gasPixel] = radioGasPixels.data[gasPixel + 1] = radioGasPixels.data[gasPixel + 2] = 255;
+                  radioGasPixels.data[gasPixel + 3] = Math.round(255 * gasEdge * gasClumps);
+                }
+                radioGasContext.putImageData(radioGasPixels, 0, 0);
+                radioGasTexture = tuneGalaxyTexture(new THREE.CanvasTexture(radioGasCanvas)); radioGasTexture.name = 'galaxyRadioGasBand';
+              }
               for (var rr = 0; rr < (isSpiralMorphology ? 6 : 0); rr++) {
                 var rad = 0.18 + rr * 0.115;
-                var ringMat = new THREE.MeshBasicMaterial({ color: rr % 2 ? 0x22d3ee : 0x67e8f9, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending });
-                var hRing = new THREE.Mesh(new THREE.RingGeometry(rad, rad + 0.0035, 160), ringMat);
+                var ringMat = new THREE.MeshBasicMaterial({ map: radioGasTexture, color: rr % 2 ? 0x22d3ee : 0x67e8f9, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending });
+                var hRing = new THREE.Mesh(new THREE.RingGeometry(rad - 0.00225, rad + 0.00575, 160), ringMat);
+                galaxyShapeNebulaShell(hRing.geometry, rr * 0.81);
                 hRing.rotation.x = Math.PI * 0.5;
                 hRing.name = 'radioHydrogenRing';
                 hRing.scale.set(1, 1, 0.35);
@@ -4924,13 +4943,17 @@ if (!window._galaxyHasLoadedOnce) {
               var velocityGradient = velocityMapCtx.createLinearGradient(-vmRadius, 0, vmRadius, 0);
               velocityGradient.addColorStop(0, 'rgba(37,99,235,0.78)'); velocityGradient.addColorStop(0.36, 'rgba(56,189,248,0.42)'); velocityGradient.addColorStop(0.5, 'rgba(226,232,240,0.08)'); velocityGradient.addColorStop(0.64, 'rgba(251,113,133,0.42)'); velocityGradient.addColorStop(1, 'rgba(220,38,38,0.78)');
               velocityMapCtx.fillStyle = velocityGradient; velocityMapCtx.fillRect(-vmRadius, -vmRadius, vmRadius * 2, vmRadius * 2);
-              var velocityFeather = velocityMapCtx.createRadialGradient(0, 0, vmRadius * 0.08, 0, 0, vmRadius);
-              velocityFeather.addColorStop(0, 'rgba(255,255,255,0.92)'); velocityFeather.addColorStop(0.78, 'rgba(255,255,255,0.72)'); velocityFeather.addColorStop(1, 'rgba(255,255,255,0)');
-              velocityMapCtx.globalCompositeOperation = 'destination-in'; velocityMapCtx.fillStyle = velocityFeather; velocityMapCtx.fillRect(-vmRadius, -vmRadius, vmRadius * 2, vmRadius * 2);
               velocityMapCtx.globalCompositeOperation = 'source-over'; velocityMapCtx.lineWidth = 1.35;
               for (var vc = -5; vc <= 5; vc++) { if (vc === 0) continue; velocityMapCtx.setLineDash(vc < 0 ? [5, 5] : [10, 3]); var velocityFraction = vc / 6; var velocityX = velocityFraction * vmRadius * 0.82; velocityMapCtx.beginPath(); velocityMapCtx.moveTo(velocityX * 0.28, -vmRadius * 0.82); velocityMapCtx.bezierCurveTo(velocityX * 1.18, -vmRadius * 0.38, velocityX * 1.18, vmRadius * 0.38, velocityX * 0.28, vmRadius * 0.82); velocityMapCtx.strokeStyle = vc < 0 ? 'rgba(191,219,254,0.52)' : 'rgba(254,202,202,0.52)'; velocityMapCtx.stroke(); }
               velocityMapCtx.setLineDash([8, 6]); velocityMapCtx.lineWidth = 2; velocityMapCtx.beginPath(); velocityMapCtx.moveTo(0, -vmRadius * 0.9); velocityMapCtx.lineTo(0, vmRadius * 0.9); velocityMapCtx.strokeStyle = 'rgba(255,255,255,0.48)'; velocityMapCtx.stroke(); velocityMapCtx.restore();
-              var velocityMapTexture = tuneGalaxyTexture(new THREE.CanvasTexture(velocityMapCanvas));
+              // Fade the completed field and contours together in the same elliptical coordinates.
+              velocityMapCtx.save(); velocityMapCtx.setTransform(1, 0, 0, 1, 0, 0);
+              velocityMapCtx.translate(velocityMapCanvas.width * 0.5, velocityMapCanvas.height * 0.5);
+              velocityMapCtx.scale(velocityMapCanvas.width * 0.46, velocityMapCanvas.height * 0.46 * 0.88);
+              var velocityFeather = velocityMapCtx.createRadialGradient(0, 0, 0, 0, 0, 1);
+              velocityFeather.addColorStop(0, 'rgba(255,255,255,1)'); velocityFeather.addColorStop(0.6, 'rgba(255,255,255,1)'); velocityFeather.addColorStop(0.82, 'rgba(255,255,255,0.45)'); velocityFeather.addColorStop(0.99, 'rgba(255,255,255,0)'); velocityFeather.addColorStop(1, 'rgba(255,255,255,0)');
+              velocityMapCtx.globalCompositeOperation = 'destination-in'; velocityMapCtx.fillStyle = velocityFeather; velocityMapCtx.fillRect(-2, -2, 4, 4); velocityMapCtx.restore();
+              var velocityMapTexture = tuneGalaxyTexture(new THREE.CanvasTexture(velocityMapCanvas)); velocityMapTexture.name = 'galaxyVelocityField';
               dopplerVelocityFieldMaterial = new THREE.MeshBasicMaterial({ map: velocityMapTexture, transparent: true, opacity: 0.34, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
               var velocityMapPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.18, 2.18), dopplerVelocityFieldMaterial); velocityMapPlane.rotation.x = -Math.PI * 0.5; velocityMapPlane.position.y = 0.012; velocityMapPlane.renderOrder = 2; dopplerVelocityFieldGroup.add(velocityMapPlane);
               var velocitySampleCount = resolvedQuality === 'cinematic' ? 720 : resolvedQuality === 'high' ? 420 : 240;
@@ -4956,7 +4979,7 @@ if (!window._galaxyHasLoadedOnce) {
               for (var faradayRibbonIndex = 0; faradayRibbonIndex < faradayDepthRibbonCount; faradayRibbonIndex++) {
                 var faradayRibbonPoints = [], faradayRibbonSegments = resolvedQuality === 'cinematic' ? 132 : resolvedQuality === 'high' ? 92 : 64, faradayRibbonArm = faradayRibbonIndex % (gType.arms || 4);
                 for (var faradayRibbonStep = 0; faradayRibbonStep <= faradayRibbonSegments; faradayRibbonStep++) { var faradayRibbonT = faradayRibbonStep / faradayRibbonSegments, faradayRibbonRadius = 0.14 + faradayRibbonT * 0.78, faradayRibbonAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? faradayRibbonIndex * 0.83 + faradayRibbonT * (1.2 + faradayRibbonIndex % 3 * 0.18) : spiralPatternAngle(faradayRibbonArm, faradayRibbonRadius, (faradayRibbonIndex % 3 - 1) * 0.055 + Math.sin(faradayRibbonT * Math.PI * 4 + faradayRibbonIndex) * 0.018); faradayRibbonPoints.push(new THREE.Vector3(Math.cos(faradayRibbonAngle) * faradayRibbonRadius, 0.025 + (faradayRibbonIndex % 4 - 1.5) * 0.004 + Math.sin(faradayRibbonT * Math.PI * 2) * 0.003, Math.sin(faradayRibbonAngle) * faradayRibbonRadius)); }
-                var faradayRibbonMaterial = new THREE.LineBasicMaterial({ color: faradayRibbonIndex % 3 === 0 ? 0xf0abfc : faradayRibbonIndex % 2 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); faradayRibbonMaterial.userData = { baseOpacity: 0.055 + (faradayRibbonIndex % 4) * 0.012, phase: faradayRibbonIndex * 0.87 }; var faradayRibbon = new THREE.Line(new THREE.BufferGeometry().setFromPoints(faradayRibbonPoints), faradayRibbonMaterial); faradayRibbon.userData = { drift: (faradayRibbonIndex % 2 ? -1 : 1) * 0.000018, phase: faradayRibbonIndex * 0.87 }; faradayRibbon.renderOrder = 6; radioPolarizationGroup.add(faradayRibbon); faradayRibbonMaterials.push(faradayRibbonMaterial); faradayRibbonObjects.push(faradayRibbon);
+                var faradayRibbonMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: faradayRibbonIndex % 3 === 0 ? 0xf0abfc : faradayRibbonIndex % 2 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); faradayRibbonMaterial.userData = { baseOpacity: 0.055 + (faradayRibbonIndex % 4) * 0.012, phase: faradayRibbonIndex * 0.87 }; var faradayRibbon = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(faradayRibbonPoints), faradayRibbonPoints.length, faradayRibbonIndex * 0.87), faradayRibbonMaterial); faradayRibbon.userData = { drift: (faradayRibbonIndex % 2 ? -1 : 1) * 0.000018, phase: faradayRibbonIndex * 0.87 }; faradayRibbon.renderOrder = 6; radioPolarizationGroup.add(faradayRibbon); faradayRibbonMaterials.push(faradayRibbonMaterial); faradayRibbonObjects.push(faradayRibbon);
               }
               var xrayCount = 520;
               var xrayGeo = new THREE.BufferGeometry();
@@ -5012,15 +5035,23 @@ if (!window._galaxyHasLoadedOnce) {
               var xrayTexture = tuneGalaxyTexture(new THREE.CanvasTexture(xrayCv));
               var xraySourceCount = resolvedQuality === 'cinematic' ? 42 : resolvedQuality === 'high' ? 28 : 16;
               for (var xs = 0; xs < xraySourceCount; xs++) { var xsCore = xs < Math.ceil(xraySourceCount * 0.3), xsRadius = xsCore ? Math.pow(Math.random(), 2) * 0.2 : 0.22 + Math.random() * 0.64, xsAngle = Math.random() * Math.PI * 2, xsMat = new THREE.SpriteMaterial({ map: xrayTexture, color: xs % 5 === 0 ? 0xc4b5fd : xs % 3 === 0 ? 0x67e8f9 : 0xe0f2fe, transparent: true, opacity: 0.3 + Math.random() * 0.48, depthWrite: false, blending: THREE.AdditiveBlending }); var xsSprite = new THREE.Sprite(xsMat); xsSprite.position.set(Math.cos(xsAngle) * xsRadius, (Math.random() - 0.5) * 0.08, Math.sin(xsAngle) * xsRadius); var xsScale = (xsCore ? 0.018 : 0.012) + Math.random() * (xsCore ? 0.035 : 0.022); xsSprite.scale.set(xsScale, xsScale, 1); xsSprite.userData = { baseOpacity: xsMat.opacity, baseScale: xsScale, phase: Math.random() * Math.PI * 2, frequency: 1.1 + Math.random() * 2.6 }; xsSprite.renderOrder = 8; xrayEventGroup.add(xsSprite); xrayEventSprites.push(xsSprite); }
-              // Feather both shock edges while leaving the central cavity transparent.
-              var xrayShockCanvas = document.createElement('canvas'); xrayShockCanvas.width = 128; xrayShockCanvas.height = 128;
-              var xrayShockCtx = xrayShockCanvas.getContext('2d'), xrayShockGradient = xrayShockCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-              xrayShockGradient.addColorStop(0, 'rgba(255,255,255,0)'); xrayShockGradient.addColorStop(0.74, 'rgba(255,255,255,0)'); xrayShockGradient.addColorStop(0.81, 'rgba(255,255,255,0.48)'); xrayShockGradient.addColorStop(0.88, 'rgba(255,255,255,0.95)'); xrayShockGradient.addColorStop(0.94, 'rgba(255,255,255,0.4)'); xrayShockGradient.addColorStop(1, 'rgba(255,255,255,0)');
-              xrayShockCtx.fillStyle = xrayShockGradient; xrayShockCtx.fillRect(0, 0, 128, 128);
-              galaxyCloudGrain(xrayShockCtx, xrayShockCanvas, 733, 0.35);
-              var xrayShockTexture = tuneGalaxyTexture(new THREE.CanvasTexture(xrayShockCanvas));
+              // Unwrapped plasma threads feather both radial boundaries and the open arc ends.
+              var xrayShockCanvas = document.createElement('canvas'); xrayShockCanvas.setAttribute('aria-hidden', 'true'); xrayShockCanvas.width = 128; xrayShockCanvas.height = 64;
+              var xrayShockCtx = xrayShockCanvas.getContext('2d'), xrayShockPixels = xrayShockCtx.getImageData(0, 0, 128, 64);
+              for (var shockY = 0; shockY < 64; shockY++) for (var shockX = 0; shockX < 128; shockX++) {
+                var shockAlong = shockX / 127, shockAcross = shockY / 63;
+                var shockFade = shockX === 0 || shockX === 127 || shockY === 0 || shockY === 63 ? 0 : Math.pow(Math.sin(shockAlong * Math.PI), 0.7) * Math.pow(Math.sin(shockAcross * Math.PI), 0.9);
+                var shockRidge = shockAcross - 0.56 - 0.065 * Math.sin(shockAlong * 19), shockInner = shockAcross - 0.29 - 0.04 * Math.sin(shockAlong * 27 + 1.2);
+                var shockLight = 0.14 + 0.64 * Math.exp(-shockRidge * shockRidge * 90) + 0.22 * Math.exp(-shockInner * shockInner * 140);
+                var shockDensity = 0.77 + 0.14 * Math.sin(shockAlong * 31) + 0.09 * Math.cos(shockAlong * 53);
+                var shockPixel = (shockY * 128 + shockX) * 4;
+                xrayShockPixels.data[shockPixel] = xrayShockPixels.data[shockPixel + 1] = xrayShockPixels.data[shockPixel + 2] = 255;
+                xrayShockPixels.data[shockPixel + 3] = Math.round(255 * shockFade * shockLight * shockDensity);
+              }
+              xrayShockCtx.putImageData(xrayShockPixels, 0, 0);
+              var xrayShockTexture = tuneGalaxyTexture(new THREE.CanvasTexture(xrayShockCanvas)); xrayShockTexture.name = 'galaxyXrayPlasmaShell';
               var xrayShellCount = galaxyType === 'elliptical' ? (resolvedQuality === 'cinematic' ? 2 : 1) : resolvedQuality === 'cinematic' ? 18 : resolvedQuality === 'high' ? 12 : 7;
-              for (var xsh = 0; xsh < xrayShellCount; xsh++) { var xshRadius = 0.22 + Math.random() * 0.62, xshAngle = Math.random() * Math.PI * 2, xshMat = new THREE.MeshBasicMaterial({ map: xrayShockTexture, color: xsh % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0.12 + Math.random() * 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var xshRing = new THREE.Mesh(new THREE.RingGeometry(0.75, 1, resolvedQuality === 'cinematic' ? 96 : 56, 1, xsh * 0.7, 4.1 + Math.random()), xshMat); xshRing.position.set(Math.cos(xshAngle) * xshRadius, (Math.random() - 0.5) * 0.04, Math.sin(xshAngle) * xshRadius); xshRing.rotation.x = Math.PI * 0.5; var xshScale = 0.018 + Math.random() * 0.042; xshRing.scale.set(xshScale, xshScale, xshScale); xshRing.userData = { baseOpacity: xshMat.opacity, baseScale: xshScale, phase: xsh * 0.77, expansion: 0.1 + Math.random() * 0.14 }; xshRing.renderOrder = 7; xrayEventGroup.add(xshRing); xrayShockShells.push(xshRing); }
+              for (var xsh = 0; xsh < xrayShellCount; xsh++) { var xshRadius = 0.22 + Math.random() * 0.62, xshAngle = Math.random() * Math.PI * 2, xshMat = new THREE.MeshBasicMaterial({ map: xrayShockTexture, color: xsh % 3 === 0 ? 0xc4b5fd : 0x67e8f9, transparent: true, opacity: 0.12 + Math.random() * 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); var xshRing = new THREE.Mesh(new THREE.RingGeometry(0.75, 1, resolvedQuality === 'cinematic' ? 96 : 56, 1, xsh * 0.7, 4.1 + Math.random()), xshMat); galaxyShapeNebulaShell(xshRing.geometry, xsh * 0.77); xshRing.position.set(Math.cos(xshAngle) * xshRadius, (Math.random() - 0.5) * 0.04, Math.sin(xshAngle) * xshRadius); xshRing.rotation.x = Math.PI * 0.5; var xshScale = 0.018 + Math.random() * 0.042; xshRing.scale.set(xshScale, xshScale, xshScale); xshRing.userData = { baseOpacity: xshMat.opacity, baseScale: xshScale, phase: xsh * 0.77, expansion: 0.1 + Math.random() * 0.14 }; xshRing.renderOrder = 7; xrayEventGroup.add(xshRing); xrayShockShells.push(xshRing); }
 
               // Resolved remnants show temperature-stratified shock layers: a cooler violet rim encloses cyan and pale, harder-energy plasma.
               var xrayTemperatureShellCount = galaxyType === 'elliptical' ? (resolvedQuality === 'balanced' ? 0 : 1) : resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5;
@@ -5032,8 +5063,8 @@ if (!window._galaxyHasLoadedOnce) {
                 xrayTemperatureBands.forEach(function (temperatureBand, temperatureBandIndex) {
                   var temperatureArcPoints = [], temperatureArcStart = 0.34 + xts * 0.51 + temperatureBandIndex * 0.26, temperatureArcLength = 4.75 - temperatureBandIndex * 0.24 + Math.random() * 0.42;
                   for (var temperatureArcStep = 0; temperatureArcStep <= xrayTemperatureShellSegments; temperatureArcStep++) { var temperatureArcAngle = temperatureArcStart + temperatureArcLength * temperatureArcStep / xrayTemperatureShellSegments; var temperatureRipple = 1 + 0.045 * Math.sin(temperatureArcAngle * 5 + xts * 1.7) + 0.024 * Math.sin(temperatureArcAngle * 11 - xts * 0.9); temperatureArcPoints.push(new THREE.Vector3(Math.cos(temperatureArcAngle) * temperatureBand.radius * temperatureRipple, Math.sin(temperatureArcAngle) * temperatureBand.radius * temperatureRipple, temperatureBandIndex * 0.014)); }
-                  var temperatureArcMaterial = new THREE.LineBasicMaterial({ color: temperatureBand.color, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); temperatureArcMaterial.userData = { baseOpacity: temperatureBand.opacity, phase: xtsGroup.userData.phase + temperatureBandIndex * 0.62, band: temperatureBandIndex };
-                  var temperatureArc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(temperatureArcPoints), temperatureArcMaterial); temperatureArc.renderOrder = 9 + temperatureBandIndex; xtsGroup.add(temperatureArc); xrayThermalShellMaterials.push(temperatureArcMaterial);
+                  var temperatureArcMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: temperatureBand.color, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); temperatureArcMaterial.userData = { baseOpacity: temperatureBand.opacity, phase: xtsGroup.userData.phase + temperatureBandIndex * 0.62, band: temperatureBandIndex };
+                  var temperatureArc = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(temperatureArcPoints), temperatureArcPoints.length, xts * 0.83 + temperatureBandIndex * 0.62), temperatureArcMaterial); temperatureArc.renderOrder = 9 + temperatureBandIndex; xtsGroup.add(temperatureArc); xrayThermalShellMaterials.push(temperatureArcMaterial);
                 });
                 xrayThermalShellGroup.add(xtsGroup); xrayThermalShells.push(xtsGroup);
               }
@@ -6997,6 +7028,7 @@ if (!window._galaxyHasLoadedOnce) {
               xrayBeaconVisibility = 0.15 + 0.85 * resolvedInstrumentRaw;
               var radioPolarizationDetailLevel = Math.max(0, Math.min(1, (2.05 - spherical.r) / 1.32));
               radioPolarizationGroup.visible = isSpiralMorphology && radioGroup.visible && radioPolarizationDetailLevel > 0.012;
+              dopplerVelocityFieldGroup.visible = isSpiralMorphology && galaxyRuntimeRef.current.galaxyVelocityOverlay;
               if (radioGroup.visible) {
                 var velocityPulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.86);
                 if (dopplerVelocityFieldMaterial) dopplerVelocityFieldMaterial.opacity = (0.22 + velocityPulse * 0.06) * extendedInstrumentDetail;
@@ -9157,10 +9189,11 @@ if (!window._galaxyHasLoadedOnce) {
                   ),
                   React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.xray_legend_note', 'Color and intensity encode plasma energy, not ordinary visible-light brightness.'))
                 ),
-                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.radio_velocity_aria', 'Radio observation key. The blue-to-red field shows approaching through receding hydrogen. Short line segments trace projected magnetic-field direction. Cyan and magenta ribbons separate Faraday-rotation depth.') },
+                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": !galaxyVelocityOverlay ? __alloT('stem.galaxy.radio_velocity_hidden_aria', 'Radio observation key. Velocity map hidden. Line orientation shows magnetic-field direction; ribbon colors distinguish Faraday depth.') : __alloT('stem.galaxy.radio_velocity_aria', 'Radio observation key. The blue-to-red field shows approaching through receding hydrogen. Short line segments trace projected magnetic-field direction. Cyan and magenta ribbons separate Faraday-rotation depth.') },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100" }, __alloT('stem.galaxy.radio_velocity_title', '21 cm velocity + magnetic field')),
-                  React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-blue-600 via-slate-200 to-red-600 shadow-[0_0_10px_rgba(56,189,248,0.28)]", "aria-hidden": true }),
-                  React.createElement("div", { className: "mt-1 flex justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-blue-200" }, __alloT('stem.galaxy.radio_velocity_toward', '← Approaching')), React.createElement("span", { className: "text-red-200" }, __alloT('stem.galaxy.radio_velocity_away', 'Receding →'))),
+                  galaxyVelocityOverlay && React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-blue-600 via-slate-200 to-red-600 shadow-[0_0_10px_rgba(56,189,248,0.28)]", "aria-hidden": true }),
+                  galaxyVelocityOverlay && React.createElement("div", { className: "mt-1 flex justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-blue-200" }, __alloT('stem.galaxy.radio_velocity_toward', '← Approaching')), React.createElement("span", { className: "text-red-200" }, __alloT('stem.galaxy.radio_velocity_away', 'Receding →'))),
+                  !galaxyVelocityOverlay && React.createElement("p", { "data-galaxy-velocity-hidden": "true", className: "mt-1.5 text-[11px] text-slate-300" }, __alloT('stem.galaxy.radio_velocity_hidden', 'Velocity map hidden')),
                   React.createElement("div", { "data-galaxy-radio-polarization-key": "true", className: "mt-2 space-y-1.5 border-t border-white/10 pt-2 text-[11px] font-bold text-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { className: "relative h-3 w-9 shrink-0", "aria-hidden": true }, React.createElement("span", { className: "absolute left-0 top-1/2 h-px w-9 -translate-y-1/2 -rotate-12 bg-cyan-200 shadow-[0_0_6px_rgba(103,232,249,0.9)]" })),
@@ -9378,6 +9411,10 @@ if (!window._galaxyHasLoadedOnce) {
                 )
               ),
 
+              observeMode === 'radio' && isSpiralMorphology && React.createElement("button", { type: "button", "data-galaxy-velocity-toggle": "true", "aria-pressed": galaxyVelocityOverlay, onClick: function () { upd('galaxyVelocityOverlay', !galaxyVelocityOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyVelocityOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
+                React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.radio_velocity_toggle', 'Velocity map')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.radio_velocity_toggle_hint', 'Compare the gas with or without its blue-to-red motion overlay.'))),
+                React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyVelocityOverlay ? '#334155' : '#e2e8f0', color: galaxyVelocityOverlay ? '#f8fafc' : '#475569' } }, galaxyVelocityOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))
+              ),
               React.createElement("button", { type: "button", "data-galaxy-science-toggle": "true", "aria-pressed": galaxyScienceOverlay, onClick: function () { upd('galaxyScienceOverlay', !galaxyScienceOverlay); }, className: "flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition-colors " + (galaxyScienceOverlay ? "border-cyan-300 bg-cyan-50 text-cyan-950" : "border-slate-200 bg-slate-50 text-slate-600") },
                 React.createElement("span", null, React.createElement("span", { className: "block font-black" }, __alloT('stem.galaxy.science_overlay_title', 'Science labels')), React.createElement("span", { className: "block text-[11px] opacity-75" }, __alloT('stem.galaxy.science_overlay_sub', 'Connect visible features to the evidence they provide.'))),
                 React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: galaxyScienceOverlay ? '#334155' : '#e2e8f0', color: galaxyScienceOverlay ? '#f8fafc' : '#475569' } }, galaxyScienceOverlay ? __alloT('stem.galaxy.overlay_on', 'On') : __alloT('stem.galaxy.overlay_off', 'Off'))

@@ -631,7 +631,41 @@ window.StemLab = window.StemLab || {
       q:half?logic.a!==logic.b:logic.q,carry:half&&logic.a&&logic.b,total:+logic.a+ +logic.b};
   }
 
+
+  var SEMI_MILESTONES = [
+    {year:1971,name:'Intel 4004',transistors:2300,node:'10 µm',dies:1,source:'https://www.intel.com/pressroom/kits/quickreffam.htm'},
+    {year:1978,name:'Intel 8086',transistors:29000,node:'3 µm',dies:1,source:'https://www.intel.com/pressroom/kits/quickreffam.htm'},
+    {year:1985,name:'Intel 386 DX',transistors:275000,node:'1.5 µm',dies:1,source:'https://www.intel.com/pressroom/kits/quickreffam.htm'},
+    {year:1993,name:'Intel Pentium',transistors:3100000,node:'0.8 µm',dies:1,source:'https://www.intel.com/pressroom/kits/quickreffam.htm'},
+    {year:2020,name:'Apple M1',transistors:16000000000,node:'5 nm',dies:1,source:'https://www.apple.com/newsroom/2020/11/apple-unleashes-m1/'},
+    {year:2021,name:'Apple M1 Max',transistors:57000000000,node:'5 nm',dies:1,source:'https://www.apple.com/newsroom/2021/10/introducing-m1-pro-and-m1-max-the-most-powerful-chips-apple-has-ever-built/'},
+    {year:2022,name:'Apple M1 Ultra',transistors:114000000000,node:'5 nm',dies:2,source:'https://www.apple.com/newsroom/2022/03/apple-unveils-m1-ultra-the-worlds-most-powerful-chip-for-a-personal-computer/'},
+    {year:2024,name:'NVIDIA B200',transistors:208000000000,node:'TSMC 4NP',dies:2,source:'https://nvidianews.nvidia.com/news/nvidia-blackwell-platform-arrives-to-power-a-new-era-of-computing'}
+  ];
+  function semiDoubling(year,period){
+    return 2300*Math.pow(2,(semiNumber(year,2024,1965,2030)-1971)/semiNumber(period,2,1,4));
+  }
+  function semiMoore(state){
+    state=state||{};var year=Math.round(semiNumber(state.mooreYear,2024,1965,2030)),period=semiNumber(state.mooreDoubling,2,1,4);
+    var multi=state.mooreIncludeMulti!==false,log=state.mooreLogScale!==false,show=state.mooreShowPred!==false;
+    var points=SEMI_MILESTONES.filter(function(p){return multi||p.dies===1;});
+    var selected=SEMI_MILESTONES.find(function(p){return p.year===year;})||null,included=!!selected&&(multi||selected.dies===1);
+    var max=Math.max(208e9,semiDoubling(2030,period)),exp=Math.floor(Math.log10(max)),unit=Math.pow(10,exp),lead=max/unit;
+    var linearMax=(lead<=1?1:lead<=2?2:lead<=5?5:10)*unit,logMax=Math.ceil(Math.log10(max)),logMin=Math.floor(Math.log10(Math.min(2300,semiDoubling(1965,period))));
+    return {year:year,period:period,multi:multi,log:log,show:show,points:points,selected:selected,included:included,
+      reference:semiDoubling(year,period),ratio:included?selected.transistors/semiDoubling(year,period):null,
+      status:selected?(included?'Reported product count':'Product excluded by die filter'):year>2024?'Scenario only · dataset ends in 2024':'No product entry for this year',
+      previous:points.filter(function(p){return p.year<year;}).slice(-1)[0]||null,next:points.find(function(p){return p.year>year;})||null,
+      linearMax:linearMax,logMin:logMin,logMax:logMax,
+      fraction:function(n){return log?(Math.log10(n)-logMin)/(logMax-logMin):n/linearMax;}
+    };
+  }
+  function semiTrendCount(n){
+    return n>=1e15?n.toExponential(2):n>=1e12?(n/1e12).toFixed(2)+' trillion':formatTransistorCount(n);
+  }
+
   window.__SemiconductorCore = {
+    moore:semiMoore, doubling:semiDoubling, milestones:SEMI_MILESTONES,
     logic:semiLogic, nandTrace:semiNandTrace, cmos:semiCMOS, logicExperiment:semiLogicExperiment,
     led:semiLed, ledSpectrum:semiLedSpectrum, ledEmitters:SEMI_LED_EMITTERS,
     memory:semiMemory, memoryStep:semiMemoryStep, oxidation:semiOxidation, quantum:semiQuantum, series:semiSeries, mosfet:semiMOS, solar:semiSolar, amplifier:semiAmplifier, iv:semiIV,
@@ -2930,170 +2964,109 @@ window.StemLab = window.StemLab || {
       // MOORE'S LAW INTERACTIVE TIMELINE
       // ════════════════════════════════════════════
       function renderMooreLaw() {
-        var year = d.mooreYear || 2024;
-        var showPred = d.mooreShowPred !== false;
-        var logScale = d.mooreLogScale !== false;
-
-        var MILESTONES = [
-          { year: 1965, transistors: 64,        node: null,   name: t('stem.semiconductor.moore_s_paper_published', 'Moore\'s paper published'), chip: null },
-          { year: 1971, transistors: 2300,      node: '10\u03BCm', name: t('stem.semiconductor.intel_4004', 'Intel 4004'), chip: '4-bit CPU' },
-          { year: 1978, transistors: 29000,     node: '3\u03BCm',  name: t('stem.semiconductor.intel_8086', 'Intel 8086'), chip: '16-bit CPU' },
-          { year: 1985, transistors: 275000,    node: '1.5\u03BCm', name: t('stem.semiconductor.intel_386', 'Intel 386'), chip: '32-bit CPU' },
-          { year: 1993, transistors: 3100000,   node: '0.8\u03BCm', name: t('stem.semiconductor.pentium', 'Pentium'), chip: 'Superscalar' },
-          { year: 1999, transistors: 9500000,   node: '250nm', name: t('stem.semiconductor.pentium_iii', 'Pentium III'), chip: 'Deep pipeline' },
-          { year: 2004, transistors: 125000000, node: '90nm',  name: t('stem.semiconductor.prescott', 'Prescott'), chip: 'Strained Si' },
-          { year: 2006, transistors: 291000000, node: '65nm',  name: t('stem.semiconductor.core_2_duo', 'Core 2 Duo'), chip: 'Multi-core era' },
-          { year: 2010, transistors: 1170000000,node: '32nm',  name: t('stem.semiconductor.core_i7_westmere', 'Core i7 (Westmere)'), chip: 'High-k/Metal gate' },
-          { year: 2014, transistors: 2600000000,node: '14nm',  name: t('stem.semiconductor.core_i7_broadwell', 'Core i7 (Broadwell)'), chip: 'FinFET' },
-          { year: 2017, transistors: 4300000000, node: '10nm', name: t('stem.semiconductor.apple_a11', 'Apple A11 Bionic'), chip: 'Neural engine' },
-          { year: 2020, transistors: 16000000000, node: '5nm',  name: t('stem.semiconductor.apple_m1', 'Apple M1'), chip: 'Arm SoC' },
-          { year: 2022, transistors: 114000000000, node: '5nm', name: t('stem.semiconductor.apple_m1_ultra', 'Apple M1 Ultra'), chip: 'Dual-die interconnect' },
-          { year: 2024, transistors: 208000000000, node: '4nm', name: t('stem.semiconductor.nvidia_b200', 'NVIDIA B200'), chip: 'Dual-reticle GPU' }
-        ];
-
-        // Find nearest milestone
-        var nearest = MILESTONES.reduce(function(best, m) {
-          return Math.abs(m.year - year) < Math.abs(best.year - year) ? m : best;
-        }, MILESTONES[0]);
-
-        // Moore's prediction for selected year
-        var moorePred = 64 * Math.pow(2, (year - 1965) / 2);
-
-        var canvasRef = function(canvasEl) {
-          if (!canvasEl) return;
-          var surface = prepareCanvas(canvasEl, 440, 240);
-          var cx = surface.cx, W = surface.W, H = surface.H;
-          cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
-
-          var padL = 55, padR = 15, padT = 20, padB = 35;
-          var gW = W - padL - padR, gH = H - padT - padB;
-          var yearMin = 1965, yearMax = 2030;
-
-          // Grid
-          cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
-          for (var gy = yearMin; gy <= yearMax; gy += 5) {
-            var gx = padL + (gy - yearMin) / (yearMax - yearMin) * gW;
-            cx.beginPath(); cx.moveTo(gx, padT); cx.lineTo(gx, padT + gH); cx.stroke();
-            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
-            cx.fillText(String(gy), gx, H - 5);
+        var model=semiMoore(d),year=model.year,selected=model.selected;
+        var ratioText=model.ratio==null?'Not compared':(model.ratio<.01||model.ratio>=1000?model.ratio.toExponential(2):model.ratio.toFixed(2))+' × reference';
+        var description="Moore's Law exploration, "+(model.log?'logarithmic':'linear')+' scale, 1965 to 2030. Selected year '+year+'. '+model.status+'. '+
+          (selected?selected.name+', '+formatTransistorCount(selected.transistors)+' transistors across '+selected.dies+' compute die'+(selected.dies===1?'':'s')+', '+selected.node+' process label. ':'')+
+          'Illustrative doubling reference for '+year+': '+semiTrendCount(model.reference)+', using '+model.period+' years per doubling, anchored to 2,300 in 1971. '+(model.show?'Reference line shown.':'Reference line hidden.')+
+          ' Product counts are not density or performance measurements.';
+        var canvasRef=function(canvasEl){
+          if(!canvasEl)return;
+          var surface=prepareCanvas(canvasEl, 440, 290),cx=surface.cx,W=surface.W,H=surface.H;
+          cx.fillStyle='#0F172A';cx.fillRect(0,0,W,H);
+          var L=78,R=18,T=35,B=48,gW=W-L-R,gH=H-T-B;
+          function x(y){return L+(y-1965)/65*gW;}
+          function y(n){return T+gH-model.fraction(n)*gH;}
+          cx.fillStyle='#31263A';cx.fillRect(x(2024),T,x(2030)-x(2024),gH);
+          cx.strokeStyle='#475569';cx.lineWidth=1;cx.fillStyle='#CBD5E1';cx.font='10px sans-serif';
+          var ticks=[];
+          if(model.log){for(var power=model.logMin;power<=model.logMax;power+=Math.max(1,Math.ceil((model.logMax-model.logMin)/5)))ticks.push(Math.pow(10,power));}
+          else for(var i=0;i<=4;i++)ticks.push(model.linearMax*i/4);
+          ticks.forEach(function(n){var yy=y(n);cx.beginPath();cx.moveTo(L,yy);cx.lineTo(W-R,yy);cx.stroke();cx.textAlign='right';cx.fillText(n===0?'0':n.toExponential(2),L-6,yy+3);});
+          [1965,1980,1995,2010,2030].forEach(function(yr){cx.fillStyle='#CBD5E1';cx.textAlign='center';cx.fillText(String(yr),x(yr),H-B+18);});
+          cx.save();cx.beginPath();cx.rect(L,T,gW,gH);cx.clip();
+          if(model.show){
+            cx.strokeStyle='#FBBF24';cx.lineWidth=2;cx.setLineDash([5,4]);cx.beginPath();
+            for(var yr=1965;yr<=2030;yr+=.25){if(yr===1965)cx.moveTo(x(yr),y(semiDoubling(yr,model.period)));else cx.lineTo(x(yr),y(semiDoubling(yr,model.period)));}
+            cx.stroke();cx.setLineDash([]);
           }
-
-          // Y-axis (log scale)
-          var yMin = 1, yMax = 15; // log10 scale
-          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
-          for (var yy = 2; yy <= 14; yy += 2) {
-            var gYy = padT + gH - (yy - yMin) / (yMax - yMin) * gH;
-            cx.beginPath(); cx.moveTo(padL, gYy); cx.lineTo(W - padR, gYy); cx.stroke();
-            cx.fillText('10^' + yy, padL - 3, gYy + 3);
-          }
-
-          // Moore's Law prediction line
-          if (showPred) {
-            cx.strokeStyle = '#F59E0B'; cx.lineWidth = 1.5; cx.setLineDash([5, 3]);
-            cx.beginPath();
-            for (var my = yearMin; my <= yearMax; my++) {
-              var mPred = Math.log10(64 * Math.pow(2, (my - 1965) / 2));
-              var mpx = padL + (my - yearMin) / (yearMax - yearMin) * gW;
-              var mpy = padT + gH - (mPred - yMin) / (yMax - yMin) * gH;
-              if (my === yearMin) cx.moveTo(mpx, mpy); else cx.lineTo(mpx, mpy);
-            }
-            cx.stroke(); cx.setLineDash([]);
-            cx.fillStyle = '#F59E0B'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
-            cx.fillText('Moore\'s Law (2x/2yr)', padL + 5, padT + 12);
-          }
-
-          // Actual data points
-          cx.fillStyle = '#22D3EE';
-          MILESTONES.forEach(function(m) {
-            var mx = padL + (m.year - yearMin) / (yearMax - yearMin) * gW;
-            var my = padT + gH - (Math.log10(m.transistors) - yMin) / (yMax - yMin) * gH;
-            var isHighlight = Math.abs(m.year - year) < 3;
-
-            cx.beginPath(); cx.arc(mx, my, isHighlight ? 5 : 3, 0, Math.PI * 2);
-            cx.fillStyle = isHighlight ? '#F59E0B' : '#22D3EE';
-            if (isHighlight) { cx.shadowColor = '#F59E0B'; cx.shadowBlur = 8; }
-            cx.fill(); cx.shadowBlur = 0;
-
-            if (isHighlight) {
-              cx.fillStyle = '#FFF'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
-              cx.fillText(m.name, mx, my - 10);
-              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
-              cx.fillText(m.transistors.toLocaleString() + ' trans.', mx, my - 2);
-            }
+          cx.strokeStyle='#FCA5A5';cx.lineWidth=1;cx.setLineDash([3,3]);cx.beginPath();cx.moveTo(x(year),T);cx.lineTo(x(year),T+gH);cx.stroke();cx.setLineDash([]);
+          cx.restore();
+          model.points.forEach(function(p){
+            var px=x(p.year),py=y(p.transistors),active=p.year===year;
+            cx.fillStyle=p.dies===1?'#22D3EE':'#C4B5FD';cx.strokeStyle=active?'#FFF':cx.fillStyle;cx.lineWidth=active?2:1;
+            cx.beginPath();if(p.dies===1)cx.arc(px,py,active?5:3.5,0,Math.PI*2);else cx.rect(px-4,py-4,8,8);cx.fill();cx.stroke();
           });
-
-          // Trend line through data
-          cx.strokeStyle = '#22D3EE'; cx.lineWidth = 1.5; cx.beginPath();
-          MILESTONES.forEach(function(m, i) {
-            var mx = padL + (m.year - yearMin) / (yearMax - yearMin) * gW;
-            var my = padT + gH - (Math.log10(m.transistors) - yMin) / (yMax - yMin) * gH;
-            if (i === 0) cx.moveTo(mx, my); else cx.lineTo(mx, my);
-          });
-          cx.stroke();
-
-          // Year selector line
-          var selX = padL + (year - yearMin) / (yearMax - yearMin) * gW;
-          cx.strokeStyle = '#F87171'; cx.lineWidth = 1; cx.setLineDash([3, 2]);
-          cx.beginPath(); cx.moveTo(selX, padT); cx.lineTo(selX, padT + gH); cx.stroke();
-          cx.setLineDash([]);
-          cx.fillStyle = '#F87171'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'center';
-          cx.fillText(String(year), selX, padT - 5);
-
-          // Axis labels
-          cx.fillStyle = '#94A3B8'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
-          cx.fillText('Year', W / 2, H - 18);
-          cx.save(); cx.translate(10, H / 2); cx.rotate(-Math.PI / 2);
-          cx.fillText('Transistors (log scale)', 0, 0); cx.restore();
+          cx.textAlign='left';cx.font='11px sans-serif';cx.fillStyle='#E2E8F0';cx.fillText('Product totals · selected year '+year,L,17);
+          cx.textAlign='right';cx.fillStyle='#E9D5FF';cx.font='10px sans-serif';cx.fillText('After 2024: no product data',W-R,H-7);
+          cx.save();cx.translate(13,T+gH/2);cx.rotate(-Math.PI/2);cx.textAlign='center';cx.font='11px sans-serif';cx.fillStyle='#CBD5E1';cx.fillText('Transistors · '+(model.log?'log scale':'linear scale'),0,0);cx.restore();
         };
-
-        React.useEffect(function() {
-          var canvas = document.getElementById('semi-moore-canvas');
-          if (!canvas) return;
-          return bindStaticCanvas(canvas, canvasRef);
-        }, [tab, subtool, d.motionPaused, d.mooreYear, d.mooreShowPred, d.mooreLogScale]);
-
-        return h('div', null,
-          h('canvas', { 
-            id: 'semi-moore-canvas', width: 440, height: 240,
-            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
-            role: 'img', 'aria-label': 'Moore\'s Law graph, log scale, 1965 to 2030. '
-              + 'Selected year ' + year + '. '
-              + 'Nearest milestone: ' + nearest.name + ' in ' + nearest.year + ', '
-              + formatTransistorCount(nearest.transistors) + ' transistors'
-              + (nearest.node ? ' on a ' + nearest.node + ' process' : '') + '. '
-              + 'Moore\'s doubling prediction for ' + year + ' is '
-              + formatTransistorCount(moorePred) + '.'
-            // Carries the DATA, not just the title. This was a fixed string, so a
-            // screen-reader user got "a graph exists" and nothing about the trend,
-            // the selected year, or how the real chip compares to the prediction --
-            // which is the entire point of the module. Everything named here is
-            // already on screen for a sighted user.
-          }),
-          sliderRow('Year', year, 1965, 2030, 1, function(v) { upd('mooreYear', v); }, ''),
-          h('div', { className: 'flex items-center gap-3 mt-2' },
-            h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showPred, onChange: function() { upd('mooreShowPred', !showPred); }, className: 'accent-amber-500' }), t('stem.semiconductor.moore_prediction', 'Moore Prediction')),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('Moore\'s Law semiconductor scaling in year ' + year); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
+        React.useEffect(function(){
+          var canvas=document.getElementById('semi-moore-canvas');if(!canvas)return;
+          return bindStaticCanvas(canvas,canvasRef);
+        }, [tab, subtool, d.motionPaused,d.mooreYear,d.mooreDoubling,d.mooreShowPred,d.mooreLogScale,d.mooreIncludeMulti]);
+        function chooseYear(v){upd('mooreYear',v);}
+        return h('div',null,
+          h('section',{className:'semi-study'},h('p',null,'EVIDENCE · EXPONENTIAL GROWTH · SCOPE'),
+            h('h4',null,'What does a growing transistor count tell us?'),
+            h('p',null,'Compare sourced product counts with a doubling example. Ask whether a change comes from denser transistors, a larger die, more dies, or a different kind of product. This curated dataset ends in 2024.')),
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Transistor count scale'},
+            pill('Log scale',model.log,function(){upd('mooreLogScale',true);}),pill('Linear scale',!model.log,function(){upd('mooreLogScale',false);})),
+          h('canvas',{id:'semi-moore-canvas',width:440,height:290,
+            className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
+            role: 'img','aria-label':description}),
+          h('p',{className:'semi-model-note'},'● One compute die · ■ Two compute dies · dashed amber: illustrative reference. Points are separate products, not an interpolated industry average. Axis labels use powers of ten: 1e+9 means one billion.'),
+          h('section',{className:'semi-study'},
+            h('h4',null,'Inspect a year'),
+            sliderRow('Year',year,1965,2030,1,chooseYear,''),
+            h('div',{className:'semi-inspector-controls'},
+              h('button',{type:'button',disabled:!model.previous,onClick:function(){if(model.previous)chooseYear(model.previous.year);}},'Previous product'),
+              h('button',{type:'button',disabled:!model.next,onClick:function(){if(model.next)chooseYear(model.next.year);}},'Next product')),
+            h('p',{role:'status'},year+' · '+model.status),
+            selected&&h('div',null,h('h4',null,selected.name),
+              h('p',null,formatTransistorCount(selected.transistors)+' transistors · '+selected.dies+' compute die'+(selected.dies===1?'':'s')+' · '+selected.node+' process label'),
+              !model.included&&h('p',null,'This product is excluded from the plotted points and ratio. Include products with two compute dies to compare it.'),
+              h('a',{href:selected.source,target:'_blank',rel:'noopener noreferrer'},'Read the product source')),
+            !selected&&h('p',null,'No nearby product is substituted for the selected year. Use Previous product or Next product to inspect an actual entry.'),
+            h('div',{className:'semi-inspector-controls'},
+              statBadge('Reference at selected year',semiTrendCount(model.reference)),statBadge('Reported / reference',ratioText))
           ),
-          // Milestone info
-          h('div', { className: 'mt-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'flex items-center justify-between mb-1' },
-              h('span', { className: 'text-sm font-bold text-white' }, nearest.name || ('Year ' + year)),
-              nearest.node && h('span', { className: 'text-xs px-2 py-0.5 rounded bg-cyan-900 text-cyan-300' }, nearest.node)
-            ),
-            h('div', { className: 'flex gap-2 flex-wrap' },
-              statBadge('Year', String(nearest.year)),
-              statBadge('Transistors', nearest.transistors > 1e9 ? (nearest.transistors / 1e9).toFixed(1) + 'B' : nearest.transistors > 1e6 ? (nearest.transistors / 1e6).toFixed(1) + 'M' : nearest.transistors > 1e3 ? (nearest.transistors / 1e3).toFixed(1) + 'K' : String(nearest.transistors)),
-              nearest.chip && statBadge('Innovation', nearest.chip),
-              statBadge('Moore Pred.', moorePred > 1e9 ? (moorePred / 1e9).toFixed(0) + 'B' : moorePred > 1e6 ? (moorePred / 1e6).toFixed(0) + 'M' : moorePred > 1e3 ? (moorePred / 1e3).toFixed(0) + 'K' : moorePred.toFixed(0), 'text-amber-400')
-            )
+          h('section',{className:'semi-study'},
+            h('h4',null,'Change the doubling assumption'),
+            sliderRow('Doubling interval',model.period,1,4,.25,function(v){upd('mooreDoubling',v);},' years'),
+            h('div',{className:'semi-inspector-controls'},btn('1-year experiment',function(){upd('mooreDoubling',1);}),btn('2-year reference',function(){upd('mooreDoubling',2);}),btn('4-year experiment',function(){upd('mooreDoubling',4);})),
+            h('label',null,h('input',{type:'checkbox',checked:model.show,onChange:function(){upd('mooreShowPred',!model.show);}}),' Show doubling reference'),
+            h('p',null,'N(y) = 2,300 × 2^((y − 1971) / T). The anchor is the Intel 4004 count. T is your chosen doubling interval; this curve is not a fit to these products or Moore’s original forecast. Before 1971 it is backward extrapolation.'),
+            h('p',null,model.log?'On a log scale, equal vertical distances represent equal ratios. Exponential growth appears as a straight line.':'On a linear scale, equal vertical distances represent equal count differences. Early small counts cluster near zero, but have not disappeared.'),
+            h('p',{className:'semi-model-note'},'Axis bounds include the full reference through 2030 even when its line is hidden. Changing T can rescale the chart; toggling visibility or the die filter does not.')
           ),
-          infoBox(gradeText(
-            'In 1965, Gordon Moore predicted that the number of tiny switches (transistors) on a chip would double every 2 years. He was right for 60 years! Today\'s chips have BILLIONS of transistors!',
-            'Moore\'s Law says transistor counts double every ~2 years. In 1971 the Intel 4004 had 2,300 transistors. Today\'s chips have over 100 billion! This makes computers faster and cheaper over time.',
-            'Moore\'s observation (1965): transistor density doubles every ~18-24 months. Dennard scaling (ended ~2006): voltage, current, dimensions all shrink together. Post-Dennard: multi-core, chiplets, 3D stacking. Current leading edge: 3nm FinFET/GAA-FET.',
-            'Moore\'s Law: N(t) = N\u2080\u00B72^(t/T\u2082) where T\u2082 \u2248 2 years. Dennard scaling: P/transistor \u221D V\u00B2\u00B7f/L\u00B2 (broke ~2006 due to leakage). Scaling limit drivers: quantum tunneling at <1nm gate oxide, lithography (EUV at 13.5nm), thermal density (>100W/cm\u00B2), interconnect RC delay. Beyond-CMOS: spintronics, quantum, photonic, neuromorphic.'
-          )),
+          h('section',{className:'semi-study'},
+            h('h4',null,'Check the counting boundary'),
+            h('label',null,h('input',{type:'checkbox',checked:model.multi,onChange:function(){upd('mooreIncludeMulti',!model.multi);}}),' Include products with two compute dies'),
+            h('p',null,'These are reported processor or SoC transistor totals, excluding separate memory chips. CPU, SoC and GPU functions differ. Die count is explicit; die areas are not tabulated, so transistor density cannot be calculated here.'),
+            h('div',{className:'semi-inspector-controls'},btn('Inspect M1 Max',function(){chooseYear(2021);}),btn('Inspect M1 Ultra',function(){updMulti({mooreYear:2022,mooreIncludeMulti:true});})),
+            h('div',{style:{display:'flex',flexWrap:'wrap',gap:'12px',marginTop:'12px'}},
+              h('div',{style:{padding:'14px',border:'1px solid #22D3EE',borderRadius:'10px'}},'M1 Max · one die',h('p',null,'57 billion')),
+              h('div',{style:{padding:'14px',border:'1px solid #C4B5FD',borderRadius:'10px'}},'M1 Ultra · two M1 Max dies',h('p',null,'57 + 57 = 114 billion'))),
+            h('p',null,'M1 Ultra connects two M1 Max dies. Its doubled total is an example of combining dies; it does not by itself show a doubling of transistor density.'),
+            h('a',{href:SEMI_MILESTONES[6].source,target:'_blank',rel:'noopener noreferrer'},'Apple’s M1 Ultra announcement')
+          ),
+          h('section',{className:'semi-study'},
+            h('h4',null,'Inspect the source data'),
+            h('p',null,model.points.length+' products shown. Select a product to update the year. Gaps reflect this curated selection, not missing years of technological progress.'),
+            h('table',null,h('caption',null,'Reported transistor counts · 1971–2024'),
+              h('thead',null,h('tr',null,h('th',{scope:'col'},'Year'),h('th',{scope:'col'},'Product / scope'),h('th',{scope:'col'},'Count'))),
+              h('tbody',null,model.points.map(function(p){return h('tr',{key:p.year},
+                h('td',null,p.year),h('th',{scope:'row'},h('button',{type:'button','aria-pressed':p.year===year,'aria-label':'Inspect '+p.name,onClick:function(){chooseYear(p.year);},style:{minHeight:'44px',textAlign:'left',whiteSpace:'normal'}},p.name),
+                  h('div',{style:{fontWeight:'normal',fontSize:'12px'}},p.dies+' compute die'+(p.dies===1?'':'s')),
+                  h('a',{href:p.source,target:'_blank',rel:'noopener noreferrer','aria-label':'Source for '+p.name},'Source')),
+                h('td',null,formatTransistorCount(p.transistors)));})))
+          ),
+          h('details',{className:'semi-study'},h('summary',null,'History and interpretation'),
+            h('p',null,'Moore’s 1965 projection used annual doubling; he revised the outlook in 1975 toward a two-year interval. It was an empirical observation and projection, not a physical law that guarantees performance, cost or efficiency.'),
+            h('p',null,'This chart counts transistors, not transistors per unit area. Modern process-node labels identify manufacturing generations; they are not a direct measurement of every transistor feature. Product architecture, die area and packaging complicate comparisons.'),
+            h('a',{href:'https://www.intel.com/content/www/us/en/newsroom/resources/moores-law.html',target:'_blank',rel:'noopener noreferrer'},'Intel · Moore’s Law history')),
+          h('div',{className:'semi-inspector-controls'},btn('Read trend results',function(){speakText(description);}),btn('Connect to Wafer Fab',function(){updMulti({subtool:'waferfab',guidedSetupSubtool:null});})),
           aiBox()
         );
       }
@@ -3887,8 +3860,8 @@ window.StemLab = window.StemLab || {
             body: gradeText(
               'Semiconductors are in everything! Phones, tablets, cars, toys, and even refrigerators. They help computers think, LEDs make light, and solar panels catch sunshine!',
               'CPUs: billions of transistors doing logic. Memory (RAM/Flash): transistors storing 1s and 0s. LEDs: P-N junctions emitting light. Solar cells: P-N junctions converting light to electricity.',
-              'IC fabrication: photolithography patterns circuits at nm scale. Moore\'s Law: transistor count doubles ~2 years. Current nodes: 3-5nm (FinFET/GAA). Applications span logic, memory, power, RF, photonics.',
-              'Leading-edge nodes: TSMC/Samsung 3nm GAA-FET. EUV lithography at 13.5nm wavelength. Power electronics: SiC/GaN replacing Si for high-voltage/high-frequency. Quantum computing: superconducting qubits use Josephson junctions.'
+              'IC fabrication patterns circuits through repeated processing steps. Moore’s Law is a historical growth observation, commonly associated with a two-year doubling interval. Product counts do not directly measure density or performance. Applications include logic, memory, power, RF and photonics.',
+              'Advanced transistor designs include FinFET and gate-all-around structures. EUV lithography uses a 13.5nm wavelength. Power electronics: SiC/GaN replacing Si for high-voltage/high-frequency. Quantum computing: superconducting qubits use Josephson junctions.'
             )
           },
           {
@@ -4011,7 +3984,7 @@ window.StemLab = window.StemLab || {
         explore:   { accent: '#67e8f9', soft: 'rgba(14,165,233,0.18)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore semiconductor behavior'), hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Begin with one observable change. Compare materials, add a dopant, or bias a junction, then explain what changed and why.') },
         challenge: { accent: '#fbbf24', soft: 'rgba(245,158,11,0.18)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
         battle:    { accent: '#f87171', soft: 'rgba(239,68,68,0.18)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
-        learn:     { accent: '#4ade80', soft: 'rgba(34,197,94,0.18)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.bardeen_brattain_shockley_invented_the', 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.') }
+        learn:     { accent: '#4ade80', soft: 'rgba(34,197,94,0.18)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.learn_history_empirical', "Bardeen, Brattain and Shockley developed the transistor at Bell Labs; the 1956 Nobel Prize recognized their work. Moore’s annual 1965 projection was revised toward two-year doubling in 1975. Counts, density and performance are different measures.") }
       };
       var meta = TAB_META[tab] || TAB_META.explore;
       var tabHero = h('div', {
@@ -4296,7 +4269,7 @@ window.StemLab = window.StemLab || {
         waferfab: { action: 'Reset the wafer to the first fabrication stage.', change: 'Advance one stage at a time.', notice: 'What new layer or pattern does each stage add?' },
         ledspec: { action: 'Load a red LED at 20 mA.', change: 'Change current, then compare another LED material.', notice: 'What controls brightness, wavelength, and perceived color?' },
         solarcell: { action: 'Load silicon at standard sunlight and room temperature.', change: 'Lower irradiance, then raise temperature.', notice: 'Which variable changes maximum power most strongly?' },
-        moorelaw: { action: 'Load the current-year Moore\'s Law view.', change: 'Move backward through processor milestones.', notice: 'Where does the measured trend begin to depart from the projection?' },
+        moorelaw: { action: 'Load the 2024 product and a two-year doubling reference.', change: 'Change the doubling interval, scale, or product year.', notice: 'Which values are reported data, and which come from your assumption?' },
         qwell: { action: 'Load a 5 nm GaAs/AlGaAs quantum well.', change: 'Narrow the well, then deepen it.', notice: 'How do the allowed energy levels move?' },
         memory: { action: 'Load known SRAM zeros at address 0.', change: 'Enable writes, write 1, then remove and restore power.', notice: 'What survives power loss, and can a read recover an unknown bit?' },
         amplifier: { action: 'Load a common-source amplifier with a 10 mV input.', change: 'Increase the input amplitude, then frequency.', notice: 'When does the output stop being a clean amplified copy?' },
@@ -4313,7 +4286,7 @@ window.StemLab = window.StemLab || {
         waferfab: { fabStage: 0, fabVisited:[0], fabCompleted:false, fabMask:'two', fabDoseLog:14, fabEnergy:50, fabAnnealed:false, fabRunning: false, fabTemp: 1000, fabTime: 30, fabDopant: 'phosphorus', fabHistory: [], fabGuided: true },
         ledspec: { ledMaterial: 'red-gan', ledCurrent: 20, ledShowSpectrum: true, ledMixR: 100, ledMixG: 0, ledMixB: 0, ledMixMode: false },
         solarcell: { solarIrradiance: 1000, solarTemp: 300, solarArea: 100, solarMaterial: 'silicon', solarShowPV: true, solarLoadR: 100, solarOpen:false },
-        moorelaw: { mooreYear: 2024, mooreShowPred: true, mooreLogScale: true, mooreHighlight: null },
+        moorelaw: { mooreYear: 2024, mooreDoubling:2, mooreIncludeMulti:true, mooreShowPred: true, mooreLogScale: true, mooreHighlight: null },
         qwell: { qwWidth: 5, qwDepth: 0.3, qwMaterial: 'gaas-algaas', qwModel:'finite', qwSelected:1, qwLevels: 3, qwShowWave: true, qwShowProb: false, qwElectricField: 0 },
         memory: { memType: 'sram', memBitValue: 0, memAddress:0, memLastAction:null, memAutoRefresh:false, memWriteEnable: false, memShowArray: false, memRefreshing: false, memCellCount: 4, memShowTiming: false },
         amplifier: { ampType: 'common-source', ampVin: 0.01, ampFreq: 1000, ampVdd: 5, ampRd: 10000, ampShowBode: false, ampShowDC: true, ampBiasPoint: 2.5 },
@@ -4339,7 +4312,7 @@ window.StemLab = window.StemLab || {
         if (subtool === 'waferfab') return (d.fabStage || 0) > 0;
         if (subtool === 'ledspec') {var light=semiLed(d);return light.mix||light.current!==20||light.key!=='red-gan';}
         if (subtool === 'solarcell') return !!d.solarOpen || (d.solarLoadR == null ? 100 : d.solarLoadR) !== 100 || (d.solarIrradiance == null ? 1000 : d.solarIrradiance) !== 1000 || (d.solarTemp || 300) !== 300;
-        if (subtool === 'moorelaw') return (d.mooreYear || 2024) !== 2024;
+        if (subtool === 'moorelaw') {var trend=semiMoore(d);return trend.year!==2024||trend.period!==2||!trend.log||!trend.multi;}
         if (subtool === 'qwell') return (d.qwWidth || 5) !== 5 || (d.qwDepth || 0.3) !== 0.3 || d.qwModel==='infinite' || (d.qwMaterial||'gaas-algaas')!=='gaas-algaas';
         if (subtool === 'memory') {var memoryKind=d.memType||'sram',memoryState=semiMemory(memoryKind,(d.memBanks||{})[memoryKind],d.memBitValue);return memoryKind!=='sram'||!memoryState.power||memoryState.clock>0||memoryState.bits.some(function(bit){return bit!==0;});}
         if (subtool === 'amplifier') return (d.ampVin == null ? .01 : d.ampVin) !== .01 || (d.ampFreq || 1000) !== 1000;
@@ -4391,6 +4364,10 @@ window.StemLab = window.StemLab || {
           var kind=['sram','dram','flash','nand','feram'].indexOf(state.memType)>=0?state.memType:'sram';
           var mem=semiMemory(kind,(state.memBanks||{})[kind],state.memBitValue),address=Math.round(semiNumber(state.memAddress,0,0,15));
           return [['Technology',kind],['Power',mem.power?'On':'Off'],['Address',String(address)],['Stored model state',mem.bits[address]==null?'Unknown':String(mem.bits[address])],['Known cells',mem.bits.filter(function(bit){return bit!=null;}).length+' / 16'],['Lesson step',String(mem.clock)],['Cell age',kind==='dram'?mem.ages[address]+' steps':'Not applicable']];
+        }
+        if(subtool==='moorelaw'){
+          var trend=semiMoore(state);
+          return [['Selected year',String(trend.year)],['Data status',trend.status],['Product',trend.selected?trend.selected.name:'No entry'],['Reported count',trend.included?formatTransistorCount(trend.selected.transistors):'Not compared'],['Compute dies',trend.selected?String(trend.selected.dies):'No entry'],['Doubling interval',trend.period+' years'],['Reference count',semiTrendCount(trend.reference)],['Reported / reference',trend.ratio==null?'Not compared':trend.ratio.toPrecision(3)+' ×'],['Scale',trend.log?'Logarithmic':'Linear'],['Included products',trend.multi?'One or two compute dies':'One compute die']];
         }
         if(subtool==='gates'){
           var logic=semiLogicExperiment(state),path=logic.half?null:semiCMOS(logic.logic.type,logic.logic.a,logic.logic.b);
@@ -4471,6 +4448,7 @@ window.StemLab = window.StemLab || {
         pnjunction:{q:'What changes when a small positive voltage is applied to P relative to N?',choices:['The barrier and depletion width decrease','The junction remains at equilibrium until 0.7 V','The barrier and depletion width increase'],answer:0,why:'Any positive applied bias is forward bias. Current grows continuously; 0.7 V is a useful circuit approximation, not an on/off threshold.'}
       };
       Object.assign(conceptChecks,{
+        moorelaw:{q:'A product combines two identical dies and doubles its transistor total. What does that show?',choices:['Transistor density must have doubled','The product contains twice as many transistors; density need not change','Every task must run twice as fast'],answer:1,why:'Combining dies increases the product total without requiring smaller transistors. Density needs an area measurement, and performance depends on architecture and workload.'},
         gates:{q:'For a half adder, what is the result of 1 + 1?',choices:['Sum 1, Carry 0','Sum 0, Carry 1','Sum 1, Carry 1'],answer:1,why:'XOR gives Sum 0 when the inputs match, while AND gives Carry 1 when both inputs are 1. The two-bit result is 10₂, which is 2 in decimal.'},
         ledspec:{q:'Red and green LEDs together look yellow. What happens to their spectra?',choices:['They keep their separate emission bands','Every photon changes to a yellow wavelength','Their wavelengths are averaged'],answer:0,why:'The component spectra add. A mixture can look like a single-color source while containing different wavelengths. White light also has no single wavelength.'},
         memory:{q:'Can DRAM refresh reconstruct a bit after its state has become unknown?',choices:['Yes, refresh remembers the original value','No, it can only restore a still-valid sensed state','Only when write protection is on'],answer:1,why:'Refresh restores information that can still be sensed. Once the original bit cannot be distinguished, this model has no information from which to reconstruct it.'},
