@@ -27,7 +27,7 @@ beforeAll(() => {
   vm.runInNewContext(moduleText, { window, localStorage });
   View = window.AlloModules.PersonaWorkspace.PersonaWorkspaceView;
   const ast = parse(shell, { sourceType: 'module', plugins: ['jsx'] });
-  const helpers = ast.program.body.filter(node => node.type === 'FunctionDeclaration' && ['_AlloRecoverableLazyView', 'PersonaWorkspaceView'].includes(node.id.name));
+  const helpers = ast.program.body.filter(node => node.type === 'FunctionDeclaration' && ['_alloWatchModuleChanges', '_AlloRecoverableLazyView', 'PersonaWorkspaceView'].includes(node.id.name));
   const compiled = babel.transformSync(helpers.map(node => shell.slice(node.start, node.end)).join('\n'), { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code;
   LazyView = new Function('React', compiled + '\nreturn PersonaWorkspaceView;')(React);
 });
@@ -140,7 +140,10 @@ describe('Persona workspace extraction', () => {
       expect(text.match(/loadModule\('PersonaWorkspace',/g)).toHaveLength(1);
       expect(text).toContain("window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace',");
       expect(text).toContain('onBack={() => setActiveView(\'input\')}');
-      if (file !== 'AlloFlowANTI.txt') expect(text).toContain("loadModule('PersonaWorkspace', './view_persona_workspace_module.js')");
+      // Source mirrors share the canonical pinned URL; the desktop build rewrites it.
+      const canonicalLoader = shell.match(/loadModule\('PersonaWorkspace', '[^']+'\)/)?.[0];
+      expect(canonicalLoader).toBeTruthy();
+      expect(text).toContain(canonicalLoader);
     }
     expect(readFileSync('build.js', 'utf8')).toContain("buildPersonaWorkspaceModule(src)");
   });

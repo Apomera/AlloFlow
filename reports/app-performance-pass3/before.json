@@ -1,0 +1,20 @@
+{
+  "mode": "before",
+  "cpuSlowdown": 4,
+  "scope": "actual shared hooks and components; isolated 600-control and module-event fixtures, not whole-app Core Web Vitals",
+  "focus": {
+    "controls": 600,
+    "tabEvents": 40,
+    "computedStyleReads": 24000,
+    "elapsedMs": 309.89999997615814,
+    "forwardWrap": true,
+    "backwardWrap": true
+  },
+  "loading": {
+    "unrelatedEvents": 100,
+    "stateUpdates": 100,
+    "renders": 100,
+    "failureShown": true,
+    "readyShown": true
+  }
+}

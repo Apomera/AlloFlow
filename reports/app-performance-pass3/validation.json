@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-09-09T03:48:11.5344695Z",
+  "distinctTestsPassed": 52,
+  "suites": 7,
+  "personaRecheckPassed": 7,
+  "jsxShellsParsed": 3,
+  "existingPerformanceBudget": "passed; no new production build",
+  "browserChecks": [
+    "forward Tab wrap",
+    "backward Tab wrap",
+    "failure displayed",
+    "module ready displayed"
+  ],
+  "shells": [
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\AlloFlowANTI.txt",
+      "Hash": "0CDBC32E39B6CAEA7D8B6C2D21A6C58B2DE584E489CCB13E0E60AFA31A48A71D"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "Hash": "0CDBC32E39B6CAEA7D8B6C2D21A6C58B2DE584E489CCB13E0E60AFA31A48A71D"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\src\\App.jsx",
+      "Hash": "0CDBC32E39B6CAEA7D8B6C2D21A6C58B2DE584E489CCB13E0E60AFA31A48A71D"
+    }
+  ]
+}

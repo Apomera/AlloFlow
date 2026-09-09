@@ -23,7 +23,7 @@ beforeAll(() => {
   window.React = React; window.AlloModules = {};
   vm.runInNewContext(moduleText, { window, console, FileReader: function () { return new globalThis.FileReader(); } });
   api = window.AlloModules.SidebarPanels;
-  const gateStart = shell.indexOf('const CDNModuleGate = (function () {');
+  const gateStart = shell.indexOf('// MODULE_GATE_WATCH_START');
   const gateEnd = shell.indexOf('\n})();', gateStart);
   if (gateStart < 0 || gateEnd < gateStart) throw new Error('Missing host CDN gate');
   const compiled = babel.transformSync(shell.slice(gateStart, gateEnd + 6), { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code;

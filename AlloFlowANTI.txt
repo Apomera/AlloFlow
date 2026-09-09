@@ -4981,6 +4981,27 @@ if (window.AlloModules && window.AlloModules.LabelPositions) window._upgradeLabe
 //   t           — optional translation function; falls back to English
 //   children    — typically a function (Mod) => ReactElement that builds the
 //                 real UI from the loaded module. Plain children also work.
+// MODULE_GATE_WATCH_START
+// Registry notifications describe every app module. Only a changed export or
+// this view's own loading status should schedule a React update.
+function _alloWatchModuleChanges(resolve, registryKey, refresh) {
+  const status = () => window.__alloModuleRegistry?.[registryKey]?.status;
+  let lastValue = resolve(), lastStatus = status(), disposed = false;
+  const check = () => {
+    if (disposed) return;
+    const value = resolve(), nextStatus = status();
+    if (value === lastValue && nextStatus === lastStatus) return;
+    lastValue = value; lastStatus = nextStatus;
+    refresh();
+  };
+  window.addEventListener('alloflow:module-registry-changed', check);
+  return { check, dispose() {
+    disposed = true;
+    window.removeEventListener('alloflow:module-registry-changed', check);
+  } };
+}
+// MODULE_GATE_WATCH_END
+
 const CDNModuleGate = (function () {
   function tr(t, key, params, fallback) {
     if (typeof t === 'function') {
@@ -5020,17 +5041,29 @@ const CDNModuleGate = (function () {
       if (!isOpen) return undefined;
       if (resolve()) return undefined;
       var refresh = function () { setTick(function (v) { return v + 1; }); };
+      var watch = _alloWatchModuleChanges(resolve, String(moduleKey).split('.')[0], refresh);
       if (props.loaderName) {
-        window.addEventListener('alloflow:module-registry-changed', refresh);
         try { window[props.loaderName]?.(); } catch (_) {}
       }
-      var id = setInterval(function () {
-        if (resolve()) {
-          setTick(function (v) { return v + 1; });
-          clearInterval(id);
-        }
-      }, 200);
-      return function () { clearInterval(id); window.removeEventListener('alloflow:module-registry-changed', refresh); };
+      var id = null;
+      var poll = function () {
+        watch.check();
+        if (resolve() && id !== null) { clearInterval(id); id = null; }
+      };
+      var syncPolling = function () {
+        if (id !== null) { clearInterval(id); id = null; }
+        if (document.hidden) return;
+        poll();
+        // Legacy modules may register without emitting a registry event.
+        if (!resolve()) id = setInterval(poll, 200);
+      };
+      document.addEventListener('visibilitychange', syncPolling);
+      syncPolling();
+      return function () {
+        if (id !== null) clearInterval(id);
+        document.removeEventListener('visibilitychange', syncPolling);
+        watch.dispose();
+      };
     }, [isOpen, moduleKey, props.loaderName, !!Mod]);
 
     if (!isOpen) return null;
@@ -6362,13 +6395,22 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const hadTabIndex = root.hasAttribute('tabindex');
     if (!hadTabIndex) root.setAttribute('tabindex', '-1');
-    const getFocusableElements = () => Array.from(root.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
-    )).filter((element) => {
+    const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+    const isFocusable = (element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
       return !style || (style.display !== 'none' && style.visibility !== 'hidden');
-    });
+    };
+    // Tab wrapping only needs the two visible endpoints. Query the current DOM
+    // each time, but avoid reading every intervening control's computed style.
+    const getFocusEdges = () => {
+      const candidates = root.querySelectorAll(focusableSelector);
+      let first = 0, last = candidates.length - 1;
+      while (first <= last && !isFocusable(candidates[first])) first++;
+      if (first > last) return [];
+      while (last > first && !isFocusable(candidates[last])) last--;
+      return [candidates[first], candidates[last]];
+    };
     const handleKeyDown = (e) => {
       // Only the topmost dialog owns keyboard focus. This prevents a parent
       // modal from fighting a nested modal's Tab/Escape handling.
@@ -6382,7 +6424,7 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
         return;
       }
       if (e.key !== 'Tab') return;
-      const focusableElements = getFocusableElements();
+      const focusableElements = getFocusEdges();
       if (focusableElements.length === 0) {
         e.preventDefault();
         try { root.focus(); } catch (_) {}
@@ -6409,7 +6451,7 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    const focusableElements = getFocusableElements();
+    const focusableElements = getFocusEdges();
     // Prefer an element the dialog explicitly nominates. Without this the trap
     // always lands on focusableElements[0], which in DOM order is usually the
     // "X" close button rendered in the corner — so the first Space/Enter after
@@ -6419,7 +6461,7 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
     // so `data-autofocus` is the reliable marker.
     let initialFocus = null;
     try { initialFocus = root.querySelector('[data-autofocus]'); } catch (_) {}
-    if (initialFocus && focusableElements.indexOf(initialFocus) === -1) initialFocus = null;
+    if (initialFocus && (!initialFocus.matches(focusableSelector) || !isFocusable(initialFocus))) initialFocus = null;
     try { (initialFocus || focusableElements[0] || root).focus(); } catch (_) {}
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -56498,7 +56540,7 @@ function _AlloRecoverableLazyView(props) {
     React.useEffect(() => {
         if (Real) return undefined;
         const refresh = () => setRevision(value => value + 1);
-        window.addEventListener('alloflow:module-registry-changed', refresh);
+        const watch = _alloWatchModuleChanges(resolveReal, props.registryKey, refresh);
         let loaderTimer = null;
         const loader = window[props.loaderName];
         if (typeof loader === 'function') {
@@ -56514,7 +56556,7 @@ function _AlloRecoverableLazyView(props) {
             }, 1000);
         }
         return () => {
-            window.removeEventListener('alloflow:module-registry-changed', refresh);
+            watch.dispose();
             if (loaderTimer) clearTimeout(loaderTimer);
         };
     }, [props.registryKey, props.componentName, props.loaderName, !!Real]);
