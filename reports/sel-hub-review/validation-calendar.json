@@ -1,0 +1,40 @@
+{
+  "pass": "seventh - calendar and summary context",
+  "regressions": {
+    "distinct_passed": 445,
+    "existing_skipped": 2,
+    "existing_main_passed": 427,
+    "recovered_badge_checks": 9,
+    "isolated_badge_suite_passed": 40,
+    "summary_checks_passed": 9,
+    "note": "Initial badge test timed out and caused overlapping React updates; isolated suite passed with a longer per-test timeout. No badge implementation change."
+  },
+  "browser": {
+    "final_passed": 7,
+    "initial_targeted_assertions_passed": 16,
+    "note": "Initial seven browser workflows plus nine summary tests passed; browser teardown exceeded 60 seconds. Final seven browser workflows passed with a 180-second teardown allowance."
+  },
+  "tool_renders_passed": 72,
+  "audits": {
+    "light-calendar-axe.json": [],
+    "theme-contrast-calendar-axe.json": [],
+    "theme-dark-calendar-axe.json": []
+  },
+  "visual_review": [
+    "light-calendar-phone.png",
+    "theme-contrast-calendar-records-phone.png"
+  ],
+  "sha256": "cc852f485d3822e1ee1808541c3696a22f7168915136ea1608cd722245798741",
+  "mirrors_identical": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "logs": [
+    "reports/sel-hub-calendar-browser.log",
+    "reports/sel-hub-calendar-browser-final.log",
+    "reports/sel-hub-calendar-regression.log",
+    "reports/sel-hub-calendar-badge-recheck.log",
+    "reports/sel-hub-calendar-render.log"
+  ],
+  "limits": "Local isolated browser harness; simulated host callbacks and inspected print payload. No real assistive-technology session, classroom, physical print or packaged Desktop validation. Broader analytics remain outside this pass.",
+  "deployed": false
+}

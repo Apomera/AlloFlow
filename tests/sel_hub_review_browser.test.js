@@ -86,7 +86,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
       : route.abort());
   }, 60000);
   // Browser process shutdown can be slow on the shared Windows workstation.
-  afterAll(async () => { await browser?.close(); }, 60000);
+  afterAll(async () => { await browser?.close(); }, 180000);
 
   it('offers an ungraded practice cycle and does not call opening completion', async () => {
     await mount();
@@ -546,6 +546,72 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     await page.locator('[data-sel-tool-card-id="journal"]').click();
     return page.getByRole('region', { name: 'Journal writing and saved entries', exact: true });
   }
+
+  it('calendar keeps dates visible, reads individual records, and handles year boundaries', async () => {
+    await openJournal({ activeTab: 'calendar', calYear: 2025, calMonth: 11, earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
+      { timestamp: new Date(2025, 11, 7, 9).getTime(), mood: 1, energy: null, thoughts: 'Private detail not in the calendar list' },
+      { timestamp: new Date(2025, 11, 7, 15).getTime(), mood: 5, energy: 4 }
+    ] });
+    const region = page.getByRole('region', { name: 'Journal calendar and summaries', exact: true });
+    const day = region.getByRole('cell', { name: 'December 7, 2025: 2 recorded check-ins', exact: true });
+    expect(await day.innerText()).toContain('7');
+    expect(await day.innerText()).toContain('2');
+    expect(await region.getByRole('cell', { name: 'December 8, 2025: No check-in recorded', exact: true }).innerText()).toBe('8');
+    const daily = region.locator('details[aria-label="Daily check-in records"]');
+    await daily.locator(':scope > summary').focus(); await page.keyboard.press('Enter');
+    expect(await daily.innerText()).toContain('Mood: Struggling. Energy: Not recorded.');
+    expect(await daily.innerText()).toContain('Mood: Great. Energy: 4 / 5.');
+    expect(await daily.innerText()).not.toContain('Private detail');
+    expect(await daily.locator('li').count()).toBe(2);
+    await region.getByRole('button', { name: 'Next month', exact: true }).click();
+    expect(await region.getByRole('status').innerText()).toBe('January 2026');
+    expect(await region.getByRole('table', { name: 'Check-ins for January 2026', exact: true }).count()).toBe(1);
+    expect(await daily.innerText()).toContain('No check-ins recorded in this month.');
+    await region.getByRole('button', { name: 'Previous month', exact: true }).click();
+    expect(await region.getByRole('status').innerText()).toBe('December 2025');
+    await region.getByRole('button', { name: 'Current month', exact: true }).click();
+    expect(await region.locator('[aria-current="date"]').count()).toBe(1);
+    expect(errors).toEqual([]);
+  }, 120000);
+
+  it('calendar labels the current-week period independently of the browsed month', async () => {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    await openJournal({ activeTab: 'calendar', calYear: 2020, calMonth: 0, earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
+      { timestamp: now.getTime() + 3000, mood: 5 }, { timestamp: now.getTime() + 1000, mood: 1 }, { timestamp: now.getTime() + 2000, mood: 3 }
+    ] });
+    const region = page.getByRole('region', { name: 'Journal calendar and summaries', exact: true });
+    expect(await region.getByRole('status').innerText()).toBe('January 2020');
+    expect(await region.innerText()).toContain('This period stays on the current week');
+    expect(await region.innerText()).toContain('Higher later ratings');
+    expect(await region.innerText()).toContain('not a grade');
+    await page.evaluate(() => { window.SelHub.printDoc = data => { window.reviewPrint = data; }; });
+    await region.getByRole('button', { name: 'Print my weekly summary', exact: true }).click();
+    const payload = await page.evaluate(() => window.reviewPrint);
+    expect(payload.sections[0].heading).toMatch(/^Current week: /);
+    expect(JSON.stringify(payload)).toContain('Rating comparison: Higher later ratings');
+    expect(payload.subtitle).toContain('You choose whether');
+    expect(JSON.stringify(payload)).not.toContain('improving');
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('calendar dates and records fit a phone in %s', async theme => {
+    const now = new Date();
+    await openJournal({ activeTab: 'calendar', earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [1, 3, 5].map((mood, index) => ({ timestamp: new Date(now.getFullYear(), now.getMonth(), 1 + index, 10).getTime(), mood, energy: null })) }, 320, theme);
+    const region = page.getByRole('region', { name: 'Journal calendar and summaries', exact: true });
+    await region.locator('details[aria-label="Daily check-in records"] > summary').click();
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    const audit = await region.evaluate(async node => {
+      const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'td-headers-attr', 'th-has-data-cells'] } });
+      return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+    });
+    fs.writeFileSync(path.join(reports, (theme || 'light') + '-calendar-axe.json'), JSON.stringify(audit, null, 2));
+    expect(audit).toEqual([]);
+    expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await region.locator('button:visible, summary:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+    await region.getByRole('table').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-calendar-phone.png') });
+    await region.locator('details[aria-label="Daily check-in records"]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(reports, (theme || 'light') + '-calendar-records-phone.png') });
+  }, 120000);
 
   it('check-in keeps the overview optional and its shortcuts keyboard accessible', async () => {
     await openJournal({ activeTab: 'checkin', jViewingPast: true, jText: 'Unfinished fictional reflection', journalEntries: [{ timestamp: 1000, prompt: 'A fictional prompt', text: 'Earlier fictional reflection' }] }, 320);

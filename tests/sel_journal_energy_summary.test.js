@@ -32,4 +32,24 @@ describe('Journal optional energy summaries', () => {
   it('retains the existing three-entry summary threshold', () => {
     expect(getWeeklySummary(entries([1, 5]))).toBeNull();
   });
+  it('orders imported entries by timestamp before comparing, without mutating them', () => {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const input = [5, 1, 4, 2].map((mood, index) => ({ timestamp: now.getTime() + [4000, 1000, 3000, 2000][index], mood }));
+    const before = JSON.stringify(input);
+    expect(getWeeklySummary(input)).toMatchObject({ trajectory: 'improving', trajectoryLabel: 'Higher later ratings' });
+    expect(JSON.stringify(input)).toBe(before);
+  });
+  it('describes lower and similar ratings without treating them as performance', () => {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const make = moods => moods.map((mood, index) => ({ timestamp: now.getTime() + index * 1000, mood }));
+    expect(getWeeklySummary(make([5, 4, 2, 1])).trajectoryLabel).toBe('Lower later ratings');
+    expect(getWeeklySummary(make([3, 3, 3, 3])).trajectoryLabel).toBe('Similar ratings');
+    expect(getWeeklySummary(make([5, 5, 5])).encouragement).toContain('not a grade');
+  });
+  it('ignores malformed mood records instead of poisoning the summary', () => {
+    const input = entries([1, 2, 3]);
+    input.push(null, { timestamp: Date.now(), mood: '5' }, { timestamp: Date.now(), mood: 7 });
+    expect(getWeeklySummary(input)).toMatchObject({ count: 3, avgMood: 3 });
+  });
+
 });

@@ -565,8 +565,8 @@ window.SelHub = window.SelHub || {
   function getWeeklySummary(checkIns) {
     var week = getWeekBounds(new Date());
     var weekEntries = (checkIns || []).filter(function(ci) {
-      return ci.timestamp >= week.start && ci.timestamp <= week.end;
-    });
+      return ci && ci.timestamp >= week.start && ci.timestamp <= week.end && typeof ci.mood === 'number' && ci.mood >= 1 && ci.mood <= 5;
+    }).sort(function(a, b) { return a.timestamp - b.timestamp; });
     if (weekEntries.length < 3) return null;
 
     var totalMood = 0;
@@ -600,12 +600,8 @@ window.SelHub = window.SelHub || {
     if (diff > 0.5) trajectory = 'improving';
     else if (diff < -0.5) trajectory = 'declining';
 
-    var encouragement = '';
-    if (trajectory === 'improving') encouragement = 'Your mood is trending upward \u2014 keep it up!';
-    else if (trajectory === 'declining') encouragement = 'It\u2019s okay to have tough stretches. Remember to use your coping strategies.';
-    else if (avgMood >= 4) encouragement = 'You\u2019re doing great this week! Keep nurturing what\u2019s working.';
-    else if (avgMood >= 3) encouragement = 'A steady week. Small positive choices add up over time.';
-    else encouragement = 'Tough week \u2014 but you\u2019re showing up. That takes real courage.';
+    var encouragement = 'These are the ratings you chose to record, not a grade or a full picture of your wellbeing. What context or support matters to you? You can reflect privately or choose whether to share.';
+    var trajectoryLabel = trajectory === 'improving' ? 'Higher later ratings' : trajectory === 'declining' ? 'Lower later ratings' : 'Similar ratings';
 
     return {
       count: weekEntries.length,
@@ -614,6 +610,9 @@ window.SelHub = window.SelHub || {
       energyCount: energyCount,
       topTriggers: topTriggers,
       trajectory: trajectory,
+      trajectoryLabel: trajectoryLabel,
+      periodStart: week.start,
+      periodEnd: week.end,
       encouragement: encouragement
     };
   }
@@ -831,9 +830,9 @@ window.SelHub = window.SelHub || {
           var TAB_META = {
             checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 notice and choose',                          hint: 'A check-in is a snapshot of what you choose to record. You can skip it, leave details blank, or write instead. There is no required mood or energy level.' },
             journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 space for reflection',                    hint: 'A few words or a made-up example are enough. Use a prompt if it helps you understand a situation. You can skip a topic, change your approach, or stop whenever you choose.' },
-            calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 streaks + heat map',                       hint: 'Visual streak ladders harness consistency-bias: missing one day stings; missing two stings less. Don\u2019t miss twice. Pattern visibility \u2014 when do you tend to skip? \u2014 is the diagnostic, not the goal.' },
-            insights: { accent: _jouFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
-            badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Self-determination theory (Deci + Ryan 1985): autonomy + competence + relatedness drive intrinsic motivation. Badges acknowledge competence without coercing \u2014 you set the streak, the system just notices.' }
+            calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 revisit your records',                      hint: 'A blank day means no check-in was recorded. It does not tell us how you felt. Browse your entries when it is useful; daily tracking is optional.' },
+            insights: { accent: _jouFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Patterns describe only the entries you chose to record. They do not explain why something happened or measure your wellbeing. Your own interpretation and context matter.' },
+            badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Badges record activity in this tool. They do not measure emotional skills or wellbeing. You can take breaks and use only the activities that fit you.' }
           };
           var meta = TAB_META[activeTab] || TAB_META.checkin;
           return h('div', {
@@ -1678,62 +1677,45 @@ window.SelHub = window.SelHub || {
           var daysInMonth = getMonthDays(calYear, calMonth);
           var firstDay = getFirstDayOfWeek(calYear, calMonth);
 
-          // Build mood map for month: dayNum -> avgMood
           var monthMoodMap = {};
-          checkIns.forEach(function(ci) {
-            var ciDate = new Date(ci.timestamp);
-            if (ciDate.getFullYear() === calYear && ciDate.getMonth() === calMonth) {
-              var dayNum = ciDate.getDate();
-              if (!monthMoodMap[dayNum]) monthMoodMap[dayNum] = [];
-              monthMoodMap[dayNum].push(ci.mood);
-            }
+          var monthEntries = checkIns.filter(function(ci) {
+            if (!ci || typeof ci.mood !== 'number' || ci.mood < 1 || ci.mood > 5) return false;
+            var date = new Date(ci.timestamp);
+            return date.getFullYear() === calYear && date.getMonth() === calMonth;
+          }).sort(function(a, b) { return a.timestamp - b.timestamp; });
+          monthEntries.forEach(function(ci) {
+            var day = new Date(ci.timestamp).getDate();
+            if (!monthMoodMap[day]) monthMoodMap[day] = [];
+            monthMoodMap[day].push(ci.mood);
           });
-
-          // Build calendar grid cells
-          var calCells = [];
-          // Empty cells before first day
-          for (var ei = 0; ei < firstDay; ei++) {
-            calCells.push(h('div', { key: 'empty-' + ei, style: { width: 36, height: 36 } }));
-          }
-          // Day cells
           var todayDate = new Date();
-          for (var dayNum = 1; dayNum <= daysInMonth; dayNum++) {
-            (function(dn) {
-              var moods = monthMoodMap[dn] || [];
-              var avgMood = 0;
-              if (moods.length > 0) {
-                var s = 0;
-                moods.forEach(function(m) { s += m; });
-                avgMood = Math.round(s / moods.length);
-              }
-              var moodObj = avgMood > 0 ? MOODS.find(function(m) { return m.id === avgMood; }) : null;
-              var isToday = calYear === todayDate.getFullYear() && calMonth === todayDate.getMonth() && dn === todayDate.getDate();
-
-              calCells.push(h('div', {
-                key: 'day-' + dn,
-                style: {
-                  width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '50%', fontSize: 11, fontWeight: isToday ? 700 : 400, position: 'relative',
-                  background: moodObj ? moodObj.color + '33' : 'transparent',
-                  border: isToday ? '2px solid ' + ACCENT : '1px solid transparent',
-                  color: moodObj ? _jouFg(moodObj.color) : _jouFg('#94a3b8')
-                },
-                title: moodObj ? moodObj.label + ' (' + moods.length + ' check-in' + (moods.length > 1 ? 's' : '') + ')' : 'No check-in'
-              },
-                moodObj ? h('span', { style: { fontSize: 18 } }, moodObj.emoji) : String(dn)
+          var calendarRows = [];
+          for (var cell = 0; cell < Math.ceil((firstDay + daysInMonth) / 7) * 7; cell += 7) {
+            var row = [];
+            for (var weekday = 0; weekday < 7; weekday++) {
+              var day = cell + weekday - firstDay + 1;
+              if (day < 1 || day > daysInMonth) { row.push(h('td', { key: weekday })); continue; }
+              var moods = monthMoodMap[day] || [];
+              var isToday = calYear === todayDate.getFullYear() && calMonth === todayDate.getMonth() && day === todayDate.getDate();
+              row.push(h('td', { key: weekday, 'aria-label': MONTH_NAMES[calMonth] + ' ' + day + ', ' + calYear + ': ' + (moods.length ? moods.length + ' recorded check-in' + (moods.length === 1 ? '' : 's') : 'No check-in recorded'), 'aria-current': isToday ? 'date' : undefined, style: { height: 54, padding: '6px 1px', textAlign: 'center', verticalAlign: 'top', border: '1px solid ' + _jouBd('#475569'), background: moods.length ? _jouBg('#1e293b') : _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 14, fontWeight: isToday ? 800 : 400 } },
+                h('span', null, String(day)),
+                moods.length > 0 && h('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 12, fontWeight: 700 } }, moods.length + ' •')
               ));
-            })(dayNum);
+            }
+            calendarRows.push(h('tr', { key: cell }, row));
           }
+          var weekBounds = getWeekBounds(new Date());
+          var weekPeriod = new Date(weekBounds.start).toLocaleDateString() + ' – ' + new Date(weekBounds.end).toLocaleDateString();
 
           // Weekly Summary
           var weeklySummary = getWeeklySummary(checkIns);
 
-          calendarContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
+          calendarContent = h('div', { role: 'region', 'aria-label': 'Journal calendar and summaries', style: { padding: 16, maxWidth: 520, margin: '0 auto', overflowWrap: 'anywhere' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCC5 Mood Calendar'),
 
             // Month navigation
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
-              h('button', { 'aria-label': MONTH_NAMES[calMonth] + ' ' + calYear,
+              h('button', { 'aria-label': 'Previous month',
                 onClick: function() {
                   var nm = calMonth - 1;
                   var ny = calYear;
@@ -1741,9 +1723,9 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
+                style: journalButton
               }, '\u2190'),
-              h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, MONTH_NAMES[calMonth] + ' ' + calYear),
+              h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9'), textAlign: 'center' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
               h('button', { 'aria-label': 'Next month',
                 onClick: function() {
                   var nm = calMonth + 1;
@@ -1752,41 +1734,35 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
+                style: journalButton
               }, '\u2192')
             ),
 
-            // Legend
-            h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
-              MOODS.map(function(m) {
-                return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 4 } },
-                  h('div', { style: { width: 10, height: 10, borderRadius: '50%', background: m.color } }),
-                  h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, m.label)
-                );
-              })
+            h('button', { style: Object.assign({}, journalButton, { marginBottom: 12 }), onClick: function() { var now = new Date(); upd({ calYear: now.getFullYear(), calMonth: now.getMonth() }); } }, 'Current month'),
+            h('p', { style: { fontSize: 14, lineHeight: 1.6, color: _jouFg('#cbd5e1') } }, 'Dates stay visible. A number beside a dot shows how many check-ins were recorded that day. A blank day tells us nothing about how you felt.'),
+            h('table', { 'aria-label': 'Check-ins for ' + MONTH_NAMES[calMonth] + ' ' + calYear, style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginBottom: 16 } },
+              h('thead', null, h('tr', null, DAY_HEADERS.map(function(day) { return h('th', { key: day, scope: 'col', style: { padding: '8px 0', fontSize: 12, color: _jouFg('#cbd5e1') } }, day); }))),
+              h('tbody', null, calendarRows)
             ),
-
-            // Calendar grid
-            h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
-              // Day headers
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(32px, 1fr))', gap: 4, marginBottom: 8, overflowX: 'auto' } },
-                DAY_HEADERS.map(function(dh) {
-                  return h('div', { key: dh, style: { textAlign: 'center', fontSize: 10, color: _jouFg('#94a3b8'), fontWeight: 600, padding: 4 } }, dh);
-                })
-              ),
-              // Day cells
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(32px, 1fr))', gap: 4, justifyItems: 'center', overflowX: 'auto' } },
-                calCells
-              )
+            h('details', { 'aria-label': 'Daily check-in records', style: { marginBottom: 16, border: '1px solid ' + _jouBd('#475569'), borderRadius: 12, padding: 12, color: _jouFg('#e2e8f0') } },
+              h('summary', { style: { minHeight: 44, fontSize: 14, fontWeight: 700, cursor: 'pointer' } }, 'Daily records (' + monthEntries.length + ')'),
+              monthEntries.length === 0 ? h('p', null, 'No check-ins recorded in this month.') : h('ol', { style: { paddingLeft: 22, fontSize: 14, lineHeight: 1.6 } }, monthEntries.map(function(entry, index) {
+                var mood = MOODS.find(function(item) { return item.id === entry.mood; });
+                return h('li', { key: index, style: { marginBottom: 12 } },
+                  h('div', null, new Date(entry.timestamp).toLocaleString()),
+                  h('div', null, 'Mood: ' + (mood ? mood.label : 'Not recorded') + '. Energy: ' + (recordedEnergy(entry) == null ? 'Not recorded' : recordedEnergy(entry) + ' / 5') + '.'),
+                  (entry.subEmotion || entry.expandedEmotion) && h('div', null, 'Feeling words: ' + [entry.subEmotion, entry.expandedEmotion].filter(Boolean).join(', '))
+                );
+              }))
             ),
 
             // Monthly Stats
             h('div', { style: { padding: 14, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
               h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
-              h('div', { style: { display: 'flex', justifyContent: 'space-around' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'space-around' } },
                 h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { fontSize: 20, fontWeight: 700, color: _jouFg('#f1f5f9') } }, Object.keys(monthMoodMap).length),
-                  h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Days Tracked')
+                  h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Days Tracked')
                 ),
                 h('div', { style: { textAlign: 'center' } },
                   (function() {
@@ -1797,8 +1773,8 @@ window.SelHub = window.SelHub || {
                     var avgM = countM > 0 ? Math.round(totalM / countM * 10) / 10 : 0;
                     var avgObj = avgM > 0 ? MOODS.find(function(m) { return m.id === Math.round(avgM); }) : null;
                     return [
-                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? _jouFg(avgObj.color) : _jouFg('#94a3b8') } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
-                      h('div', { key: 'lbl', style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
+                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: _jouFg('#e2e8f0') } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
+                      h('div', { key: 'lbl', style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                     ];
                   })()
                 ),
@@ -1810,41 +1786,39 @@ window.SelHub = window.SelHub || {
                       return c;
                     })()
                   ),
-                  h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Check-Ins')
+                  h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Check-Ins')
                 )
               )
             ),
 
             // Weekly Summary
             h('div', { style: { padding: 14, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 12, color: _jouFg(ACCENT), fontWeight: 700, marginBottom: 8 } }, '\uD83D\uDCCB Weekly Summary'),
+              h('div', { style: { fontSize: 12, color: _jouFg(ACCENT), fontWeight: 700, marginBottom: 8 } }, 'Current week summary'),
+              h('p', { style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#e2e8f0') } }, weekPeriod + '. This period stays on the current week when you browse other months.'),
+              h('p', { style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#cbd5e1') } }, 'Mood numbers summarize selected labels on a 1–5 scale. They are not scores for learning or wellbeing. The comparison uses earlier and later halves of this week’s recorded check-ins, ordered by time.'),
               weeklySummary ? h('div', null,
                 (function() {
                   if (!earnedBadges['weekly_reviewer']) tryAwardBadge('weekly_reviewer');
                   return null;
                 })(),
-                h('div', { style: { display: 'flex', justifyContent: 'space-around', marginBottom: 12 } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'space-around', marginBottom: 12 } },
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, weeklySummary.avgMood.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
+                    h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                   ),
                   h('div', { style: { textAlign: 'center' } },
                     h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, (weeklySummary.avgEnergy == null ? 'Not recorded' : weeklySummary.avgEnergy.toFixed(1))),
-                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Energy'),
+                    h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Avg Energy'),
                     h('div', { style: { fontSize: 12, color: _jouFg('#cbd5e1') } }, 'From ' + weeklySummary.energyCount + ' recorded rating' + (weeklySummary.energyCount === 1 ? '' : 's'))
                   ),
-                  h('div', { style: { textAlign: 'center' } },
-                    h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg(weeklySummary.trajectory) === 'improving' ? _jouFg('#22c55e') : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
-                      weeklySummary.trajectory === 'improving' ? '\u2197\uFE0F' : weeklySummary.trajectory === 'declining' ? '\u2198\uFE0F' : '\u2192\uFE0F'
-                    ),
-                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
-                  )
+                  h('div', { style: { textAlign: 'center', fontSize: 14, color: _jouFg('#e2e8f0') } }, weeklySummary.trajectoryLabel)
+
                 ),
                 weeklySummary.topTriggers.length > 0 && h('div', { style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 4 } }, 'Top triggers:'),
+                  h('div', { style: { fontSize: 14, color: _jouFg('#94a3b8'), marginBottom: 4 } }, 'Top triggers:'),
                   h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                     weeklySummary.topTriggers.map(function(t) {
-                      return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: _jouBg('#1e293b'), color: _jouFg(ACCENT), fontSize: 11, fontWeight: 500 } }, t);
+                      return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: _jouBg('#1e293b'), color: _jouFg(ACCENT), fontSize: 14, fontWeight: 500 } }, t);
                     })
                   )
                 ),
@@ -1853,7 +1827,7 @@ window.SelHub = window.SelHub || {
                 )
               ) :
               h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), textAlign: 'center', padding: 12 } },
-                'Check in at least 3 times this week to see your summary!'
+                'A summary appears when this week has at least 3 recorded check-ins. Recording more is optional; you can review individual days above.'
               )
             ),
 
@@ -1864,10 +1838,10 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   if (!window.SelHub || !window.SelHub.printDoc) return;
                   var sections = [
-                    { heading: 'This week at a glance', items: [
+                    { heading: 'Current week: ' + weekPeriod, items: [
                       'Average mood: ' + weeklySummary.avgMood.toFixed(1) + ' / 5',
                       'Average energy: ' + (weeklySummary.avgEnergy == null ? 'Not recorded' : weeklySummary.avgEnergy.toFixed(1) + ' / 5') + ' (' + weeklySummary.energyCount + ' recorded ratings)',
-                      'Trajectory: ' + weeklySummary.trajectory,
+                      'Rating comparison: ' + weeklySummary.trajectoryLabel,
                       'Check-ins this week: ' + weeklySummary.count
                     ] }
                   ];
@@ -1879,11 +1853,11 @@ window.SelHub = window.SelHub || {
                   }
                   window.SelHub.printDoc({
                     title: 'My Weekly Mood Summary',
-                    subtitle: 'Bring this to your counselor, parent, or therapist so they can see how the week went.',
+                    subtitle: 'These are selected records, not an assessment. You choose whether and with whom to share.',
                     sections: sections
                   });
                 },
-                style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
               }, '🖨 Print my weekly summary')
             ) : null
           );
