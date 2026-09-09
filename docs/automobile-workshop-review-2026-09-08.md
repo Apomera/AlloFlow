@@ -319,6 +319,19 @@ Validation: **182 workshop model/render tests passed** (25.16 seconds), includin
 - [High-contrast phone board](../reports/automobile-workshop/practice-board-contrast.png)
 - [Narrow dark-phone board](../reports/automobile-workshop/practice-board-dark.png)
 
+## Live wheel cross-hub path
+
+Wheel reassembly now shows the move from the last accepted fastener to the next target. The 2D diagram draws completed moves as solid lines and the next move as a dashed arrow. A numbered sequence strip labels each check as Checked, Next or Waiting, and a text instruction identifies the current cross-hub move. The 3D wheel has a matching cyan direction arrow between the same fastener positions, complementing the moving wrench, numbered targets and next-fastener ring. The arrow is a visual aid, not an operating control.
+
+The diagram and button centres now use the same regular five-point geometry. Its square aspect ratio scales with the available width, correcting the previous fixed-height layout on narrow screens. Guidance remains inactive until the wheel is seated, ignores rejected/repeated clicks and has no return-to-first move after five accepted checks. Finishing the sequence still requires the explicit reassembly task. Invalid saved sequences receive a review message instead of an invented next move. The authored order, access requirements and existing torque-check abstraction remain unchanged.
+
+Validation: **194 workshop model/render tests passed** in the final run (5.05 seconds), including twelve new cases for seating, every accepted sequence position, rejected/repeated inputs, malformed saved orders, circular geometry, themes, text equivalents and final-arrow removal. Initial new-test failures were fixture argument expansion and equivalent CSS aspect-ratio serialization; corrected the tests and reran the full workshop suite. **Three real-WebGL workflows passed** (2.0 minutes): the full brake-service/handoff regression, moving-wrench/inspection regression and new live-path journey. The new journey checks keyboard and physical-wrench actions, 2D/3D next-target agreement, rejected inputs, per-job persistence, final path removal, explicit task completion, 390/320 px reflow and square-diagram/button containment. Desktop light, high-contrast phone, narrow dark-phone and 3D screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Live direction arrow in the 3D wheel](../reports/automobile-workshop/wheel-path-3d.png)
+- [Desktop path and sequence strip](../reports/automobile-workshop/wheel-path-desktop.png)
+- [High-contrast phone sequence](../reports/automobile-workshop/wheel-path-contrast.png)
+- [Narrow dark-phone sequence](../reports/automobile-workshop/wheel-path-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

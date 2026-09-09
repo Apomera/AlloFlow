@@ -1237,3 +1237,44 @@ test('practice board resumes exact saved work and updates after a completed oil 
   await board.locator('[data-ar-practice-toggle]').click();await expect(board.locator('[data-ar-practice-job]')).toHaveCount(0);
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('live cross-hub path tracks deliberate checks in the diagram and 3D wheel',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true}}});
+  await expect(page.locator('[data-ar-wheel-path]')).toHaveCount(0);
+  await page.locator('[data-ar-shop-seat-wheel]').click();
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('Begin at fastener 1');
+  await page.locator('[data-ar-shop-lug="0"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('1 → 3');
+  await expect(page.locator('[data-ar-wheel-path="next"]')).toHaveCount(1);
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-wheel-next-path')?.data.toLug===2);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-wheel-next-path').data.fromLug)).toBe(0);
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/wheel-path-3d.png'});
+  await page.locator('[data-ar-shop-lug="1"]').click();
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('1 → 3');
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.lugs)).toEqual([0]);
+  await page.locator('[data-ar-shop-instrument-focus]').click();await clickShop(page,'workshop-torque-wrench-grip');
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('3 → 5');
+  await expect(page.locator('[data-ar-wheel-path="checked"]')).toHaveCount(1);
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-desktop.png'});
+  await page.locator('#ar-shop-job').selectOption('oil');await page.locator('#ar-shop-job').selectOption('brakes');
+  await expect(page.locator('[data-ar-wheel-step="4"]')).toHaveAttribute('aria-current','step');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  const bounds=await page.locator('[data-ar-wheel-diagram]').evaluate((el:HTMLElement)=>{const r=el.getBoundingClientRect();return{square:Math.abs(r.width-r.height)<1,buttons:[...el.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.left>=r.left-1&&q.right<=r.right+1&&q.top>=r.top-1&&q.bottom<=r.bottom+1;})};});
+  expect(bounds).toEqual({square:true,buttons:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-dark.png'});
+  for(const index of [4,1,3]){await page.locator('[data-ar-shop-lug="'+index+'"]').focus();await page.keyboard.press('Enter');}
+  await expect(page.locator('[data-ar-wheel-path="next"]')).toHaveCount(0);await expect(page.locator('[data-ar-wheel-path="checked"]')).toHaveCount(4);
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-torque-wrench')?.data.nextLug===null);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-wheel-next-path'))).toBeNull();
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-task="lower"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

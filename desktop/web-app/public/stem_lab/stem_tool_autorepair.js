@@ -9787,6 +9787,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       'Optional reasoning check: ' + (review.choice ? review.choice.label + ' ' + review.choice.feedback : 'Not answered.')];
   }
 
+  function arShopWheelSequence(raw) {
+    var state = arShopState(raw), valid = state.lugs.every(function (index, order) { return index === TIRE_LUG_PATTERN[order]; });
+    var count = state.wheelSeated && valid ? state.lugs.length : 0;
+    return { valid: valid, seated: state.wheelSeated, count: count,
+      last: count ? TIRE_LUG_PATTERN[count - 1] : null,
+      next: state.wheelSeated && valid && count < 5 ? TIRE_LUG_PATTERN[count] : null,
+      steps: TIRE_LUG_PATTERN.map(function (index, order) { return { index: index, status: state.wheelSeated && valid && order < count ? 'checked' : state.wheelSeated && valid && order === count ? 'next' : 'pending' }; }) };
+  }
+  function arShopWheelPoint(index) {
+    var angle = index * Math.PI * 2 / 5;
+    return { x: 115 + Math.sin(angle) * 86, y: 115 - Math.cos(angle) * 86 };
+  }
   function arShopSavedJob(current, records, id) {
     if (!SHOP_JOBS.some(function (job) { return job.id === id; })) return null;
     var active = arShopState(current);
@@ -10359,7 +10371,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       [-1.30, -1.12].forEach(function (x) { box(gauge, 'gauge-jaw-' + x, [0.018, 0.19, 0.025], [x, 0.54, 1.02], metal); });
     }
     // The wrench follows the same cross-hub sequence as the accessible diagram.
-    var nextWheelLug = instrumentKind === 'torque' && state.wheelSeated && state.lugs.length < 5 ? TIRE_LUG_PATTERN[state.lugs.length] : null;
+    var wheelSequence = arShopWheelSequence(state);
+    var nextWheelLug = instrumentKind === 'torque' ? wheelSequence.next : null;
     // Five physical fasteners share hit targets with the keyboard button diagram.
     if (state.wheelSeated || state.torqued) {
       for (var lugIndex = 0; lugIndex < 5; lugIndex++) {
@@ -10392,6 +10405,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
       }
       if (instrumentKind === 'torque' && instrumentReady) {
+        if (wheelSequence.last !== null && wheelSequence.next !== null) {
+          var pathAngle = function (index) { return Math.PI / 2 - index * Math.PI * 2 / 5; };
+          var fromAngle = pathAngle(wheelSequence.last), toAngle = pathAngle(wheelSequence.next);
+          var from = new THREE.Vector3(-1.30 + Math.cos(fromAngle) * 0.13, 0.40 + Math.sin(fromAngle) * 0.13, 1.09);
+          var to = new THREE.Vector3(-1.30 + Math.cos(toAngle) * 0.13, 0.40 + Math.sin(toAngle) * 0.13, 1.09);
+          var direction = to.clone().sub(from), distance = direction.length(); direction.normalize();
+          var pathArrow = new THREE.ArrowHelper(direction, from.addScaledVector(direction, 0.04), distance - 0.08, 0x67e8f9, 0.035, 0.025);
+          pathArrow.name = 'workshop-wheel-next-path'; pathArrow.userData.fromLug = wheelSequence.last; pathArrow.userData.toLug = wheelSequence.next;
+          pathArrow.traverse(function (part) { part.userData.partId = 'brakes'; });
+          brakes.add(pathArrow);
+        }
         var wrench = new THREE.Group(); wrench.name = 'workshop-torque-wrench'; brakes.add(wrench);
         wrench.userData.nextLug = nextWheelLug; wrench.userData.checkedCount = state.lugs.length;
         // Park beside the wheel once all checks are recorded; do not repeat the last lug.
@@ -10406,7 +10430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           part.material = part.material.clone(); part.material.userData._keepOpaqueOnRecede = true;
           part.userData.partId = wrenchPick; picks.push(part);
         });
-        var wheelStatus = label(brakes, nextWheelLug === null ? '5/5 CHECKED' : 'NEXT ' + (nextWheelLug + 1) + '   |   ' + state.lugs.length + '/5', [-1.30, -0.10, 1.06], 0.70, nextWheelLug === null ? '#34d399' : '#67e8f9');
+        var wheelStatus = label(brakes, !wheelSequence.valid ? 'CHECK ORDER' : nextWheelLug === null ? '5/5 CHECKED' : 'NEXT ' + (nextWheelLug + 1) + '   |   ' + state.lugs.length + '/5', [-1.30, -0.10, 1.06], 0.70, nextWheelLug === null ? '#34d399' : '#67e8f9');
         if (wheelStatus) { wheelStatus.name = 'workshop-wheel-progress'; wheelStatus.userData.partId = 'brakes'; picks.push(wheelStatus); }
 
       }
@@ -20770,7 +20794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('text', { x: 320, y: 76, textAnchor: 'end', fill: T.text, fontSize: 14 }, maximum + ' mm'))));
         }
         function instrumentPanel() {
-          var kind = arShopInstrumentKind(shop);
+          var kind = arShopInstrumentKind(shop), wheelSequence = arShopWheelSequence(shop);
           if (!kind) return null;
           var reading = shop.reading && shop.reading.key === arShopReadingKey(shop) ? shop.reading : null;
           function operate(action) { var next = arShopOperate(shop, action); save(next); arAnnounce(next.feedback); }
@@ -20802,18 +20826,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             kind === 'torque' ? h('div', null,
               h('p', null, 'Seat the wheel and start all fasteners by hand. This training diagram checks the cross-hub order 1 → 3 → 5 → 2 → 4. Each click represents a torque check against the vehicle service sheet; it does not simulate applied force.'),
               !shop.wheelSeated && control('Seat wheel and start fasteners', function () { operate({ type: 'seat-wheel' }); }, { 'data-ar-shop-seat-wheel': true }),
-              h('div', { style: { position: 'relative', width: 230, maxWidth: '100%', height: 230, margin: '12px auto' }, role: 'group', 'aria-label': 'Five wheel fasteners, numbered clockwise from the top' },
-                h('svg', { viewBox: '0 0 230 230', width: '100%', height: 230, 'aria-hidden': true },
+              h('div', { 'data-ar-wheel-diagram': true, style: { position: 'relative', width: 230, maxWidth: '100%', aspectRatio: '1', margin: '12px auto' }, role: 'group', 'aria-label': 'Five wheel fasteners, numbered clockwise from the top' },
+                h('svg', { viewBox: '0 0 230 230', width: '100%', height: '100%', style: { position: 'absolute', inset: 0 }, 'aria-hidden': true },
                   h('circle', { cx: 115, cy: 115, r: 92, fill: T.card, stroke: T.border, strokeWidth: 8 }),
-                  h('path', { d: 'M115 28 L166 188 L32 92 L198 92 L64 188 Z', fill: 'none', stroke: T.border, strokeWidth: 2, strokeDasharray: '5 4' }),
+                  h('defs', null, h('marker', { id: 'ar-wheel-path-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: T.link }))),
+                  wheelSequence.seated && wheelSequence.valid && TIRE_LUG_PATTERN.slice(1).map(function (target, index) {
+                    var from = arShopWheelPoint(TIRE_LUG_PATTERN[index]), to = arShopWheelPoint(target);
+                    var dx = to.x - from.x, dy = to.y - from.y, length = Math.sqrt(dx * dx + dy * dy), padding = 31;
+                    var checked = index + 1 < wheelSequence.count, active = index + 1 === wheelSequence.count;
+                    if (!checked && !active) return null;
+                    return h('line', { key: index, 'data-ar-wheel-path': active ? 'next' : 'checked', x1: from.x + dx / length * padding, y1: from.y + dy / length * padding, x2: to.x - dx / length * padding, y2: to.y - dy / length * padding,
+                      stroke: active ? T.link : T.good, strokeWidth: active ? 4 : 2, strokeDasharray: active ? '7 4' : undefined, markerEnd: active ? 'url(#ar-wheel-path-arrow)' : undefined });
+                  }),
                   h('circle', { cx: 115, cy: 115, r: 23, fill: T.cardAlt, stroke: T.border, strokeWidth: 2 })),
-                [[50, 12], [86, 40], [72, 82], [28, 82], [14, 40]].map(function (point, i) {
-                  var checked = shop.lugs.indexOf(i) !== -1;
-                  return h('div', { key: i, style: { position: 'absolute', left: 'calc(' + point[0] + '% - 22px)', top: 'calc(' + point[1] + '% - 22px)' } },
+                [0, 1, 2, 3, 4].map(function (i) {
+                  var point = arShopWheelPoint(i), checked = shop.lugs.indexOf(i) !== -1;
+                  return h('div', { key: i, style: { position: 'absolute', left: 'calc(' + (point.x / 230 * 100) + '% - 22px)', top: 'calc(' + (point.y / 230 * 100) + '% - 22px)' } },
                     control((checked ? '✓ ' : '') + (i + 1), function () { operate({ type: 'lug', index: i }); },
                       { 'data-ar-shop-lug': i, 'aria-label': 'Check fastener ' + (i + 1) + (checked ? ', already checked' : ''), 'aria-pressed': checked, 'aria-current': shop.wheelSeated && TIRE_LUG_PATTERN[shop.lugs.length] === i ? 'step' : undefined, disabled: !shop.wheelSeated,
                         style: btnSecondary({ minHeight: 44, minWidth: 44, padding: 5, borderRadius: '50%', border: '2px solid ' + (checked ? T.good : T.border), background: T.card, fontSize: 12 }) }));
                 })),
+              h('ol', { 'data-ar-wheel-sequence': true, 'aria-label': 'Cross-hub check sequence', style: { display: 'flex', flexWrap: 'wrap', gap: 6, listStyle: 'none', padding: 0, margin: '12px 0' } }, wheelSequence.steps.map(function (item) {
+                return h('li', { key: item.index, 'data-ar-wheel-step': item.index, 'aria-current': item.status === 'next' ? 'step' : undefined, style: { border: '1px solid ' + (item.status === 'next' ? T.link : T.border), borderRadius: 6, padding: '7px 9px', background: T.cardAlt, fontSize: 12 } },
+                  (item.index + 1) + ' · ' + (item.status === 'checked' ? 'Checked' : item.status === 'next' ? 'Next' : 'Waiting'));
+              })),
+              h('p', { 'data-ar-wheel-move': true, style: { fontSize: 12, lineHeight: 1.6 } }, !wheelSequence.valid ? 'The saved fastener order does not match this training sequence. Review the work order before continuing.' : !wheelSequence.seated ? 'Seat the wheel before starting the sequence.' : wheelSequence.next === null ? 'All five checks are recorded. Complete the reassembly task to continue.' : wheelSequence.last === null ? 'Begin at fastener 1 at the top of the wheel.' : 'Move across the hub: ' + (wheelSequence.last + 1) + ' → ' + (wheelSequence.next + 1) + '. The dashed arrow shows the next move; solid lines show completed moves.'),
               h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. ' + (shop.wheelSeated && shop.lugs.length < 5 ? 'Next: fastener ' + (TIRE_LUG_PATTERN[shop.lugs.length] + 1) + '. ' : '') + 'In 3D, select a numbered fastener or click the wrench handle to check its current fastener. The wrench moves to the next position after each accepted check.'))
               : (kind === 'alignment' && task.id === 'alignment-setup') ? null : h('div', null,
                 h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': 'Captured instrument reading',

@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1057,5 +1057,50 @@ describe('Practice board accessible rendering',()=>{
     expect(board.querySelectorAll('progress[aria-label]')).toHaveLength(4);expect(board.querySelectorAll('button[data-ar-practice-open][aria-label]')).toHaveLength(4);
     expect(board.querySelector('[data-ar-practice-job="oil"]').textContent).toContain('Current job');
     expect(board.querySelector('[data-ar-practice-job="oil"]').textContent).toContain('9/12');expect(board.textContent).toContain('not a proficiency score');
+  });
+});
+
+
+describe('Live wheel sequence guidance',()=>{
+  const initial=()=>model.normalize({job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true});
+  it('does not propose a fastener before the wheel is seated',()=>{
+    expect(model.wheelSequence(initial())).toMatchObject({seated:false,count:0,last:null,next:null});
+    expect(model.wheelSequence(initial()).steps.every(step=>step.status==='pending')).toBe(true);
+  });
+  it('follows each accepted check and never adds a final return-to-first move',()=>{
+    let state=model.operate(initial(),{type:'seat-wheel'});const order=[0,2,4,1,3];
+    for(let i=0;i<5;i++){
+      const guide=model.wheelSequence(state),original=JSON.stringify(state);
+      expect(guide).toMatchObject({count:i,last:i?order[i-1]:null,next:order[i]});expect(guide.steps.filter(s=>s.status==='next').map(s=>s.index)).toEqual([order[i]]);
+      expect(JSON.stringify(state)).toBe(original);state=model.operate(state,{type:'lug',index:order[i]});
+    }
+    expect(model.wheelSequence(state)).toMatchObject({count:5,last:3,next:null});expect(model.wheelSequence(state).steps.every(s=>s.status==='checked')).toBe(true);
+    expect(state.step).toBe(9);
+  });
+  it('keeps the route unchanged for repeated and out-of-order clicks',()=>{
+    let state=model.operate(initial(),{type:'seat-wheel'});state=model.operate(state,{type:'lug',index:0});const guide=model.wheelSequence(state);
+    for(const index of [0,1,3,4])expect(model.wheelSequence(model.operate(state,{type:'lug',index}))).toEqual(guide);
+  });
+  it.each([{lugs:[0,0]},{lugs:[2]},{lugs:[0,2,1]},{lugs:[0,2,4,1,1]}])('does not invent guidance for invalid saved order %j',({lugs})=>{
+    expect(model.wheelSequence({...initial(),wheelSeated:true,lugs})).toMatchObject({valid:false,count:0,next:null,last:null});
+  });
+  it('lays out five clockwise fasteners on the same radius',()=>{
+    for(let i=0;i<5;i++){const p=model.wheelPoint(i);expect(Math.hypot(p.x-115,p.y-115)).toBeCloseTo(86);}
+    expect(model.wheelPoint(0)).toEqual({x:115,y:29});expect(model.wheelPoint(1).x).toBeGreaterThan(115);expect(model.wheelPoint(4).x).toBeLessThan(115);
+  });
+});
+
+describe('Responsive wheel path rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(lugs=[],wheelSeated=true,theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true,wheelSeated,lugs}}},theme);return host;}
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('provides next-move and text sequence equivalents in %j',theme=>{
+    const host=render([0,2],true,theme);expect(host.querySelectorAll('[data-ar-wheel-path="checked"]')).toHaveLength(1);expect(host.querySelectorAll('[data-ar-wheel-path="next"]')).toHaveLength(1);
+    expect(host.querySelector('[data-ar-wheel-move]').textContent).toContain('3 → 5');expect(host.querySelector('[data-ar-wheel-step="4"]').getAttribute('aria-current')).toBe('step');
+    expect(host.querySelectorAll('[data-ar-wheel-step]')).toHaveLength(5);expect(['1','1 / 1']).toContain(host.querySelector('[data-ar-wheel-diagram]').style.aspectRatio);
+  });
+  it('withholds paths before seating and shows no next arrow after five checks',()=>{
+    expect(render([],false).querySelectorAll('[data-ar-wheel-path]')).toHaveLength(0);
+    const host=render([0,2,4,1,3]);expect(host.querySelectorAll('[data-ar-wheel-path="next"]')).toHaveLength(0);expect(host.querySelectorAll('[data-ar-wheel-path="checked"]')).toHaveLength(4);
+    expect(host.querySelector('[data-ar-wheel-move]').textContent).toContain('Complete the reassembly task');
   });
 });
