@@ -2233,6 +2233,32 @@ function __alloAST(k, fb) {
   }
   try { window.__alloArchToolbox = { catalog: getArchToolboxEntries, filter: filterArchToolbox }; } catch (e) {}
 
+
+  var ARCH_WORKSPACE_LABELS = {
+  "paint_help": "Paint material and color.",
+  "erase_help": "Remove the block you choose.",
+  "pick_help": "Copy a block’s properties, then place matching blocks.",
+  "bar": "Model workspace controls",
+  "view": "Model view",
+  "hide": "Hide tools",
+  "show": "Show tools",
+  "summary": "Current building tool",
+  "read_only": "Read-only replay",
+  "replay": "Replay",
+  "rotation": "Rotation {angle}°",
+  "color": "Color {color}",
+  "reset": "Reset",
+  "tools_hidden": "Tools hidden. The model has more room.",
+  "tools_shown": "Tools shown.",
+  "model": "3D Build",
+  "grid": "Floor Grid",
+  "retry": "Retry 3D"
+};
+  // Opening a sidebar tool always reveals its controls, even after hiding them.
+  var ARCH_SIDEBAR_PANELS = ['showDesign', 'showProject', 'showTemplates', 'showBOM',
+    'showChallenges', 'showGallery', 'showStats', 'showStyleGuide', 'showPhases',
+    'showShare', 'showRandomGen', 'showColorPicker', 'showFilter', 'showBadges',
+    'showFloorPlans', 'budgetEnabled'];
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
@@ -2258,6 +2284,15 @@ function __alloAST(k, fb) {
     var el = React.createElement;
     var d = (ctx.toolData && ctx.toolData.archStudio) || {};
     var upd = function (key, val) {
+      if (d.sidebarCollapsed === true && ARCH_SIDEBAR_PANELS.some(function (name) {
+        return key && typeof key === 'object' ? key[name] === true : key === name && val === true;
+      })) {
+        var revealedPatch = key && typeof key === 'object' ? Object.assign({}, key) : {};
+        if (typeof key === 'string') revealedPatch[key] = val;
+        revealedPatch.sidebarCollapsed = false;
+        ctx.updateMulti('archStudio', revealedPatch);
+        return;
+      }
       if (typeof key === 'object') { ctx.updateMulti('archStudio', key); }
       else { ctx.update('archStudio', key, val); }
     };
@@ -4356,10 +4391,56 @@ function __alloAST(k, fb) {
             }))));
     };
 
+
+    function workspaceText(key, values) {
+      var text = t('stem.archstudio.workspace_' + key, ARCH_WORKSPACE_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    var sidebarCollapsed = d.sidebarCollapsed === true;
+    function toggleWorkspaceTools() {
+      var next = !sidebarCollapsed;
+      upd('sidebarCollapsed', next);
+      if (announceToSR) announceToSR(workspaceText(next ? 'tools_hidden' : 'tools_shown'));
+      setTimeout(function () {
+        var target = document.getElementById(next ? 'arch-sidebar-toggle' : 'arch-studio-tools');
+        if (target) { target.focus(); target.scrollIntoView({ block: 'nearest' }); }
+      }, 0);
+    }
+    function renderWorkspaceBar() {
+      var shape = shapes.find(function (item) { return item.id === activeShape; }) || shapes[0];
+      var material = materials.find(function (item) { return item.id === activeMaterial; }) || materials[0];
+      var color = normalizeArchColor(activeColor, activeMaterial);
+      return el('div', { className: 'arch-workspace-bar', role: 'group', 'aria-label': workspaceText('bar') },
+        el('div', { className: 'arch-workspace-navigation' },
+          el('div', { className: 'arch-studio-view-switch', role: 'group', 'aria-label': workspaceText('view'), style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
+            archShow3d && el('button', { type: 'button', 'aria-pressed': mainUse3d, onClick: function () { upd('editorView', '3d'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: mainUse3d ? '1px solid #60a5fa' : '1px solid transparent', background: mainUse3d ? 'rgba(96,165,250,.2)' : 'transparent', color: mainUse3d ? '#bfdbfe' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, workspaceText('model')),
+            !archShow3d && el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_retry_the_three_dimensional_view', 'Retry the three-dimensional view'), onClick: function () { upd({ hide3d: false, editorView: '3d' }); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.14)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, workspaceText('retry')),
+            el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: openArchGridForKeyboard, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, workspaceText('grid'))
+          ),
+          el('button', { id: 'arch-sidebar-toggle', type: 'button', className: 'arch-sidebar-toggle',
+            'aria-expanded': !sidebarCollapsed, 'aria-controls': 'arch-studio-tools', onClick: toggleWorkspaceTools },
+            el('span', { 'aria-hidden': true }, sidebarCollapsed ? '\u229E' : '\u229F'), workspaceText(sidebarCollapsed ? 'show' : 'hide'))),
+        el('div', { className: 'arch-workspace-brush', role: 'group', 'aria-label': workspaceText('summary') },
+          el('span', { className: 'arch-workspace-mode', style: showReplay ? { color: '#fef3c7', background: '#713f12', borderColor: '#fbbf24' } : {
+            color: activeModeVisual.color, background: activeModeVisual.bg, borderColor: activeModeVisual.border } },
+            showReplay ? workspaceText('replay') : activeModeVisual.label + ' Mode'),
+          showReplay ? el('span', { className: 'arch-workspace-readonly' }, workspaceText('read_only')) :
+            (mode === 'erase' || mode === 'pick') ? el('span', { className: 'arch-workspace-detail' }, workspaceText(mode + '_help')) :
+            el(React.Fragment, null,
+              el('span', { className: 'arch-workspace-palette' },
+                mode === 'place' && el('span', { 'aria-hidden': true }, shape.icon), mode === 'place' && shape.label,
+                mode === 'place' && el('span', { 'aria-hidden': true, className: 'arch-workspace-dot' }, '\u00B7'),
+                el('span', { className: 'arch-workspace-swatch', 'aria-hidden': true, style: { background: color } }), material.label),
+              mode === 'place' && el('span', { className: 'arch-workspace-detail' }, workspaceText('rotation', { angle: normalizeArchRotation(activeRotation) })),
+              el('span', { className: 'arch-workspace-detail arch-workspace-color' }, workspaceText('color', { color: color.toUpperCase() })),
+              mode === 'paint' && el('span', { className: 'arch-workspace-detail' }, workspaceText('paint_help')))));
+    }
+
     var cameraBtn = function (label, glyph, action) {
-      return el('button', { key: action, type: 'button', 'aria-label': label, title: label, onClick: function () { setArchCamera(action); }, style: {
+      return el('button', { key: action, type: 'button', className: action === 'reset' ? 'arch-camera-reset' : undefined, 'data-arch-camera': action, 'aria-label': label, title: label, onClick: function () { setArchCamera(action); }, style: {
         width: 30, height: 28, padding: 0, borderRadius: 6, border: '1px solid #475569', background: 'rgba(30,41,59,.92)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800
-      } }, glyph);
+      } }, el('span', { 'aria-hidden': true }, glyph), action === 'reset' && el('span', { 'aria-hidden': true }, workspaceText('reset')));
     };
 
     var selectedShapeMeta = selectedBlock && (shapes.find(function (s) { return s.id === (selectedBlock.shape || 'block'); }) || shapes[0]);
@@ -5361,6 +5442,37 @@ function __alloAST(k, fb) {
         + '@media(max-width:1000px){#arch-tool-browser .arch-tool-groups{grid-template-columns:repeat(2,minmax(0,1fr));}}'
         + '@media(max-width:680px){#arch-tool-browser{padding:12px;max-height:min(55vh,490px);}#arch-tool-browser .arch-tool-groups{grid-template-columns:minmax(0,1fr);}#arch-tool-browser .arch-tool-search-label{flex-basis:100%;}#arch-tool-browser .arch-tool-filters label:not(.arch-tool-search-label){flex-basis:55%;}#arch-tool-browser input,#arch-tool-browser select{font-size:16px;}#arch-studio-region .arch-tool-browser-toggle{padding:8px;font-size:11px;}}'
 
+
+        + '#arch-studio-region .arch-studio-sidebar[hidden]{display:none!important;}'
+        + '#arch-studio-region .arch-studio-sidebar:focus{outline:3px solid #7dd3fc;outline-offset:-3px;}'
+        + '#arch-studio-region .arch-workspace-bar{flex:none;box-sizing:border-box;padding:10px 12px;background:linear-gradient(115deg,#16283d,#0d1b2e);border-bottom:1px solid #516a84;color:#e2e8f0;min-width:0;}'
+        + '#arch-studio-region .arch-workspace-navigation{display:flex;align-items:center;gap:10px;justify-content:space-between;min-width:0;}'
+        + '#arch-studio-region .arch-workspace-bar .arch-studio-view-switch{position:static!important;inset:auto!important;transform:none!important;pointer-events:auto;padding:3px;min-width:0;border-radius:10px;border-color:#617d98;background:#0c1729;}'
+        + '#arch-studio-region .arch-workspace-bar button{font:inherit;min-height:44px;min-width:44px;box-sizing:border-box;font-size:12px;font-weight:750;line-height:1.3;cursor:pointer;}'
+        + '#arch-studio-region .arch-workspace-bar .arch-studio-view-switch button{padding:9px 13px!important;border-radius:7px!important;border:1px solid transparent;color:#e2e8f0!important;}'
+        + '#arch-studio-region .arch-workspace-bar .arch-studio-view-switch [aria-pressed=true]{background:#075985!important;border-color:#7dd3fc!important;color:#f0f9ff!important;box-shadow:inset 0 -3px #7dd3fc;}'
+        + '#arch-studio-region .arch-sidebar-toggle{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;padding:9px 12px;border:1px solid #7189a1;border-radius:8px;background:#1c3047;color:#f1f5f9;}'
+        + '#arch-studio-region .arch-sidebar-toggle>span{font-size:19px;font-weight:400;}'
+        + '#arch-studio-region .arch-workspace-brush{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;margin-top:9px;font-size:12px;line-height:1.4;min-width:0;}'
+        + '#arch-studio-region .arch-workspace-mode{padding:4px 8px;border:1px solid;border-radius:6px;font-size:11px;font-weight:750;white-space:nowrap;}'
+        + '#arch-studio-region .arch-workspace-palette{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:650;}'
+        + '#arch-studio-region .arch-workspace-palette>span:first-child{font-size:18px;}'
+        + '#arch-studio-region .arch-workspace-swatch{display:inline-block;width:16px;height:16px;border:1px solid #cbd5e1;border-radius:4px;}'
+        + '#arch-studio-region .arch-workspace-dot{color:#94a3b8;}'
+        + '#arch-studio-region .arch-workspace-detail{color:#cbd5e1;font-size:12px;font-variant-numeric:tabular-nums;}'
+        + '#arch-studio-region .arch-workspace-readonly{color:#fde68a;font-size:12px;}'
+        + '#arch-studio-region .arch-studio-camera-controls{position:static!important;inset:auto!important;box-sizing:border-box;flex:none;width:100%!important;max-width:none!important;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 12px!important;border-radius:0!important;border:0!important;border-top:1px solid #516a84!important;background:#101f33!important;}'
+        + '#arch-studio-region .arch-studio-camera-controls button{min-width:44px;min-height:44px;width:auto!important;height:auto!important;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px!important;border:1px solid #7189a1!important;border-radius:8px!important;background:#1c3047!important;color:#f1f5f9!important;font-size:19px!important;line-height:1;box-sizing:border-box;}'
+        + '#arch-studio-region .arch-studio-camera-controls .arch-camera-reset{margin-left:5px;}#arch-studio-region .arch-camera-reset>span:last-child{font-size:12px;font-weight:750;}'
+        + '#arch-studio-region .arch-studio-camera-controls .arch-camera-separator{height:24px;border-left:1px solid #64748b;margin:0 3px;}'
+        + '#arch-studio-region .arch-grid-editor{padding-top:14px!important;}'
+        + '#arch-studio-region .arch-studio-stage .arch-studio-selection-chip{bottom:8px!important;}'
+        + '.theme-contrast #arch-studio-region .arch-workspace-bar,.theme-contrast #arch-studio-region .arch-studio-camera-controls{background:#000!important;border-color:#ffff00!important;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-workspace-bar{padding:9px 8px;}#arch-studio-region .arch-workspace-navigation{gap:6px;}#arch-studio-region .arch-workspace-bar .arch-studio-view-switch button{padding:8px!important;font-size:11px;}#arch-studio-region .arch-sidebar-toggle{padding:8px;font-size:11px;}#arch-studio-region .arch-workspace-brush{gap:6px 9px;}#arch-studio-region .arch-workspace-detail{font-size:11px;}#arch-studio-region .arch-studio-camera-controls{display:grid!important;grid-template-columns:repeat(4,minmax(44px,1fr));gap:5px;padding:8px!important;}#arch-studio-region .arch-camera-separator{display:none;}#arch-studio-region .arch-studio-camera-controls .arch-camera-reset{grid-column:span 2;margin:0;}#arch-studio-region .arch-studio-main[data-tools-collapsed=true] .arch-studio-viewport{min-height:420px;}}'
+
+
+        + '@media(min-width:681px){#arch-studio-region .arch-studio-stage,#arch-studio-region canvas[data-arch-gl]{min-height:160px!important;}#arch-studio-region .arch-grid-editor{min-height:0!important;}#arch-studio-region .arch-workspace-content>.arch-studio-floating-panel{max-height:calc(100% - 210px)!important;}#arch-studio-region .arch-studio-has-view-hud .arch-workspace-content>.arch-studio-floating-panel{max-height:calc(100% - 250px)!important;}}'
+
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -5561,12 +5673,12 @@ function __alloAST(k, fb) {
       ),
 
       // ── Main content: sidebar + viewport ──
-      showDrawings ? renderDrawingDesk() : el('div', { className: 'arch-studio-main', style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' } },
+      showDrawings ? renderDrawingDesk() : el('div', { className: 'arch-studio-main', 'data-tools-collapsed': sidebarCollapsed ? 'true' : undefined, style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' } },
 
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderTemplateLibrary(),
           renderSchedulePanel(),
@@ -6201,6 +6313,8 @@ function __alloAST(k, fb) {
         // ── Main viewport area ──
         // ══════════════════════════════════════════════════════════
         el('div', { className: 'arch-studio-viewport' + (activeViewChips.length ? ' arch-studio-has-view-hud' : ''), style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' } },
+          renderWorkspaceBar(),
+          el('div', { className: 'arch-workspace-content', style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
           el('div', { className: 'arch-studio-stage', 'data-arch-stage': 'true', style: { flex: 1, minHeight: 260, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // The build itself. This viewport previously rendered a spinner that
           // never resolved: threeReady reads a host flag this tool never set,
@@ -6312,6 +6426,13 @@ function __alloAST(k, fb) {
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
+
+
+
+          mainUse3d && selectedBlock && el('div', { className: 'arch-studio-empty-state arch-studio-selection-chip', 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '6px 9px', borderRadius: 9, background: 'rgba(15,23,42,.92)', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245,158,11,.16)', color: '#fde68a', fontSize: 10, fontWeight: 750 } },
+            '\uD83D\uDCCC Selected X ' + selectedBlock.x + ' \u2022 Y ' + selectedBlock.y + ' \u2022 Z ' + selectedBlock.z + ' \u2022 ' + (selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
+
+          ),
           mainUse3d && el('div', { className: 'arch-studio-camera-controls', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'), style: {
             position: 'absolute', right: 8, bottom: 8, zIndex: 7, display: 'flex', flexWrap: 'wrap', gap: 3,
             width: 'max-content', maxWidth: 'calc(100% - 16px)', padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
@@ -6320,28 +6441,10 @@ function __alloAST(k, fb) {
             cameraBtn('Rotate view right', '\u21B7', 'right'),
             cameraBtn('Tilt view up', '\u2191', 'up'),
             cameraBtn('Tilt view down', '\u2193', 'down'),
+            el('span', { key: 'orbit-zoom', className: 'arch-camera-separator', 'aria-hidden': true }),
             cameraBtn('Zoom in', '+', 'zoomIn'),
             cameraBtn('Zoom out', '\u2212', 'zoomOut'),
             cameraBtn('Reset three-dimensional view', '\u27F2', 'reset')
-          ),
-
-          // A real keyboard-operable authoring surface is always available;
-          // it also becomes the automatic fallback if WebGL cannot start.
-          el('div', { className: 'arch-studio-view-switch', style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
-            archShow3d && el('button', { type: 'button', 'aria-pressed': mainUse3d, onClick: function () { upd('editorView', '3d'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: mainUse3d ? '1px solid #60a5fa' : '1px solid transparent', background: mainUse3d ? 'rgba(96,165,250,.2)' : 'transparent', color: mainUse3d ? '#bfdbfe' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '3D Build'),
-            !archShow3d && el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_retry_the_three_dimensional_view', 'Retry the three-dimensional view'), onClick: function () { upd({ hide3d: false, editorView: '3d' }); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.14)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Retry 3D'),
-            el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: openArchGridForKeyboard, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Floor Grid')
-          ),
-
-          // Mode indicator (top-left)
-          el('div', { style: { position: 'absolute', top: 8, left: 8, pointerEvents: 'none', background: activeModeVisual.bg, border: '1px solid ' + activeModeVisual.border, borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: activeModeVisual.color } },
-            activeModeVisual.label + ' Mode',
-            mode === 'place' && activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
-          ),
-
-          mainUse3d && selectedBlock && el('div', { className: 'arch-studio-empty-state arch-studio-selection-chip', 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '6px 9px', borderRadius: 9, background: 'rgba(15,23,42,.92)', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245,158,11,.16)', color: '#fde68a', fontSize: 10, fontWeight: 750 } },
-            '\uD83D\uDCCC Selected X ' + selectedBlock.x + ' \u2022 Y ' + selectedBlock.y + ' \u2022 Z ' + selectedBlock.z + ' \u2022 ' + (selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
-
           ),
 
           activeViewChips.length > 0 && el('div', {
@@ -6440,7 +6543,7 @@ function __alloAST(k, fb) {
               );
             })
           )
-        )
+        ))
       ),
 
       // ── Coach panel ──

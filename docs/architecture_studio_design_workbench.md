@@ -113,6 +113,14 @@ Each drawing fits its own frame; views are not presented at a shared paper scale
 
 Drawings represent occupied grid cells rather than detailed curved or sloped geometry. Use the existing STL/Print Lab workflow for shape geometry.
 
+## Model workspace controls
+
+The view switch now sits in a dedicated bar above the model, with larger **3D Build** and **Floor Grid** buttons. Camera controls sit below the model, with 44px targets, a visible Reset label, and a two-row phone layout. Selection and analysis overlays remain within the model content area, so they do not cover the workspace bar. Long review panels scroll above the camera row, including when view filters are active. At shorter desktop heights, the model resizes to keep camera controls and statistics visible.
+
+The current-tool summary shows shape, material, rotation, and a readable color value in Place mode. Paint shows only material and color; Erase and Pick explain their actions. Construction replay clearly reads **Read-only replay**. The summary remains visible when the sidebar is hidden.
+
+Choose **Hide tools** to give the model more room. This hides the sidebar while retaining its controls, open panels, settings, and selection. **Show tools** restores it and moves keyboard focus to the named sidebar; Tab reaches its first control. Opening a sidebar tool from navigation or All tools reveals the sidebar automatically. View changes, hide/show, and camera controls do not change the build or undo history. The 3D canvas and sidebar retain their identity across hide/show, and the floor grid remains editable with the keyboard.
+
 ## Find and open tools
 
 Choose **All tools** beside the compact toolbar to browse the studio by task: Build & customize, View & inspect, Explore & test, Review quantities, and Save & export. Every existing feature action remains available. Cards give each tool a readable name and short description; active tools show an Active marker as well as their pressed or expanded state. Disabled exports explain that a build is needed, and gravity explains its replay restriction.
@@ -143,7 +151,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all 15 Architecture Studio unit suites passed across the full run and scoped reruns (424 tests), including 25 tool-browser checks. Ten distinct Chromium workflows passed: tool search and categories, read-only browsing, active/disabled states, focus recovery, existing panel actions, SVG download, replay, WebGL canvas identity, 320px phone controls and scrolling, and existing design, project, workspace, template, and materials-schedule regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested browser state across light, dark, and high-contrast appearances. Desktop and final phone screenshots were visually reviewed. Initial local test timeouts were rerun with longer allowances; the existing long authoring scenario now allows 60 seconds with every assertion retained. Browser validation disabled video and trace recording.
+Results: all 16 Architecture Studio unit suites passed across targeted runs and final rechecks (451 tests), including 27 workspace checks. Sixteen distinct Chromium workflows passed: view/camera separation, expanded/collapsed sidebar state and focus, renderer identity, mode-specific summaries, keyboard floor editing and undo, replay guidance, automatic panel reveal from navigation and All tools, phone targets and layout, shorter desktop sizing, long populated review panels in normal/filtered views, and existing design, project, workspace, template, materials-schedule, tool-browser, and WebGL regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations with tools expanded and collapsed across light, dark, and high-contrast appearances. Desktop, final 320px phone, and populated long-advice screenshots were visually reviewed. Final review identified and corrected the long-advice overlap above camera controls. Browser validation disabled video and trace recording; unit runs used the existing longer local execution allowance.
 
 No deployment or push was performed.
 

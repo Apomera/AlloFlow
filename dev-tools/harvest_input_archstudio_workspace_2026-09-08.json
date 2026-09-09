@@ -1,0 +1,20 @@
+{
+  "stem.archstudio.workspace_bar": "Model workspace controls",
+  "stem.archstudio.workspace_view": "Model view",
+  "stem.archstudio.workspace_hide": "Hide tools",
+  "stem.archstudio.workspace_show": "Show tools",
+  "stem.archstudio.workspace_summary": "Current building tool",
+  "stem.archstudio.workspace_read_only": "Read-only replay",
+  "stem.archstudio.workspace_replay": "Replay",
+  "stem.archstudio.workspace_rotation": "Rotation {angle}°",
+  "stem.archstudio.workspace_color": "Color {color}",
+  "stem.archstudio.workspace_reset": "Reset",
+  "stem.archstudio.workspace_tools_hidden": "Tools hidden. The model has more room.",
+  "stem.archstudio.workspace_tools_shown": "Tools shown.",
+  "stem.archstudio.workspace_model": "3D Build",
+  "stem.archstudio.workspace_grid": "Floor Grid",
+  "stem.archstudio.workspace_retry": "Retry 3D",
+  "stem.archstudio.workspace_paint_help": "Paint material and color.",
+  "stem.archstudio.workspace_erase_help": "Remove the block you choose.",
+  "stem.archstudio.workspace_pick_help": "Copy a block’s properties, then place matching blocks."
+}

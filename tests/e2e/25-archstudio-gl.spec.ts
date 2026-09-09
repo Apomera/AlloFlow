@@ -647,7 +647,7 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
   });
 
-  test('keeps camera and selection chrome inside the build stage above sibling stats', async ({ page }) => {
+  test('keeps camera below the build stage and selection inside it above sibling stats', async ({ page }) => {
     await mount3d(page, { blocks: tower(), selectedBlockKey: '0,0,0' });
 
     const stage = page.locator('[data-arch-stage="true"]');
@@ -655,7 +655,8 @@ test.describe('Architecture Studio — real WebGL', () => {
     const selection = page.locator('[data-arch-selection-chip="true"]');
     const stats = page.locator('[data-arch-stats="true"]');
 
-    await expect(stage.locator('.arch-studio-camera-controls')).toHaveCount(1);
+    await expect(stage.locator('.arch-studio-camera-controls')).toHaveCount(0);
+    expect(await camera.evaluate(node => node.parentElement === document.querySelector('[data-arch-stage="true"]')?.parentElement)).toBe(true);
     await expect(stage.locator('[data-arch-selection-chip="true"]')).toHaveCount(1);
     expect(await page.evaluate(() => {
       const stageNode = document.querySelector('[data-arch-stage="true"]');
@@ -672,7 +673,9 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(selectionBox).not.toBeNull();
     expect(statsBox).not.toBeNull();
 
-    for (const overlay of [cameraBox!, selectionBox!]) {
+    expect(cameraBox!.y).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
+    expect(cameraBox!.y + cameraBox!.height).toBeLessThanOrEqual(statsBox!.y + 1);
+    for (const overlay of [selectionBox!]) {
       expect(overlay.x).toBeGreaterThanOrEqual(stageBox!.x - 1);
       expect(overlay.y).toBeGreaterThanOrEqual(stageBox!.y - 1);
       expect(overlay.x + overlay.width).toBeLessThanOrEqual(stageBox!.x + stageBox!.width + 1);
@@ -912,7 +915,7 @@ test.describe('Architecture Studio — real WebGL', () => {
         hudOverflowX: getComputedStyle(hud).overflowX,
         statsOverflowX: getComputedStyle(stats).overflowX,
         statsJustify: getComputedStyle(stats).justifyContent,
-        hudInViewport: hud.parentElement === viewport,
+        hudInViewport: hud.closest('.arch-studio-viewport') === viewport,
         hudOutsideStage: !stage.contains(hud),
       };
     });
@@ -921,9 +924,9 @@ test.describe('Architecture Studio — real WebGL', () => {
       mainDirection: 'column',
       mainOverflowY: 'auto',
       sidebarMaxHeight: '210px',
-      viewSwitchRight: '8px',
+      viewSwitchRight: 'auto',
       viewSwitchTransform: 'none',
-      selectionBottom: '52px',
+      selectionBottom: '8px',
       hudPosition: 'static',
       hudOverflowX: 'auto',
       statsOverflowX: 'auto',
@@ -2227,6 +2230,204 @@ test.describe('Architecture Studio — real WebGL', () => {
       });
       expect(violations, theme).toEqual([]);
     }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
+
+  test('workspace controls expand the model without remounting it or changing the build', async ({ page }, testInfo) => {
+    await mount3d(page, { blocks: tower(), soundEnabled: false, selectedBlockKey: '0,0,0', undoStack: [[]], rot3d: { rotX: 25, rotY: -35, scale: 1.2 } });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    const sidebar = page.locator('#arch-studio-tools'), stage = page.locator('[data-arch-stage=true]');
+    const before = await page.evaluate(() => {
+      const w = window as any;
+      w.__workspaceCanvas = document.querySelector('canvas[data-arch-gl]');
+      w.__workspaceSidebar = document.getElementById('arch-studio-tools');
+      return { blocks: w.__bucket().blocks, history: w.__bucket().undoStack, selected: w.__bucket().selectedBlockKey, camera: w.__bucket().rot3d };
+    });
+    const originalWidth = (await stage.boundingBox())!.width;
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await expect(sidebar).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Show tools', exact: true })).toBeFocused();
+    await expect.poll(async () => (await stage.boundingBox())!.width).toBeGreaterThan(originalWidth + 100);
+    await page.screenshot({ path: testInfo.outputPath('workspace-model-desktop.png'), fullPage: true });
+    await page.getByRole('button', { name: 'Show tools', exact: true }).click();
+    await expect(sidebar).toBeVisible();
+    await expect(sidebar).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(sidebar.getByRole('button', { name: 'Place mode', exact: true })).toBeFocused();
+    const after = await page.evaluate(() => {
+      const w = window as any;
+      return { blocks: w.__bucket().blocks, history: w.__bucket().undoStack, selected: w.__bucket().selectedBlockKey, camera: w.__bucket().rot3d };
+    });
+    expect(after).toEqual(before);
+    expect(await page.evaluate(() => document.querySelector('canvas[data-arch-gl]') === (window as any).__workspaceCanvas && document.getElementById('arch-studio-tools') === (window as any).__workspaceSidebar)).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('workspace controls keep the palette summary current and camera controls outside the model', async ({ page }, testInfo) => {
+    await mount3d(page, { blocks: tower(), soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.getByRole('button', { name: 'Ramp shape', exact: true }).click();
+    await page.getByRole('button', { name: 'Use Glass material', exact: true }).click();
+    await page.getByRole('button', { name: 'Use 90° rotation', exact: true }).click();
+    await page.getByRole('button', { name: 'Use custom color #06b6d4', exact: true }).click();
+    const summary = page.getByRole('group', { name: 'Current building tool', exact: true });
+    await expect(summary).toContainText('Ramp');
+    await expect(summary).toContainText('Glass');
+    await expect(summary).toContainText('Rotation 90°');
+    await expect(summary).toContainText('Color #06B6D4');
+    await page.getByRole('button', { name: 'Paint mode', exact: true }).click();
+    await expect(summary).toContainText('Paint material and color.');
+    await expect(summary).not.toContainText('Rotation');
+    await expect(summary).not.toContainText('Ramp');
+    await page.getByRole('button', { name: 'Erase mode', exact: true }).click();
+    await expect(summary).toContainText('Remove the block you choose.');
+    await page.getByRole('button', { name: 'Pick mode', exact: true }).click();
+    await expect(summary).toContainText('Copy a block’s properties');
+    await page.getByRole('button', { name: 'Place mode', exact: true }).click();
+    await expect(summary).toContainText('Rotation 90°');
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    const bar = page.locator('.arch-workspace-bar'), stage = page.locator('[data-arch-stage=true]'), camera = page.locator('.arch-studio-camera-controls');
+    const [barBox, stageBox, cameraBox] = await Promise.all([bar.boundingBox(), stage.boundingBox(), camera.boundingBox()]);
+    expect(barBox!.y + barBox!.height).toBeLessThanOrEqual(stageBox!.y + 1);
+    expect(cameraBox!.y).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
+    const initial = await page.evaluate(() => (window as any).__bucket().rot3d || {});
+    await camera.getByRole('button', { name: 'Rotate view right', exact: true }).click();
+    await camera.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).not.toEqual(initial);
+    await camera.getByRole('button', { name: 'Reset three-dimensional view', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('workspace-palette-desktop.png'), fullPage: true });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('workspace controls reveal sidebar tools when opened from navigation or All tools', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false, sidebarCollapsed: true }), tower());
+    const sidebar = page.locator('#arch-studio-tools');
+    await page.getByRole('button', { name: 'Templates', exact: true }).click();
+    await expect(sidebar).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Template library', exact: true })).toBeFocused();
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('BOM');
+    await page.locator('#arch-tool-browser').getByRole('button', { name: 'Materials schedule', exact: true }).click();
+    await expect(sidebar).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Materials schedule', exact: true })).toBeFocused();
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await page.getByRole('button', { name: 'Design workbench', exact: true }).click();
+    await expect(sidebar).toBeVisible();
+    await expect(page.locator('#arch-design-panel')).toBeVisible();
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await page.getByRole('button', { name: 'Project & revisions', exact: true }).click();
+    await expect(sidebar).toBeVisible();
+    await expect(page.locator('#arch-project-panel')).toBeVisible();
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=gallery]').click();
+    await expect(sidebar).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__bucket().showGallery)).toBe(true);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('workspace controls preserve keyboard floor editing, undo, and replay guidance', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ blocks: [], editorView: 'grid', soundEnabled: false, sidebarCollapsed: true }));
+    const cell = page.locator('[data-arch-cell="0,0,0"]');
+    await cell.focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('[data-arch-cell="1,0,0"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+    await expect(page.locator('#arch-studio-tools')).toBeHidden();
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=replay]').click();
+    await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).toContainText('Read-only replay');
+    await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).not.toContainText('Place Mode');
+    await expect(page.locator('#arch-studio-tools')).toBeHidden();
+    await page.getByRole('button', { name: 'Drawing desk', exact: true }).click();
+    await expect(page.locator('.arch-workspace-bar')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect(page.locator('#arch-studio-tools')).toBeHidden();
+    await expect(page.getByRole('group', { name: 'Current building tool', exact: true })).toContainText('Read-only replay');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('workspace controls fit a phone and pass accessible expanded and collapsed states', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false, activeShape: 'arch', activeMaterial: 'brick', activeColor: '#b45309' });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:860px}' });
+    await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+    const camera = page.locator('.arch-studio-camera-controls');
+    await camera.getByRole('button', { name: 'Reset three-dimensional view', exact: true }).scrollIntoViewIfNeeded();
+    const sizes = await page.locator('.arch-workspace-bar button,.arch-studio-camera-controls button').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, height: r.height }; }));
+    expect(sizes.filter(r => r.left < 0 || r.right > 320 || r.width < 44 || r.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await camera.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('workspace-model-phone.png'), fullPage: true });
+    await page.getByRole('button', { name: 'Show tools', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#arch-studio-tools')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Place mode', exact: true })).toBeFocused();
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addStyleTag({ content: '#wrap{height:920px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      for (const collapsed of [true, false]) {
+        await page.getByRole('button', { name: collapsed ? 'Hide tools' : 'Show tools', exact: true }).click();
+        const violations = await page.evaluate(async () => {
+          const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+          return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+        });
+        expect(violations, theme + ' collapsed=' + collapsed).toEqual([]);
+      }
+    }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
+
+  test('workspace controls keep long review panels clear of the camera row', async ({ page }, testInfo) => {
+    await mount3d(page, { blocks: tower(), sidebarCollapsed: true, soundEnabled: false, showAnalysis: true, showAI: true,
+      aiAdvice: Array.from({ length: 16 }, (_, i) => 'Design observation ' + (i + 1) + ': use a continuous load path and inspect the supports beneath each floor.').join('\n\n') });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio.aiAdviceBuildSignature = w.__alloArchBuildSignature(w.__bucket().blocks);
+      (document.querySelector('[data-arch-camera="reset"]') as HTMLButtonElement).click();
+    });
+    const panels = page.locator('.arch-studio-floating-panel');
+    await expect(panels).toHaveCount(2);
+    await expect(panels.filter({ hasText: 'Design observation 16' })).toHaveCount(1);
+    async function checkClearance() {
+      const cameraBox = (await page.locator('.arch-studio-camera-controls').boundingBox())!;
+      const boxes = await panels.evaluateAll(nodes => nodes.map(node => { const r = node.getBoundingClientRect(); return { bottom: r.bottom, top: r.top }; }));
+      for (const box of boxes) expect(box.bottom).toBeLessThanOrEqual(cameraBox.y + 1);
+    }
+    await checkClearance();
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=heatmap]').click();
+    await expect(page.locator('[data-arch-view-hud]')).toBeVisible();
+    await checkClearance();
+    await page.locator('[data-arch-view-chip=heatmap]').click();
+    await page.locator('.arch-studio-camera-controls').getByRole('button', { name: 'Zoom in', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('workspace-review-desktop.png'), fullPage: true });
+    await page.addStyleTag({ content: '#wrap{height:620px}' });
+    const viewportBox = (await page.locator('.arch-studio-viewport').boundingBox())!;
+    const cameraBox = (await page.locator('.arch-studio-camera-controls').boundingBox())!;
+    const statsBox = (await page.locator('[data-arch-stats]').boundingBox())!;
+    expect(cameraBox.y + cameraBox.height).toBeLessThanOrEqual(viewportBox.y + viewportBox.height + 1);
+    expect(statsBox.y + statsBox.height).toBeLessThanOrEqual(viewportBox.y + viewportBox.height + 1);
+    await page.locator('.arch-studio-camera-controls').getByRole('button', { name: 'Reset three-dimensional view', exact: true }).click();
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
