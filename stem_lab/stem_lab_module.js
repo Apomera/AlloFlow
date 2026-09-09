@@ -2040,6 +2040,83 @@
     // BEEHIVE_PERSISTENCE_HELPER_END
 
     window.AlloModules = window.AlloModules || {};
+    // STEM_AUTOSAVE_START
+    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', '_tutorialSeen'];
+    function _stemPersistencePayload(labToolData) {
+          var _toSave = {};
+          // @tool waterCycle
+          _STEM_SAVED_KEYS.forEach(function (k) {
+            if (labToolData[k]) _toSave[k] = labToolData[k];
+          });
+          // flightSim progression (badges, visited airports, flight time,
+          // discoveries, tutorial dismissals) was never in the whitelist, so
+          // every "persists" promise in SkySchool silently reset on reload.
+          // Strip per-session keys: view must not reload into 'flying', and
+          // rescue/survey are transient mission state tied to the sim clock.
+          if (labToolData.flightSim) {
+            var _fs = Object.assign({}, labToolData.flightSim);
+            delete _fs.view; delete _fs.rescue; delete _fs.survey;
+            delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
+            _toSave.flightSim = _fs;
+          }
+          if (labToolData.beehive) {
+            var _beehive = _serializeBeehiveForPersistence(labToolData.beehive);
+            if (_beehive) _toSave.beehive = _beehive;
+          }
+          return _toSave;
+    }
+    function _createStemAutosave() {
+      var key = 'alloflow_stemlab_v2';
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive']);
+      var previousRefs = null, pending = null, timer = null, disposed = false;
+      var lastSaved = null;
+      try { lastSaved = localStorage.getItem(key); } catch (_) {}
+      function flush() {
+        if (timer !== null) { clearTimeout(timer); timer = null; }
+        if (!pending) return;
+        try {
+          var encoded = JSON.stringify(_stemPersistencePayload(pending));
+          if (encoded !== lastSaved) {
+            localStorage.setItem(key, encoded);
+            // A failed write must remain retryable on the next update/lifecycle event.
+            lastSaved = encoded;
+          }
+          pending = null;
+        } catch (_) {}
+      }
+      function onVisibility() { if (document.hidden) flush(); }
+      window.addEventListener('pagehide', flush);
+      document.addEventListener('visibilitychange', onVisibility);
+      return {
+        queue: function (data) {
+          if (disposed || !data || !data._persisted) return;
+          // Shared update/updateMulti replace the changed tool bucket. Changes to
+          // unsaved tools need neither serialization nor a storage write.
+          var refs = keys.map(function (name) { return data[name]; });
+          if (!previousRefs || refs.some(function (value, i) { return value !== previousRefs[i]; })) {
+            previousRefs = refs;
+            pending = data;
+          }
+          if (!pending) return;
+          if (document.hidden) { flush(); return; }
+          // A fixed window bounds save latency during continuous simulation updates;
+          // do not restart the timer and postpone saving indefinitely.
+          if (timer === null) timer = setTimeout(flush, 400);
+        },
+        flush: flush,
+        dispose: function () {
+          if (disposed) return;
+          disposed = true;
+          flush();
+          window.removeEventListener('pagehide', flush);
+          document.removeEventListener('visibilitychange', onVisibility);
+          pending = null; previousRefs = null;
+        }
+      };
+    }
+
+    // STEM_AUTOSAVE_END
+
     window.AlloModules.StemLab = function StemLabModal(props) {
       const {
         ArrowLeft,
@@ -3589,32 +3666,15 @@
           setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
         }
       }, [labToolData._persisted]);
-      // Save to localStorage on meaningful changes
+      // Save only changed persistent tool data; own timers/listeners with the modal.
+      var _stemAutosaveRef = React.useRef(null);
       React.useEffect(function () {
-        if (!labToolData._persisted) return;
-        try {
-          var _toSave = {};
-          // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', '_tutorialSeen'].forEach(function (k) {
-            if (labToolData[k]) _toSave[k] = labToolData[k];
-          });
-          // flightSim progression (badges, visited airports, flight time,
-          // discoveries, tutorial dismissals) was never in the whitelist, so
-          // every "persists" promise in SkySchool silently reset on reload.
-          // Strip per-session keys: view must not reload into 'flying', and
-          // rescue/survey are transient mission state tied to the sim clock.
-          if (labToolData.flightSim) {
-            var _fs = Object.assign({}, labToolData.flightSim);
-            delete _fs.view; delete _fs.rescue; delete _fs.survey;
-            delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
-            _toSave.flightSim = _fs;
-          }
-          if (labToolData.beehive) {
-            var _beehive = _serializeBeehiveForPersistence(labToolData.beehive);
-            if (_beehive) _toSave.beehive = _beehive;
-          }
-          localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
-        } catch (e) { }
+        var saver = _createStemAutosave();
+        _stemAutosaveRef.current = saver;
+        return function () { saver.dispose(); _stemAutosaveRef.current = null; };
+      }, []);
+      React.useEffect(function () {
+        if (_stemAutosaveRef.current) _stemAutosaveRef.current.queue(labToolData);
       }, [labToolData]);
 
       // ── Tutorial Overlay Helper ──

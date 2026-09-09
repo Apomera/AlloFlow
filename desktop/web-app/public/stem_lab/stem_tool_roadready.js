@@ -3912,6 +3912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // samples[y] = { x: roadCenter, heading: tangent angle in radians (0 = +Y/north) }
     // Headings small ⇒ road is mostly N-S. Positive heading ⇒ road bends toward +X.
     var samples = {};
+    // Endpoint lookups stay constant-time between the infrequent cleanup passes.
+    var sampleMinY = 1e9, sampleMaxY = -1;
     function biomeForY(y) {
       if (profile && profile.biome) return profile.biome;
       // Honor the setup-screen starting road through the initial three chunks,
@@ -3952,11 +3954,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return { x: x, h: h };
     }
     function ensureUpTo(yTarget) {
-      var maxY = -1;
-      for (var k in samples) { var ki = +k; if (ki > maxY) maxY = ki; }
+      var maxY = sampleMaxY;
       if (maxY < 0) {
         samples[0] = { x: baseCenterX, heading: 0 };
-        maxY = 0;
+        maxY = sampleMaxY = 0;
+        sampleMinY = Math.min(sampleMinY, 0);
       }
       for (var y = maxY + 1; y <= yTarget; y++) {
         var prev = samples[y - 1];
@@ -3966,14 +3968,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var nx = prev.x + Math.tan(h);
         var c = clampMargin(nx, h);
         samples[y] = { x: c.x, heading: c.h };
+        sampleMaxY = y;
       }
     }
     function ensureDownTo(yTarget) {
-      var minY = 1e9;
-      for (var k in samples) { var ki = +k; if (ki < minY) minY = ki; }
+      var minY = sampleMinY;
       if (minY === 1e9) {
         samples[0] = { x: baseCenterX, heading: 0 };
-        minY = 0;
+        minY = sampleMinY = 0;
+        sampleMaxY = Math.max(sampleMaxY, 0);
       }
       for (var y = minY - 1; y >= yTarget; y--) {
         // Edge (y, y+1) was forward-defined as: h(y+1) = h(y) + edgeDelta(y+1, h(y))
@@ -3995,6 +3998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var nx = next.x - Math.tan(next.heading);
         var c = clampMargin(nx, h);
         samples[y] = { x: c.x, heading: c.h };
+        sampleMinY = y;
       }
     }
     // Elevation: low-frequency seeded noise per Y. Independent of curvature so
@@ -4059,9 +4063,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       cleanup: function(currentChunkIndex) {
         var keepFrom = (currentChunkIndex - 6) * CHUNK_SIZE;
         var keepTo = (currentChunkIndex + 6) * CHUNK_SIZE;
+        sampleMinY = 1e9; sampleMaxY = -1;
         for (var k in samples) {
           var ki = +k;
           if (ki < keepFrom || ki > keepTo) delete samples[k];
+          else {
+            if (ki < sampleMinY) sampleMinY = ki;
+            if (ki > sampleMaxY) sampleMaxY = ki;
+          }
         }
       }
     };

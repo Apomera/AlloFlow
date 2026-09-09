@@ -1,0 +1,46 @@
+{
+  "cpuSlowdown": 4,
+  "kind": "synthetic persistence path benchmark; no full-app React rendering or user INP measurement",
+  "rows": [
+    {
+      "mode": "before",
+      "workload": "unsaved-tool-updates",
+      "updates": 300,
+      "serializations": 300,
+      "writes": 300,
+      "elapsedMs": 196.9000000357628,
+      "payloadBytes": 56936,
+      "finalFrequency": 2
+    },
+    {
+      "mode": "after",
+      "workload": "unsaved-tool-updates",
+      "updates": 300,
+      "serializations": 0,
+      "writes": 0,
+      "elapsedMs": 3.199999988079071,
+      "payloadBytes": 56936,
+      "finalFrequency": 2
+    },
+    {
+      "mode": "before",
+      "workload": "saved-tool-burst",
+      "updates": 300,
+      "serializations": 300,
+      "writes": 300,
+      "elapsedMs": 200.89999997615814,
+      "payloadBytes": 56938,
+      "finalFrequency": 299
+    },
+    {
+      "mode": "after",
+      "workload": "saved-tool-burst",
+      "updates": 300,
+      "serializations": 1,
+      "writes": 1,
+      "elapsedMs": 0.8999999761581421,
+      "payloadBytes": 56938,
+      "finalFrequency": 299
+    }
+  ]
+}

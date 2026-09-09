@@ -1,0 +1,23 @@
+{
+  "kind": "instrumented cache operation counts; Proxy timing is not an application speed measurement",
+  "rows": [
+    {
+      "mode": "before",
+      "queries": 2000,
+      "enumerations": 2000,
+      "entriesVisited": 2008000,
+      "elapsedMs": 6278.144200000001,
+      "checksum": 61900.2410082419,
+      "sourceSha256": "88caf2712596ae1ae7553f07d5636dd061b2ee33399b3449deb1e200864a7042"
+    },
+    {
+      "mode": "after",
+      "queries": 2000,
+      "enumerations": 0,
+      "entriesVisited": 0,
+      "elapsedMs": 30.891499999999724,
+      "checksum": 61900.2410082419,
+      "sourceSha256": "ac22fd781f054f7e7756456d3aec197c7acd8d1f8834e55485784968870923d3"
+    }
+  ]
+}

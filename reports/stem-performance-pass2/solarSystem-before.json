@@ -1,0 +1,302 @@
+{
+  "tool": "solarSystem",
+  "mode": "before",
+  "cpuSlowdown": 4,
+  "gpu": "SwiftShader software WebGL (not a Chromebook GPU benchmark)",
+  "navigationMs": 2125,
+  "mountToGlMs": 7147,
+  "loadMetrics": {
+    "ScriptDuration": 0.350753,
+    "TaskDuration": 0.5048990000000001,
+    "LayoutDuration": 0.007074
+  },
+  "mountedMetrics": {
+    "ScriptDuration": 6.705674,
+    "TaskDuration": 8.908053,
+    "LayoutDuration": 0.293394
+  },
+  "scene": {
+    "frames": 131,
+    "medianFrameMs": 16.699999999999818,
+    "p95FrameMs": 183.29999999999927,
+    "over50Ms": 15,
+    "renderers": [
+      {
+        "drawCalls": 81,
+        "triangles": 84740,
+        "textures": 45,
+        "geometries": 81
+      }
+    ],
+    "resources": [
+      {
+        "name": "/desktop/web-app/node_modules/react/umd/react.production.min.js",
+        "bytes": 10751,
+        "duration": 23.30000001192093
+      },
+      {
+        "name": "/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+        "bytes": 131835,
+        "duration": 24.19999998807907
+      },
+      {
+        "name": "/vendor/three-r128/three.min.js",
+        "bytes": 603445,
+        "duration": 28.80000001192093
+      },
+      {
+        "name": "/stem_lab/stem_lab_module.js",
+        "bytes": 541764,
+        "duration": 28.5
+      },
+      {
+        "name": "/stem_lab/stem_tool_solarsystem.js",
+        "bytes": 2858525,
+        "duration": 261.0999999642372
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+        "bytes": 606,
+        "duration": 4837.099999964237
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+        "bytes": 1228,
+        "duration": 389.39999997615814
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+        "bytes": 6271,
+        "duration": 428.60000002384186
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+        "bytes": 1746,
+        "duration": 46.69999998807907
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+        "bytes": 1416,
+        "duration": 69.09999996423721
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js",
+        "bytes": 12612,
+        "duration": 46.89999997615814
+      }
+    ]
+  },
+  "cpu": [
+    {
+      "function": "(idle)",
+      "url": "",
+      "line": 0,
+      "selfUs": 3861957
+    },
+    {
+      "function": "solarWorldPortrait",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 2234,
+      "selfUs": 1729688
+    },
+    {
+      "function": "(program)",
+      "url": "",
+      "line": 0,
+      "selfUs": 1718777
+    },
+    {
+      "function": "Jr",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 950150
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 4906,
+      "selfUs": 868516
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 810319
+    },
+    {
+      "function": "initScene",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 4197,
+      "selfUs": 505435
+    },
+    {
+      "function": "It",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 438755
+    },
+    {
+      "function": "requestAnimationFrame",
+      "url": "",
+      "line": 0,
+      "selfUs": 136935
+    },
+    {
+      "function": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfUs": 135660
+    },
+    {
+      "function": "refreshMaterialUniforms",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 131833
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 4086,
+      "selfUs": 104534
+    },
+    {
+      "function": "sa",
+      "url": "http://127.0.0.1:64455/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 106,
+      "selfUs": 91057
+    },
+    {
+      "function": "animate",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 5657,
+      "selfUs": 86588
+    },
+    {
+      "function": "addSolarRingBand",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 4827,
+      "selfUs": 69311
+    },
+    {
+      "function": "So",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 68751
+    },
+    {
+      "function": "ft",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 57668
+    },
+    {
+      "function": "Comp",
+      "url": "http://127.0.0.1:64455/__harness",
+      "line": 80,
+      "selfUs": 56944
+    },
+    {
+      "function": "solarPaintEarthEquirect",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 1907,
+      "selfUs": 46744
+    },
+    {
+      "function": "bo",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 46651
+    },
+    {
+      "function": "Pt",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 44272
+    },
+    {
+      "function": "setProperty",
+      "url": "",
+      "line": 0,
+      "selfUs": 28496
+    },
+    {
+      "function": "acquireProgram",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 27977
+    },
+    {
+      "function": "computeBoundingSphere",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 25147
+    },
+    {
+      "function": "solarPaintGiantEquirect",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 1566,
+      "selfUs": 24978
+    },
+    {
+      "function": "solarDrawOrthoPoly",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 1982,
+      "selfUs": 23752
+    },
+    {
+      "function": "xk",
+      "url": "http://127.0.0.1:64455/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 146,
+      "selfUs": 21131
+    },
+    {
+      "function": "solarParallelSpan",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 1512,
+      "selfUs": 20303
+    },
+    {
+      "function": "renderBufferDirect",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 18900
+    },
+    {
+      "function": "At",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 18128
+    },
+    {
+      "function": "n",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 17994
+    },
+    {
+      "function": "appendChild",
+      "url": "",
+      "line": 0,
+      "selfUs": 17810
+    },
+    {
+      "function": "texImage2D",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 16604
+    },
+    {
+      "function": "makeWorldTex",
+      "url": "http://127.0.0.1:64455/stem_lab/stem_tool_solarsystem.js",
+      "line": 4569,
+      "selfUs": 13877
+    },
+    {
+      "function": "Pr",
+      "url": "http://127.0.0.1:64455/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 13860
+    }
+  ],
+  "errors": []
+}

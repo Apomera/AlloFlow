@@ -1,0 +1,302 @@
+{
+  "tool": "solarSystem",
+  "mode": "after",
+  "cpuSlowdown": 4,
+  "gpu": "SwiftShader software WebGL (not a Chromebook GPU benchmark)",
+  "navigationMs": 12061,
+  "mountToGlMs": 15226,
+  "loadMetrics": {
+    "ScriptDuration": 4.390055,
+    "TaskDuration": 4.681560999999999,
+    "LayoutDuration": 0.038163
+  },
+  "mountedMetrics": {
+    "ScriptDuration": 14.244875,
+    "TaskDuration": 21.469549,
+    "LayoutDuration": 0.871386
+  },
+  "scene": {
+    "frames": 138,
+    "medianFrameMs": 16.69999999999709,
+    "p95FrameMs": 66.70000000000437,
+    "over50Ms": 9,
+    "renderers": [
+      {
+        "drawCalls": 81,
+        "triangles": 84740,
+        "textures": 45,
+        "geometries": 81
+      }
+    ],
+    "resources": [
+      {
+        "name": "/desktop/web-app/node_modules/react/umd/react.production.min.js",
+        "bytes": 10751,
+        "duration": 174.60000002384186
+      },
+      {
+        "name": "/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+        "bytes": 131835,
+        "duration": 186.30000001192093
+      },
+      {
+        "name": "/vendor/three-r128/three.min.js",
+        "bytes": 603445,
+        "duration": 194.5
+      },
+      {
+        "name": "/stem_lab/stem_lab_module.js",
+        "bytes": 551557,
+        "duration": 191.30000001192093
+      },
+      {
+        "name": "/stem_lab/stem_tool_solarsystem.js",
+        "bytes": 2869871,
+        "duration": 224.69999998807907
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+        "bytes": 606,
+        "duration": 7914.700000047684
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+        "bytes": 1228,
+        "duration": 1628.5999999642372
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+        "bytes": 6271,
+        "duration": 432.19999998807907
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+        "bytes": 1746,
+        "duration": 189.60000002384186
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+        "bytes": 1416,
+        "duration": 108.5
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js",
+        "bytes": 12612,
+        "duration": 117.90000003576279
+      }
+    ]
+  },
+  "cpu": [
+    {
+      "function": "Jr",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 5846759
+    },
+    {
+      "function": "(program)",
+      "url": "",
+      "line": 0,
+      "selfUs": 5757864
+    },
+    {
+      "function": "(idle)",
+      "url": "",
+      "line": 0,
+      "selfUs": 3840407
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4987,
+      "selfUs": 3690221
+    },
+    {
+      "function": "solarWorldPortrait",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 2235,
+      "selfUs": 2102920
+    },
+    {
+      "function": "RegExp: #pragma unroll_loop_start\\s+for\\s*\\(\\s*int\\s+i\\s*=\\s*(\\d+)\\s*;\\s*i\\s*<\\s*(\\d+)\\s*;\\s*i\\s*\\+\\+\\s*\\)\\s*{([\\s\\S]+?)}\\s+#pragma unroll_loop_end",
+      "url": "",
+      "line": 0,
+      "selfUs": 1254116
+    },
+    {
+      "function": "kr",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 370969
+    },
+    {
+      "function": "Comp",
+      "url": "http://127.0.0.1:62800/__harness",
+      "line": 80,
+      "selfUs": 300383
+    },
+    {
+      "function": "initScene",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4278,
+      "selfUs": 258967
+    },
+    {
+      "function": "canvasRef",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4256,
+      "selfUs": 198538
+    },
+    {
+      "function": "Z",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "line": 10,
+      "selfUs": 174270
+    },
+    {
+      "function": "ch",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 57,
+      "selfUs": 77816
+    },
+    {
+      "function": "addSolarRingBand",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4908,
+      "selfUs": 61580
+    },
+    {
+      "function": "RegExp: ^[ \\t]*#include +<([\\w\\d./]+)>",
+      "url": "",
+      "line": 0,
+      "selfUs": 59039
+    },
+    {
+      "function": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfUs": 55008
+    },
+    {
+      "function": "Qi",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 195,
+      "selfUs": 53810
+    },
+    {
+      "function": "solarPaintGiantEquirect",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 1567,
+      "selfUs": 52975
+    },
+    {
+      "function": "xk",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 146,
+      "selfUs": 44696
+    },
+    {
+      "function": "v",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 93,
+      "selfUs": 38453
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 25176
+    },
+    {
+      "function": "setFromEuler",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 24906
+    },
+    {
+      "function": "setProperty",
+      "url": "",
+      "line": 0,
+      "selfUs": 24610
+    },
+    {
+      "function": "W",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 145,
+      "selfUs": 23688
+    },
+    {
+      "function": "qr",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 20511
+    },
+    {
+      "function": "makeWorldTex",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4650,
+      "selfUs": 20067
+    },
+    {
+      "function": "solarPaintMoonEquirect",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 1642,
+      "selfUs": 19188
+    },
+    {
+      "function": "bo",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 16275
+    },
+    {
+      "function": "requestAnimationFrame",
+      "url": "",
+      "line": 0,
+      "selfUs": 15136
+    },
+    {
+      "function": "bj",
+      "url": "http://127.0.0.1:62800/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "line": 14,
+      "selfUs": 14879
+    },
+    {
+      "function": "createElement",
+      "url": "",
+      "line": 0,
+      "selfUs": 14616
+    },
+    {
+      "function": "Cr",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 14462
+    },
+    {
+      "function": "appendChild",
+      "url": "",
+      "line": 0,
+      "selfUs": 14371
+    },
+    {
+      "function": "So",
+      "url": "http://127.0.0.1:62800/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 11021
+    },
+    {
+      "function": "solarMoonMaterial",
+      "url": "http://127.0.0.1:62800/stem_lab/stem_tool_solarsystem.js",
+      "line": 4757,
+      "selfUs": 10964
+    },
+    {
+      "function": "setAttribute",
+      "url": "",
+      "line": 0,
+      "selfUs": 10564
+    }
+  ],
+  "errors": []
+}

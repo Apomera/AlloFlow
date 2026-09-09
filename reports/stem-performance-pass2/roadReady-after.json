@@ -1,0 +1,297 @@
+{
+  "tool": "roadReady",
+  "mode": "after",
+  "cpuSlowdown": 4,
+  "gpu": "SwiftShader software WebGL (not a Chromebook GPU benchmark)",
+  "navigationMs": 271,
+  "mountToGlMs": 4772,
+  "loadMetrics": {
+    "ScriptDuration": 0.135898,
+    "TaskDuration": 0.172892,
+    "LayoutDuration": 0.000495
+  },
+  "mountedMetrics": {
+    "ScriptDuration": 8.449626,
+    "TaskDuration": 9.124812,
+    "LayoutDuration": 0.161433
+  },
+  "scene": {
+    "frames": 24,
+    "medianFrameMs": 183.29999999999927,
+    "p95FrameMs": 1000,
+    "over50Ms": 23,
+    "renderers": [
+      {
+        "drawCalls": 1396,
+        "triangles": 43884,
+        "textures": 24,
+        "geometries": 4139
+      }
+    ],
+    "resources": [
+      {
+        "name": "/desktop/web-app/node_modules/react/umd/react.production.min.js",
+        "bytes": 10751,
+        "duration": 6.600000023841858
+      },
+      {
+        "name": "/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+        "bytes": 131835,
+        "duration": 9.799999952316284
+      },
+      {
+        "name": "/vendor/three-r128/three.min.js",
+        "bytes": 603445,
+        "duration": 24.30000001192093
+      },
+      {
+        "name": "/stem_lab/stem_lab_module.js",
+        "bytes": 551814,
+        "duration": 12.699999988079071
+      },
+      {
+        "name": "/stem_lab/stem_tool_roadready.js",
+        "bytes": 2829219,
+        "duration": 83.60000002384186
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+        "bytes": 606,
+        "duration": 814.4000000357628
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+        "bytes": 1228,
+        "duration": 1463.0999999642372
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+        "bytes": 6271,
+        "duration": 172.10000002384186
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+        "bytes": 1746,
+        "duration": 450.19999998807907
+      },
+      {
+        "name": "/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+        "bytes": 1416,
+        "duration": 544.5
+      }
+    ]
+  },
+  "cpu": [
+    {
+      "function": "",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 662986
+    },
+    {
+      "function": "(program)",
+      "url": "",
+      "line": 0,
+      "selfUs": 596387
+    },
+    {
+      "function": "setFromRotationMatrix",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 438534
+    },
+    {
+      "function": "updateMatrixWorld",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 394702
+    },
+    {
+      "function": "renderBufferDirect",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 369030
+    },
+    {
+      "function": "At",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 351989
+    },
+    {
+      "function": "update",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 341915
+    },
+    {
+      "function": "updateThreeScene",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 17955,
+      "selfUs": 292131
+    },
+    {
+      "function": "render",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 286412
+    },
+    {
+      "function": "M",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 220345
+    },
+    {
+      "function": "setup",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 205932
+    },
+    {
+      "function": "Jr",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 155836
+    },
+    {
+      "function": "(garbage collector)",
+      "url": "",
+      "line": 0,
+      "selfUs": 155539
+    },
+    {
+      "function": "Cr.setValue",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 145691
+    },
+    {
+      "function": "h",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 143002
+    },
+    {
+      "function": "intersectsObject",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 129138
+    },
+    {
+      "function": "Yi",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 128554
+    },
+    {
+      "function": "generateChunk",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 4114,
+      "selfUs": 126956
+    },
+    {
+      "function": "render",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 27421,
+      "selfUs": 119800
+    },
+    {
+      "function": "Ct",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 111087
+    },
+    {
+      "function": "It",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 82645
+    },
+    {
+      "function": "initThreeScene",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 15564,
+      "selfUs": 80019
+    },
+    {
+      "function": "mn",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 75019
+    },
+    {
+      "function": "Gi",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 74429
+    },
+    {
+      "function": "getChunk",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 4411,
+      "selfUs": 74258
+    },
+    {
+      "function": "sort",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 73556
+    },
+    {
+      "function": "Ce",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 69020
+    },
+    {
+      "function": "p",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 65579
+    },
+    {
+      "function": "",
+      "url": "http://127.0.0.1:57955/stem_lab/stem_tool_roadready.js",
+      "line": 16764,
+      "selfUs": 63645
+    },
+    {
+      "function": "So",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 63478
+    },
+    {
+      "function": "intersectsSphere",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 62138
+    },
+    {
+      "function": "getObjectByProperty",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 61918
+    },
+    {
+      "function": "setFromEuler",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 55953
+    },
+    {
+      "function": "Wi",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 55743
+    },
+    {
+      "function": "v",
+      "url": "http://127.0.0.1:57955/vendor/three-r128/three.min.js",
+      "line": 6,
+      "selfUs": 55119
+    }
+  ],
+  "errors": []
+}

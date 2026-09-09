@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-09-09T03:23:54.3292654Z",
+  "unitPassed": 217,
+  "unitSkipped": 7,
+  "browserPassed": 10,
+  "mirrors": [
+    {
+      "source": "stem_lab/stem_lab_module.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_lab_module.js",
+      "sourceSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "mirrorSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "match": true
+    },
+    {
+      "source": "stem_lab/stem_lab_module.js",
+      "mirror": "desktop/app-build/stem_lab/stem_lab_module.js",
+      "sourceSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "mirrorSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "match": true
+    },
+    {
+      "source": "stem_lab/stem_lab_module.js",
+      "mirror": "desktop/web-app/public/stem_lab_module.js",
+      "sourceSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "mirrorSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "match": true
+    },
+    {
+      "source": "stem_lab/stem_lab_module.js",
+      "mirror": "desktop/app-build/stem_lab_module.js",
+      "sourceSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "mirrorSha256": "AF585083EB612FDC39B3B6DED3F83B680291A3F7794C7416F54CECD1D53FA5A5",
+      "match": true
+    },
+    {
+      "source": "stem_lab/stem_tool_roadready.js",
+      "mirror": "desktop/web-app/public/stem_lab/stem_tool_roadready.js",
+      "sourceSha256": "AC22FD781F054F7E7756456D3AEC197C7ACD8D1F8834E55485784968870923D3",
+      "mirrorSha256": "AC22FD781F054F7E7756456D3AEC197C7ACD8D1F8834E55485784968870923D3",
+      "match": true
+    },
+    {
+      "source": "stem_lab/stem_tool_roadready.js",
+      "mirror": "desktop/app-build/stem_lab/stem_tool_roadready.js",
+      "sourceSha256": "AC22FD781F054F7E7756456D3AEC197C7ACD8D1F8834E55485784968870923D3",
+      "mirrorSha256": "AC22FD781F054F7E7756456D3AEC197C7ACD8D1F8834E55485784968870923D3",
+      "match": true
+    }
+  ]
+}
