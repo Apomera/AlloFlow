@@ -41,7 +41,8 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
     expect(source).toContain("aria-label={t('common.adjust_image_size')} aria-valuetext={adventureImageSize + ' px'}");
     expect(source).toContain('className="w-24 h-11');
     expect(source).not.toContain("aria-label={t('common.range_slider')}");
-    expect(source).toMatch(/<button type="button"\s+onClick=\{handleSetShowStorybookExportModalToTrue\}/);
+    expect(source.match(/onExport=\{handleSetShowStorybookExportModalToTrue\}/g)).toHaveLength(2);
+    expect(source).toContain('onClick={onExport} disabled={busy}');
     expect(source).toContain("aria-label={t('adventure.start_sequel')}");
     expect(source).not.toContain("aria-label={t('common.start_sequel')}");
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transform-none');

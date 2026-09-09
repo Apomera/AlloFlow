@@ -1564,6 +1564,7 @@ function AdventureFluencyPractice(props) {
   }, saved ? t('adventure.fluency_saved') || 'Saved to reading history' : t('adventure.fluency_save') || 'Save to reading history'))));
 }
 function AdventureView(props) {
+  const [showFullIllustration, setShowFullIllustration] = React.useState(false);
   // State (object-bundle)
   var adventureState = props.adventureState;
   var setAdventureState = props.setAdventureState;
@@ -2242,7 +2243,9 @@ function AdventureView(props) {
     className: adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : "",
     "aria-hidden": "true"
   }), " ", t('adventure.restart')))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow bg-slate-100 rounded-xl border border-slate-400 shadow-inner overflow-hidden flex flex-col relative"
+    "data-adventure-canvas": true,
+    style: adventureVisualTokens(theme),
+    className: "flex-grow min-h-0 bg-[var(--av-wash)] rounded-3xl border border-[var(--av-line)] shadow-inner overflow-hidden flex flex-col relative"
   }, !adventureState.isImmersiveMode ? /*#__PURE__*/React.createElement("div", {
     ref: adventureScrollRef,
     className: "flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar"
@@ -2372,13 +2375,16 @@ function AdventureView(props) {
     size: 12,
     "aria-hidden": "true"
   }), " ", t('adventure.current_scene')), (adventureState.sceneImage || adventureState.sceneImagePreview) && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1.5 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100",
-    title: t('common.adjust_image_size')
+    "data-adventure-image-controls": true,
+    className: "flex flex-wrap items-center gap-2 w-full sm:w-auto min-w-0"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 text-[var(--av-muted)]"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-1.5 text-xs font-semibold"
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14,
-    className: "text-yellow-700",
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("input", {
+  }), t('common.adjust_image_size')), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.adjust_image_size'),
     "aria-valuetext": adventureImageSize + ' px',
     type: "range",
@@ -2387,8 +2393,21 @@ function AdventureView(props) {
     step: "50",
     value: adventureImageSize,
     onChange: e => setAdventureImageSize(Number(e.target.value)),
-    className: "w-24 h-11 bg-yellow-200 rounded-lg cursor-pointer accent-yellow-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-700 focus-visible:ring-offset-2"
-  }))), /*#__PURE__*/React.createElement("div", {
+    className: "w-24 h-11 max-w-full cursor-pointer accent-[var(--av-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] rounded-lg"
+  }), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "text-[11px] font-medium tabular-nums"
+  }, adventureImageSize, " px")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-pressed": showFullIllustration,
+    onClick: () => setShowFullIllustration(value => !value),
+    className: "min-h-11 min-w-0 px-3 py-2 rounded-xl border border-[var(--av-control)] text-[var(--av-ink)] bg-[var(--av-surface)] hover:bg-[var(--av-wash)] aria-pressed:bg-[var(--av-wash)] aria-pressed:border-[var(--av-accent)] aria-pressed:ring-1 aria-pressed:ring-[var(--av-accent)] text-xs font-semibold flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
+  }, /*#__PURE__*/React.createElement(Maximize, {
+    size: 14,
+    "aria-hidden": "true",
+    className: "shrink-0"
+  }), adventureSettingsText(t, 'full_illustration', 'Full illustration')))), /*#__PURE__*/React.createElement("div", {
+    "data-adventure-illustration": true,
     className: "mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none",
     style: {
       minHeight: adventureImageSize + 'px'
@@ -2399,9 +2418,10 @@ function AdventureView(props) {
     alt: "",
     style: {
       height: `${adventureImageSize}px`,
+      objectFit: showFullIllustration ? 'contain' : 'cover',
       filter: !adventureState.sceneImage && adventureState.sceneImagePreview ? 'blur(1.5px) saturate(0.9)' : 'none'
     },
-    className: "w-full object-cover animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none",
+    className: "block w-full animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none",
     decoding: "async"
   }), !adventureState.sceneImage && adventureState.sceneImagePreview && /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -2431,7 +2451,8 @@ function AdventureView(props) {
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold"
   }, t('adventure.no_image'))))), /*#__PURE__*/React.createElement("div", {
-    className: "prose prose-sm text-[var(--av-ink)] font-medium font-serif leading-relaxed max-w-none"
+    "data-adventure-prose": true,
+    className: "prose prose-sm text-[var(--av-ink)] font-medium font-serif text-base leading-relaxed max-w-[68ch] mx-auto [overflow-wrap:anywhere]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "space-y-4",
     onPointerEnter: () => {

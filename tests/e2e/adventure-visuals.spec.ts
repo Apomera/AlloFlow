@@ -531,3 +531,74 @@ for (const theme of ['light', 'dark', 'contrast']) {
     expect(errors).toEqual([]);
   });
 }
+
+
+for (const theme of ['light', 'dark', 'contrast']) {
+  test('scene illustration controls preserve reading and reveal full artwork in ' + theme, async ({ page }, info) => {
+    await page.setViewportSize({ width: 1200, height: 1100 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await load(page, theme);
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    await mountActiveAdventure(page, theme, { props: { adventureEffects: { xp: null, energy: null, levelUp: null } } });
+    await page.evaluate(() => { const w = window as any; w.__imageSizes = []; w.__updateAdventure({
+      setAdventureImageSize: (value: number) => { w.__imageSizes.push(value); w.__updateAdventure({ adventureImageSize: value }); }
+    }); });
+    const scene = page.getByRole('region', { name: 'Current scene', exact: true });
+    const frame = scene.locator('[data-adventure-illustration]');
+    const art = frame.locator('img');
+    const slider = scene.getByRole('slider', { name: 'Scene image size', exact: true });
+    const fit = scene.getByRole('button', { name: 'Full illustration', exact: true });
+    await expect(fit).toHaveAttribute('aria-pressed', 'false');
+    await expect(art).toHaveCSS('object-fit', 'cover');
+    await slider.focus(); await page.keyboard.press('ArrowRight');
+    await expect(slider).toHaveValue('250');
+    await expect(slider).toHaveAttribute('aria-valuetext', '250 px');
+    await expect(art).toHaveCSS('height', '250px');
+    await fit.focus(); await page.keyboard.press('Space');
+    await expect(fit).toHaveAttribute('aria-pressed', 'true');
+    await expect(art).toHaveCSS('object-fit', 'contain');
+    const color = theme === 'light' ? 'rgb(244, 247, 251)' : theme === 'dark' ? 'rgb(25, 38, 59)' : 'rgb(0, 0, 0)';
+    await expect(page.locator('[data-adventure-canvas]')).toHaveCSS('background-color', color);
+    await expect(scene.locator('[data-adventure-prose]')).toHaveCSS('font-size', '16px');
+
+    for (const width of [1200, 320]) {
+      await page.setViewportSize({ width, height: 1100 });
+      await scene.getByRole('heading').scrollIntoViewIfNeeded();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(await scene.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+      await axe(page, '[aria-labelledby="adventure-current-scene-heading"]');
+      await page.screenshot({ path: info.outputPath('illustration-' + theme + '-' + width + '.png') });
+    }
+    // Real pointer input exercises React's native range event path.
+    await slider.scrollIntoViewIfNeeded();
+    const track = (await slider.boundingBox())!;
+    await page.mouse.move(track.x + track.width / 2, track.y + track.height / 2);
+    await page.mouse.down(); await page.mouse.move(track.x + track.width - 5, track.y + track.height / 2, { steps: 8 }); await page.mouse.up();
+    expect(Number(await slider.inputValue())).toBeGreaterThanOrEqual(550);
+    await slider.focus(); await page.keyboard.press('Home');
+    await expect(slider).toHaveValue('150');
+    await expect(art).toHaveCSS('height', '150px');
+    await fit.click();
+    await expect(art).toHaveCSS('object-fit', 'cover');
+    const narration = scene.getByRole('button', { name: /^Read aloud:/ }).first();
+    await narration.focus(); await page.keyboard.press('Enter');
+    expect((await page.evaluate(() => (window as any).__calls.speech))[0][1]).toBe('adventure-active');
+    expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+
+    await page.evaluate(() => { const w = window as any; w.__updateAdventure({ adventureState: {
+      sceneImagePreview: w.__adventureProps.adventureState.sceneImage, sceneImage: null, imagePolishStage: 'matching'
+    } }); });
+    await expect(frame.getByRole('status')).toContainText('Matching your cast');
+    await fit.click(); await expect(art).toHaveCSS('object-fit', 'contain');
+    await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { sceneImagePreview: null, isImageLoading: false } }));
+    await expect(scene.getByRole('slider')).toHaveCount(0);
+    await expect(fit).toHaveCount(0);
+    await expect(scene.locator('[data-adventure-prose]')).toBeVisible();
+    await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isImageLoading: true, loadingStage: 'Drawing the river scene' } }));
+    await expect(frame.getByRole('status')).toHaveText('Drawing the river scene');
+    await page.addStyleTag({ content: 'html { font-size: 20px; }' });
+    await axe(page, '[aria-labelledby="adventure-current-scene-heading"]');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+}

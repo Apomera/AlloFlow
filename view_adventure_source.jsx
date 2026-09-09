@@ -659,6 +659,7 @@ function AdventureFluencyPractice(props) {
 }
 
 function AdventureView(props) {
+  const [showFullIllustration, setShowFullIllustration] = React.useState(false);
   // State (object-bundle)
   var adventureState = props.adventureState;
   var setAdventureState = props.setAdventureState;
@@ -1261,7 +1262,7 @@ function AdventureView(props) {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-grow bg-slate-100 rounded-xl border border-slate-400 shadow-inner overflow-hidden flex flex-col relative">
+                    <div data-adventure-canvas style={adventureVisualTokens(theme)} className="flex-grow min-h-0 bg-[var(--av-wash)] rounded-3xl border border-[var(--av-line)] shadow-inner overflow-hidden flex flex-col relative">
                         {!adventureState.isImmersiveMode ? (
                         <div ref={adventureScrollRef} className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
                             {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
@@ -1361,28 +1362,31 @@ function AdventureView(props) {
                                         <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                                             <h4 id="adventure-current-scene-heading" className="text-xs font-bold text-[var(--av-accent)] uppercase tracking-wider flex items-center gap-2"><Flag size={12} aria-hidden="true"/> {t('adventure.current_scene')}</h4>
                                             {(adventureState.sceneImage || adventureState.sceneImagePreview) && (
-                                                <div className="flex items-center gap-1.5 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100" title={t('common.adjust_image_size')}>
-                                                    <ImageIcon size={14} className="text-yellow-700" aria-hidden="true"/>
-                                                    <input aria-label={t('common.adjust_image_size')} aria-valuetext={adventureImageSize + ' px'}
-                                                        type="range"
-                                                        min="150"
-                                                        max="600"
-                                                        step="50"
-                                                        value={adventureImageSize}
-                                                        onChange={(e) => setAdventureImageSize(Number(e.target.value))}
-                                                        className="w-24 h-11 bg-yellow-200 rounded-lg cursor-pointer accent-yellow-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-700 focus-visible:ring-offset-2"
-                                                    />
+                                                <div data-adventure-image-controls className="flex flex-wrap items-center gap-2 w-full sm:w-auto min-w-0">
+                                                    <label className="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 text-[var(--av-muted)]">
+                                                        <span className="flex items-center gap-1.5 text-xs font-semibold"><ImageIcon size={14} aria-hidden="true" />{t('common.adjust_image_size')}</span>
+                                                        <input aria-label={t('common.adjust_image_size')} aria-valuetext={adventureImageSize + ' px'}
+                                                            type="range" min="150" max="600" step="50" value={adventureImageSize}
+                                                            onChange={(e) => setAdventureImageSize(Number(e.target.value))}
+                                                            className="w-24 h-11 max-w-full cursor-pointer accent-[var(--av-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] rounded-lg"
+                                                        />
+                                                        <span aria-hidden="true" className="text-[11px] font-medium tabular-nums">{adventureImageSize} px</span>
+                                                    </label>
+                                                    <button type="button" aria-pressed={showFullIllustration} onClick={() => setShowFullIllustration(value => !value)}
+                                                        className="min-h-11 min-w-0 px-3 py-2 rounded-xl border border-[var(--av-control)] text-[var(--av-ink)] bg-[var(--av-surface)] hover:bg-[var(--av-wash)] aria-pressed:bg-[var(--av-wash)] aria-pressed:border-[var(--av-accent)] aria-pressed:ring-1 aria-pressed:ring-[var(--av-accent)] text-xs font-semibold flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]">
+                                                        <Maximize size={14} aria-hidden="true" className="shrink-0" />{adventureSettingsText(t, 'full_illustration', 'Full illustration')}
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none" style={{ minHeight: adventureImageSize + 'px' }}>
+                                        <div data-adventure-illustration className="mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none" style={{ minHeight: adventureImageSize + 'px' }}>
                                             {(adventureState.sceneImage || adventureState.sceneImagePreview) ? (
                                                 <>
                                                     <img loading="lazy"
                                                         src={adventureState.sceneImage || adventureState.sceneImagePreview}
                                                         alt=""
-                                                        style={{ height: `${adventureImageSize}px`, filter: !adventureState.sceneImage && adventureState.sceneImagePreview ? 'blur(1.5px) saturate(0.9)' : 'none' }}
-                                                        className="w-full object-cover animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none"
+                                                        style={{ height: `${adventureImageSize}px`, objectFit: showFullIllustration ? 'contain' : 'cover', filter: !adventureState.sceneImage && adventureState.sceneImagePreview ? 'blur(1.5px) saturate(0.9)' : 'none' }}
+                                                        className="block w-full animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none"
                                                         decoding="async"
                                                     />
                                                     {!adventureState.sceneImage && adventureState.sceneImagePreview && (
@@ -1410,7 +1414,7 @@ function AdventureView(props) {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="prose prose-sm text-[var(--av-ink)] font-medium font-serif leading-relaxed max-w-none">
+                                        <div data-adventure-prose className="prose prose-sm text-[var(--av-ink)] font-medium font-serif text-base leading-relaxed max-w-[68ch] mx-auto [overflow-wrap:anywhere]">
                                             <div className="space-y-4" onPointerEnter={() => { if (prewarmAdventureAudio && adventureState.currentScene) prewarmAdventureAudio(adventureState.currentScene.text, adventureState.currentScene.voices); }}>
                                                 {(() => {
                                                     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
