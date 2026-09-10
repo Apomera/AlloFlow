@@ -1370,3 +1370,42 @@ test('equipment shortcut falls back to the tool chooser and completed work order
   expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(6);
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('probe map follows physical contacts and preserves captures until the setup changes',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'Keep my diagnosis draft.'}}});
+  const toggle=page.locator('[data-ar-meter-trace-toggle]'),panel=page.locator('[data-ar-meter-trace]');
+  await expect(panel).toHaveCount(0);await page.locator('[data-ar-shop-instrument-read]').click();
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await toggle.focus();await page.keyboard.press('Enter');await expect(panel).toHaveAttribute('data-ar-meter-trace','posts');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('Captured: 12.6 V');
+  await panel.locator('[data-ar-meter-trace-contact="posts"]').click();await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('12.6 V');
+  await panel.locator('[data-ar-meter-trace-contact="joint"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.locator('[data-ar-meter-contacts-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('workshop-meter-black-lead')?.data.contact==='positive-clamp');
+  await page.locator('#ar-shop-instrument-load').selectOption('starter');await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('Captured: 1.6 V');
+  await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-desktop.png'});
+  const captured=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await toggle.click();await expect(panel).toHaveCount(0);await toggle.click();expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(captured);
+  await page.locator('[data-ar-meter-contacts-focus]').click();await clickShop(page,'negative-post');
+  await expect(panel).toHaveAttribute('data-ar-meter-trace','posts');await expect(panel.locator('[data-ar-meter-lead="black"]')).toHaveAttribute('data-ar-meter-contact','posts');
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.locator('#ar-shop-instrument-mode').selectOption('resistance');await expect(panel.locator('[data-ar-meter-trace-explanation]')).toContainText('Select DC volts');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopMeterTrace',true);});
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopMeterTrace',true);});
+  await page.locator('#ar-shop-instrument-mode').selectOption('dcv');await panel.locator('[data-ar-meter-trace-contact="joint"]').click();await page.locator('#ar-shop-instrument-load').selectOption('off');
+  await expect(panel.locator('[data-ar-meter-trace-explanation]')).toContainText('zero drop without load');
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await panel.locator('button').evaluateAll(buttons=>buttons.every(b=>b.getBoundingClientRect().height>=44))).toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,hood:false});});
+  await panel.locator('[data-ar-meter-trace-contact="posts"]').click();await expect(panel).toHaveAttribute('data-ar-meter-trace','joint');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('Keep my diagnosis draft.');expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(2);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

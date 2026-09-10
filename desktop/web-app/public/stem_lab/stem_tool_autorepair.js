@@ -20869,6 +20869,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('text', { x: 20, y: 76, fill: T.text, fontSize: 14 }, '0'),
                 h('text', { x: 320, y: 76, textAnchor: 'end', fill: T.text, fontSize: 14 }, maximum + ' mm'))));
         }
+        function meterConnectionPanel() {
+          var open = !!d.shopMeterTrace, setup = shop.instrument, joint = setup.contact === 'joint';
+          var reading = shop.reading && shop.reading.key === arShopReadingKey(shop) && shop.reading.kind === 'meter' && shop.reading.unit === 'V' && Number.isFinite(shop.reading.value) ? shop.reading : null;
+          var explanation = setup.mode !== 'dcv' ? 'Select DC volts for this powered-circuit test. Resistance mode cannot supply voltage-drop evidence.'
+            : !joint ? 'The probes span the battery posts. This measures battery voltage, not the loss across the positive post-to-clamp connection.'
+            : setup.load !== 'starter' ? 'The probes span the connection, but the starter is off. A zero drop without load does not prove the connection can carry starter current.'
+            : 'The probes span the positive post-to-clamp connection under simulated starter load. Capture its voltage drop, then compare it with this job’s limit.';
+          return h('div', { style: { marginTop: 10 } },
+            control(open ? 'Hide probe connection map' : 'Trace probe connections', function () { upd('shopMeterTrace', !open); },
+              { 'data-ar-meter-trace-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-meter-trace' }),
+            open && h('section', { id: 'ar-meter-trace', 'data-ar-meter-trace': setup.contact, 'aria-label': 'Live probe connection map',
+              style: { marginTop: 10, padding: 12, borderRadius: 8, border: '1px solid ' + T.border, background: T.card } },
+              h('h5', { style: { margin: '0 0 8px', fontSize: 14 } }, joint ? 'Across one connection' : 'Across the battery'),
+              h('svg', { viewBox: '0 0 320 212', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 440, display: 'block', margin: '8px auto' } },
+                h('path', { d: 'M50 150 H150', stroke: T.muted, strokeWidth: 9, fill: 'none' }),
+                h('rect', { x: 80, y: 10, width: 160, height: 66, rx: 8, fill: T.cardAlt, stroke: T.text, strokeWidth: 2 }),
+                h('text', { x: 160, y: 37, textAnchor: 'middle', fill: T.text, fontSize: 16, fontWeight: 700 }, setup.mode === 'dcv' ? 'DC volts' : 'Resistance Ω'),
+                h('text', { x: 160, y: 59, textAnchor: 'middle', fill: T.muted, fontSize: 13 }, 'Probe placement'),
+                h('path', { 'data-ar-meter-lead': 'red', d: 'M110 76 V89 H20 V150 H50', fill: 'none', stroke: isContrast ? '#ffff00' : '#e04646', strokeWidth: 4 }),
+                h('path', { 'data-ar-meter-lead': 'black', 'data-ar-meter-contact': setup.contact, d: 'M210 76 V96 H300 V112 H' + (joint ? 150 : 270) + ' V150', fill: 'none', stroke: T.text, strokeWidth: 3, strokeDasharray: '7 4' }),
+                [[50, '+', 'Positive', 'post'], [150, '+', 'Cable', 'clamp'], [270, '−', 'Negative', 'post']].map(function (point, index) {
+                  var selected = index === (joint ? 1 : 2);
+                  return h('g', { key: index }, h('circle', { cx: point[0], cy: 150, r: 15, fill: selected ? T.cardAlt : T.card, stroke: selected ? T.link : T.text, strokeWidth: selected ? 4 : 2 }),
+                    h('text', { x: point[0], y: 155, textAnchor: 'middle', fill: T.text, fontSize: 17, fontWeight: 700 }, point[1]),
+                    h('text', { x: point[0], y: 185, textAnchor: 'middle', fill: T.text, fontSize: 14 }, point[2]),
+                    h('text', { x: point[0], y: 202, textAnchor: 'middle', fill: T.text, fontSize: 14 }, point[3]));
+                })),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, 'Solid lead: red probe stays on the positive post. Dashed lead: black probe is on the ' + (joint ? 'positive cable clamp.' : 'negative post.') + ' Contact spacing is schematic.'),
+              h('div', { role: 'group', 'aria-label': 'Place black probe', className: 'ar-shop-actions' }, [['posts', 'Black → negative post'], ['joint', 'Black → positive clamp']].map(function (contact) {
+                return control(contact[1], function () { pick(arShop3DToken(shop, 'meter-' + contact[0])); }, { key: contact[0], 'data-ar-meter-trace-contact': contact[0], 'aria-pressed': setup.contact === contact[0] });
+              })),
+              h('p', { 'data-ar-meter-trace-load': setup.load, style: { fontSize: 12, fontWeight: 700 } }, setup.load === 'starter' ? 'Simulated starter load: applied' : 'Simulated starter load: off'),
+              h('p', { 'data-ar-meter-trace-explanation': true, style: { fontSize: 12, lineHeight: 1.6 } }, explanation),
+              h('p', { 'data-ar-meter-trace-reading': reading ? (reading.valid ? 'valid' : 'invalid') : 'pending', style: { fontSize: 12, lineHeight: 1.6, marginBottom: 0 } },
+                reading ? 'Captured: ' + reading.value + ' V. ' + (reading.valid ? 'Current evidence for this setup.' : 'This capture does not isolate the loaded connection.') : 'No current voltage capture. Set up the meter and capture a fresh reading.')));
+        }
         function instrumentPanel() {
           var kind = arShopInstrumentKind(shop), wheelSequence = arShopWheelSequence(shop);
           if (!kind) return null;
@@ -20889,7 +20925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               setting('mode', 'Meter mode', [['dcv', 'DC volts'], ['resistance', 'Resistance (Ω)']]),
               setting('contact', 'Probe contacts', [['posts', 'Battery + post to − post'], ['joint', 'Positive post to its cable clamp']]),
               setting('load', 'Simulated circuit load', [['off', 'Starter off'], ['starter', 'Starter load applied']]),
-              h('p', null, 'Compare the battery voltage with the loss across one connection. A reading with no starter load cannot establish that a joint carries starter current.')),
+              h('p', null, 'Compare the battery voltage with the loss across one connection. A reading with no starter load cannot establish that a joint carries starter current.'), meterConnectionPanel()),
             kind === 'gauge' && h('div', null,
               setting('surface', 'Place the gauge on', [['lining', 'Friction lining only'], ['backing', 'Steel backing plate']]),
               brakeMeasurementPanel()),

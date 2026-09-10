@@ -358,6 +358,18 @@ Validation: **214 workshop model/render tests passed** (45.48 seconds), includin
 - [High-contrast phone equipment navigation](../reports/automobile-workshop/shortcuts-contrast.png)
 - [Narrow dark-phone handoff](../reports/automobile-workshop/shortcuts-dark.png)
 
+## Live probe connection map
+
+The electrical measurement and verification tasks now offer an optional Trace probe connections panel. Its schematic follows the fixed positive-post red lead and the black lead's selected negative-post or positive-clamp contact. Solid/dashed lead patterns, written endpoint descriptions and pressed-state contact buttons provide equivalents to color. Keyboard-accessible contact buttons use the same guarded action as the physical 3D targets, including unchanged-contact capture preservation and vehicle-access checks.
+
+The panel explains battery voltage versus a voltage drop across one connection, the need for the simulated starter load, and the DC-volts setting. It displays actual current captures only; changed setups invalidate the capture, and opening/collapsing the map leaves work untouched. Physical probe picks and the existing mode/contact/load selectors update the same diagram. Contact spacing is labeled schematic; no circuit-current calculation or predicted meter value was added. The authored readings and work-order limits are unchanged. The loaded-circuit teaching was checked against [Fluke's voltage-drop application note](https://media.fluke.com/d2ea9167-56d8-4bc4-b4cb-b1060066c4e0_original%20file.pdf), which explains measuring across a circuit segment while current flows.
+
+Validation: **222 workshop model/render tests passed** (59.37 seconds), including eight new cases for optional visibility, job applicability, themes, endpoint descriptions, setup limitations and current/stale captures. **Three real-WebGL workflows passed** (3.9 minutes): the new probe-map journey and existing physical-contact and before/after-service voltmeter regressions. The new journey passed again after centering its desktop evidence screenshot (1.1 minutes). Checks cover keyboard contact selection, two-way agreement with physical probe picks, unchanged-contact capture preservation, capture invalidation on setup changes, incorrect mode, unloaded-connection guidance, opening/collapse without state changes, preserved notes/task progress, closed-hood gating and 390/320 px reflow. Desktop light, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Source/public byte parity, syntax and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Desktop loaded-connection map](../reports/automobile-workshop/meter-map-desktop.png)
+- [High-contrast phone meter setup](../reports/automobile-workshop/meter-map-contrast.png)
+- [Narrow dark-phone unloaded connection](../reports/automobile-workshop/meter-map-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

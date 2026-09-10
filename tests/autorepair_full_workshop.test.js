@@ -1164,3 +1164,29 @@ describe('Workshop section shortcuts',()=>{
     expect(host.querySelector('#ar-shop-work-order')).not.toBeNull();
   });
 });
+
+
+describe('Live meter connection map',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(shop={},prefs={},theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,...shop},...prefs}},theme);return host;}
+  it('starts collapsed and does not add the map to other instruments',()=>{
+    expect(render().querySelector('[data-ar-meter-trace]')).toBeNull();expect(render().querySelector('[data-ar-meter-trace-toggle]').getAttribute('aria-expanded')).toBe('false');
+    expect(render({job:'oil',step:9},{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-toggle]')).toBeNull();
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('provides equivalent labels and contact choices in %j',theme=>{
+    const panel=render({instrument:{contact:'joint',load:'starter'}},{shopMeterTrace:true},theme).querySelector('[data-ar-meter-trace]');
+    expect(panel.getAttribute('data-ar-meter-trace')).toBe('joint');expect(panel.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
+    expect(panel.textContent).toContain('black probe is on the positive cable clamp');expect(panel.querySelector('[data-ar-meter-trace-contact="joint"]').getAttribute('aria-pressed')).toBe('true');
+    expect(panel.querySelector('[data-ar-meter-lead="black"]').getAttribute('d')).toContain('H150 V150');expect(panel.querySelector('[data-ar-meter-trace-reading]').getAttribute('data-ar-meter-trace-reading')).toBe('pending');
+  });
+  it.each([{instrument:{contact:'posts',load:'starter'},text:'measures battery voltage'}, {instrument:{contact:'joint',load:'off'},text:'zero drop without load'}, {instrument:{contact:'joint',load:'starter',mode:'resistance'},text:'Select DC volts'}])('explains the limitation of $text',({instrument,text})=>{
+    expect(render({instrument},{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-explanation]').textContent).toContain(text);
+  });
+  it('shows only current captured values and clears the explanation of evidence after setup changes',()=>{
+    const state=model.operate(model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{contact:'joint',load:'starter'}}),{type:'read'});
+    expect(render(state,{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-reading]').textContent).toContain('Captured: 1.6 V');
+    const stale={...state,instrument:{...state.instrument,contact:'posts'}};
+    const pending=render(stale,{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-reading]');expect(pending.getAttribute('data-ar-meter-trace-reading')).toBe('pending');expect(pending.textContent).not.toContain('1.6');
+    const posts=model.operate(stale,{type:'read'});expect(render(posts,{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-reading]').getAttribute('data-ar-meter-trace-reading')).toBe('invalid');
+  });
+});
