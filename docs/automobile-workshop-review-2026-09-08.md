@@ -370,6 +370,18 @@ Validation: **222 workshop model/render tests passed** (59.37 seconds), includin
 - [High-contrast phone meter setup](../reports/automobile-workshop/meter-map-contrast.png)
 - [Narrow dark-phone unloaded connection](../reports/automobile-workshop/meter-map-dark.png)
 
+## Work-order task route
+
+Each work order now has an optional task route from intake to handoff. The scrollable sequence distinguishes Recorded, Current task, Upcoming and No saved record. Expanding a row shows its canonical station/equipment and, only for an earlier step with an actual saved result, the recorded evidence. Current and future history entries are ignored for completion status. Older saves with progressed steps but absent or blank results receive an explicit missing-record explanation. The count describes saved task records, not learner proficiency or vehicle certification.
+
+The current row starts expanded and has a text/semantic current-step marker. Learners can review upcoming task names without changing the vehicle or skipping prerequisites, then move keyboard focus directly back to the current task controls. Finished-position saves point to the customer handoff instead. The route is collapsed by default, its list has a bounded height and keyboard-scrollable region, and its rows have at least 44 px targets. Opening/collapsing or reviewing rows preserves task progress, captures, history and draft notes; switching jobs reads that job's saved state. Existing service-record export and task gates are unchanged.
+
+Validation: **234 workshop model/render tests passed** in the final run (15.10 seconds), including twelve new cases covering every step of all four jobs, current/future record rejection, missing/legacy records, input preservation, canonical metadata, themes, escaped evidence and completed-position navigation. **Three real-WebGL workflows passed** (2.6 minutes): the new route journey, full brake-service/handoff regression and evidence/draft/camera-preserving shortcut regression. After tightening the summary-row layout, the route journey passed again (32.3 seconds). It covers keyboard preview without skipping, current-control focus, actual captured evidence, collapse without mutation, job switching, complete electrical service, final saved-record count, draft preservation, 390/320 px reflow, 44 px rows and keyboard scrolling until the last task is fully visible. Final desktop light, high-contrast phone and narrow dark-phone screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Desktop task route and recorded measurement](../reports/automobile-workshop/task-route-desktop.png)
+- [High-contrast phone completed route](../reports/automobile-workshop/task-route-contrast.png)
+- [Narrow dark-phone sequence and handoff](../reports/automobile-workshop/task-route-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

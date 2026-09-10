@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1188,5 +1188,48 @@ describe('Live meter connection map',()=>{
     const stale={...state,instrument:{...state.instrument,contact:'posts'}};
     const pending=render(stale,{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-reading]');expect(pending.getAttribute('data-ar-meter-trace-reading')).toBe('pending');expect(pending.textContent).not.toContain('1.6');
     const posts=model.operate(stale,{type:'read'});expect(render(posts,{shopMeterTrace:true}).querySelector('[data-ar-meter-trace-reading]').getAttribute('data-ar-meter-trace-reading')).toBe('invalid');
+  });
+});
+
+
+describe('Work order task route',()=>{
+  it.each(model.jobs)('tracks actual records and current position throughout $id',job=>{
+    let state=model.initial(job.id);
+    for(let index=0;index<=job.tasks.length;index++){
+      const route=model.taskRoute(state);expect(route).toHaveLength(job.tasks.length);
+      expect(route.filter(item=>item.status==='recorded')).toHaveLength(index);
+      expect(route.filter(item=>item.status==='current')).toHaveLength(index===job.tasks.length?0:1);
+      if(index<job.tasks.length){expect(route[index]).toMatchObject({id:job.tasks[index].id,number:index+1,status:'current',result:''});state=step(state,{notes:'Recorded finding, service and verification for the customer.'});}
+    }
+  });
+  it('does not treat future or current history entries as completed work',()=>{
+    const route=model.taskRoute({job:'electrical',step:2,history:[{id:'measure',result:'Unfinished current evidence'},{id:'verify',result:'Out-of-order verification'}]});
+    expect(route[2]).toMatchObject({status:'current',result:''});expect(route[4]).toMatchObject({status:'upcoming',result:''});
+  });
+  it('distinguishes missing earlier records from current and upcoming steps',()=>{
+    const route=model.taskRoute({job:'electrical',step:3,history:[null,{id:'intake',result:'  '},{id:'hood',result:'Legacy inspection text'}]});
+    expect(route.slice(0,4).map(item=>item.status)).toEqual(['missing','recorded','missing','current']);expect(route[1].result).toBe('Legacy inspection text');
+  });
+  it('keeps saved inputs intact and resolves canonical station and equipment names',()=>{
+    const state={job:'electrical',step:3,notes:'My draft',history:[{id:'measure',label:'Wrong saved label',tool:'invented',result:'Captured: 1.6 V.'}]},before=JSON.stringify(state);
+    const row=model.taskRoute(state)[2];expect(row.label).toBe('Compare voltage-drop evidence');expect(row.tool).not.toBe('invented');expect(row.station).toContain('Engine');expect(row.result).toBe('Captured: 1.6 V.');expect(JSON.stringify(state)).toBe(before);
+  });
+});
+
+describe('Task route rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(shop={},prefs={},theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,...shop},...prefs}},theme);return host;}
+  it('starts collapsed and keeps a programmatic current-task focus target',()=>{
+    const host=render();expect(host.querySelector('[data-ar-task-route]')).toBeNull();expect(host.querySelector('[data-ar-route-toggle]').getAttribute('aria-expanded')).toBe('false');expect(host.querySelector('#ar-shop-current-task').getAttribute('tabindex')).toBe('-1');
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('labels current, upcoming and missing records in %j',theme=>{
+    const panel=render({}, {shopTaskRoute:true},theme).querySelector('[data-ar-task-route]');expect(panel.querySelectorAll('[data-ar-route-step]')).toHaveLength(6);
+    expect(panel.querySelector('[aria-current="step"]').textContent).toContain('Compare voltage-drop evidence');expect(panel.querySelector('[data-ar-route-status="current"] details').hasAttribute('open')).toBe(true);
+    expect(panel.querySelector('[data-ar-route-sequence]').getAttribute('tabindex')).toBe('0');expect(panel.textContent).toContain('No evidence is inferred');expect(panel.querySelector('[data-ar-route-recorded]').getAttribute('data-ar-route-recorded')).toBe('0');
+  });
+  it('renders saved evidence as text and directs completed saves to the handoff',()=>{
+    const host=render({step:6,history:[{id:'measure',result:'<img src=x onerror=alert(1)> 1.6 V'}]},{shopTaskRoute:true});
+    expect(host.querySelector('[data-ar-task-route] img')).toBeNull();expect(host.querySelector('[data-ar-route-evidence="recorded"]').textContent).toContain('<img');
+    expect(host.querySelector('[data-ar-route-return]').textContent).toBe('Review customer handoff');expect(host.querySelector('[data-ar-task-route] [aria-current]')).toBeNull();
   });
 });

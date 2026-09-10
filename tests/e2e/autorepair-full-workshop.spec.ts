@@ -1409,3 +1409,38 @@ test('probe map follows physical contacts and preserves captures until the setup
   await expect(page.locator('#ar-shop-notes')).toHaveValue('Keep my diagnosis draft.');expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(2);
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('task route reviews recorded evidence without skipping tasks or losing drafts',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:0,station:'intake',tool:'job-card',notes:'My explanation of the finding, service and verification.'}}});
+  const toggle=page.locator('[data-ar-route-toggle]'),route=page.locator('[data-ar-task-route]');
+  await expect(route).toHaveCount(0);await toggle.focus();await page.keyboard.press('Enter');
+  await expect(route.locator('[data-ar-route-status="current"]')).toHaveAttribute('data-ar-route-step','intake');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await route.locator('[data-ar-route-step="verify"] summary').focus();await page.keyboard.press('Enter');
+  await expect(route.locator('[data-ar-route-step="verify"]')).toHaveAttribute('data-ar-route-status','upcoming');expect(await state()).toBe(before);
+  await route.locator('[data-ar-route-return]').click();await expect(page.locator('#ar-shop-current-task')).toBeFocused();expect(await state()).toBe(before);
+  await perform(page,'job-card');await perform(page,'lamp');await perform(page,'meter','1.4');
+  await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','3');
+  await expect(route.locator('[data-ar-route-status="current"]')).toHaveAttribute('data-ar-route-step','service');
+  await route.locator('[data-ar-route-step="measure"] summary').click();await expect(route.locator('[data-ar-route-step="measure"] [data-ar-route-evidence]')).toContainText('Captured: 1.6 V');
+  const measured=await state();await route.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await route.screenshot({path:'reports/automobile-workshop/task-route-desktop.png'});
+  await toggle.click();await expect(route).toHaveCount(0);await toggle.click();expect(await state()).toBe(measured);
+  await page.locator('#ar-shop-job').selectOption('brakes');await expect(route).toHaveAttribute('data-ar-task-route','brakes');await expect(route.locator('[data-ar-route-step]')).toHaveCount(13);
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','3');
+  await perform(page,'terminal-kit');await perform(page,'meter');await perform(page,'job-card');
+  await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','6');await expect(route.locator('[aria-current="step"]')).toHaveCount(0);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopTaskRoute',true);});
+  await route.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await route.screenshot({path:'reports/automobile-workshop/task-route-contrast.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopTaskRoute',true);});
+  await route.locator('[data-ar-route-sequence]').focus();await page.keyboard.press('End');
+  await expect.poll(()=>route.locator('[data-ar-route-sequence]').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+  await expect.poll(()=>route.locator('[data-ar-route-sequence]').evaluate(el=>{const bounds=el.getBoundingClientRect(),last=el.querySelector('li:last-child summary')!.getBoundingClientRect();return last.bottom<=bounds.bottom+1&&last.top>=bounds.top;})).toBe(true);
+  await route.screenshot({path:'reports/automobile-workshop/task-route-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await route.locator('summary').evaluateAll(rows=>rows.every(row=>row.getBoundingClientRect().height>=44))).toBe(true);
+  await route.locator('[data-ar-route-return]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-notes')).toBeFocused();await expect(page.locator('#ar-shop-notes')).toHaveValue('My explanation of the finding, service and verification.');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

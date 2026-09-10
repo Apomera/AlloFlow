@@ -9843,6 +9843,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         status: status, next: complete ? 'Review your findings, service and customer handoff.' : state.step === total ? 'Review this saved work order: verification or release is not confirmed.' : job.tasks[state.step].label };
     });
   }
+  function arShopTaskRoute(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job);
+    return job.tasks.map(function (task, index) {
+      var earlier = index < state.step;
+      var record = earlier ? state.history.find(function (entry) { return entry && entry.id === task.id && typeof entry.result === 'string' && entry.result.trim(); }) : null;
+      return { id: task.id, number: index + 1, label: task.label,
+        status: index === state.step ? 'current' : !earlier ? 'upcoming' : record ? 'recorded' : 'missing',
+        station: SHOP_STATIONS.filter(function (station) { return station.id === task.station; })[0].label,
+        tool: SHOP_TOOLS.filter(function (tool) { return tool[0] === task.tool; })[0][1], result: record ? record.result : '' };
+    });
+  }
   function arShopHandoffGuide(raw) {
     var state = arShopState(raw), job = arShopJob(state.job);
     var prompts = {
@@ -20506,6 +20517,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
         }
+        function taskRoutePanel() {
+          var open = !!d.shopTaskRoute, route = arShopTaskRoute(shop), recorded = route.filter(function (item) { return item.status === 'recorded'; }).length;
+          var statuses = { recorded: 'Recorded', current: 'Current task', upcoming: 'Upcoming', missing: 'No saved record' };
+          return h('div', { style: { margin: '10px 0' } },
+            control(open ? 'Hide task route' : 'Show task route', function () { upd('shopTaskRoute', !open); },
+              { 'data-ar-route-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-task-route' }),
+            open && h('section', { id: 'ar-task-route', 'data-ar-task-route': job.id, 'aria-label': 'Work order task route',
+              style: { marginTop: 10, padding: 12, background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'From intake to handoff'),
+              h('p', { 'data-ar-route-recorded': recorded, style: { fontSize: 12, lineHeight: 1.6 } }, recorded + ' of ' + route.length + ' tasks have saved records. Open a row to review its station, equipment and recorded evidence.'),
+              h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable task sequence', 'data-ar-route-sequence': true,
+                style: { maxHeight: 360, overflowY: 'auto', overscrollBehavior: 'contain', border: '1px solid ' + T.border, borderRadius: 8 } },
+                h('ol', { style: { listStyle: 'none', margin: 0, padding: 8 } }, route.map(function (item) {
+                  var current = item.status === 'current';
+                  return h('li', { key: job.id + '-' + item.id, 'data-ar-route-step': item.id, 'data-ar-route-status': item.status,
+                    style: { borderLeft: '3px solid ' + (current ? T.link : item.status === 'recorded' ? T.good : T.border), margin: '0 0 8px', paddingLeft: 8 } },
+                    h('details', { open: current },
+                      h('summary', { 'aria-current': current ? 'step' : undefined, style: { cursor: 'pointer', minHeight: 44, padding: '8px 4px', boxSizing: 'border-box', fontSize: 12, lineHeight: 1.6 } },
+                        h('span', { style: { fontSize: 11, color: current ? T.link : T.muted } }, statuses[item.status]),
+                        h('strong', { style: { display: 'block' } }, item.number + '. ' + item.label)),
+                      h('p', { style: { margin: '4px 0 8px', fontSize: 12, lineHeight: 1.6 } }, item.station + ' · ' + item.tool),
+                      h('p', { 'data-ar-route-evidence': item.status, style: { fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
+                        item.status === 'recorded' ? item.result : item.status === 'missing' ? 'This save has progressed beyond the step, but its result is not available. No evidence is inferred.' : current ? 'Continue this task using the work-order controls.' : 'Planned step. Complete the earlier tasks in order.')));
+                }))),
+              control(task ? 'Return to current task controls' : 'Review customer handoff', function () {
+                var target = document.querySelector(task ? '#ar-shop-current-task' : '#ar-shop-notes');
+                if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+              }, { 'data-ar-route-return': true, style: btnSecondary({ minHeight: 44, marginTop: 10, width: '100%' }) })));
+        }
         function workshopJump(section) {
           var root = document.querySelector('[data-ar-workshop]');
           if (!root) return;
@@ -21128,7 +21168,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', null, job.concern),
               h('details', { open: true }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Vehicle service sheet — simulation values'), h('p', null, job.spec)),
               h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': 'Work order progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
-              task ? h('div', { 'data-ar-shop-task': task.id },
+              taskRoutePanel(),
+              task ? h('div', { id: 'ar-shop-current-task', tabIndex: -1, 'data-ar-shop-task': task.id },
                 h('h3', { style: { marginTop: 15, fontSize: 17 } }, (shop.step + 1) + '. ' + task.label),
                 h('p', null, task.why),
                 control('Go to task station', function () { pick(task.station); }, { 'data-ar-shop-go-task': true }),
