@@ -384,6 +384,20 @@ window.StemLab = window.StemLab || {
       '.fraction-lab-equivalence-canvas-wrap:after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none}',
       '.fraction-lab-equivalence-canvas{width:100%;height:100%;display:block}',
       '.fraction-lab-equivalence-canvas:focus-visible{outline:3px solid #0ea5e9;outline-offset:-4px}',
+      ".fraction-lab-navigation,.fraction-lab-guidance{padding:12px;border:1px solid var(--fraction-nav-border);border-radius:14px;background:var(--fraction-nav-bg);color:var(--fraction-nav-ink)}",
+      ".fraction-lab-nav-label{font-size:12px;font-weight:700;margin:0 0 8px;color:var(--fraction-nav-muted)}",
+      ".fraction-lab-goals,.fraction-lab-activities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}",
+      ".fraction-lab-navigation button{min-height:44px;padding:8px;border:1px solid transparent;border-radius:8px;font-size:13px;font-weight:700;line-height:1.4;white-space:normal;overflow-wrap:anywhere;color:var(--fraction-nav-ink);background:transparent}",
+      ".fraction-lab-navigation button:hover{border-color:var(--fraction-nav-border)}",
+      ".fraction-lab-navigation button[aria-selected=true]{background:var(--fraction-nav-active);color:var(--fraction-nav-active-ink);border-color:var(--fraction-nav-active-ink)}",
+      ".fraction-lab-navigation button:focus-visible,.fraction-lab-subsections button:focus-visible{outline:3px solid var(--fraction-nav-focus,#2563eb);outline-offset:2px}",
+      ".fraction-lab-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}",
+      ".fraction-lab-activity-heading .fraction-lab-nav-label{margin:0}",
+      ".fraction-lab-navigation .fraction-lab-more{font-size:12px;text-decoration:underline;text-underline-offset:3px}",
+      ".fraction-lab-subsections button{min-height:44px;white-space:normal}",
+      ".fraction-lab-guidance{border-left:4px solid var(--fraction-nav-border)}",
+      ".fraction-lab-guidance p{font-size:14px;line-height:1.5;margin:0;color:var(--fraction-nav-muted)}",
+      "@media(max-width:560px){.fraction-lab-goals,.fraction-lab-activities{grid-template-columns:repeat(2,minmax(0,1fr))}}",
       '@media (max-width:780px){.fraction-lab-practice-grid{grid-template-columns:1fr}.fraction-lab-model-stage{min-height:236px}.fraction-lab-summary-grid{grid-template-columns:1fr 1fr}}',
       '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}.fraction-lab-equivalence-canvas-wrap{aspect-ratio:auto;height:138px;min-height:0}}'
     ].join('');
@@ -2935,14 +2949,14 @@ window.StemLab = window.StemLab || {
       // Window-level handler; the Back button removes it, but hub navigation that
       // bypasses Back does not — refuse to act once the tool left the DOM.
       if (!document.querySelector('[data-fractions-root]')) return;
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       var key = e.key;
-      if (key === '1') { upd({ tab: 'practice' }); trackTab('practice'); }
-      else if (key === '2') { upd({ tab: 'compare' }); trackTab('compare'); }
-      else if (key === '3') { upd({ tab: 'operations' }); trackTab('operations'); }
-      else if (key === '4') { upd({ tab: 'equivalents' }); trackTab('equivalents'); }
-      else if (key === '5') { upd({ tab: 'converter' }); trackTab('converter'); }
-      else if (key === '6') { upd({ tab: 'wall' }); trackTab('wall'); }
+      if (key === '1') { upd({ navMode: 'learn', tab: 'practice' }); trackTab('practice'); }
+      else if (key === '2') { upd({ navMode: 'practice', tab: 'compare' }); trackTab('compare'); }
+      else if (key === '3') { upd({ navMode: 'practice', tab: 'operations' }); trackTab('operations'); }
+      else if (key === '4') { upd({ navMode: 'practice', tab: 'equivalents' }); trackTab('equivalents'); }
+      else if (key === '5') { upd({ navMode: 'practice', tab: 'converter' }); trackTab('converter'); }
+      else if (key === '6') { upd({ navMode: 'learn', tab: 'wall' }); trackTab('wall'); }
       else if (key === 'n' || key === 'N') { if (tab === 'practice') generateChallenge(); }
       else if (key === 'b' || key === 'B') { upd({ showBenchmarks: !showBenchmarks }); }
       else if (key === 'p' || key === 'P') { upd({ mode: mode === 'pie' ? 'bar' : 'pie' }); }
@@ -10882,7 +10896,7 @@ window.StemLab = window.StemLab || {
 
     var renderSubTabStrip = function(items, currentId, onSelect, accentColor) {
       accentColor = accentColor || 'rose';
-      return h('div', { className: 'flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_choose_a_subsection', 'Choose a subsection') },
+      return h('div', { className: 'fraction-lab-subsections flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_choose_a_subsection', 'Choose a subsection') },
         items.map(function(s) {
           var active = currentId === s.id;
           return h('button', {
@@ -11280,14 +11294,14 @@ window.StemLab = window.StemLab || {
     var tabs = [
       // === LEARN ===
       { id: 'practice',       icon: '\uD83C\uDF55', label: __alloT('stem.fractions.build_a_fraction', 'Build a fraction'),       group: 'learn' },
-      { id: 'models',         icon: '\uD83C\uDFA8', label: __alloT('stem.fractions.models_2', 'Models'),         group: 'learn' },
+      { id: 'models',         icon: '\uD83C\uDFA8', label: __alloT("stem.fractions.nav_fraction_models", "Fraction models"),         group: 'learn' },
       { id: 'numberline',     icon: '\uD83D\uDCCA',     label: __alloT('stem.fractions.compare_strips', 'Compare strips'), group: 'learn' },
-      { id: 'cra',            icon: '\uD83D\uDCDA', label: 'CRA',            group: 'learn' },
-      { id: 'wall',           icon: '\uD83E\uDDF1', label: __alloT('stem.fractions.wall', 'Wall'),           group: 'learn' },
-      { id: 'manip',          icon: '\uD83E\uDDE9', label: __alloT('stem.fractions.manipulatives_2', 'Manipulatives'),  group: 'learn' },
+      { id: 'cra',            icon: '\uD83D\uDCDA', label: __alloT("stem.fractions.nav_build_draw_write", "Build, draw & write"),            group: 'learn' },
+      { id: 'wall',           icon: '\uD83E\uDDF1', label: __alloT("stem.fractions.nav_fraction_wall", "Fraction wall"),           group: 'learn' },
+      { id: 'manip',          icon: '\uD83E\uDDE9', label: __alloT("stem.fractions.nav_hands_on_tools", "Hands-on tools"),  group: 'learn' },
       { id: 'reference',      icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.reference', 'Reference'),      group: 'learn' },
       { id: 'curiosities',    icon: '\u2728',       label: __alloT('stem.fractions.curiosities', 'Curiosities'),    group: 'learn' },
-      { id: 'aboutSuper',     icon: '\u2139',       label: __alloT('stem.fractions.about_3', 'About'),          group: 'learn' },
+      { id: 'aboutSuper',     icon: '\u2139',       label: __alloT("stem.fractions.nav_help_about", "Help & about"),          group: 'learn' },
       // === PRACTICE ===
       { id: 'compare',        icon: '\uD83D\uDD0D', label: __alloT('stem.fractions.compare_3', 'Compare'),        group: 'practice' },
       { id: 'operations',     icon: '\u2795',       label: __alloT('stem.fractions.operations_3', 'Operations'),     group: 'practice' },
@@ -11301,11 +11315,11 @@ window.StemLab = window.StemLab || {
       // exists. See tests/fractions_tab_dispatch.test.js.
       { id: 'equivalents',    icon: '\uD83D\uDD17', label: __alloT('stem.fractions.equivalents_2', 'Equivalents'),    group: 'practice' },
       { id: 'converter',      icon: '\uD83D\uDD04', label: __alloT('stem.fractions.converter_3', 'Converter'),      group: 'practice' },
-      { id: 'explorers',      icon: '\uD83D\uDD0E', label: __alloT('stem.fractions.explorers', 'Explorers'),      group: 'practice' },
-      { id: 'drill',          icon: '\uD83C\uDFAF', label: __alloT('stem.fractions.drill', 'Drill'),          group: 'practice' },
+      { id: 'explorers',      icon: '\uD83D\uDD0E', label: __alloT("stem.fractions.nav_calculator_patterns", "Calculator & patterns"),      group: 'practice' },
+      { id: 'drill',          icon: '\uD83C\uDFAF', label: __alloT("stem.fractions.nav_practice_quizzes", "Practice & quizzes"),          group: 'practice' },
       // === APPLY ===
       { id: 'wordproblems',   icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.word_problems_3', 'Word problems'),  group: 'apply' },
-      { id: 'multistep',      icon: '\uD83E\uDDE9', label: 'Multi-step',     group: 'apply' },
+      { id: 'multistep',      icon: '\uD83E\uDDE9', label: __alloT("stem.fractions.nav_multistep_problems", "Multi-step problems"),     group: 'apply' },
       { id: 'games',          icon: '\uD83C\uDFAE', label: __alloT('stem.fractions.games_2', 'Games'),          group: 'apply' },
       { id: 'recipes',        icon: '\uD83C\uDF73', label: __alloT('stem.fractions.recipe_scaler_3', 'Recipe scaler'),  group: 'apply' },
       { id: 'story',          icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.story_mode_2', 'Story mode'),     group: 'apply' },
@@ -11317,8 +11331,8 @@ window.StemLab = window.StemLab || {
       // === TEACHER ===
       { id: 'standardsPlanning', icon: '\uD83D\uDCCB', label: __alloT('stem.fractions.standards_planning', 'Standards & Planning'), group: 'teacher' },
       { id: 'printAssess',    icon: '\uD83D\uDDA8', label: __alloT('stem.fractions.print_assess', 'Print & Assess'), group: 'teacher' },
-      { id: 'pedagogy',       icon: '\uD83E\uDDE0', label: __alloT('stem.fractions.pedagogy', 'Pedagogy'),       group: 'teacher' },
-      { id: 'myAccount',      icon: '\u2699',       label: __alloT('stem.fractions.my_account', 'My Account'),     group: 'teacher' },
+      { id: 'pedagogy',       icon: '\uD83E\uDDE0', label: __alloT("stem.fractions.nav_teaching_guides", "Teaching guides"),       group: 'teacher' },
+      { id: 'myAccount',      icon: '\u2699',       label: __alloT("stem.fractions.nav_goals_progress", "Goals & progress"),     group: 'teacher' },
       { id: 'ml',             icon: '\uD83C\uDF0D', label: __alloT('stem.fractions.multilingual_2', 'Multilingual'),   group: 'teacher' },
       { id: 'sliderMixer',    icon: '\uD83C\uDF9A', label: __alloT('stem.fractions.slider_mixer', 'Slider Mixer'),   group: 'learn' }
     ];
@@ -11405,124 +11419,106 @@ window.StemLab = window.StemLab || {
     ];
     var navMode = _f.navMode || 'learn';
     var MODE_LABELS = {
-      learn:    { icon: '\uD83D\uDCDA', label: __alloT('stem.fractions.learn_2', 'Learn'),    desc: __alloT('stem.fractions.visualization_heavy_no_quiz_pressure', 'Visualization-heavy, no quiz pressure') },
-      practice: { icon: '\uD83C\uDFAF', label: __alloT('stem.fractions.practice_5', 'Practice'), desc: __alloT('stem.fractions.skill_focused_scored', 'Skill-focused, scored') },
-      apply:    { icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.apply_2', 'Apply'),    desc: __alloT('stem.fractions.real_world_contexts_and_games', 'Real-world contexts and games') },
-      teacher:  { icon: '\uD83C\uDFEB', label: __alloT('stem.fractions.teacher_2', 'Teacher'),  desc: __alloT('stem.fractions.tools_for_instructors_and_ieps', 'Tools for instructors and IEPs') }
+      learn: { icon: '\uD83D\uDCDA', label: __alloT('stem.fractions.learn_2', 'Learn'), desc: __alloT("stem.fractions.nav_learn_hint", "Explore fractions with pictures and hands-on models.") },
+      practice: { icon: '\uD83C\uDFAF', label: __alloT('stem.fractions.practice_5', 'Practice'), desc: __alloT("stem.fractions.nav_practice_hint", "Compare, calculate, or choose a quiz to check your understanding.") },
+      apply: { icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.apply_2', 'Apply'), desc: __alloT("stem.fractions.nav_apply_hint", "Use fractions in stories, everyday problems, and games.") },
+      teacher: { icon: '\uD83C\uDFEB', label: __alloT('stem.fractions.teacher_2', 'Teacher'), desc: __alloT("stem.fractions.nav_teacher_hint", "Find planning, assessment, and teaching resources.") }
     };
-    var visibleTabs = tabs.filter(function(t2) { return t2.group === navMode; });
-    if (visibleTabs.length > 0 && !visibleTabs.find(function(t2) { return t2.id === tab; })) {
-      tab = visibleTabs[0].id;
+    if (!MODE_LABELS[navMode]) navMode = 'learn';
+    var groupTabs = tabs.filter(function(t2) { return t2.group === navMode; });
+    if (!groupTabs.find(function(t2) { return t2.id === tab; })) tab = groupTabs[0].id;
+    var primaryActivities = {
+      learn: ['practice', 'models', 'numberline', 'wall'],
+      practice: ['compare', 'operations', 'equivalents', 'converter'],
+      apply: ['wordproblems', 'multistep', 'games', 'recipes']
+    };
+    var primaryIds = primaryActivities[navMode];
+    var showAllActivities = _f.showAllActivitiesFor === navMode;
+    // A selected secondary activity stays visible when the list is shortened or work is restored.
+    var visibleTabs = groupTabs.filter(function(t2) {
+      return !primaryIds || showAllActivities || primaryIds.indexOf(t2.id) !== -1 || tab === t2.id;
+    });
+    var navStyle = {
+      '--fraction-nav-bg': isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#ffffff',
+      '--fraction-nav-ink': isContrast ? '#ffffff' : ctx.isDark ? '#f1f5f9' : '#334155',
+      '--fraction-nav-muted': isContrast ? '#ffffff' : ctx.isDark ? '#cbd5e1' : '#475569',
+      '--fraction-nav-border': isContrast ? '#ffffff' : ctx.isDark ? '#64748b' : '#cbd5e1',
+      '--fraction-nav-active': isContrast ? '#ffff00' : ctx.isDark ? '#4c0519' : '#fff1f2',
+      '--fraction-nav-active-ink': isContrast ? '#000000' : ctx.isDark ? '#fecdd3' : '#9f1239',
+      '--fraction-nav-focus': isContrast ? '#ffff00' : ctx.isDark ? '#7dd3fc' : '#2563eb'
+    };
+    function moveNavigationTab(e, index, length) {
+      var next = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + length - 1) % length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = length - 1;
+      if (next < 0) return;
+      e.preventDefault();
+      var buttons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+      if (buttons[next]) { buttons[next].focus(); buttons[next].click(); }
     }
 
     return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-fractions-root': 'true' },
-      // Header
-      h('div', { className: 'flex items-center gap-3 mb-2' },
-        h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') },
-          h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+      h('div', { className: 'flex items-center gap-3 mb-2 flex-wrap' },
+        h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
         h('h3', { className: 'text-lg font-bold text-rose-800' + onHostInk }, __alloT('stem.fractions.fraction_lab', '\uD83C\uDF55 Fraction Lab')),
-        // Stats
-        h('div', { className: 'ml-auto flex items-center gap-3' },
+        h('div', { className: 'ml-auto flex items-center gap-3 flex-wrap' },
           streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
           bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak),
-          h('span', { className: 'text-xs font-bold text-rose-700', style: { color: ctx.isContrast ? '#ffff00' : undefined } }, score.correct + '/' + score.total)
+          score.total > 0 && h('span', { className: 'text-xs font-bold text-rose-700', style: { color: isContrast ? '#ffff00' : undefined } }, __alloT("stem.fractions.nav_practice_score", "Practice score:") + ' ' + score.correct + '/' + score.total)
         )
       ),
-
-      // v3: Two-level navigation
-      // First level — MODE (Learn / Practice / Apply / Teacher)
-      h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1 border border-slate-300', role: 'tablist', 'aria-label': __alloT('stem.fractions.fraction_lab_mode', 'Fraction Lab mode') },
-        Object.keys(MODE_LABELS).map(function(mk) {
-          var mm = MODE_LABELS[mk];
-          var active = navMode === mk;
-          return h('button', {
-            key: 'mode-' + mk,
-            id: 'fraction-mode-tab-' + mk,
-            role: 'tab', 'aria-selected': active, 'aria-controls': 'fraction-mode-panel', tabIndex: active ? 0 : -1,
-            onKeyDown: function(e) {
-              var modeKeys = Object.keys(MODE_LABELS);
-              var current = modeKeys.indexOf(mk);
-              var next = -1;
-              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (current + 1) % modeKeys.length;
-              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (current + modeKeys.length - 1) % modeKeys.length;
-              else if (e.key === 'Home') next = 0;
-              else if (e.key === 'End') next = modeKeys.length - 1;
-              if (next < 0) return;
-              e.preventDefault();
-              var modeTabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-              if (modeTabs[next]) { modeTabs[next].focus(); modeTabs[next].click(); }
-            },
-            onClick: function() {
-              sfxClick();
-              // Switch mode; also switch to first tab in that mode if current tab not in mode
-              var firstInMode = tabs.find(function(tt) { return tt.group === mk; });
-              upd({ navMode: mk, tab: firstInMode ? firstInMode.id : tab });
-            },
-            title: mm.desc,
-            className: 'flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition-all ' +
-              (active ? 'bg-white text-slate-900 shadow-sm border border-slate-300' : 'text-slate-600 hover:text-slate-900')
-          }, mm.icon + ' ' + mm.label);
-        })
+      h('div', { className: 'fraction-lab-navigation', style: navStyle },
+        h('p', { className: 'sr-only' }, __alloT("stem.fractions.nav_choose_focus", "Choose a focus")),
+        h('div', { className: 'fraction-lab-goals', role: 'tablist', 'aria-label': __alloT('stem.fractions.fraction_lab_mode', 'Fraction Lab mode') },
+          Object.keys(MODE_LABELS).map(function(mk, index) {
+            var mm = MODE_LABELS[mk];
+            return h('button', { key: mk, type: 'button', id: 'fraction-mode-tab-' + mk,
+              role: 'tab', 'aria-selected': navMode === mk, 'aria-controls': 'fraction-mode-panel', tabIndex: navMode === mk ? 0 : -1,
+              onKeyDown: function(e) { moveNavigationTab(e, index, Object.keys(MODE_LABELS).length); },
+              onClick: function() {
+                sfxClick();
+                var first = tabs.find(function(tt) { return tt.group === mk; });
+                upd({ navMode: mk, tab: first.id, showAllActivitiesFor: null });
+              }, title: mm.desc
+            }, mm.icon + ' ' + mm.label);
+          })
+        )
       ),
-      navMode !== 'teacher' && h('details', {className:'rounded-lg border border-rose-200 bg-white p-3'},
-        h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className:'cursor-pointer text-sm font-bold text-rose-800'},__alloT('stem.fractions.learning_path','Follow a learning path')),
-        h('div',{className:'flex flex-wrap gap-2 mt-2'},[
-          ['learn','practice','1. Build a fraction'],['practice','compare','2. Compare sizes'],['learn','numberline','3. Locate and compare'],['practice','operations','4. Explore operations']
-        ].map(function(step){return h('button',{key:step[2],type:'button',className:'rounded-lg border px-3 py-2 text-sm text-rose-900',onClick:function(){upd({navMode:step[0],tab:step[1]});trackTab(step[1]);}},step[2]);}))
-      ),
-      // Second level — TAB within mode
       h('div', { id: 'fraction-mode-panel', role: 'tabpanel', 'aria-labelledby': 'fraction-mode-tab-' + navMode, className: 'space-y-4' },
-      h('div', { className: 'flex gap-1 bg-rose-50 rounded-xl p-1 border border-rose-200 flex-wrap', role: 'tablist', 'aria-label': __alloT('stem.fractions.fraction_lab_sections', 'Fraction Lab sections') },
-        visibleTabs.map(function(t2, tabIndex) {
-          return h('button', { key: t2.id,
-            id: 'fraction-section-tab-' + t2.id,
-            onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
-            onKeyDown: function(e) {
-              var next = -1;
-              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tabIndex + 1) % visibleTabs.length;
-              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tabIndex + visibleTabs.length - 1) % visibleTabs.length;
-              else if (e.key === 'Home') next = 0;
-              else if (e.key === 'End') next = visibleTabs.length - 1;
-              if (next < 0) return;
-              e.preventDefault();
-              var sectionTabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-              if (sectionTabs[next]) { sectionTabs[next].focus(); sectionTabs[next].click(); }
-            },
-            role: 'tab', 'aria-selected': tab === t2.id, 'aria-controls': 'fraction-section-panel', tabIndex: (tab === t2.id) ? 0 : -1,
-            className: 'py-1.5 px-2.5 rounded-lg text-[0.6875rem] sm:text-xs font-bold transition-all whitespace-nowrap ' +
-              (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
-          }, t2.icon + ' ' + t2.label);
-        })
-      ),
-
-      // ── Topic-accent hero band per tab ──
-      (function() {
-        var TAB_META = {
-          practice:    { accent: '#e11d48', soft: 'rgba(225,29,72,0.10)',  icon: '\uD83C\uDF55', title: __alloT('stem.fractions.build_fraction_heading', 'Build a fraction — connect the picture and the number'),           hint: __alloT('stem.fractions.build_fraction_guidance', 'Start with equal parts of one whole. Build a fraction, compare its size, then connect it to a decimal and percent. Work at your own pace.') },
-          compare:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD0D', title: __alloT('stem.fractions.compare_equal_wholes_title', 'Compare fractions using equal wholes'),           hint: __alloT('stem.fractions.compare_reasoning_intro', 'Start with equal-sized wholes. Compare shaded amounts and number-line positions, then explain the relationship using same-sized parts.') },
-          operations:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2795',         title: __alloT('stem.fractions.operations_add_sub_mul_div_with_rules', 'Operations \u2014 add/sub/mul/div with rules'),           hint: __alloT('stem.fractions.add_sub_common_denominator_first_multi', 'Add/sub: common denominator first. Multiply: tops\u00d7tops, bottoms\u00d7bottoms. Divide: keep-change-flip (multiply by reciprocal). Always simplify to lowest terms.') },
-          equivalents: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDD17', title: __alloT('stem.fractions.equivalents_same_value_different_form', 'Equivalents \u2014 same value, different form'),         hint: __alloT('stem.fractions.multiply_top_and_bottom_by_the_same_nu', 'Multiply top AND bottom by the same number; value stays put. \u00bd = 2/4 = 50/100 = 0.5 = 50%. Equivalent fractions are the bridge between fractions, decimals, and percents.') },
-          converter:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD04', title: __alloT('stem.fractions.converter_mixed_improper_decimal', 'Converter \u2014 mixed \u2194 improper \u2194 decimal'),  hint: __alloT('stem.fractions.2_11_4_long_division_gives_a_terminati', '2\u00be = 11/4. Long division gives a terminating decimal (denom = 2\u00b9 \u00d7 5\u207f) or a repeating one (any other prime in the denom). 1/3 = 0.333... forever.') },
-          wall:        { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.fractions.wall_visual_proof_of_equivalence', 'Wall \u2014 visual proof of equivalence'),                  hint: __alloT('stem.fractions.stack_the_fraction_wall_1_whole_2_halv', 'Stack the fraction wall: 1 whole = 2 halves = 4 quarters = 8 eighths. Same height = same value. Cuisenaire rods (1952) made this concrete; the wall is the digital descendant.') }
-        };
-        var meta = TAB_META[tab] || TAB_META.practice;
-        return h('div', {
-          style: {
-            margin: '0 0 12px',
-            padding: '12px 14px',
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-            border: '1px solid ' + meta.accent + '55',
-            borderLeft: '4px solid ' + meta.accent,
-            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-          }
-        },
-          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-          h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        h('div', { className: 'fraction-lab-navigation', style: navStyle },
+          h('div', { className: 'fraction-lab-activity-heading' },
+            h('p', { className: 'fraction-lab-nav-label' }, __alloT("stem.fractions.nav_choose_activity", "Choose an activity")),
+            primaryIds && h('button', { type: 'button', className: 'fraction-lab-more', 'aria-expanded': showAllActivities, 'aria-controls': 'fraction-activity-list',
+              onClick: function() { upd({ showAllActivitiesFor: showAllActivities ? null : navMode }); }
+            }, showAllActivities ? __alloT("stem.fractions.nav_show_fewer", "Show fewer activities") : __alloT("stem.fractions.nav_show_all", "Show all activities") + ' (' + groupTabs.length + ')')
+          ),
+          h('div', { id: 'fraction-activity-list', className: 'fraction-lab-activities', role: 'tablist', 'aria-label': __alloT('stem.fractions.fraction_lab_sections', 'Fraction Lab sections') },
+            visibleTabs.map(function(t2, index) {
+              return h('button', { key: t2.id, type: 'button', id: 'fraction-section-tab-' + t2.id,
+                role: 'tab', 'aria-selected': tab === t2.id, 'aria-controls': 'fraction-section-panel', tabIndex: tab === t2.id ? 0 : -1,
+                onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
+                onKeyDown: function(e) { moveNavigationTab(e, index, visibleTabs.length); }
+              }, t2.icon + ' ' + t2.label);
+            })
           )
-        );
+        ),
+
+      // Only show guidance that belongs to this activity; other views provide their own introduction.
+      (function() {
+        var hints = {
+          practice: __alloT("stem.fractions.nav_build_hint", "Set the number of equal parts in one whole, then choose how many to fill."),
+          compare: __alloT("stem.fractions.nav_compare_hint", "Set two fractions, compare equal-sized wholes, and explain which amount is greater."),
+          operations: __alloT("stem.fractions.nav_operations_hint", "Choose an operation and enter two fractions. Use the visual model and worked steps to explain the result."),
+          equivalents: __alloT("stem.fractions.nav_equivalents_hint", "Change the number of equal parts while keeping the same amount. Look for fractions with the same value."),
+          converter: __alloT("stem.fractions.nav_converter_hint", "Connect mixed numbers, improper fractions, decimals, and percents. Choose a conversion to see its steps."),
+          wall: __alloT("stem.fractions.nav_wall_hint", "Compare rows using the same whole. Look for pieces that line up to find equivalent fractions."),
+          cra: __alloT("stem.fractions.nav_cra_hint", "Move from objects to pictures to fraction notation: concrete, representational, and abstract (CRA).")
+        };
+        if (!hints[tab]) return null;
+        return h('div', { className: 'fraction-lab-guidance', style: navStyle, 'data-fraction-guidance': tab },
+          h('p', null, hints[tab]));
       })(),
 
       // v3.1: Super-tab routing (added FIRST so consolidated tabs take precedence)
@@ -11713,6 +11709,13 @@ window.StemLab = window.StemLab || {
             )
       ),
       ),
+      ),
+
+      navMode !== 'teacher' && h('details', { className: 'rounded-lg border border-rose-200 bg-white p-3' },
+        h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold text-rose-800' }, __alloT('stem.fractions.learning_path', 'Follow a learning path')),
+        h('div', { className: 'flex flex-wrap gap-2 mt-2' }, [
+          ['learn','practice','1. Build a fraction'], ['practice','compare','2. Compare sizes'], ['learn','numberline','3. Locate and compare'], ['practice','operations','4. Explore operations']
+        ].map(function(step) { return h('button', { key: step[2], type: 'button', className: 'rounded-lg border px-3 py-2 text-sm text-rose-900', onClick: function() { upd({ navMode: step[0], tab: step[1] }); trackTab(step[1]); } }, step[2]); }))
       ),
 
       // Badges

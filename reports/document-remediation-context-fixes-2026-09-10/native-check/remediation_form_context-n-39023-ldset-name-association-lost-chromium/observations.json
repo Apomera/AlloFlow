@@ -1,0 +1,77 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:2"
+  },
+  "repaired": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Student details"
+        ]
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 1,
+      "candidateRejectionCount": 1,
+      "candidateRejections": [
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "form-state-changed",
+          "sourceLocation": "control:2"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Student details"
+        ]
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  },
+  "candidate": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": []
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  }
+}

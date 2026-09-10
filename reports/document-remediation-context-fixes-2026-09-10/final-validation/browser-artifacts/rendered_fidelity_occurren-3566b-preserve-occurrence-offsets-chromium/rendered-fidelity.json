@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "250fda20d994c2f102eb2bc896dca87641fbca9b08d2d69a453277cb9f1d9dfa",
+    "bytes": 50
+  },
+  "candidate": {
+    "sha256": "dc8e4b8811d1903d751b7cc8947182afa5aadf0594df7141923a29f446e3aa1b",
+    "bytes": 94
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 653.1934000000037,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "Café: ne pas ouvrir. لا تفتح.",
+          "candidate": "Café: ne pas ouvrir. لا تفتح."
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "visibleText",
+          "status": "passed",
+          "source": "Café: ne pas ouvrir. لا تفتح.",
+          "candidate": "Café: ne pas ouvrir. لا تفتح.",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                8
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                13,
+                20
+              ],
+              [
+                21,
+                23
+              ],
+              [
+                24,
+                29
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                8
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                13,
+                20
+              ],
+              [
+                21,
+                23
+              ],
+              [
+                24,
+                29
+              ]
+            ]
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "passed",
+          "source": "Café: ne pas ouvrir. لا تفتح.",
+          "candidate": "Café: ne pas ouvrir. لا تفتح.",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                8
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                13,
+                20
+              ],
+              [
+                21,
+                23
+              ],
+              [
+                24,
+                29
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                5
+              ],
+              [
+                6,
+                8
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                13,
+                20
+              ],
+              [
+                21,
+                23
+              ],
+              [
+                24,
+                29
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

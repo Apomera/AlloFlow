@@ -14580,7 +14580,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           sun.color.setHex(twilight > 0.25 ? 0xfbbf24 : 0xfff8e1);
           sunDir.set(Math.cos(solarAngle) * 0.72, sunHeight, Math.sin(solarAngle) * 0.62).normalize();
           moonDir.copy(sunDir).multiplyScalar(-1);
-          sun.position.copy(sunDir).multiplyScalar(180);
+          // Keep the light relative to its tracked target on cached-shadow frames too.
+          // An origin-relative position alternates the lighting direction at the shadow cadence.
+          sun.position.copy(sun.target.position).addScaledVector(sunDir,350);
           moonGlow.position.copy(moonDir).multiplyScalar(150);
           moonGlow.intensity = moonlight * 0.34 * cloudShade;
           sunSprite.material.opacity = Math.max(0, (daylight + twilight * 0.38) * cloudShade);

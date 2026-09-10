@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-09-10T22:17:26.252Z",
+  "unit": {
+    "files": 18,
+    "passed": 370
+  },
+  "browser": {
+    "files": 14,
+    "passed": 206
+  },
+  "testsPassed": 576,
+  "policyVersion": "20260910-1",
+  "implementationUnchangedDuringFinalValidation": true,
+  "shippingModulesIdentical": true,
+  "originalReviewFixturesPreserved": 8,
+  "addedChecks": 55,
+  "priorChecksRetained": 521,
+  "scope": "Local synthetic fixtures, actual source and generated modules, scripted model transport, Chromium. CI workflow configured but not executed on GitHub; no deployment or human screen-reader acceptance."
+}

@@ -43686,7 +43686,33 @@
       "quantity_inverse_check": "Check with multiplication: ",
       "quantity_signed_input_help": "Use whole-number numerators from -20 to 20 and denominators from 1 to 20. Finish the highlighted inputs to update the model.",
       "quantity_input_help": "Use whole-number numerators from 0 to 20 and denominators from 1 to 20. Finish the highlighted inputs to update the model.",
-      "quantity_wait_prediction": "Check a prediction or reveal the worked model to see the exact value."
+      "quantity_wait_prediction": "Check a prediction or reveal the worked model to see the exact value.",
+      "nav_fraction_models": "Fraction models",
+      "nav_build_draw_write": "Build, draw & write",
+      "nav_fraction_wall": "Fraction wall",
+      "nav_hands_on_tools": "Hands-on tools",
+      "nav_help_about": "Help & about",
+      "nav_calculator_patterns": "Calculator & patterns",
+      "nav_practice_quizzes": "Practice & quizzes",
+      "nav_multistep_problems": "Multi-step problems",
+      "nav_teaching_guides": "Teaching guides",
+      "nav_goals_progress": "Goals & progress",
+      "nav_learn_hint": "Explore fractions with pictures and hands-on models.",
+      "nav_practice_hint": "Compare, calculate, or choose a quiz to check your understanding.",
+      "nav_apply_hint": "Use fractions in stories, everyday problems, and games.",
+      "nav_teacher_hint": "Find planning, assessment, and teaching resources.",
+      "nav_practice_score": "Practice score:",
+      "nav_choose_focus": "Choose a focus",
+      "nav_choose_activity": "Choose an activity",
+      "nav_show_fewer": "Show fewer activities",
+      "nav_show_all": "Show all activities",
+      "nav_build_hint": "Set the number of equal parts in one whole, then choose how many to fill.",
+      "nav_compare_hint": "Set two fractions, compare equal-sized wholes, and explain which amount is greater.",
+      "nav_operations_hint": "Choose an operation and enter two fractions. Use the visual model and worked steps to explain the result.",
+      "nav_equivalents_hint": "Change the number of equal parts while keeping the same amount. Look for fractions with the same value.",
+      "nav_converter_hint": "Connect mixed numbers, improper fractions, decimals, and percents. Choose a conversion to see its steps.",
+      "nav_wall_hint": "Compare rows using the same whole. Look for pieces that line up to find equivalent fractions.",
+      "nav_cra_hint": "Move from objects to pictures to fraction notation: concrete, representational, and abstract (CRA)."
     },
     "func_graph": {
       "cell_sim": "Cell Sim"
@@ -50593,7 +50619,8 @@
       "remove_block_from": "Remove one block from ",
       "add_block_to": "Add one block to ",
       "challenge_range": "Challenge range: ",
-      "add_after_trade": "Trade or remove blocks from this place before adding more."
+      "add_after_trade": "Trade or remove blocks from this place before adding more.",
+      "nav_build_draw_write": "Build, draw & write"
     },
     "microbiology": {
       "a11y_antibiotic_exposure_strength_in_the_teaching_mo": "Antibiotic exposure strength in the teaching model",
@@ -53902,7 +53929,11 @@
       "budgetplan_adjust_title": "Adjust individual percentages",
       "budgetplan_adjust_help": "Each slider sets a share of the whole income. These controls change the total allocation; use them to reach 100%.",
       "budgetplan_minimum_expense": "Increase the income to model an expense of at least one cent or yen.",
-      "budgetplan_zero_expense": "This expense rounds to zero. Increase the income before choosing a response."
+      "budgetplan_zero_expense": "This expense rounds to zero. Increase the income before choosing a response.",
+      "nav_growth_explorer": "Explore interest growth",
+      "nav_choose_activity": "Choose an activity",
+      "nav_show_fewer": "Show fewer activities",
+      "nav_show_all": "Show all activities"
     },
     "moonmission": {
       "mission_briefing": "Mission Briefing",
@@ -54392,7 +54423,8 @@
       "rows_label": "rows",
       "strategy_array_scroll": "Scrollable strategy dot array",
       "dots_each_row": "in each row",
-      "strategy_reflect": "Which smaller fact did you know already? Try another split and explain why the total stays the same."
+      "strategy_reflect": "Which smaller fact did you know already? Try another split and explain why the total stays the same.",
+      "nav_arrays_groups": "Arrays & groups"
     },
     "music": {
       "a11y_mod_ratio": "Mod Ratio",
@@ -55138,7 +55170,9 @@
       "hop_start": "Start · 0 hops",
       "hop_number": "Hop ",
       "hide_hop_markers": "Hide markers on line",
-      "show_hop_markers": "Show markers on line"
+      "show_hop_markers": "Show markers on line",
+      "nav_fractions_decimals": "Fractions & decimals",
+      "nav_compare_fractions": "Compare fractions"
     },
     "nutritionlab": {
       "a11y_energy_after_meal_from_1_to_10": "Energy after meal, from 1 to 10",
@@ -78136,7 +78170,14 @@
       "prediction_matches": "Your prediction matches. ",
       "prediction_revisit": "Revisit your prediction. ",
       "result_waiting": "Result hidden while you predict",
-      "formula_after_prediction": "The equation will appear after you compare your prediction."
+      "formula_after_prediction": "The equation will appear after you compare your prediction.",
+      "nav_convert": "Convert",
+      "nav_all_units": "All units",
+      "nav_quiz": "Quiz",
+      "nav_word_problems": "Word problems",
+      "nav_compare_scales": "Compare scales",
+      "nav_shortcuts": "1–5 Activities",
+      "nav_measurement": "Measurement"
     },
     "universe": {
       "milky_way_assembly": "Milky Way assembly",

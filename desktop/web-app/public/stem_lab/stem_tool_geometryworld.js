@@ -3010,6 +3010,7 @@
       var showMyLessons = d.showMyLessons || false;
       var showLessonEditor = d.showLessonEditor || false;
       var showLessonIntro = d.showLessonIntro || false;
+      var showGeometryHome = !!d.showGeometryHome;
       var soundMuted = d.soundMuted || false;
       var renderQuality = d.renderQuality || 'auto';
       // Touch mode is an explicit, persisted preference on touch devices. It
@@ -4186,7 +4187,7 @@
         // though the key handlers were all wired. Caught by the WebGL e2e, not by any
         // jsdom test — there is no animate loop without a GL context.
         engine.isInputActive = function() {
-          if(engine._showcase)return false;
+          if(engine._showcase || (engine._modalState && engine._modalState.showGeometryHome))return false;
           if (engine.isLocked || engine._touchActive) return true;
           var wrap = document.getElementById('geoworld-fs-wrap');
           return !!(wrap && document.activeElement === wrap);
@@ -5526,6 +5527,7 @@
         });
 
         document.addEventListener('keydown', _docH.keydown = function(ev) {
+          if(engine._modalState && engine._modalState.showGeometryHome){if(ev.code==='Escape' && engine.closeGeometryHome){ev.preventDefault();engine.closeGeometryHome();}return;}
           if(engine._showcase){if(ev.code==='Escape' && engine.endShowcase){ev.preventDefault();engine.endShowcase();}return;}
           // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
           // But every other shortcut should be ignored when typing in a form field — otherwise
@@ -5946,7 +5948,7 @@
         function canMatchAimedBlock() {
           if(engine._destroyed || engine._runtimeFailed || engine._showcase || engine._worldActive===false)return false;
           var modal=engine._modalState || {};
-          return !['showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
+          return !['showGeometryHome','showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
         }
         // Copy canonical choices only. Matching never creates a block or changes
         // the retained selection, camera, construction geometry or history.
@@ -6778,6 +6780,9 @@
           // undefined on frames where those branches do not run.
           var THREE = window.THREE;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
+          // Home is opaque: retain the frame loop and drain its clock, but leave
+          // the hidden world still until the learner returns to it.
+          if(engine._modalState && engine._modalState.showGeometryHome)return;
 
           // ── Keyboard look (arrow keys) ──
           // Looking used to be mouse-only (pointer-lock mousemove / touch drag), which
@@ -6825,12 +6830,12 @@
 
           // Focus framing owns only the camera; passive keyboard focus keeps
           // picking available without enabling gravity or FOV drift.
-          if(engine.updateCreationFocus)engine.updateCreationFocus(dt);
+          if(engine.updateCreationFocus && !(engine._modalState && engine._modalState.showGeometryHome))engine.updateCreationFocus(dt);
           // ── Camera entry animation (swoop down to spawn) ──
           // ── Guided explore tour: a predictable, low-motion orbit around the
           // first meaningful structure gives learners a spatial overview before
           // keyboard, mouse, or touch input takes over.
-          if (engine._guidedTour) {
+          if (engine._guidedTour && !(engine._modalState && engine._modalState.showGeometryHome)) {
             if (engine.isInputActive()) {
               engine.stopGuidedTour(false);
             } else {
@@ -6856,7 +6861,7 @@
             }
           }
           // ── Preset camera transition ──
-          if (engine._viewPresetAnim && !engine._guidedTour) {
+          if (engine._viewPresetAnim && !engine._guidedTour && !(engine._modalState && engine._modalState.showGeometryHome)) {
             if (engine.isInputActive()) {
               engine._viewPresetAnim = null;
               engine._viewPresetReturn = null;
@@ -6880,7 +6885,7 @@
               }
             }
           }
-          if (engine._entryAnim && !engine.isInputActive()) {
+          if (engine._entryAnim && !engine.isInputActive() && !(engine._modalState && engine._modalState.showGeometryHome)) {
             var ea = engine._entryAnim;
             ea.progress = Math.min(1, ea.progress + dt * 0.6);
             var easeP = 1 - Math.pow(1 - ea.progress, 3); // ease-out cubic
@@ -8166,13 +8171,22 @@
         }
       }
 
-      // ── Auto-show lesson intro on first load ──
+      function openGeometryHome() {
+        if(engine && engine._showcaseExporting)return;
+        if(engine && engine.endShowcase && engine._showcase)engine.endShowcase();
+        try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+        upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:false,_introShownOnce:true,showLessonIntro:false,showSandboxLauncher:false,showGameSettings:false,showPredictionPanel:false,objectivesOpen:false,showNpcDialog:false,showHelp:false,showReflection:false,showMyLessons:false,showLessonEditor:false,showCreatorPanel:false,creatorMode:false,showGrowthNudge:false,showTeacherView:false,showPeerWorlds:false});
+      }
+
+      // ── Show the mode chooser on the first visit; standalone core keeps its intro. ──
       // Defer via setTimeout(0) so we don't call upd (state update) during render.
       // _introShownOnce is flipped to true immediately to prevent re-queueing on re-renders
       // that happen before the deferred upd lands.
-      if (threeReady && !worldActive && !showLessonIntro && !d._introShownOnce) {
-        setTimeout(function() { upd({ showLessonIntro: true, _introShownOnce: true }); }, 0);
-      }
+      React.useEffect(function(){
+        if(!threeReady || worldActive || showLessonIntro || d._introShownOnce || window.__alloGeometryWorldPendingBuild)return;
+        if(window.StemLab && window.StemLab.geometryWorldBuilderPure)upd({showGeometryHome:true,geometryHomePage:'start',_geometryHomeInitial:true,_introShownOnce:true});
+        else upd({showLessonIntro:true,_introShownOnce:true});
+      },[threeReady,worldActive,showLessonIntro,d._introShownOnce]);
 
       // ── Typewriter effect: auto-advance character position ──
       if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
@@ -8201,7 +8215,7 @@
       // A narrower window must never replace an active creation with onboarding.
       // The viewport ref owns the engine: removing it here would discard blocks
       // and undo history when a desktop window crosses the mobile breakpoint.
-      if (isMobile && !d._mobileDismissed && !worldActive) {
+      if (isMobile && !d._mobileDismissed && !worldActive && !(window.StemLab && window.StemLab.geometryWorldBuilderPure)) {
         return el('section', {
           className: 'gw-root gw-state-screen',
           role: 'region',
@@ -8610,6 +8624,14 @@
 
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
+        engine.openGeometryHome = openGeometryHome;
+        engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || []};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || []};}));
+        engine.startHomeLesson = function(id){
+          if(!engine.geometryHomeLessons.some(function(l){return l.id===id;}))return false;
+          loadLessonByKey(id);
+          upd({activeLesson:id,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false});
+          focusWorldSurface();return true;
+        };
         engine._answeredRef = answeredNpcs;
         engine._worldActive = worldActive;
         // Modal flags bridge: the keydown handler was attached once during initEngine
@@ -8620,7 +8642,7 @@
           showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, hudPanel: hudPanel,
           showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
           showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
-          showLessonIntro: showLessonIntro, showReflection: showReflection,
+          showGeometryHome: showGeometryHome, showLessonIntro: showLessonIntro, showReflection: showReflection,
           showCreatorPanel: showCreatorPanel, creatorMode: creatorMode
         };
         // Tutorial state bridge — same staleness issue; tutorial advancement checks
@@ -8642,6 +8664,7 @@
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
+        { flag: showGeometryHome, key: 'showGeometryHome', label: 'Geometry World home', emoji: '◇' },
         { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
         { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
         { flag: showMyLessons,    key: 'showMyLessons',    label: __alloT('stem.geometryworld.my_lessons', 'My Lessons'),            emoji: '📚' },
@@ -8717,7 +8740,7 @@
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
-              el('h2', { id: 'gw-title', className: 'gw-title' }, 'Geometry World'),
+              el('h2', { id: 'gw-title', className: 'gw-title' }, window.StemLab.geometryWorldBuilderPure ? el('button',{type:'button',className:'gw-home-brand-button','aria-label':'Geometry World home','aria-haspopup':'dialog',onClick:openGeometryHome},'Geometry World') : 'Geometry World'),
               el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
             )
           ),
@@ -8766,6 +8789,7 @@
         }, el('span', { 'aria-hidden': 'true' }, '\u25BC'), ' Show game bar'),
 
         el('div', { className: 'gw-fullscreen-quickbar', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_fullscreen_game_tools', 'Fullscreen game tools') },
+          window.StemLab.geometryWorldBuilderPure && el('button',{type:'button',className:'gw-compact-action gw-focusable','aria-label':'Geometry World home','aria-haspopup':'dialog',onClick:openGeometryHome},'Home'),
           worldActive && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',

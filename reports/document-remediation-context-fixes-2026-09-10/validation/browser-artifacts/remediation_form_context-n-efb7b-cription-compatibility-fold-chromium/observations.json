@@ -1,0 +1,52 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:1"
+  },
+  "repaired": {
+    "names": [
+      {
+        "name": "Area",
+        "description": "Answer in m²",
+        "groups": []
+      }
+    ],
+    "typed": null
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 1,
+      "candidateRejectionCount": 1,
+      "candidateRejections": [
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "form-state-changed",
+          "sourceLocation": "control:1"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "names": [
+      {
+        "name": "Area",
+        "description": "Answer in m²",
+        "groups": []
+      }
+    ],
+    "typed": null
+  },
+  "candidate": {
+    "names": [
+      {
+        "name": "Area",
+        "description": "Answer in m2",
+        "groups": []
+      }
+    ],
+    "typed": null
+  }
+}

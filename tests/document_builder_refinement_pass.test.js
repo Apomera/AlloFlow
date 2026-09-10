@@ -146,7 +146,7 @@ describe('Document Builder refinement pass', () => {
   });
 
   it('supports persistent Fit Width and Fit Page zoom modes', () => {
-    expect(view).toContain("zoomMode: 'custom'");
+    expect(view).toContain("zoomMode: 'fit-width'");
     expect(view).toContain('calculateEditorZoomPreset');
     expect(view).toContain("useEditorZoomPreset('fit-width')");
     expect(view).toContain("useEditorZoomPreset('fit-page')");

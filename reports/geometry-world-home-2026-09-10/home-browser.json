@@ -1,0 +1,214 @@
+{
+  "checks": [
+    {
+      "label": "Opaque Home pauses hidden 3D rendering",
+      "pass": true
+    },
+    {
+      "label": "Fresh visit shows four primary paths",
+      "pass": true
+    },
+    {
+      "label": "Fresh visit does not show the old lesson intro",
+      "pass": true
+    },
+    {
+      "label": "Fresh visit does not offer the automatically seeded world as user work",
+      "pass": true
+    },
+    {
+      "label": "No horizontal overflow at 1440",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 1440",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 1440",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 1440",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 1440",
+      "pass": true
+    },
+    {
+      "label": "No horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 390",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 390",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 390",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 390",
+      "pass": true
+    },
+    {
+      "label": "No horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 320",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 320",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 320",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 320",
+      "pass": true
+    },
+    {
+      "label": "No horizontal overflow at 844",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 844",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 844",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 844",
+      "pass": true
+    },
+    {
+      "label": "Mode card reachable at 844",
+      "pass": true
+    },
+    {
+      "label": "Shift Tab wraps to last home control",
+      "pass": true
+    },
+    {
+      "label": "Tab wraps to first home card",
+      "pass": true
+    },
+    {
+      "label": "Fresh home remains available after Escape",
+      "pass": true
+    },
+    {
+      "label": "Learn starts the chosen real lesson",
+      "pass": true
+    },
+    {
+      "label": "Choosing a path resumes 3D rendering",
+      "pass": true
+    },
+    {
+      "label": "Explore opens the no-question Geometry Garden",
+      "pass": true
+    },
+    {
+      "label": "Build opens the actual sandbox",
+      "pass": true
+    },
+    {
+      "label": "Home and its shortcuts preserve blocks, selection, history, camera and print scale",
+      "pass": true
+    },
+    {
+      "label": "Browsing lesson previews and Continue preserve the entire workspace",
+      "pass": true
+    },
+    {
+      "label": "Invalid saved-build file cannot mutate the workspace",
+      "pass": true
+    },
+    {
+      "label": "Saved build preview is non-destructive",
+      "pass": true
+    },
+    {
+      "label": "Import preview has one unique accessible heading",
+      "pass": true
+    },
+    {
+      "label": "Cancelling an import preserves work",
+      "pass": true
+    },
+    {
+      "label": "Import cancellation restores focus to the visible file control",
+      "pass": true
+    },
+    {
+      "label": "Confirmed home import opens the editable build and dismisses Home",
+      "pass": true
+    },
+    {
+      "label": "Creator reuses existing work",
+      "pass": true
+    },
+    {
+      "label": "Blank lesson keeps focus inside its creator dialog",
+      "pass": true
+    },
+    {
+      "label": "AI entry focuses topic without generating",
+      "pass": true
+    },
+    {
+      "label": "Home remains reachable with the game bar collapsed",
+      "pass": true
+    },
+    {
+      "label": "Home remains available in native fullscreen",
+      "pass": true
+    },
+    {
+      "label": "Fresh touch phone reaches all four modes without a device-note dead end",
+      "pass": true
+    },
+    {
+      "label": "Fresh phone starts a usable touch sandbox",
+      "pass": true
+    },
+    {
+      "label": "Touch sandbox returns to Home",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "home-1440x1000.png",
+    "home-390x844.png",
+    "home-320x700.png",
+    "home-844x390.png",
+    "learn.png",
+    "explore.png",
+    "build.png",
+    "invalid-file.png",
+    "saved-build-preview.png",
+    "create.png",
+    "home-contrast.png",
+    "home-fullscreen.png",
+    "home-fresh-touch.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "8d780854f372cb3c6ea9b491cb1bca30b3287558ca238b9eae4e18ad3a16e4a8",
+    "stem_tool_geometryworld_builder.js": "afd45d3787e433f4a2c806210f849c095f189ff711799a37ae28891886446ef0"
+  },
+  "pass": true
+}

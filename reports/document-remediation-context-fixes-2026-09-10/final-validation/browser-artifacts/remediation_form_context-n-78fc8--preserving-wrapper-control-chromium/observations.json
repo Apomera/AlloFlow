@@ -1,0 +1,74 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0105062082139447,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Student details"
+        ]
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Student details"
+        ]
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  },
+  "candidate": {
+    "names": [
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Student details"
+        ]
+      },
+      {
+        "name": "Name",
+        "description": "",
+        "groups": [
+          "Teacher details"
+        ]
+      }
+    ],
+    "typed": null
+  }
+}

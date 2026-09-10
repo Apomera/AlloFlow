@@ -10230,6 +10230,9 @@ var createDocPipeline = function(deps) {
           }
         }
         const formState = doc => {
+          // Canonical equivalence keeps accents interchangeable without folding
+          // meaningful superscripts/subscripts in names, descriptions or groups.
+          const norm = s => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
           // Resolve labels once per document. Accessing every control's live
           // labels collection repeatedly walks the whole tree in some DOMs.
           // Native label.control preserves for/implicit-label and duplicate-ID rules.
@@ -10274,6 +10277,19 @@ var createDocPipeline = function(deps) {
             }
             namesByControl.get(control).push(norm(textAlternative(label, control, false, new Set(), labelHidden)));
           }
+          // Resolve each named fieldset once, using ARIA before its first direct
+          // legend. IDs and neutral wrappers are not part of group meaning.
+          const fieldsetNames = new Map(nodes(doc, 'fieldset').map(fieldset => {
+            const refs = (fieldset.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
+            const legend = Array.from(fieldset.children).find(child => child.tagName === 'LEGEND');
+            let legendHidden = false;
+            for (let ancestor = legend; ancestor; ancestor = ancestor.parentElement) {
+              if (hiddenForName(ancestor)) { legendHidden = true; break; }
+            }
+            const name = refs.length ? refs.map(ref => norm(textAlternative(ref, null, true))).join(' ')
+              : norm(fieldset.getAttribute('aria-label')) || norm(textAlternative(legend, null, false, new Set(), legendHidden)) || norm(fieldset.getAttribute('title'));
+            return [fieldset, name];
+          }));
           const formIndexes = new Map(nodes(doc, 'form').map((form, index) => [form, index]));
           return nodes(doc, 'form,input,select,textarea,button').map(el => {
           const attrs = ['name','type','value','checked','selected','multiple','disabled','readonly','required','min','max','step','pattern','action','method','enctype','formaction','formmethod','formenctype','placeholder','aria-checked','aria-valuenow'];
@@ -10306,12 +10322,29 @@ var createDocPipeline = function(deps) {
           // may acquire wording during a legitimate accessibility repair.
           const relationships = ['aria-describedby', 'aria-details', 'aria-errormessage'].map(attr => references(attr).map(referenceText));
           const attributeState = attrs.map(name => name === 'type' && el.tagName === 'INPUT' ? el.type : el.getAttribute(name));
-          return { accessibleName, accessibleDescription, relationships, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled')], labels, groupLabels: groups.map(group => norm(group.label)) };
+          // Length attributes affect text-entry controls only. Native properties
+          // preserve effective limits while accepting equivalent numeric spelling.
+          const lengthLimits = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|url|tel|email|password)$/.test(el.type))
+            ? [el.minLength, el.maxLength] : [];
+          const fieldsetContext = [];
+          for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
+            const name = fieldsetNames.get(ancestor);
+            if (name) fieldsetContext.unshift(name);
+          }
+          return { accessibleName, accessibleDescription, relationships, fieldsetContext, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled'), lengthLimits], labels, groupLabels: groups.map(group => norm(group.label)) };
           });
+        };
+        // New group context may repair an ungrouped field, but every existing
+        // named ancestor must survive in order (including repeated names).
+        const retainsFieldsetContext = (source, candidate) => {
+          let matched = 0;
+          for (const name of candidate) if (matched < source.length && name === source[matched]) matched++;
+          return matched === source.length;
         };
         const af = formState(before), bf = formState(after);
         for (let i = 0; i < Math.max(af.length, bf.length); i++) {
           if (!af[i] || !bf[i] || JSON.stringify(af[i].state) !== JSON.stringify(bf[i].state)
+            || !retainsFieldsetContext(af[i].fieldsetContext, bf[i].fieldsetContext)
             || (af[i].accessibleName && af[i].accessibleName !== bf[i].accessibleName)
             || (af[i].accessibleDescription && af[i].accessibleDescription !== bf[i].accessibleDescription)
             || af[i].relationships.some((refs, ri) => refs.some((value, vi) => value && value !== bf[i].relationships[ri][vi]))
@@ -16881,7 +16914,7 @@ var createDocPipeline = function(deps) {
   // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
   // changes, so cache hits could replay results produced by superseded logic).
   // 2026-09-09: strict source values, link/figure associations, and bounded metadata additions.
-  const _PIPELINE_PROMPT_VERSION = '20260909-6';
+  const _PIPELINE_PROMPT_VERSION = '20260910-1';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {

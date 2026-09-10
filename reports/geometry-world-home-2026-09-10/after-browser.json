@@ -1,0 +1,1979 @@
+{
+  "stage": "after",
+  "sources": {
+    "stem_tool_geometryworld.js": "8d780854f372cb3c6ea9b491cb1bca30b3287558ca238b9eae4e18ad3a16e4a8",
+    "stem_tool_geometryworld_builder.js": "afd45d3787e433f4a2c806210f849c095f189ff711799a37ae28891886446ef0",
+    "stem_tool_printlab.js": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [],
+  "inspector": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 1000
+      },
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 310,
+        "bottom": 490.484375,
+        "height": 180.484375
+      },
+      "scopeRect": {
+        "top": 457.984375,
+        "bottom": 474.484375,
+        "height": 16.5
+      },
+      "body": {
+        "top": 295,
+        "bottom": 987,
+        "height": 692
+      },
+      "print": {
+        "top": 672.484375,
+        "bottom": 892.671875,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false,
+      "screenshot": "after-selected-1440x1000.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 650.53125,
+        "bottom": 825.015625,
+        "height": 174.484375
+      },
+      "scopeRect": {
+        "top": 795.515625,
+        "bottom": 812.015625,
+        "height": 16.5
+      },
+      "body": {
+        "top": 637.53125,
+        "bottom": 827,
+        "height": 189.46875
+      },
+      "print": {
+        "top": 1003.015625,
+        "bottom": 1223.203125,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false,
+      "screenshot": "after-selected-390x844.png"
+    },
+    {
+      "size": {
+        "width": 414,
+        "height": 896
+      },
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 680.6875,
+        "bottom": 855.171875,
+        "height": 174.484375
+      },
+      "scopeRect": {
+        "top": 825.671875,
+        "bottom": 842.171875,
+        "height": 16.5
+      },
+      "body": {
+        "top": 667.6875,
+        "bottom": 879,
+        "height": 211.3125
+      },
+      "print": {
+        "top": 1033.171875,
+        "bottom": 1253.359375,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false,
+      "screenshot": "after-selected-414x896.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 570.1875,
+        "bottom": 744.671875,
+        "height": 174.484375
+      },
+      "scopeRect": {
+        "top": 715.171875,
+        "bottom": 731.671875,
+        "height": 16.5
+      },
+      "body": {
+        "top": 557.1875,
+        "bottom": 683,
+        "height": 125.8125
+      },
+      "print": {
+        "top": 929.859375,
+        "bottom": 1150.046875,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false,
+      "screenshot": "after-selected-320x700.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 310,
+        "bottom": 490.484375,
+        "height": 180.484375
+      },
+      "scopeRect": {
+        "top": 457.984375,
+        "bottom": 474.484375,
+        "height": 16.5
+      },
+      "body": {
+        "top": 295,
+        "bottom": 377,
+        "height": 82
+      },
+      "print": {
+        "top": 672.484375,
+        "bottom": 892.671875,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false,
+      "screenshot": "after-selected-844x390.png"
+    }
+  ],
+  "utilities": [
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "redo": false,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 57.59375,
+          "height": 44,
+          "x": 12,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 57.609375,
+          "height": 44,
+          "x": 71.59375,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 57.59375,
+          "height": 44,
+          "x": 131.203125,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 57.609375,
+          "height": 44,
+          "x": 190.796875,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 57.59375,
+          "height": 44,
+          "x": 250.40625,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-320-five.png"
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 700
+      },
+      "redo": true,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 47.65625,
+          "height": 44,
+          "x": 12,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 47.671875,
+          "height": 44,
+          "x": 61.65625,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 47.65625,
+          "height": 44,
+          "x": 111.328125,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Redo last action",
+          "text": "Redo234",
+          "width": 47.671875,
+          "height": 44,
+          "x": 160.984375,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 47.671875,
+          "height": 44,
+          "x": 210.65625,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 47.671875,
+          "height": 44,
+          "x": 260.328125,
+          "y": 520,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-320-six.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "redo": false,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 71.59375,
+          "height": 44,
+          "x": 12,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 71.609375,
+          "height": 44,
+          "x": 85.59375,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 71.59375,
+          "height": 44,
+          "x": 159.203125,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 71.609375,
+          "height": 44,
+          "x": 232.796875,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 71.59375,
+          "height": 44,
+          "x": 306.40625,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-390-five.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "redo": true,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 59.328125,
+          "height": 44,
+          "x": 12,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 59.34375,
+          "height": 44,
+          "x": 73.328125,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 59.328125,
+          "height": 44,
+          "x": 134.671875,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Redo last action",
+          "text": "Redo234",
+          "width": 59.34375,
+          "height": 44,
+          "x": 196,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 59.328125,
+          "height": 44,
+          "x": 257.34375,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 59.328125,
+          "height": 44,
+          "x": 318.671875,
+          "y": 664,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-390-six.png"
+    },
+    {
+      "size": {
+        "width": 414,
+        "height": 896
+      },
+      "redo": false,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 76.390625,
+          "height": 44,
+          "x": 12,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 76.40625,
+          "height": 44,
+          "x": 90.390625,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 76.390625,
+          "height": 44,
+          "x": 168.796875,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 76.40625,
+          "height": 44,
+          "x": 247.1875,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 76.40625,
+          "height": 44,
+          "x": 325.59375,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-414-five.png"
+    },
+    {
+      "size": {
+        "width": 414,
+        "height": 896
+      },
+      "redo": true,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 63.328125,
+          "height": 44,
+          "x": 12,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 63.34375,
+          "height": 44,
+          "x": 77.328125,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 63.328125,
+          "height": 44,
+          "x": 142.671875,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Redo last action",
+          "text": "Redo234",
+          "width": 63.34375,
+          "height": 44,
+          "x": 208,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 63.328125,
+          "height": 44,
+          "x": 273.34375,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 63.328125,
+          "height": 44,
+          "x": 338.671875,
+          "y": 716,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-414-six.png"
+    },
+    {
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "redo": false,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 78.21875,
+          "height": 44,
+          "x": 12,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 59.265625,
+          "height": 44,
+          "x": 93.21875,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 104.5,
+          "height": 44,
+          "x": 155.484375,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 77,
+          "height": 44,
+          "x": 262.984375,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 71.671875,
+          "height": 44,
+          "x": 342.984375,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-430-five.png"
+    },
+    {
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "redo": true,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 78.21875,
+          "height": 44,
+          "x": 12,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 59.265625,
+          "height": 44,
+          "x": 93.21875,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 104.5,
+          "height": 44,
+          "x": 155.484375,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Redo last action",
+          "text": "Redo234",
+          "width": 102.59375,
+          "height": 44,
+          "x": 262.984375,
+          "y": 752,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 77,
+          "height": 44,
+          "x": 368.578125,
+          "y": 752,
+          "inViewport": false,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 71.671875,
+          "height": 44,
+          "x": 448.578125,
+          "y": 752,
+          "inViewport": false,
+          "hit": false
+        }
+      ],
+      "screenshot": "after-utilities-430-six.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "redo": false,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 75.375,
+          "height": 44,
+          "x": 226.4921875,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 58,
+          "height": 44,
+          "x": 304.8671875,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 102.015625,
+          "height": 44,
+          "x": 365.8671875,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 74.25,
+          "height": 44,
+          "x": 470.8828125,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 69.375,
+          "height": 44,
+          "x": 548.1328125,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-844-five.png"
+    },
+    {
+      "size": {
+        "width": 844,
+        "height": 390
+      },
+      "redo": true,
+      "buttons": [
+        {
+          "label": "Match aimed block",
+          "text": "Match",
+          "width": 75.375,
+          "height": 44,
+          "x": 174.859375,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Toggle fly mode",
+          "text": "Fly",
+          "width": 58,
+          "height": 44,
+          "x": 253.234375,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Undo last action",
+          "text": "Undo123",
+          "width": 102.015625,
+          "height": 44,
+          "x": 314.234375,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Redo last action",
+          "text": "Redo234",
+          "width": 100.265625,
+          "height": 44,
+          "x": 419.25,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Return to spawn point",
+          "text": "Home",
+          "width": 74.25,
+          "height": 44,
+          "x": 522.515625,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        },
+        {
+          "label": "Clear my placed blocks",
+          "text": "Clear",
+          "width": 69.375,
+          "height": 44,
+          "x": 599.765625,
+          "y": 210,
+          "inViewport": true,
+          "hit": true
+        }
+      ],
+      "screenshot": "after-utilities-844-six.png"
+    }
+  ],
+  "fixture": {
+    "selected": 60,
+    "total": 62
+  },
+  "initial": {
+    "world": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 7,
+        "type": "brick",
+        "shape": "quarter",
+        "rotation": 1
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 8,
+        "type": "brick",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      }
+    ],
+    "stl": "12f65177c6bda01cdc064b743c85828cfe7821ab44c8c20b24da5f3614c6d411",
+    "history": "[[{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":1,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":2,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":3,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":4,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":0,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":0,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":1,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":1,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":2,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":2,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":1,\"z\":3,\"type\":\"wood\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":5,\"z\":3,\"type\":\"stone\",\"shape\":\"halfB\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":3,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":2,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":3,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":0,\"y\":4,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":2,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":3,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":4,\"z\":0,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":2,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":3,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":5,\"y\":4,\"z\":3,\"type\":\"stone\",\"shape\":\"cube\",\"rotation\":0},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":7,\"type\":\"brick\",\"shape\":\"quarter\",\"rotation\":1},{\"action\":\"place\",\"x\":9,\"y\":1,\"z\":8,\"type\":\"brick\",\"shape\":\"cube\",\"rotation\":0}],[]]",
+    "camera": "[[11,9,13],[-0.20181838360080548,0.3022001225384191,0.06562807163226902,0.9293209252956443]]",
+    "count": 62,
+    "mesh": "[[\"E5C4DD38-3640-40F8-BC9F-09C12614FEB4\",\"992C07ED-5786-4BEC-A0A4-3CB13FC96EA4\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"B325D363-EDA8-451C-B866-DB53153C9F4D\",\"6A19C42B-5612-40ED-AE10-8B4EDFFCC7D0\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"5FF09BD4-604B-44DE-967C-1B43F6D50861\",\"1C3EC174-9CCE-4EE9-84D2-F1A1AA5CA8A6\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"1DB6E703-DF9A-4B6F-B19A-D2928DBA19FA\",\"039D2E90-F800-4772-8FE2-695A7A34C923\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"B12A5A77-133C-42E8-92E6-3C7B89ED72D5\",\"BFDCCFCE-22D1-45DE-860C-9E0AE161EDA0\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"03F1DC2C-0585-4DA2-B75B-7419FDF3A377\",\"903108A6-0204-4E96-8551-496D4BAB7511\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"BF717F67-3CB1-4CCB-97FD-4330BBAE60C7\",\"9144551C-E22E-464F-B17B-53FCAD56E03D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"44F35E9F-B9F1-4D68-ABBF-219FE59699C3\",\"F48FE06F-315B-47AB-9238-1D935FBCE797\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"C7B57115-015E-44A6-8DEE-DBD6829FF1D6\",\"3DD17E39-53CA-4434-971C-4437DB29A370\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"FDE0C7FD-FBE8-49E6-AA44-409EDBE69E45\",\"CAEBC6ED-FC75-47DC-8AFE-8E18AA499195\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"AA19AD83-64DB-41E7-86A2-E45E5921CA0C\",\"89E7724E-575E-45D2-9ECB-C5141D0F14D1\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"2D4AC795-06C0-44BB-B3FA-75ABFA5A036B\",\"094FE47A-6353-4FCA-B7C9-4358A5702ADB\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"C991E070-0C86-464B-9DEF-1CACB91F059B\",\"DF3CF3A1-9F69-45C8-A864-98725B11E33E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"BE3FE318-8C6E-4D5C-8409-0FE127D64F98\",\"4F55419F-3049-4CE1-8AEC-987F5076B576\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"03BE01A7-5C94-4078-9928-3C37F0B0B5B7\",\"71A1C06A-E091-4F03-AB2E-FD4A499FC5FB\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"C4283F66-A68A-420C-AED5-3C5F1095BDCA\",\"49C7D67E-BAF0-4BB7-9C64-47CA309CEC8A\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"926A902A-F9D6-46A4-9500-71D5B837673C\",\"565996F2-A96D-460B-ADBD-4F313424B206\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"CD6B6E95-1894-4102-93A0-9B96596AAE99\",\"7C40CBA9-CA15-42A4-B3BF-0100BF4FCD7B\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"B981A30E-D370-4068-BFAC-FEF92D87ECED\",\"F86E70DD-9A9A-4442-A3FB-8018539CF2FB\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"D8A5EA3F-19B4-462D-9F1A-1A0203D76252\",\"F15FC1A5-0D31-4346-A1D6-9FD109DB3C05\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"B3D6BFB1-E1E0-4818-8CEB-B310A42D1EC7\",\"2859694C-77E3-4CCF-A011-CDB26D62AB0A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"961D0078-7A55-4845-9D52-E1BE9D04BFA7\",\"C0843F15-9723-4ACB-89B9-E390FD98C7A4\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"3CA18784-8EC1-4AFF-8ACF-16B68878E301\",\"1EEC025C-4B45-4091-B0C0-689A50C3BDBC\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"B9725D55-3701-4D56-AF63-5A996EFBDD77\",\"05D66BA5-57AA-49B6-B8FF-72186EC1B69A\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"F409140C-6A19-4264-9CE4-C2515D1B35DC\",\"EAB81248-E2D5-408F-81BD-ABC63BA93DDA\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"3F91A9E5-F884-455F-9A23-C845B5D8AB93\",\"9F4D5BA9-8C21-4DD6-BFA6-048D4767F212\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"4B5F8611-FC12-4D24-8C08-164CDB1081B9\",\"2CACF0DC-64B8-4C28-BAAB-ECFCDDE6C56B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"4A922E17-2E42-43F1-B6B5-BA1C56926AB7\",\"B9E312DF-1406-47EB-84A8-A501CF63FD3D\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"1E878647-44CB-4432-AFF8-85A26A6BF3C5\",\"17E1873C-0CA8-487D-97DC-0935A9C244F4\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"A7607F9F-1449-4326-80A8-52873C3D7B7F\",\"1F3217AA-9F28-478D-AF4B-379BBDADF2EE\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"1F4729AC-7DAD-4B5A-8714-4ED592530051\",\"91E77613-0A0B-4E33-9C07-CAF69E93D812\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"5E717FF4-8630-49EB-9E6A-B8E61A081CE9\",\"95A57191-B39B-4B4C-9583-B97FDC5C69C4\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"C2C6DF18-D503-4E23-B1C5-13B35FD3CCFF\",\"1695A298-F1CC-427F-8E81-462272FCB2DC\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"92F124F6-0F70-47BD-B851-6BE440907147\",\"4087C6C4-1FA2-4339-8A41-17000CEB5A40\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"A9909910-813D-4CC3-98A9-AE1E9C9869D1\",\"56B59598-D1D9-473E-B364-984F0783318D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"446554EF-F137-4E32-B570-21C2AC51DC33\",\"262B652B-0383-4510-9852-381187336CA3\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"E0BF7702-D32B-44AD-9E2C-6C5A483A5111\",\"75E7D783-323B-4583-B0BE-3A88F206087B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"6B40B049-5100-4F9E-8DF3-B8EF3FD88F71\",\"DA0D239F-0795-48C3-9A70-C00E4E1CADE1\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"FA19FE1A-3E43-419D-9A16-02F2717FCA8F\",\"259F32C8-DD6A-4B97-A899-75FC8F12EB1D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"97EB9D87-4F2A-4D17-814A-0FCF89702573\",\"1BF1632C-48FC-4730-9FC3-2474365AEA17\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"83250A61-0E67-41BA-A5AC-FE7C86161A06\",\"43145C61-5F07-40AA-9778-8887337DC02E\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"3FAEE908-1300-4EE6-AC37-52156D008165\",\"AE5A522F-3782-4B15-A323-0BBCF4822E25\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"D705D1F9-3817-44C8-9C72-0FFD433EA50E\",\"34D59D50-D354-44AE-80F9-3F7E7820CB8C\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"27301882-A38B-45D9-9D1F-DF051E98B21D\",\"96B92C9C-A21E-4864-859B-E68C62B619DB\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"139CDBA2-0240-4277-9089-67DD7BF89A23\",\"ADBE139F-C8EE-4D27-AD41-419280BCC42A\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"014735B4-B3E9-45EF-A943-35C646A2E1AA\",\"E47A6588-BF71-4321-9254-8F4F28A8E982\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"E6EAF24E-4CBF-4167-92FE-C1FE4358FE74\",\"17F2A16E-0982-434E-8479-65DAAAFBB99D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"D7F0EE5D-E7F4-40D2-8135-4E97F1CA9936\",\"E5A467C2-CA5A-4F1C-A49A-B5DD49A9CAD7\",[0.5,0.25,0.5,0.5,0.25,-0.5,0.5,-0.25,0.5,0.5,-0.25,-0.5,-0.5,0.25,-0.5,-0.5,0.25,0.5,-0.5,-0.25,-0.5,-0.5,-0.25,0.5,-0.5,0.25,-0.5,0.5,0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,-0.5,-0.25,-0.5,0.5,-0.25,-0.5,-0.5,0.25,0.5,0.5,0.25,0.5,-0.5,-0.25,0.5,0.5,-0.25,0.5,0.5,0.25,-0.5,-0.5,0.25,-0.5,0.5,-0.25,-0.5,-0.5,-0.25,-0.5],[0,0,0,1],[1,1,1]],[\"87CDF676-B551-4E29-BA15-1D740D71A0D3\",\"EB177968-1550-41DE-AFC1-D43DED19B268\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"FB83F248-3EF9-434C-9DE5-707E2702831D\",\"924C943D-1D5B-46FE-AD1C-006C4B78688F\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"BDD8F324-FE85-4073-9CA9-5A9D11CBA5D3\",\"DC619771-7E7D-430E-9B48-386AAB3255B2\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"C43C25AE-C258-459D-AF2B-0B97DC1348EB\",\"B006FADF-9869-4611-9B77-F41FC4807B6B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"C1D44256-3A9F-4858-B6EA-9845AB8633AB\",\"1C8B66E6-44BC-42B4-82F6-EBEBC9A30C5B\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"17439447-EBCB-4741-B266-6D3B71EE0047\",\"88518FDC-EB13-4707-BB94-7C9DDC90C5FF\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"E9FE4EC5-459C-4F5E-963A-6CE5D9EAFEF4\",\"FDFE7981-C71D-46A0-A526-E76BC37373A9\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"EED7419A-48D5-4BD2-97A6-2F2C04706E5F\",\"95056685-D03A-4E1A-953F-34C176F9B163\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"FC79D9D8-CC22-49A4-9FF2-FD1BC97EA538\",\"85DDCC0B-C08D-45CD-8409-FB7EB0987159\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"A90409FB-23EF-4033-87EB-60BCB1EEFDBD\",\"A83A9CE1-1B19-4E9F-8C3E-14B87545CA5D\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"1E9B777F-DFBC-47B6-AB76-DB2DBCDD1495\",\"EA66DE78-DBB9-4A36-9DAB-BC6A48B57058\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]],[\"EB82924B-933B-4732-B2A7-0CC09E9F8EBD\",\"6BFF764C-BA1A-4A5F-87CA-052FFF013BCF\",[0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5],[0,0,0,1],[1,1,1]]]"
+  },
+  "contrast": {
+    "colors": {
+      "background": "rgb(0, 0, 0)",
+      "border": "rgb(0, 255, 255)",
+      "color": "rgb(255, 255, 255)"
+    },
+    "screenshot": "after-selected-contrast.png"
+  },
+  "draft": {
+    "same": true,
+    "focused": true,
+    "value": "12.75"
+  },
+  "cleared": {
+    "selected": "false",
+    "title": "Your creation",
+    "metrics": [
+      "62Placed",
+      "—Selected",
+      "—Block bounds"
+    ],
+    "toolsAfterPrint": false,
+    "hero": {
+      "top": 561.171875,
+      "bottom": 665.171875,
+      "height": 104
+    },
+    "scopeRect": null,
+    "body": {
+      "top": 295,
+      "bottom": 835.859375,
+      "height": 540.859375
+    },
+    "print": null,
+    "horizontalOverflow": false
+  },
+  "fullscreen": {
+    "buttons": [
+      {
+        "label": "Match aimed block",
+        "text": "Match",
+        "width": 71.59375,
+        "height": 44,
+        "x": 12,
+        "y": 664,
+        "inViewport": true,
+        "hit": true
+      },
+      {
+        "label": "Toggle fly mode",
+        "text": "Fly",
+        "width": 71.609375,
+        "height": 44,
+        "x": 85.59375,
+        "y": 664,
+        "inViewport": true,
+        "hit": true
+      },
+      {
+        "label": "Undo last action",
+        "text": "Undo62",
+        "width": 71.59375,
+        "height": 44,
+        "x": 159.203125,
+        "y": 664,
+        "inViewport": true,
+        "hit": true
+      },
+      {
+        "label": "Return to spawn point",
+        "text": "Home",
+        "width": 71.609375,
+        "height": 44,
+        "x": 232.796875,
+        "y": 664,
+        "inViewport": true,
+        "hit": true
+      },
+      {
+        "label": "Clear my placed blocks",
+        "text": "Clear",
+        "width": 71.59375,
+        "height": 44,
+        "x": 306.40625,
+        "y": 664,
+        "inViewport": true,
+        "hit": true
+      }
+    ],
+    "screenshot": "after-utilities-fullscreen-390.png"
+  },
+  "returned": {
+    "info": {
+      "selected": "true",
+      "title": "Selected creation",
+      "metrics": [
+        "60Blocks selected",
+        "6×4×5Block bounds"
+      ],
+      "scope": "Showcase and Print Lab use these blocks.",
+      "toolsAfterPrint": true,
+      "hero": {
+        "top": 310,
+        "bottom": 490.484375,
+        "height": 180.484375
+      },
+      "scopeRect": {
+        "top": 457.984375,
+        "bottom": 474.484375,
+        "height": 16.5
+      },
+      "body": {
+        "top": 295,
+        "bottom": 987,
+        "height": 692
+      },
+      "print": {
+        "top": 672.484375,
+        "bottom": 892.671875,
+        "height": 220.1875
+      },
+      "horizontalOverflow": false
+    },
+    "unit": 12.5,
+    "world": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 1,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 2,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "z": 3,
+        "type": "wood",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 7,
+        "type": "brick",
+        "shape": "quarter",
+        "rotation": 1
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "z": 8,
+        "type": "brick",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "z": 3,
+        "type": "stone",
+        "shape": "cube",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 2,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "z": 3,
+        "type": "stone",
+        "shape": "halfB",
+        "rotation": 0
+      }
+    ]
+  },
+  "shaders": [],
+  "pass": true
+}

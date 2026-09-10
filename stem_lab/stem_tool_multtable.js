@@ -1187,10 +1187,10 @@ window.StemLab = window.StemLab || {
         ),
 
         // Tab bar (v3)
-        h('div', { className: 'flex gap-1 overflow-x-auto bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': t('stem.multtable.multiplication_table_sections', 'Multiplication Table sections') },
+        h('div', { className: 'grid grid-cols-3 gap-1 bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': t('stem.multtable.multiplication_table_sections', 'Multiplication Table sections') },
           [
             { id: 'practice', icon: '\uD83C\uDFAF', label: t('stem.multtable.practice', 'Practice') },
-            { id: 'visual',   icon: '\uD83D\uDFE9', label: t('stem.multtable.visual', 'Visual') },
+            { id: 'visual',   icon: '\uD83D\uDFE9', label: t("stem.multtable.nav_arrays_groups", "Arrays & groups") },
             { id: 'patterns', icon: '\uD83D\uDD0D', label: t('stem.multtable.patterns', 'Patterns') }
           ].map(function(tb, tabIndex) {
             var active = mtTab === tb.id;
@@ -1201,7 +1201,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { multTableTabKeyDown(e, tabIndex); },
               role: 'tab', 'aria-selected': active,
               tabIndex: active ? 0 : -1,
-              className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
+              style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, className: 'py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
                 (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-700 hover:text-pink-800')
             }, tb.icon + ' ' + tb.label);
           })

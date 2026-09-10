@@ -840,12 +840,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         // ── Keyboard shortcuts (no hooks — plain render function) ──
         function handleKey(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
           var key = e.key;
           if (key === '1') { e.preventDefault(); upd('tab', 'convert'); }
           if (key === '2') { e.preventDefault(); upd('tab', 'table'); }
           if (key === '3') { e.preventDefault(); upd('tab', 'quiz'); }
           if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
+          if (key === '5') { e.preventDefault(); upd('tab', 'magHunt'); }
           if (key.toLowerCase() === 'n' && tab === 'quiz') {
             e.preventDefault();
             startQuizQuestion();
@@ -981,8 +982,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             }, t('stem.unitconvert.ask_again_2', '\uD83D\uDD04 Ask Again'))
           ),
 
-          // Category selector
-          h('div', { className: 'mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
+          // Category selector: retain the full set behind a named, keyboard-operable disclosure.
+          h('details', { 'data-unit-category-picker': true, className: 'mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
+            h('summary', { className: 'cursor-pointer rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500', style: { minHeight: 44, color: '#0e7490' } }, t('stem.unitconvert.nav_measurement', 'Measurement') + ': ' + cat.label),
             h('div', { className: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5', role: 'group', 'aria-label': 'Measurement categories' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
@@ -1011,17 +1013,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tool tabs
-          h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
-            [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem'], ['magHunt', '\u2699\uFE0F Magnitude']].map(function(item, idx) {
+          h('div', { className: 'gap-1 mb-3 border-b border-slate-200', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 125px), 1fr))' }, role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
+            [['convert', t("stem.unitconvert.nav_convert", "Convert")], ['table', t("stem.unitconvert.nav_all_units", "All units")], ['quiz', t("stem.unitconvert.nav_quiz", "Quiz")], ['wordproblem', t("stem.unitconvert.nav_word_problems", "Word problems")], ['magHunt', t("stem.unitconvert.nav_compare_scales", "Compare scales")]].map(function(item, idx) {
               return h('button', { key: item[0],
                 id: 'stem-unitconvert-tab-' + item[0],
-                style: { color: ctx.isContrast ? '#00ff00' : undefined },
+                style: { color: ctx.isContrast ? '#00ff00' : undefined, minHeight: 44, minWidth: 0, whiteSpace: 'normal' },
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
                 'aria-controls': 'stem-unitconvert-panel-' + item[0],
                 tabIndex: tab === item[0] ? 0 : -1,
                 onKeyDown: function(e) { unitConvertTabKeyDown(e, idx); },
-                className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : ('transition-colors text-slate-600 hover:text-slate-700' + onHostInk)),
+                className: 'px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : ('transition-colors text-slate-600 hover:text-slate-700' + onHostInk)),
                 title: (idx + 1) + ' key'
               }, item[1]);
             })
@@ -1768,7 +1770,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // ── Keyboard shortcuts legend ──
           h('div', { className: 'text-[0.6875rem] text-center mt-3 space-x-3 rounded-lg p-2', style: { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
-            h('span', null, t('stem.unitconvert.1_4_tabs', '1-4 Tabs')),
+            h('span', null, t("stem.unitconvert.nav_shortcuts", "1–5 Activities")),
             h('span', null, t('stem.unitconvert.n_next_quiz', 'N Next Quiz')),
             h('span', null, t('stem.unitconvert.b_badges', 'B Badges')),
             h('span', null, t('stem.unitconvert.ai_tutor_2', '? AI Tutor'))

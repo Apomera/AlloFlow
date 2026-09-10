@@ -1,0 +1,77 @@
+{
+  "checks": [
+    {
+      "id": "pdf.document-title",
+      "status": "passed",
+      "observed": "Export review",
+      "expected": "Export review"
+    },
+    {
+      "id": "pdf.tagged-reading-order",
+      "status": "passed",
+      "observed": {
+        "untaggedPages": 0,
+        "anchorsInOrder": true
+      },
+      "expected": []
+    },
+    {
+      "id": "pdf.heading-navigation-semantics",
+      "status": "passed",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "id": "pdf.table-count",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "pdf.table-1",
+      "status": "passed",
+      "observed": {
+        "cells": [
+          [
+            "Area",
+            "Score"
+          ],
+          [
+            "Café",
+            "x²"
+          ]
+        ],
+        "roles": [
+          [
+            "TH",
+            "TH"
+          ],
+          [
+            "TH",
+            "TD"
+          ]
+        ]
+      },
+      "expected": {
+        "caption": "Field study",
+        "headers": [
+          "Area",
+          "Score"
+        ],
+        "rows": [
+          [
+            "Café",
+            "x²"
+          ]
+        ],
+        "rowHeaders": true
+      }
+    }
+  ],
+  "reader": "PDF.js 3.11.174",
+  "pages": 1,
+  "limitations": [
+    "Text is followed through PDF.js structure/marked-content associations; this is not a screen-reader session.",
+    "Native PDF viewer keyboard/form behavior, spoken headers, alternative-text usefulness, OCR correctness, and visual layout require human checks."
+  ]
+}

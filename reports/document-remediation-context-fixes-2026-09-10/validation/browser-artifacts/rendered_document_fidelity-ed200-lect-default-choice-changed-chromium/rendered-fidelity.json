@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "b7a045b8431fc25d5ab9469e34b694e895859d3200e92a25d7147eb919a1c98a",
+    "bytes": 476
+  },
+  "candidate": {
+    "sha256": "d523d127fdc885d6440cd377b6a89a68f57090afe00fbb2298714471cf4ff7cc",
+    "bytes": 476
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 717.237000000001,
+  "status": "review-required",
+  "coverage": {
+    "requested": 2,
+    "inspected": 2,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "delivery-value",
+      "sourceSelector": "#delivery",
+      "candidateSelector": "#delivery",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "Delivery method",
+          "candidate": "Delivery method"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "combobox",
+          "candidate": "combobox"
+        },
+        {
+          "property": "value",
+          "status": "failed",
+          "source": "postal",
+          "candidate": "email"
+        }
+      ]
+    },
+    {
+      "id": "postal-selection",
+      "sourceSelector": "#postal-option",
+      "candidateSelector": "#postal-option",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "selected",
+          "status": "failed",
+          "source": true,
+          "candidate": false
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

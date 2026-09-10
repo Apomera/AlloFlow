@@ -1292,7 +1292,7 @@ window.StemLab = window.StemLab || {
            { id: 'numberBonds',   icon: '\uD83D\uDD17', label: __alloT('stem.manipulatives.number_bonds', 'Number Bonds') },
            { id: 'fracBars',      icon: '\u25AD',  label: __alloT('stem.manipulatives.fraction_bars', 'Fraction Bars') },
            { id: 'algebraTiles',  icon: '\uD83D\uDD32', label: __alloT('stem.manipulatives.algebra_tiles', 'Algebra Tiles') },
-           { id: 'cra',           icon: '\uD83D\uDD04', label: __alloT('stem.manipulatives.cra_progression', 'CRA Progression') },
+           { id: 'cra',           icon: '\uD83D\uDD04', label: __alloT("stem.manipulatives.nav_build_draw_write", "Build, draw & write") },
            { id: 'challenges',    icon: '\uD83C\uDFC6', label: __alloT('stem.manipulatives.challenge_hub', 'Challenge Hub') },
            { id: 'puzzles',       icon: '\uD83E\uDDE9', label: __alloT('stem.manipulatives.brain_teasers', 'Brain Teasers') },
            { id: 'history',       icon: '\uD83C\uDFDB', label: __alloT('stem.manipulatives.history', 'History') },

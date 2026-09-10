@@ -1,0 +1,1123 @@
+{
+  "schema": 1,
+  "runAt": "2026-09-10T22:13:18.680Z",
+  "browserVersion": "148.0.7778.96",
+  "artifacts": [
+    {
+      "id": "education-reading-html",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\multi-column-reading-order\\export\\multi-column-scrambled-accessible.html",
+      "sha256": "1933246bb07259c0ffe9d4b772f4c0ebfb904c0ae620455d04ad83a500a88c22",
+      "bytes": 4007,
+      "provenance": {
+        "fixtureId": "multi-column-reading-order",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-assets\\multi-column-scrambled.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\fixtures\\alloflow-portable-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "checks": [
+        {
+          "id": "html.utf8-encoding",
+          "status": "passed",
+          "observed": {
+            "declaredCharsets": [
+              "utf-8"
+            ]
+          },
+          "expected": "valid UTF-8 with compatible declarations"
+        },
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+            "language": "en"
+          },
+          "expected": {
+            "title": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+            },
+            {
+              "level": 2,
+              "name": "Remediation notes"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+            },
+            {
+              "level": 2,
+              "name": "Remediation notes"
+            }
+          ]
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+            "Evaporation: the sun heats water into invisible vapor.",
+            "Condensation: rising vapor cools into clouds and fog.",
+            "Precipitation: heavy droplets fall as rain or snow.",
+            "Collection: water gathers in oceans and the cycle repeats.",
+            "Groundwater: water seeps down and is stored underground.",
+            "Transpiration: plants release water vapor from leaves.",
+            "Runoff: surface water flows downhill into rivers.",
+            "Human impact: cities and dams change how water moves."
+          ]
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.link-1",
+          "status": "passed",
+          "observed": {
+            "name": "Skip to main content",
+            "count": 1
+          },
+          "expected": {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        },
+        {
+          "id": "html.keyboard-order-1",
+          "status": "passed",
+          "observed": {
+            "tag": "A",
+            "id": null
+          },
+          "expected": {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-1",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.inspection-coverage",
+          "status": "passed",
+          "observed": {
+            "reasons": [],
+            "resources": {
+              "blocked": 0,
+              "scripts": 0,
+              "unresolved": 0,
+              "animations": 0
+            }
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0
+      },
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+        "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    },
+    {
+      "id": "education-reading-pdf",
+      "documentKind": "reading",
+      "kind": "pdf",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\multi-column-reading-order\\export\\multi-column-scrambled-alloflow-accessible.pdf",
+      "sha256": "3caa51a4df96d868dd995d98bb70f4009cbb8cee7382cf35c793242024c6cff9",
+      "bytes": 56278,
+      "provenance": {
+        "fixtureId": "multi-column-reading-order",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-assets\\multi-column-scrambled.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\fixtures\\alloflow-portable-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "checks": [
+        {
+          "id": "pdf.document-title",
+          "status": "passed",
+          "observed": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+          "expected": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+        },
+        {
+          "id": "pdf.tagged-reading-order",
+          "status": "passed",
+          "observed": {
+            "untaggedPages": 0,
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+            "Evaporation: the sun heats water into invisible vapor.",
+            "Condensation: rising vapor cools into clouds and fog.",
+            "Precipitation: heavy droplets fall as rain or snow.",
+            "Collection: water gathers in oceans and the cycle repeats.",
+            "Groundwater: water seeps down and is stored underground.",
+            "Transpiration: plants release water vapor from leaves.",
+            "Runoff: surface water flows downhill into rivers.",
+            "Human impact: cities and dams change how water moves."
+          ]
+        },
+        {
+          "id": "pdf.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+            },
+            {
+              "level": 2,
+              "name": "Remediation notes"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)"
+            },
+            {
+              "level": 2,
+              "name": "Remediation notes"
+            }
+          ]
+        },
+        {
+          "id": "pdf.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "reader": "PDF.js 3.11.174",
+      "pages": 2,
+      "limitations": [
+        "Text is followed through PDF.js structure/marked-content associations; this is not a screen-reader session.",
+        "Native PDF viewer keyboard/form behavior, spoken headers, alternative-text usefulness, OCR correctness, and visual layout require human checks."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    },
+    {
+      "id": "education-table-html",
+      "documentKind": "table",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\export\\complex-table-accessible.html",
+      "sha256": "b209ed5d74ed8f8cfa15fb4a8943f39d93c4944f7a6179002e26e9a9f5c02095",
+      "bytes": 3182,
+      "provenance": {
+        "fixtureId": "complex-table",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\source\\complex-table.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\source\\repair-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "checks": [
+        {
+          "id": "html.utf8-encoding",
+          "status": "passed",
+          "observed": {
+            "declaredCharsets": [
+              "utf-8"
+            ]
+          },
+          "expected": "valid UTF-8 with compatible declarations"
+        },
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "Course support schedule",
+            "language": "en"
+          },
+          "expected": {
+            "title": "Course support schedule",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "Course support schedule"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "Course support schedule"
+            }
+          ]
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "Course support schedule",
+            "Weekly support services",
+            "Day",
+            "Service",
+            "Location",
+            "Monday",
+            "Tutoring",
+            "Library",
+            "Tuesday",
+            "Captioning",
+            "Room 204"
+          ]
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-1",
+          "status": "passed",
+          "observed": {
+            "caption": "Weekly support services",
+            "rows": [
+              [
+                {
+                  "text": "Day",
+                  "role": "TH",
+                  "scope": "col"
+                },
+                {
+                  "text": "Service",
+                  "role": "TH",
+                  "scope": "col"
+                },
+                {
+                  "text": "Location",
+                  "role": "TH",
+                  "scope": "col"
+                }
+              ],
+              [
+                {
+                  "text": "Monday",
+                  "role": "TH",
+                  "scope": "row"
+                },
+                {
+                  "text": "Tutoring",
+                  "role": "TD",
+                  "scope": null
+                },
+                {
+                  "text": "Library",
+                  "role": "TD",
+                  "scope": null
+                }
+              ],
+              [
+                {
+                  "text": "Tuesday",
+                  "role": "TH",
+                  "scope": "row"
+                },
+                {
+                  "text": "Captioning",
+                  "role": "TD",
+                  "scope": null
+                },
+                {
+                  "text": "Room 204",
+                  "role": "TD",
+                  "scope": null
+                }
+              ]
+            ],
+            "accessibility": [
+              [
+                {
+                  "exposed": true,
+                  "role": "columnheader",
+                  "name": "Day",
+                  "requiredRole": "columnheader",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "columnheader",
+                  "name": "Service",
+                  "requiredRole": "columnheader",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "columnheader",
+                  "name": "Location",
+                  "requiredRole": "columnheader",
+                  "inRow": true,
+                  "inTable": true
+                }
+              ],
+              [
+                {
+                  "exposed": true,
+                  "role": "rowheader",
+                  "name": "Monday",
+                  "requiredRole": "rowheader",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "cell",
+                  "name": "Tutoring",
+                  "requiredRole": "cell",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "cell",
+                  "name": "Library",
+                  "requiredRole": "cell",
+                  "inRow": true,
+                  "inTable": true
+                }
+              ],
+              [
+                {
+                  "exposed": true,
+                  "role": "rowheader",
+                  "name": "Tuesday",
+                  "requiredRole": "rowheader",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "cell",
+                  "name": "Captioning",
+                  "requiredRole": "cell",
+                  "inRow": true,
+                  "inTable": true
+                },
+                {
+                  "exposed": true,
+                  "role": "cell",
+                  "name": "Room 204",
+                  "requiredRole": "cell",
+                  "inRow": true,
+                  "inTable": true
+                }
+              ]
+            ],
+            "exposure": {
+              "table": true,
+              "columnHeaders": [
+                true,
+                true,
+                true
+              ],
+              "rowHeaders": [
+                true,
+                true
+              ]
+            }
+          },
+          "expected": {
+            "caption": "Weekly support services",
+            "headers": [
+              "Day",
+              "Service",
+              "Location"
+            ],
+            "rows": [
+              [
+                "Monday",
+                "Tutoring",
+                "Library"
+              ],
+              [
+                "Tuesday",
+                "Captioning",
+                "Room 204"
+              ]
+            ],
+            "rowHeaders": true
+          }
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.link-1",
+          "status": "passed",
+          "observed": {
+            "name": "Skip to main content",
+            "count": 1
+          },
+          "expected": {
+            "name": "Skip to main content",
+            "href": "#main-content"
+          }
+        },
+        {
+          "id": "html.keyboard-order-1",
+          "status": "passed",
+          "observed": {
+            "tag": "A",
+            "id": null
+          },
+          "expected": {
+            "role": "link",
+            "name": "Skip to main content"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-1",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.inspection-coverage",
+          "status": "passed",
+          "observed": {
+            "reasons": [],
+            "resources": {
+              "blocked": 0,
+              "scripts": 0,
+              "unresolved": 0,
+              "animations": 0
+            }
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0
+      },
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+        "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    },
+    {
+      "id": "education-table-pdf",
+      "documentKind": "table",
+      "kind": "pdf",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\export\\complex-table-alloflow-accessible.pdf",
+      "sha256": "a7fae3cccc1ee034887605a3e812854e11f1e77fbe025cd49722fecc3766764b",
+      "bytes": 41396,
+      "provenance": {
+        "fixtureId": "complex-table",
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\source\\complex-table.pdf",
+        "planPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\complex-table\\source\\repair-plan.json",
+        "exportPath": "portable remediate with required tagged PDF; independent validator intentionally not rerun"
+      },
+      "checks": [
+        {
+          "id": "pdf.document-title",
+          "status": "passed",
+          "observed": "Course support schedule",
+          "expected": "Course support schedule"
+        },
+        {
+          "id": "pdf.tagged-reading-order",
+          "status": "passed",
+          "observed": {
+            "untaggedPages": 0,
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "Course support schedule",
+            "Weekly support services",
+            "Day",
+            "Service",
+            "Location",
+            "Monday",
+            "Tutoring",
+            "Library",
+            "Tuesday",
+            "Captioning",
+            "Room 204"
+          ]
+        },
+        {
+          "id": "pdf.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "Course support schedule"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "Course support schedule"
+            }
+          ]
+        },
+        {
+          "id": "pdf.table-count",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "pdf.table-1",
+          "status": "passed",
+          "observed": {
+            "cells": [
+              [
+                "Day",
+                "Service",
+                "Location"
+              ],
+              [
+                "Monday",
+                "Tutoring",
+                "Library"
+              ],
+              [
+                "Tuesday",
+                "Captioning",
+                "Room 204"
+              ]
+            ],
+            "roles": [
+              [
+                "TH",
+                "TH",
+                "TH"
+              ],
+              [
+                "TH",
+                "TD",
+                "TD"
+              ],
+              [
+                "TH",
+                "TD",
+                "TD"
+              ]
+            ]
+          },
+          "expected": {
+            "caption": "Weekly support services",
+            "headers": [
+              "Day",
+              "Service",
+              "Location"
+            ],
+            "rows": [
+              [
+                "Monday",
+                "Tutoring",
+                "Library"
+              ],
+              [
+                "Tuesday",
+                "Captioning",
+                "Room 204"
+              ]
+            ],
+            "rowHeaders": true
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "reader": "PDF.js 3.11.174",
+      "pages": 1,
+      "limitations": [
+        "Text is followed through PDF.js structure/marked-content associations; this is not a screen-reader session.",
+        "Native PDF viewer keyboard/form behavior, spoken headers, alternative-text usefulness, OCR correctness, and visual layout require human checks."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    },
+    {
+      "id": "education-form-html",
+      "documentKind": "form",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\at-fixtures-6996-1789078390696\\education-form.html",
+      "sha256": "2bf637f673aabfb8b46e4028cbb4e023d9a9964c3dea57d20411bb32db69530b",
+      "bytes": 1338,
+      "provenance": {
+        "fixtureId": "worksheet-native-controls",
+        "exportPath": "hand-authored HTML acceptance fixture; not a portable PDF rebuild"
+      },
+      "checks": [
+        {
+          "id": "html.utf8-encoding",
+          "status": "passed",
+          "observed": {
+            "declaredCharsets": [
+              "utf-8"
+            ]
+          },
+          "expected": "valid UTF-8 with compatible declarations"
+        },
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "Water-cycle check-in",
+            "language": "en"
+          },
+          "expected": {
+            "title": "Water-cycle check-in",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "Water-cycle check-in"
+            },
+            {
+              "level": 2,
+              "name": "Your response"
+            },
+            {
+              "level": 2,
+              "name": "Reference"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "Water-cycle check-in"
+            },
+            {
+              "level": 2,
+              "name": "Your response"
+            },
+            {
+              "level": 2,
+              "name": "Reference"
+            }
+          ]
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": [
+            "Water-cycle check-in",
+            "Your response",
+            "Name",
+            "Observation",
+            "Reference",
+            "Clouds form when water vapor cools."
+          ]
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.link-1",
+          "status": "passed",
+          "observed": {
+            "name": "Skip to worksheet",
+            "count": 1
+          },
+          "expected": {
+            "name": "Skip to worksheet",
+            "href": "#worksheet"
+          }
+        },
+        {
+          "id": "html.link-2",
+          "status": "passed",
+          "observed": {
+            "name": "Water-cycle reference",
+            "count": 1
+          },
+          "expected": {
+            "name": "Water-cycle reference",
+            "href": "#reference"
+          }
+        },
+        {
+          "id": "html.keyboard-order-1",
+          "status": "passed",
+          "observed": {
+            "tag": "A",
+            "id": null
+          },
+          "expected": {
+            "role": "link",
+            "name": "Skip to worksheet"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-1",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-link-activation-1",
+          "status": "passed",
+          "observed": "#worksheet",
+          "expected": "#worksheet"
+        },
+        {
+          "id": "html.keyboard-link-focus-1",
+          "status": "passed",
+          "observed": "worksheet",
+          "expected": "worksheet"
+        },
+        {
+          "id": "html.keyboard-order-2",
+          "status": "passed",
+          "observed": {
+            "tag": "INPUT",
+            "id": "learner"
+          },
+          "expected": {
+            "role": "textbox",
+            "name": "Name"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-2",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-value-2",
+          "status": "passed",
+          "observed": "Ada",
+          "expected": "Ada"
+        },
+        {
+          "id": "html.keyboard-order-3",
+          "status": "passed",
+          "observed": {
+            "tag": "SELECT",
+            "id": "observation"
+          },
+          "expected": {
+            "role": "combobox",
+            "name": "Observation"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-3",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-value-3",
+          "status": "passed",
+          "observed": "clouds",
+          "expected": "clouds"
+        },
+        {
+          "id": "html.keyboard-order-4",
+          "status": "passed",
+          "observed": {
+            "tag": "INPUT",
+            "id": null
+          },
+          "expected": {
+            "role": "checkbox",
+            "name": "I recorded my observation"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-4",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-state-4",
+          "status": "passed",
+          "observed": true,
+          "expected": true
+        },
+        {
+          "id": "html.keyboard-order-5",
+          "status": "passed",
+          "observed": {
+            "tag": "BUTTON",
+            "id": null
+          },
+          "expected": {
+            "role": "button",
+            "name": "Clear response"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-5",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-order-6",
+          "status": "passed",
+          "observed": {
+            "tag": "A",
+            "id": null
+          },
+          "expected": {
+            "role": "link",
+            "name": "Water-cycle reference"
+          }
+        },
+        {
+          "id": "html.keyboard-focus-6",
+          "status": "passed",
+          "observed": {
+            "inViewport": true,
+            "centerUnobscured": true,
+            "focusIndicatorStyle": true
+          },
+          "expected": "visible geometry, unobscured center, nonzero outline or shadow"
+        },
+        {
+          "id": "html.keyboard-link-activation-6",
+          "status": "passed",
+          "observed": "#reference",
+          "expected": "#reference"
+        },
+        {
+          "id": "html.keyboard-link-focus-6",
+          "status": "passed",
+          "observed": "reference",
+          "expected": "reference"
+        },
+        {
+          "id": "html.final-control-Name",
+          "status": "passed",
+          "observed": "",
+          "expected": ""
+        },
+        {
+          "id": "html.final-control-Observation",
+          "status": "passed",
+          "observed": "",
+          "expected": ""
+        },
+        {
+          "id": "html.final-control-I recorded my observation",
+          "status": "passed",
+          "observed": false,
+          "expected": false
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.inspection-coverage",
+          "status": "passed",
+          "observed": {
+            "reasons": [],
+            "resources": {
+              "blocked": 0,
+              "scripts": 0,
+              "unresolved": 0,
+              "animations": 0
+            }
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0
+      },
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+        "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+      ],
+      "automatedStatus": "passed",
+      "manualATStatus": "not-run"
+    }
+  ],
+  "automatedStatus": "passed",
+  "humanAcceptance": {
+    "status": "not-run",
+    "releaseDecision": "pending-human-at",
+    "protocol": "docs/document-export-at-acceptance.md"
+  }
+}

@@ -3403,13 +3403,14 @@ function _builderNormalizeQuickAccessItems(value) {
   return Array.from(new Set(value.map(String).filter((id) => allowed.has(id)))).slice(0, 6);
 }
 function _readBuilderViewPreferences() {
-  const defaults = { zoom: 100, zoomMode: "custom", pageView: true, pageSize: "letter", pageOrientation: "portrait", pageMargin: "1in", navigationPane: false, navigationTab: "headings", navigationWidth: 248, ribbonTab: "home", ribbonCollapsed: false, trackedMarkupView: "all", revisionBalloons: false, reviewerName: "You", quickAccess: [..._BUILDER_QUICK_ACCESS_DEFAULT] };
+  const defaults = { zoom: 100, zoomMode: "fit-width", settingsOpen: false, pageView: true, pageSize: "letter", pageOrientation: "portrait", pageMargin: "1in", navigationPane: false, navigationTab: "headings", navigationWidth: 248, ribbonTab: "home", ribbonCollapsed: true, trackedMarkupView: "all", revisionBalloons: false, reviewerName: "You", quickAccess: [..._BUILDER_QUICK_ACCESS_DEFAULT] };
   if (typeof window === "undefined") return defaults;
   try {
     const stored = JSON.parse(window.localStorage.getItem(_BUILDER_VIEW_PREFS_KEY) || "null") || {};
     return {
       zoom: _builderClampEditorZoom(stored.zoom || defaults.zoom),
       zoomMode: ["custom", "fit-width", "fit-page"].includes(stored.zoomMode) ? stored.zoomMode : defaults.zoomMode,
+      settingsOpen: stored.settingsOpen === true,
       pageView: typeof stored.pageView === "boolean" ? stored.pageView : defaults.pageView,
       pageSize: ["letter", "legal", "a4"].includes(stored.pageSize) ? stored.pageSize : defaults.pageSize,
       pageOrientation: ["portrait", "landscape"].includes(stored.pageOrientation) ? stored.pageOrientation : defaults.pageOrientation,
@@ -3719,19 +3720,62 @@ function _builderKeyboardTargets(container) {
   });
 }
 const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
-.allo-docsuite .builder-dialog { height:95vh; height:95dvh; min-height:0; }
-.allo-docsuite .builder-dialog[data-builder-focus="true"] { height:100%; }
-.allo-docsuite .builder-mobile-switch { display:none; }
+.allo-docsuite .builder-dialog { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); width:100%; height:100vh; height:100dvh; min-height:0; max-width:none; max-height:none; overflow:hidden; }
+.allo-docsuite .builder-dialog[data-builder-settings-open="true"] { grid-template-columns:minmax(0,1fr) 20rem; }
+.allo-docsuite .builder-workspace-header { grid-row:1; grid-column:1 / -1; display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; padding:.5rem .75rem; min-width:0; position:relative; z-index:100; }
+.allo-docsuite .builder-document-heading { min-width:0; flex:1 1 12rem; }
+.allo-docsuite .builder-workspace-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; }
+.allo-docsuite .builder-settings-panel { display:none; grid-row:2; grid-column:2; min-height:0; overflow:auto; overscroll-behavior:contain; }
+.allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; }
+.allo-docsuite .builder-editor-pane { grid-row:2; grid-column:1; min-width:0; min-height:0; overflow:hidden; position:relative; }
 .allo-docsuite .builder-preview-shell { display:flex; min-height:0; }
 .allo-docsuite .builder-preview-frame { display:block; flex:1; min-height:0; }
-@media (max-width:1023px) {
-  .allo-docsuite .builder-dialog { overflow:hidden; }
-  .allo-docsuite .builder-mobile-switch { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-shrink:0; padding:.5rem .75rem; border-bottom:1px solid #cbd5e1; background:#fff; }
-  .allo-docsuite .builder-settings-panel { display:none; }
-  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; flex:1 1 0; min-height:0; width:100%; overflow:auto; }
-  .allo-docsuite .builder-editor-pane { min-height:0; overflow-x:hidden; overflow-y:auto; }
+.allo-docsuite .builder-controls { position:relative; flex-shrink:0; z-index:70; }
+.allo-docsuite .builder-command-bar { display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; padding:.35rem .5rem; }
+.allo-docsuite .builder-compact-format { display:flex; align-items:center; gap:.15rem; }
+.allo-docsuite .builder-compact-format select { max-width:9rem; }
+.allo-docsuite .builder-ribbon-tabs { margin-left:auto; }
+.allo-docsuite .builder-ribbon-tabs button { min-height:2rem; }
+.allo-docsuite .builder-tool-tray { position:absolute; top:100%; right:.5rem; width:min(52rem,calc(100% - 1rem)); max-height:min(60dvh,32rem); overflow:auto; overscroll-behavior:contain; border-radius:0 0 .75rem .75rem; }
+.allo-docsuite .builder-tray-heading { position:sticky; top:0; z-index:90; }
+.allo-docsuite .builder-tool-tray [role="tabpanel"] { min-width:0; }
+.allo-docsuite .builder-header-menu { position:relative; }
+.allo-docsuite .builder-export-panel { position:absolute; top:calc(100% + .5rem); right:0; width:21rem; max-width:calc(100vw - 1.5rem); max-height:calc(100dvh - 8rem); overflow:auto; overscroll-behavior:contain; padding:.75rem; display:flex; flex-direction:column; gap:.65rem; }
+.allo-docsuite .builder-export-panel .allo-builder-export-formats { position:static; width:100%; max-width:100%; max-height:none; overflow:visible; }
+.allo-docsuite .builder-status-popover { width:22rem; max-width:calc(100vw - 1.5rem); z-index:95; max-height:50dvh; overflow:auto; }
+.allo-docsuite .builder-dialog [hidden] { display:none !important; }
+.allo-docsuite .builder-dialog[data-builder-focus="true"] #document-builder-navigation,
+.allo-docsuite .builder-dialog[data-builder-focus="true"] #document-builder-advanced-review { display:none; }
+.allo-docsuite .builder-dialog [aria-label="Document status bar"] { padding:.25rem .75rem; }
+.allo-docsuite .builder-dialog [aria-label="Document status bar"] input[type="range"] { width:4.5rem; }
+@media(max-width:1023px) {
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] { grid-template-columns:minmax(0,1fr); }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { grid-column:1; }
   .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-editor-pane { display:none; }
-  .allo-docsuite .builder-preview-stage { flex:1 0 22rem; min-height:22rem; }
+  .allo-docsuite .builder-ribbon-tabs { margin-left:0; }
+  .allo-docsuite .builder-tool-tray { right:0; width:100%; max-height:55dvh; }
+}
+@media(max-width:639px) {
+  .allo-docsuite .builder-document-heading { flex-basis:100%; }
+  .allo-docsuite .builder-workspace-header { gap:.25rem; padding:.35rem .5rem; }
+  .allo-docsuite .builder-workspace-actions { width:100%; justify-content:space-between; gap:.1rem; }
+  .allo-docsuite .builder-workspace-actions > button { padding-left:.35rem; padding-right:.35rem; }
+  .allo-docsuite .builder-header-menu { position:static; }
+  .allo-docsuite .builder-export-panel { right:.5rem; top:100%; max-height:calc(100dvh - 9rem); }
+  .allo-docsuite .builder-ribbon-tabs { width:100%; gap:0; }
+  .allo-docsuite .builder-ribbon-toggle { display:none; }
+  .allo-docsuite .builder-ribbon-tabs button { padding-left:.5rem; padding-right:.5rem; }
+  .allo-docsuite .builder-status-details { position:static; }
+  .allo-docsuite .builder-status-popover { left:.5rem; bottom:5rem; }
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] { position:relative; gap:.1rem; }
+}
+@media(pointer:coarse) {
+  .allo-docsuite .builder-workspace-header button, .allo-docsuite .builder-workspace-header summary,
+  .allo-docsuite .builder-command-bar button, .allo-docsuite .builder-command-bar select,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] button,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] select,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] summary { min-height:44px; }
+  .allo-docsuite .builder-compact-format button { min-width:36px; }
 }
 `;
 function _builderCleanMarkdownRoot(doc) {
@@ -4063,7 +4107,7 @@ function ExportPreviewView(props) {
   const [versionComparison, setVersionComparison] = React.useState(null);
   const [preflightResult, setPreflightResult] = React.useState(null);
   const [isFocusMode, setIsFocusMode] = React.useState(false);
-  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(false);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(() => (typeof window === "undefined" || !window.matchMedia?.("(max-width:1023px)").matches) && _readBuilderViewPreferences().settingsOpen);
   const mobileSettingsButtonRef = React.useRef(null);
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
@@ -4260,13 +4304,14 @@ function ExportPreviewView(props) {
   }, [showExportPreview]);
   const resetBuilderViewPreferences = React.useCallback(() => {
     setEditorZoom(100);
-    setEditorZoomMode("custom");
+    setEditorZoomMode("fit-width");
+    setMobileSettingsOpen(false);
     setEditorPageView(true);
     setShowNavigationPane(false);
     setNavigationPaneTab("headings");
     setNavigationPaneWidth(248);
     setActiveRibbonTab("home");
-    setRibbonCollapsed(false);
+    setRibbonCollapsed(true);
     setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT]);
     setTrackedMarkupView("all");
     setShowRevisionBalloons(false);
@@ -4294,6 +4339,8 @@ function ExportPreviewView(props) {
     }
   }, [isFocusMode]);
   const openFindTools = React.useCallback((mode = "find") => {
+    setBuilderFocusMode(false);
+    setMobileSettingsOpen(false);
     setActiveRibbonTab("review");
     setRibbonCollapsed(false);
     try {
@@ -4308,7 +4355,7 @@ function ExportPreviewView(props) {
       }, 0);
     } catch (_) {
     }
-  }, []);
+  }, [setBuilderFocusMode]);
   React.useEffect(() => {
     const root = document.documentElement;
     const active = Boolean(showExportPreview && isFocusMode);
@@ -4330,6 +4377,17 @@ function ExportPreviewView(props) {
       if (!document.fullscreenElement && isFocusMode) setIsFocusMode(false);
     };
     const onFocusExit = () => setBuilderFocusMode(false);
+    const onDismissTools = () => {
+      const dialog = exportDialogRef.current;
+      const menu = dialog?.querySelector("#builder-export-menu[open]");
+      if (menu) {
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+        return;
+      }
+      setRibbonCollapsed(true);
+      dialog?.querySelector('.builder-ribbon-tabs [aria-selected="true"]')?.focus();
+    };
     const onOpenFind = (event) => openFindTools(event?.detail?.mode === "replace" ? "replace" : "find");
     const onShortcut = (event) => {
       const target = event.target;
@@ -4357,28 +4415,49 @@ function ExportPreviewView(props) {
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
     document.addEventListener("alloflow-builder-exit-focus", onFocusExit);
+    document.addEventListener("alloflow-builder-dismiss-tools", onDismissTools);
     document.addEventListener("alloflow-builder-open-find", onOpenFind);
     document.addEventListener("keydown", onShortcut);
     return () => {
       document.removeEventListener("fullscreenchange", onFullscreenChange);
       document.removeEventListener("alloflow-builder-exit-focus", onFocusExit);
+      document.removeEventListener("alloflow-builder-dismiss-tools", onDismissTools);
       document.removeEventListener("alloflow-builder-open-find", onOpenFind);
       document.removeEventListener("keydown", onShortcut);
     };
   }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
+  const closeBuilderSettings = React.useCallback(() => {
+    setMobileSettingsOpen(false);
+    window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+  }, []);
+  const closeBuilderMenu = React.useCallback((menu, restoreFocus = true) => {
+    if (!menu) return;
+    menu.open = false;
+    if (restoreFocus) menu.querySelector("summary")?.focus();
+  }, []);
+  const handleBuilderMenuEscape = React.useCallback((event) => {
+    if (event.key !== "Escape" || !event.currentTarget.open || event.target.closest("details[open]") !== event.currentTarget) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeBuilderMenu(event.currentTarget);
+  }, [closeBuilderMenu]);
   React.useEffect(() => {
-    if (!showExportPreview) {
-      setMobileSettingsOpen(false);
-      return void 0;
+    if (!showExportPreview || !mobileSettingsOpen || isFocusMode) return;
+    if (window.matchMedia("(max-width:1023px)").matches) {
+      const timer = window.setTimeout(() => document.querySelector("#builder-settings-panel button")?.focus(), 0);
+      return () => window.clearTimeout(timer);
     }
-    const narrow = window.matchMedia("(max-width:1023px)");
-    const onResize = () => {
-      if (!narrow.matches) setMobileSettingsOpen(false);
-      else if (document.activeElement?.closest?.("#builder-settings-panel")) mobileSettingsButtonRef.current?.focus();
+  }, [showExportPreview, mobileSettingsOpen, isFocusMode]);
+  React.useEffect(() => {
+    if (!showExportPreview) return;
+    const closeOutsideMenu = (event) => {
+      exportDialogRef.current?.querySelectorAll("#builder-export-menu[open], .builder-status-details[open], #builder-quick-access-customize[open]").forEach((menu) => {
+        if (!menu.contains(event.target)) closeBuilderMenu(menu, false);
+      });
     };
-    narrow.addEventListener("change", onResize);
-    return () => narrow.removeEventListener("change", onResize);
-  }, [showExportPreview]);
+    document.addEventListener("pointerdown", closeOutsideMenu, true);
+    return () => document.removeEventListener("pointerdown", closeOutsideMenu, true);
+  }, [showExportPreview, closeBuilderMenu]);
   const closeImageDialog = React.useCallback(() => {
     imageInsertRunRef.current += 1;
     setImageInsertBusy(false);
@@ -4397,10 +4476,15 @@ function ExportPreviewView(props) {
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        if (dialog.getAttribute("data-builder-settings-open") === "true" && window.matchMedia("(max-width:1023px)").matches) {
+        if (dialog.getAttribute("data-builder-settings-open") === "true") {
           event.stopPropagation();
           setMobileSettingsOpen(false);
           window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+        } else if (dialog.getAttribute("data-builder-focus") === "true") {
+          setBuilderFocusMode(false);
+        } else if (!dialog.querySelector("#builder-tool-tray")?.hidden) {
+          setRibbonCollapsed(true);
+          dialog.querySelector('[role="tab"][aria-selected="true"]')?.focus();
         } else setShowExportPreview(false);
         return;
       }
@@ -4422,7 +4506,7 @@ function ExportPreviewView(props) {
     };
     dialog.addEventListener("keydown", onKeyDown);
     return () => dialog.removeEventListener("keydown", onKeyDown);
-  }, [showExportPreview, pendingImageFile, setShowExportPreview]);
+  }, [showExportPreview, pendingImageFile, setShowExportPreview, setBuilderFocusMode]);
   React.useEffect(() => {
     if (!pendingImageFile) return void 0;
     const dialog = imageDialogRef.current;
@@ -4745,6 +4829,7 @@ ${pageCss}
         navigationWidth: navigationPaneWidth,
         ribbonTab: activeRibbonTab,
         ribbonCollapsed,
+        settingsOpen: mobileSettingsOpen,
         quickAccess: quickAccessItems,
         trackedMarkupView,
         revisionBalloons: showRevisionBalloons,
@@ -4752,7 +4837,7 @@ ${pageCss}
       }));
     } catch (_) {
     }
-  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed, quickAccessItems, trackedMarkupView, showRevisionBalloons, reviewerName]);
+  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed, mobileSettingsOpen, quickAccessItems, trackedMarkupView, showRevisionBalloons, reviewerName]);
   React.useEffect(() => {
     try {
       window.localStorage.setItem(_BUILDER_CUSTOM_STYLES_KEY, JSON.stringify(_builderNormalizeCustomStyles(customBuilderStyles)));
@@ -8135,7 +8220,7 @@ ${pageCss}
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: `allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center ${isFocusMode ? "p-0" : "p-4"}`,
+      className: `allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-0`,
       role: "presentation",
       onClick: (e) => {
         if (e.target === e.currentTarget) setShowExportPreview(false);
@@ -8172,32 +8257,632 @@ ${pageCss}
         setImageAltError("");
       } }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Decorative image"), " \u2014 it adds no information and should be skipped by screen readers.")), /* @__PURE__ */ React.createElement("p", { id: "builder-image-alt-error", className: "mt-2 min-h-5 text-sm font-bold text-red-700", role: "alert" }, imageAltError), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeImageDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertPendingImage, disabled: imageInsertBusy, "aria-busy": imageInsertBusy, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, imageInsertBusy ? "Inserting image..." : "Insert image")))
     ),
-    /* @__PURE__ */ React.createElement("div", { "data-help-key": "doc_builder_document", "data-builder-focus": isFocusMode ? "true" : "false", "data-builder-settings-open": mobileSettingsOpen ? "true" : "false", ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: `builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? "rounded-none max-w-none max-h-none h-full" : "rounded-2xl max-w-[95vw] max-h-[95vh]"}`, inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, editingCitationId && /* @__PURE__ */ React.createElement("form", { ref: citationEditorRef, id: "builder-citation-editor", "data-builder-citation-editor": "1", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-citation-editor-title", "aria-describedby": "builder-citation-editor-help", onSubmit: saveCitationEdit, className: "absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "builder-citation-editor-title", className: "text-sm font-black text-cyan-950" }, "Edit citation"), /* @__PURE__ */ React.createElement("p", { id: "builder-citation-editor-help", className: "mt-0.5 text-[10px] leading-snug text-cyan-900" }, "Combine sources, adjust locators, and control how each source appears. Escape cancels.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white", "aria-label": "Close citation editor" }, "?")), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-2 overflow-y-auto p-3" }, citationItemsDraft.map((item, index) => {
+    /* @__PURE__ */ React.createElement("div", { "data-help-key": "doc_builder_document", "data-builder-focus": isFocusMode ? "true" : "false", "data-builder-settings-open": mobileSettingsOpen && !isFocusMode ? "true" : "false", ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: `builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 rounded-none max-w-none max-h-none h-full`, inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, editingCitationId && /* @__PURE__ */ React.createElement("form", { ref: citationEditorRef, id: "builder-citation-editor", "data-builder-citation-editor": "1", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-citation-editor-title", "aria-describedby": "builder-citation-editor-help", onSubmit: saveCitationEdit, className: "absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "builder-citation-editor-title", className: "text-sm font-black text-cyan-950" }, "Edit citation"), /* @__PURE__ */ React.createElement("p", { id: "builder-citation-editor-help", className: "mt-0.5 text-[10px] leading-snug text-cyan-900" }, "Combine sources, adjust locators, and control how each source appears. Escape cancels.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white", "aria-label": "Close citation editor" }, "?")), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 space-y-2 overflow-y-auto p-3" }, citationItemsDraft.map((item, index) => {
       const sourceRecord = documentReferences.sources?.find((source) => source.id === item.sourceId);
       return /* @__PURE__ */ React.createElement("fieldset", { key: item.sourceId + "-" + index, className: "rounded-lg border border-slate-300 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Source ", index + 1), /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement("label", { className: "min-w-0 flex-1 text-[9px] font-bold uppercase text-slate-600" }, "Source", /* @__PURE__ */ React.createElement("select", { value: item.sourceId, onChange: (event) => updateCitationItemDraft(index, { sourceId: event.target.value }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold normal-case text-slate-800", "aria-label": "Source " + (index + 1) + " in citation" }, !sourceRecord && /* @__PURE__ */ React.createElement("option", { value: item.sourceId }, "Missing source ? choose a replacement"), (documentReferences.sources || []).map((source) => {
         const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
         return /* @__PURE__ */ React.createElement("option", { key: source.id, value: source.id, disabled: alreadyUsed }, source.title || _builderCitationAuthorKey(source, citationStyle), alreadyUsed ? " ? already cited" : "");
       }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex shrink-0", role: "group", "aria-label": "Reorder source " + (index + 1) }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, -1), disabled: !index, className: "h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " earlier" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, 1), disabled: index === citationItemsDraft.length - 1, className: "h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " later" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCitationItemDraft(index), disabled: citationItemsDraft.length === 1, className: "h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30", "aria-label": "Remove source " + (index + 1) + " from citation" }, "Remove"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Prefix", /* @__PURE__ */ React.createElement("input", { value: item.prefix, onChange: (event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., see" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Page or locator", /* @__PURE__ */ React.createElement("input", { value: item.locator, onChange: (event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "23 or chap. 2" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Suffix", /* @__PURE__ */ React.createElement("input", { value: item.suffix, onChange: (event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., emphasis added" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressAuthor, onChange: (event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked }), className: "accent-cyan-800" }), "Suppress author"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressYear, onChange: (event) => updateCitationItemDraft(index, { suppressYear: event.target.checked }), className: "accent-cyan-800" }), "Suppress year")));
-    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("div", { className: "builder-mobile-switch" }, /* @__PURE__ */ React.createElement(
+    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("header", { className: "builder-workspace-header bg-white border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "builder-document-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-[11px] font-semibold text-slate-600" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("h3", { id: "builder-current-document-title", className: "truncate text-sm font-bold text-slate-800", title: previewDocumentTitle }, previewDocumentTitle)), /* @__PURE__ */ React.createElement("div", { className: "builder-workspace-actions" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         ref: mobileSettingsButtonRef,
         type: "button",
         "aria-controls": "builder-settings-panel",
-        "aria-expanded": mobileSettingsOpen,
-        onClick: () => setMobileSettingsOpen((open) => !open),
-        className: "min-h-9 rounded border border-indigo-600 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50"
+        "aria-expanded": mobileSettingsOpen && !isFocusMode,
+        onClick: () => {
+          if (isFocusMode) {
+            setBuilderFocusMode(false);
+            setMobileSettingsOpen(true);
+          } else setMobileSettingsOpen((open) => !open);
+        },
+        className: "min-h-9 rounded px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50"
       },
-      mobileSettingsOpen ? "Back to document" : "Document settings"
+      "Document settings"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
-        onClick: () => setShowExportPreview(false),
-        "aria-label": t("a11y.close_doc_builder") || "Close Document Builder",
-        className: "min-h-9 rounded px-3 py-1 text-xs font-bold text-slate-700 hover:bg-red-50"
+        onClick: () => setBuilderFocusMode(),
+        "aria-pressed": isFocusMode,
+        className: `text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${isFocusMode ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-700 bg-indigo-50 hover:bg-indigo-100"}`,
+        title: isFocusMode ? "Exit focus mode and restore the settings panel" : "Hide settings for a distraction-free drafting surface"
       },
-      "Close"
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isFocusMode ? "\u2199" : "\u2197"),
+      " ",
+      isFocusMode ? "Exit focus" : "Focus mode"
+    ), /* @__PURE__ */ React.createElement("details", { id: "builder-export-menu", className: "builder-header-menu", onKeyDownCapture: handleBuilderMenuEscape }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-9 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 cursor-pointer list-none" }, exportActionBusy || altExportBusy ? "Preparing export\u2026" : "Export", " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "builder-export-panel bg-white border border-slate-300 rounded-xl shadow-xl", role: "region", "aria-label": "Export document" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-800" }, "Export document"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => closeBuilderMenu(event.currentTarget.closest("details")), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-slate-100", "aria-label": "Close export menu" }, "Close")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "data-help-key": "doc_builder_export_action",
+        onClick: runExportFromPreview,
+        disabled: exportActionBusy || !!altExportBusy || exportPreviewMode === "slides" && !pptxLoaded,
+        "aria-busy": exportActionBusy,
+        "aria-label": exportActionBusy ? "Export in progress" : void 0,
+        className: "bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
+        title: exportPreviewMode === "slides" && !pptxLoaded ? "Slides library still loading..." : ""
+      },
+      /* @__PURE__ */ React.createElement(Download, { size: 14 }),
+      " ",
+      exportActionBusy ? "Preparing export..." : exportPreviewMode === "worksheet" || exportPreviewMode === "print" ? t("export_preview.action_print_pdf") || "Print / Save as PDF" : exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF"
+    ), exportPreviewMode === "slides" && typeof openInAlloStudio === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: openInAlloStudio,
+        className: "bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5",
+        title: "Open this content in Page Designer as an editable slide deck \u2014 reorder, restyle, and export PowerPoint from there."
+      },
+      "\u{1F3A8} ",
+      t("export_preview.edit_in_page_designer") || "Edit in Page Designer"
+    ), /* @__PURE__ */ React.createElement("style", null, `.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
+                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`), /* @__PURE__ */ React.createElement("details", { className: "relative", onKeyDownCapture: (event) => {
+      if (event.key === "Escape" && event.currentTarget.open) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.open = false;
+        event.currentTarget.querySelector("summary")?.focus();
+      }
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      const doc = exportPreviewRef.current?.contentDocument;
+      if (!doc) return;
+      let text = "";
+      try {
+        let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+        _tClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style").forEach((el) => el.remove());
+        _tClone.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div").forEach((el) => {
+          try {
+            el.appendChild(doc.createTextNode("\n"));
+          } catch (_) {
+          }
+        });
+        text = (_tClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      } catch (_) {
+        text = (doc.body.innerText || doc.body.textContent || "").trim();
+      }
+      const blob = new Blob([text], { type: "text/plain" });
+      downloadBuilderBlob(blob, { extension: "txt" });
+      addToast("Plain text downloaded", "success");
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      const doc = exportPreviewRef.current?.contentDocument;
+      if (!doc) return;
+      const preflight = runBuilderPreflight("markdown", false);
+      if (preflight.errors) {
+        addToast("Markdown export stopped: fix the blocking preflight issues first.", "error");
+        return;
+      }
+      if (!beginAlternativeExport("markdown")) return;
+      try {
+        const root = _builderCleanMarkdownRoot(doc);
+        const math = Array.from(root.querySelectorAll("math"));
+        let spokenByBlock = null;
+        if (math.length) {
+          try {
+            if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin("sre_loader.js");
+            if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map((node) => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8e3 })));
+          } catch (_) {
+          }
+        }
+        const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
+        downloadBuilderBlob(new Blob([result.markdown], { type: "text/markdown;charset=utf-8" }), { extension: "md" });
+        addToast(result.warnings.length ? result.warnings.join(" ") : "Markdown prepared from the current document.", result.warnings.length ? "warning" : "success");
+      } catch (error) {
+        addToast("Markdown export failed: " + (error?.message || "unknown error"), "error");
+      } finally {
+        finishAlternativeExport();
+      }
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DD} Markdown (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
+      if (altExportBusy) return;
+      if (!beginAlternativeExport("notebooklm")) return;
+      try {
+        const doc = exportPreviewRef.current?.contentDocument;
+        const items = Array.isArray(history) ? history.filter((h) => h && h.data != null) : [];
+        const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute("data-allo-user-edited") === "1");
+        const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+        const title = exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc && doc.title || items[0] && items[0].title || "AlloFlow Lesson";
+        const esc = (v) => v == null ? "" : String(v);
+        const out = ["---", "title: " + esc(title), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
+        if (items.length && !hasLiveEdits) {
+          items.forEach((it) => {
+            const ty = it.type, d = it.data;
+            out.push("## " + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, " ") : "Resource")), "");
+            if (typeof d === "string") {
+              out.push(d.trim(), "");
+            } else if (ty === "glossary" && Array.isArray(d)) {
+              d.forEach((g) => {
+                if (!g) return;
+                out.push("- **" + esc(g.term) + "** \u2014 " + esc(g.def));
+                if (g.translations && Object.keys(g.translations).length) out.push("  - _Translations:_ " + Object.values(g.translations).map((t2) => esc(t2)).join(" / "));
+                if (g.etymology) out.push("  - _Etymology:_ " + esc(g.etymology));
+              });
+              out.push("");
+            } else if (ty === "quiz" && d && Array.isArray(d.questions)) {
+              d.questions.forEach((q, i) => {
+                out.push("**Q" + (i + 1) + ". " + esc(q.question) + "**", "");
+                (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
+                out.push("");
+              });
+              if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
+                out.push("### Answer Key", "");
+                d.questions.forEach((q, i) => {
+                  const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                  out.push("- **Q" + (i + 1) + ":** " + (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(q.correctAnswer));
+                  if (q.factCheck) out.push("  - " + esc(q.factCheck));
+                });
+                out.push("");
+              } else {
+                out.push('*Answer key omitted from this export (assessment integrity \u2014 anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', "");
+              }
+            } else if (ty === "outline" && d && Array.isArray(d.branches)) {
+              if (d.main) out.push("**" + esc(d.main) + "**", "");
+              d.branches.forEach((b) => {
+                if (!b) return;
+                out.push("- " + esc(b.title));
+                if (Array.isArray(b.items)) b.items.forEach((s) => out.push("  - " + esc(s)));
+              });
+              out.push("");
+            } else if (ty === "timeline" && Array.isArray(d)) {
+              d.forEach((e) => {
+                if (e) out.push("- **" + esc(e.date) + ":** " + esc(e.event));
+              });
+              out.push("");
+            } else if (ty === "concept-sort" && d && Array.isArray(d.categories)) {
+              const its = Array.isArray(d.items) ? d.items : [];
+              d.categories.forEach((c) => {
+                if (!c) return;
+                out.push("### " + esc(c.label));
+                its.filter((x) => x && x.categoryId === c.id).forEach((x) => out.push("- " + esc(x.content)));
+                out.push("");
+              });
+            } else if (ty === "memory-aid" && d && typeof d === "object") {
+              const maRules = typeof window !== "undefined" && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
+              const maT = (key, fallback) => {
+                const fullKey = "memory_aid." + key;
+                try {
+                  const v = typeof t === "function" ? t(fullKey) : "";
+                  if (typeof v === "string" && v && v !== fullKey) return v;
+                } catch (_) {
+                }
+                return fallback;
+              };
+              if (d.instructions) out.push(esc(d.instructions), "");
+              const maCards = Array.isArray(d.cards) ? d.cards : d.cards && typeof d.cards === "object" ? Object.values(d.cards) : [];
+              maCards.slice(0, 8).forEach((c, ci) => {
+                if (!c || typeof c !== "object") return;
+                out.push("### " + (ci + 1) + ". " + esc(c.target || maT("memory_target", "Memory target")), "");
+                const cueBlock = maRules && typeof maRules.cueBlock === "function" ? maRules.cueBlock(c) : null;
+                const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
+                if (cue) out.push("**" + maT("export_memory_cue_label", "Memory cue:") + "** " + esc(cue), "");
+                if (cueBlock && cueBlock.steps.length) {
+                  out.push("**" + maT("scaffold_heading", "Build it with support") + ":**");
+                  cueBlock.steps.forEach((step, si) => out.push(si + 1 + ". " + esc(step)));
+                  out.push("");
+                }
+                if (cueBlock && cueBlock.visualDescription) out.push("**" + maT("export_visual_cue_described", "Picture cue, described:") + "** " + esc(cueBlock.visualDescription), "");
+                if (cueBlock && cueBlock.prompts.length) {
+                  out.push("**" + maT("coach_heading", "Coach questions") + ":**");
+                  cueBlock.prompts.forEach((prompt2) => out.push("- " + esc(prompt2)));
+                  out.push("");
+                }
+                const verified = !!(maRules && typeof maRules.isCardVerified === "function" && maRules.isCardVerified(c));
+                out.push("**" + (verified ? maT("facts_student_heading", "Facts to remember") : maT("facts_pending_student_note", "Your teacher is still checking these facts. Recall practice opens when they finish.")) + ":**");
+                (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
+                  if (f) out.push("- " + esc(f));
+                });
+                if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
+                if (hook) {
+                  const mdText = String(hook.text || "").replace(/([\\`*_[\]()~>#+=|{}!-])/g, "\\$1");
+                  const mdUrl = String(hook.sourceUrl || "").replace(/[()\[\]\s]/g, encodeURIComponent);
+                  const mdTitle = String(hook.sourceTitle || hook.sourceUrl || "").replace(/([\\`*_[\]()~])/g, "\\$1");
+                  const cite = hook.webVerified && mdUrl ? " (" + maT("hook_from_web_note", "From the web. Check the source:") + " [" + mdTitle + "](" + mdUrl + ")" + (hook.sourceHost && hook.sourceTitle ? " \xB7 " + maT("hook_source_host", "goes to {host}").replace("{host}", hook.sourceHost) : "") + ")" : " (" + maT("hook_unsourced_note", "Fun fact from AI knowledge. Ask your teacher if you want to check it.") + ")";
+                  out.push("", "**" + maT("hook_heading", "Did you know?") + "** " + mdText + cite);
+                }
+                out.push("");
+              });
+            } else if (ty === "image" && d && d.prompt) {
+              out.push("_Image: " + esc(d.prompt) + "_", "");
+            } else {
+              const tx = d && (d.text || d.content || d.summary) || "";
+              if (tx) out.push(esc(tx).trim(), "");
+              else if (d && typeof d === "object") {
+                const eh = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ExportHandlers || null;
+                const lines = eh && typeof eh.summarizeResourceText === "function" ? eh.summarizeResourceText(it, { maxChars: 4e3 }) : [];
+                if (lines.length) {
+                  lines.forEach((line) => out.push("- " + esc(line)));
+                  out.push("");
+                } else out.push("_This resource has no text export yet. Use the HTML export for the full resource._", "");
+              }
+            }
+          });
+        } else if (doc) {
+          const root = _builderCleanMarkdownRoot(doc);
+          const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
+          out.push(converted.markdown);
+          converted.warnings.forEach((message) => addToast(message, "warning"));
+        } else {
+          addToast("Nothing to export yet \u2014 generate a lesson first", "error");
+          return;
+        }
+        const md = out.join("\n").trim() + "\n";
+        let copied = false;
+        try {
+          copied = window.alloCopyText ? await window.alloCopyText(md) : false;
+        } catch (_) {
+        }
+        const blob = new Blob([md], { type: "text/markdown" });
+        downloadBuilderBlob(blob, { extension: "md", suffix: "-notebooklm" });
+        addToast(copied ? "Copied to clipboard + downloaded .md \u2014 paste or upload into NotebookLM as a source" : "Downloaded .md \u2014 upload it into NotebookLM as a source", "success");
+      } catch (e) {
+        if (addToast) addToast("NotebookLM export failed", "error");
+      } finally {
+        finishAlternativeExport();
+      }
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50" }, altExportBusy === "notebooklm" ? "Building NotebookLM source..." : "\u{1F4D3} Send to NotebookLM (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
+      const _preflight = runBuilderPreflight("epub", false);
+      if (_preflight.errors) {
+        addToast && addToast("ePub export stopped: fix the blocking preflight issues first.", "error");
+        return;
+      }
+      const doc = exportPreviewRef.current?.contentDocument;
+      if (!doc || !window.JSZip) {
+        addToast("ePub library loading...", "info");
+        return;
+      }
+      if (altExportBusy) return;
+      if (!beginAlternativeExport("epub")) return;
+      try {
+        let _clone = doc.documentElement.cloneNode(true);
+        try {
+          _clone = _builderFinalizeDocumentForExport(_clone);
+          _clone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script").forEach((el) => el.remove());
+          _clone.querySelectorAll("[data-allo-crop-tabindex-added]").forEach((el) => {
+            const added = el.getAttribute("data-allo-crop-tabindex-added") === "added";
+            el.removeAttribute("data-allo-crop-tabindex-added");
+            if (added) el.removeAttribute("tabindex");
+            el.removeAttribute("aria-keyshortcuts");
+          });
+          _clone.querySelectorAll("[contenteditable]").forEach((el) => el.removeAttribute("contenteditable"));
+          _builderStripEditorBreakMetadata(_clone);
+        } catch (_) {
+        }
+        const _escXml = (s) => String(s || "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || (doc.title || "").trim() || "AlloFlow Document").substring(0, 120);
+        _clone.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+          try {
+            if (/^https?:/i.test(new URL(link.getAttribute("href") || "", doc.baseURI).href)) link.remove();
+          } catch (_) {
+          }
+        });
+        _clone.querySelectorAll("style").forEach((style) => {
+          const css = style.textContent || "";
+          style.textContent = css.replace(/@import\s+[^;]+;/gi, "").replace(/@font-face\s*\{[^}]*https?:[^}]*\}/gi, "").replace(/url\(\s*(['"]?)https?:[^)]+\)/gi, "none");
+        });
+        const _rawLang = (doc.documentElement.getAttribute("lang") || "en").trim().replace(/_/g, "-");
+        const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : "en";
+        const xmlTitle = _escXml(title);
+        const _navItems = [];
+        try {
+          const _hs = _clone.querySelectorAll("h1, h2, h3");
+          for (let _hi = 0; _hi < _hs.length; _hi++) {
+            const _h = _hs[_hi];
+            const _txt = (_h.textContent || "").replace(/\s+/g, " ").trim().substring(0, 120);
+            if (!_txt) continue;
+            if (!_h.id) _h.id = "allo-toc-" + _hi;
+            _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + "</a></li>");
+          }
+        } catch (_) {
+        }
+        const _navList = _navItems.length ? _navItems.join("") : '<li><a href="content.xhtml">' + xmlTitle + "</a></li>";
+        const zip = new window.JSZip();
+        zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
+        zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+        const _imageManifest = [];
+        let _hasRemoteResources = false;
+        let _unavailableRemoteImages = 0;
+        const _replaceImageFallback = (img) => {
+          const fallback = _clone.ownerDocument.createElement("span");
+          fallback.setAttribute("role", "img");
+          const alt = (img.getAttribute("alt") || "").trim();
+          fallback.setAttribute("aria-label", alt || "Image unavailable in this ePub");
+          fallback.textContent = alt ? "[Image: " + alt + "]" : "[Image unavailable]";
+          img.replaceWith(fallback);
+        };
+        const _images = Array.from(_clone.querySelectorAll("img[src]"));
+        for (let index = 0; index < _images.length; index++) {
+          const img = _images[index];
+          const src = img.getAttribute("src") || "";
+          const match = src.match(/^data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+)$/i);
+          if (match) {
+            const kind = match[1].toLowerCase();
+            const ext = kind === "jpeg" || kind === "jpg" ? "jpg" : kind;
+            const mediaType = ext === "jpg" ? "image/jpeg" : "image/" + ext;
+            const path = "images/image-" + (index + 1) + "." + ext;
+            zip.file("OEBPS/" + path, match[2].replace(/\s/g, ""), { base64: true });
+            img.setAttribute("src", path);
+            _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+            continue;
+          }
+          try {
+            const absolute = new URL(src, doc.baseURI).href;
+            if (!/^https?:/i.test(absolute)) {
+              _replaceImageFallback(img);
+              continue;
+            }
+            const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
+            const path = "images/image-" + (index + 1) + "." + ext;
+            zip.file("OEBPS/" + path, bytes);
+            img.setAttribute("src", path);
+            _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+          } catch (_) {
+            _unavailableRemoteImages += 1;
+            _replaceImageFallback(img);
+          }
+        }
+        const _uid = "alloflow-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+        try {
+          _hasRemoteResources = Array.from(_clone.querySelectorAll("audio[src],video[src],source[src],object[data]")).some((node) => {
+            const ref = node.getAttribute("src") || node.getAttribute("data") || "";
+            try {
+              return /^https?:/i.test(new URL(ref, doc.baseURI).href);
+            } catch (_) {
+              return false;
+            }
+          });
+        } catch (_) {
+        }
+        const _contentProps = [];
+        try {
+          if (_clone.querySelector("svg")) _contentProps.push("svg");
+          if (_clone.querySelector("math")) _contentProps.push("mathml");
+          if (_hasRemoteResources) _contentProps.push("remote-resources");
+        } catch (_) {
+        }
+        const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(" ") + '"' : "";
+        zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join("")}</manifest><spine><itemref idref="content"/></spine></package>`);
+        let xhtml;
+        try {
+          xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
+        } catch (_) {
+          xhtml = _clone.outerHTML.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+        }
+        if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
+        zip.file("OEBPS/content.xhtml", xhtml);
+        zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} \u2014 Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
+        const blob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
+        downloadBuilderBlob(blob, { extension: "epub" });
+        if (_unavailableRemoteImages) {
+          addToast(`${_unavailableRemoteImages} remote image${_unavailableRemoteImages === 1 ? "" : "s"} could not be packaged and were replaced with accessible text.`, "warning");
+        } else {
+          addToast("ePub downloaded", "success");
+        }
+      } catch (error) {
+        addToast && addToast("ePub export failed: " + (error?.message || "unknown error"), "error");
+      } finally {
+        finishAlternativeExport();
+      }
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "epub" ? "Building ePub..." : "\u{1F4DA} ePub (e-readers)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
+      const doc = exportPreviewRef.current?.contentDocument;
+      if (!doc) return;
+      if (altExportBusy) return;
+      if (!beginAlternativeExport("brf")) return;
+      try {
+        let text = "";
+        try {
+          const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+          _bClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style").forEach((el) => el.remove());
+          _bClone.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
+            try {
+              el.insertAdjacentText("beforebegin", "\n\n");
+              el.appendChild(doc.createTextNode("\n"));
+            } catch (_) {
+            }
+          });
+          _bClone.querySelectorAll("p,li,tr,figcaption,blockquote,div").forEach((el) => {
+            try {
+              el.appendChild(doc.createTextNode("\n"));
+            } catch (_) {
+            }
+          });
+          text = (_bClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+        } catch (_) {
+          throw new Error("Could not prepare the accepted revision view for Braille.");
+        }
+        const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
+        const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
+        const _brfSmart = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
+        const _brfOpenQuote = "\uE000", _brfCloseQuote = "\uE001";
+        const _brfPrefix = /[#,;@_^".]$/;
+        const _brfHardSplit = (word, into, cells) => {
+          if (/^#[A-J14]+$/.test(word)) {
+            while (word.length > cells) {
+              into.push(word.slice(0, cells - 1) + '"');
+              word = word.slice(cells - 1);
+            }
+            if (word) into.push(word);
+            return;
+          }
+          while (word.length > cells) {
+            let cut = cells;
+            while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
+            into.push(word.slice(0, cut));
+            word = word.slice(cut);
+          }
+          if (word) into.push(word);
+        };
+        const _brfWrap = (line, into, cells) => {
+          if (line.length <= cells) {
+            into.push(line);
+            return;
+          }
+          const words = line.split(" ");
+          let cur = "";
+          for (let word of words) {
+            if (word.length > cells) {
+              if (cur) {
+                into.push(cur);
+                cur = "";
+              }
+              _brfHardSplit(word, into, cells);
+              continue;
+            }
+            if (!cur) cur = word;
+            else if (cur.length + 1 + word.length <= cells) cur += " " + word;
+            else {
+              into.push(cur);
+              cur = word;
+            }
+          }
+          if (cur) into.push(cur);
+        };
+        const _toBRF = (src, opts) => {
+          const cells = opts && opts.cellsPerLine || 40;
+          let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
+          norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || "");
+          try {
+            norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          } catch (_) {
+          }
+          const out = [];
+          let dropped = 0;
+          for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
+            const chars = Array.from(line);
+            let bl = "";
+            let numMode = false;
+            for (let i = 0; i < chars.length; i++) {
+              const ch = chars[i];
+              if (ch >= "0" && ch <= "9") {
+                if (!numMode) {
+                  bl += "#";
+                  numMode = true;
+                }
+                bl += _brfDigit[ch];
+                continue;
+              }
+              if (numMode && (ch === "," || ch === ".")) {
+                bl += _brfPunct[ch];
+                continue;
+              }
+              if (numMode && ch >= "a" && ch <= "j") bl += ";";
+              numMode = false;
+              if (ch >= "a" && ch <= "z") {
+                bl += ch.toUpperCase();
+                continue;
+              }
+              if (ch >= "A" && ch <= "Z") {
+                let end = i;
+                while (end < chars.length && chars[end] >= "A" && chars[end] <= "Z") end++;
+                const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+                const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+                if (!prevIsLetter && !nextIsLetter && end - i >= 2) {
+                  bl += ",," + chars.slice(i, end).join("");
+                  i = end - 1;
+                } else bl += "," + ch;
+                continue;
+              }
+              if (ch === " " || ch === "	") {
+                bl += " ";
+                continue;
+              }
+              if (ch === _brfOpenQuote) {
+                bl += "8";
+                continue;
+              }
+              if (ch === _brfCloseQuote) {
+                bl += "0";
+                continue;
+              }
+              if (ch === '"') {
+                const prev = i > 0 ? chars[i - 1] : "";
+                bl += !prev || /\s|[([{]/.test(prev) ? "8" : "0";
+                continue;
+              }
+              if (_brfPunct[ch] !== void 0) {
+                bl += _brfPunct[ch];
+                continue;
+              }
+              dropped++;
+            }
+            _brfWrap(bl, out, cells);
+          }
+          const brf = out.join("\n");
+          return opts && opts.withMeta ? { brf, dropped } : brf;
+        };
+        const _downloadBRF = (brf) => {
+          const blob = new Blob([brf], { type: "application/x-brf" });
+          downloadBuilderBlob(blob, { extension: "brf" });
+        };
+        const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
+        await Promise.resolve(_ensureBrailleLoader).catch(() => false).then(async () => {
+          let _g1Dropped = 0, _grade1;
+          if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === "function") {
+            const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
+            _grade1 = _r.brf;
+            _g1Dropped = _r.dropped;
+          } else {
+            const _r = _toBRF(text, { withMeta: true });
+            _grade1 = _r.brf;
+            _g1Dropped = _r.dropped;
+          }
+          const _warnDrop = () => {
+            if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
+          };
+          if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
+            addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
+            await Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+              if (ueb && ueb.replace(/\s/g, "").length) {
+                _downloadBRF(ueb);
+                addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
+              } else {
+                _downloadBRF(_grade1);
+                _warnDrop();
+                addToast("Electronic Braille (Grade 1) downloaded", "success");
+              }
+            }).catch(() => {
+              _downloadBRF(_grade1);
+              _warnDrop();
+              addToast("Electronic Braille (Grade 1) downloaded", "success");
+            });
+          } else {
+            _downloadBRF(_grade1);
+            _warnDrop();
+            addToast("Electronic Braille (BRF) downloaded", "success");
+          }
+        });
+      } catch (error) {
+        addToast && addToast("Braille export failed: " + (error?.message || "unknown error"), "error");
+      } finally {
+        finishAlternativeExport();
+      }
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
+    }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowExportPreview(false), "aria-label": t("a11y.close_doc_builder") || "Close Document Builder", className: "min-h-9 rounded px-2 text-xs font-bold text-slate-700 hover:bg-red-50" }, "Close")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        ref: imageFileInputRef,
+        type: "file",
+        accept: "image/png,image/jpeg,image/gif,image/webp",
+        className: "sr-only",
+        tabIndex: -1,
+        "aria-hidden": "true",
+        onChange: (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          const allowedTypes = /* @__PURE__ */ new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+          if (!allowedTypes.has(String(file.type || "").toLowerCase())) {
+            addToast && addToast("Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.", "error");
+            return;
+          }
+          if (file.size > 8 * 1024 * 1024) {
+            addToast && addToast("That image is larger than 8 MB. Resize or compress it before inserting.", "error");
+            return;
+          }
+          setImageAltText("");
+          setImageDecorative(false);
+          setImageAltError("");
+          setPendingImageFile(file);
+        }
+      }
     )), /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -8211,14 +8896,12 @@ ${pageCss}
           setMobileSettingsOpen(false);
           window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
         },
-        className: `builder-settings-panel ${isFocusMode ? "hidden" : "w-full lg:w-72"} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`
+        className: "builder-settings-panel bg-gradient-to-b from-slate-50 to-white border-l border-slate-200 p-4 space-y-3"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-        if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
-      }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-800" }, "Document settings"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeBuilderSettings, className: "min-h-9 rounded px-2 text-xs font-bold text-indigo-800 hover:bg-indigo-50" }, "Back to document")),
+      /* @__PURE__ */ React.createElement("button", { onClick: updateExportPreview2, className: "text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }), " Regenerate"),
       Array.isArray(builderResourceIds) && exportPreviewSource === "history" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950" }, (t("guided.export_scope_label") || "Current lesson: {count} selected resources.").replace("{count}", builderResourceIds.length), history.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "block" }, t("guided.export_resources_missing") || "This lesson has no available resources, or some are missing. Review History before opening its package.")),
       exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1", role: "group", "aria-label": "Document Builder workspace" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("author"), "aria-pressed": !isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${!isAdvancedReview ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Standard"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBuilderWorkspaceMode?.("advanced-review"), "aria-pressed": isAdvancedReview, className: `min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-800 hover:bg-white"}` }, "Advanced Review")),
-      /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"),
       exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."),
       !isRemediationDocument && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Content", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Include Resources"), (() => {
         const available = _builderResourceOptions(history, t);
@@ -8950,7 +9633,7 @@ ${pageCss}
         },
         exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
       ), exportAuditResult && exportAuditResult.score < 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900" }, exportAuditResult.summary), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Accessibility Automated Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-700 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.2 AA conformance \u2014 a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.")))
-    ), /* @__PURE__ */ React.createElement("div", { className: "builder-editor-pane flex-1 flex flex-col min-w-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0", style: { maxWidth: "28rem" } }, /* @__PURE__ */ React.createElement("h3", { id: "builder-current-document-title", className: "truncate text-sm font-bold text-slate-800", title: previewDocumentTitle }, previewDocumentTitle), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600", "data-builder-document-context": true }, documentSourceLabel, !isRemediationDocument && " \xB7 " + includedResourceCount + " of " + resourceItems.length + " resources"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600", "data-builder-save-status": true }, _builderSaveStatusLabel(draftCaptureState, draftCaptureAt))), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700 font-medium" }, isFocusMode ? "Focus mode \xB7 write without distractions" : "Focus the preview and edit text directly"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openWordCountDetails, "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "builder-quick-access-toolbar", role: "toolbar", "aria-label": "Quick Access", className: "flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm" }, quickAccessItems.map((itemId) => {
+    ), /* @__PURE__ */ React.createElement("div", { className: "builder-editor-pane flex-1 flex flex-col min-w-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: exportActionBusy || altExportBusy ? "border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" : "sr-only" }, exportActionBusy ? "Preparing your export. Keep the builder open until it finishes." : altExportBusy ? "Preparing " + altExportBusy.toUpperCase() + " export. Keep the builder open until it finishes." : ""), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("details", { open: preflightResult.errors > 0 }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-semibold" }, "Review findings"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5 max-h-40 overflow-y-auto" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message))))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, draftRecovery.title || draftDocumentTitle, " \xB7 Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "builder-controls", hidden: isFocusMode }, /* @__PURE__ */ React.createElement("div", { className: "builder-command-bar bg-white border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { id: "builder-quick-access-toolbar", role: "toolbar", "aria-label": "Quick Access", className: "flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm" }, quickAccessItems.map((itemId) => {
       const option = _BUILDER_QUICK_ACCESS_OPTIONS.find((item) => item.id === itemId);
       const command = quickAccessActions[itemId];
       if (!option || !command) return null;
@@ -8966,66 +9649,48 @@ ${pageCss}
       const selected = quickAccessItems.includes(option.id);
       const position = quickAccessItems.indexOf(option.id);
       return /* @__PURE__ */ React.createElement("div", { key: option.id, className: "flex min-h-7 items-center gap-1 rounded px-1 hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-[10px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected, onChange: () => toggleQuickAccessItem(option.id), className: "accent-indigo-700" }), " ", /* @__PURE__ */ React.createElement("span", { className: "truncate" }, option.label)), selected && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === 0, onClick: () => moveQuickAccessItem(option.id, -1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " left" }, "\u2190"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === quickAccessItems.length - 1, onClick: () => moveQuickAccessItem(option.id, 1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " right" }, "\u2192")));
-    })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT]), className: "mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100" }, "Reset Quick Access")))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const active = showNavigationPane && navigationPaneTab === "headings";
-          if (active) setShowNavigationPane(false);
-          else {
-            setNavigationPaneTab("headings");
-            setShowNavigationPane(true);
-          }
+    })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT]), className: "mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100" }, "Reset Quick Access")))), /* @__PURE__ */ React.createElement("div", { className: "builder-compact-format", role: "group", "aria-label": "Quick formatting" }, /* @__PURE__ */ React.createElement("select", { "aria-label": "Paragraph style", value: formatState.namedStyle, onChange: (event) => applyBuilderStyle(event.target.value), className: "h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700" }, builderStyleGallery.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label))), ["bold", "italic", "underline"].map((command) => /* @__PURE__ */ React.createElement("button", { key: command, type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => runEditorCommand(command), "aria-label": command === "bold" ? "Bold" : command === "italic" ? "Italic" : "Underline", "aria-pressed": formatState[command], className: "w-8 h-8 rounded text-sm font-bold " + (formatState[command] ? "bg-indigo-700 text-white" : "text-slate-700 hover:bg-indigo-50") }, /* @__PURE__ */ React.createElement("span", { style: { fontStyle: command === "italic" ? "italic" : void 0, textDecoration: command === "underline" ? "underline" : void 0 } }, command[0].toUpperCase())))), /* @__PURE__ */ React.createElement("div", { className: "builder-ribbon-tabs flex flex-wrap items-center gap-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
+      const selected = activeRibbonTab === tab;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: tab,
+          id: `builder-ribbon-tab-${tab}`,
+          type: "button",
+          role: "tab",
+          "aria-selected": selected,
+          "aria-controls": `builder-ribbon-panel-${tab}`,
+          "aria-expanded": selected && !ribbonCollapsed,
+          tabIndex: selected ? 0 : -1,
+          onClick: () => {
+            setActiveRibbonTab(tab);
+            setRibbonCollapsed(activeRibbonTab === tab ? !ribbonCollapsed : false);
+          },
+          onKeyDown: (event) => {
+            const tabs = ["home", "insert", "layout", "review", "view", "expert"];
+            const current = tabs.indexOf(tab);
+            const next = event.key === "ArrowRight" ? (current + 1) % tabs.length : event.key === "ArrowLeft" ? (current - 1 + tabs.length) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : -1;
+            if (next < 0) return;
+            event.preventDefault();
+            setActiveRibbonTab(tabs[next]);
+            setRibbonCollapsed(false);
+            window.setTimeout(() => document.getElementById(`builder-ribbon-tab-${tabs[next]}`)?.focus(), 0);
+          },
+          className: `shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white hover:text-indigo-700"}`
         },
-        "aria-pressed": showNavigationPane && navigationPaneTab === "headings",
-        "aria-controls": "document-builder-navigation",
-        className: `text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === "headings" ? "bg-slate-700 text-white shadow-sm" : "text-slate-700 bg-slate-100 hover:bg-slate-200"}`,
-        title: showNavigationPane && navigationPaneTab === "headings" ? "Hide navigation" : "Open heading navigation"
-      },
-      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2637"),
-      " Navigation"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setBuilderFocusMode(),
-        "aria-pressed": isFocusMode,
-        className: `text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${isFocusMode ? "bg-indigo-700 text-white shadow-sm" : "text-indigo-700 bg-indigo-50 hover:bg-indigo-100"}`,
-        title: isFocusMode ? "Exit focus mode and restore the settings panel" : "Hide settings for a distraction-free drafting surface"
-      },
-      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isFocusMode ? "\u2199" : "\u2197"),
-      " ",
-      isFocusMode ? "Exit focus" : "Focus mode"
-    ), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        ref: imageFileInputRef,
-        type: "file",
-        accept: "image/png,image/jpeg,image/gif,image/webp",
-        className: "sr-only",
-        tabIndex: -1,
-        "aria-hidden": "true",
-        onChange: (e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (!file) return;
-          const allowedTypes = /* @__PURE__ */ new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
-          if (!allowedTypes.has(String(file.type || "").toLowerCase())) {
-            addToast && addToast("Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.", "error");
-            return;
-          }
-          if (file.size > 8 * 1024 * 1024) {
-            addToast && addToast("That image is larger than 8 MB. Resize or compress it before inserting.", "error");
-            return;
-          }
-          setImageAltText("");
-          setImageDecorative(false);
-          setImageAltError("");
-          setPendingImageFile(file);
-        }
-      }
-    ), /* @__PURE__ */ React.createElement("button", { ref: imageAddButtonRef, type: "button", onClick: openImagePicker, className: "min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100", "aria-label": "Add an image and provide alternative text", title: "Insert image into document" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " Add Image"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-slate-200" }), /* @__PURE__ */ React.createElement(
+        label,
+        tab === "review" && preflightResult && preflightResult.errors + preflightResult.warnings > 0 ? ` \xB7 ${preflightResult.errors + preflightResult.warnings}` : ""
+      );
+    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setRibbonCollapsed((value) => !value), "aria-expanded": !ribbonCollapsed, "aria-controls": `builder-ribbon-panel-${activeRibbonTab}`, className: "builder-ribbon-toggle ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700", title: ribbonCollapsed ? "Expand the ribbon" : "Collapse the ribbon" }, ribbonCollapsed ? "Expand ribbon" : "Collapse ribbon"))), /* @__PURE__ */ React.createElement("div", { id: "builder-tool-tray", className: "builder-tool-tray bg-white border border-slate-300 shadow-xl", hidden: ribbonCollapsed, onKeyDownCapture: (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented || event.target.closest("details[open]")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setRibbonCollapsed(true);
+      window.setTimeout(() => document.getElementById("builder-ribbon-tab-" + activeRibbonTab)?.focus(), 0);
+    } }, /* @__PURE__ */ React.createElement("div", { className: "builder-tray-heading flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-700" }, activeRibbonTab === "expert" ? "Expert Workbench" : activeRibbonTab === "home" ? "Formatting" : activeRibbonTab.charAt(0).toUpperCase() + activeRibbonTab.slice(1)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setRibbonCollapsed(true);
+      document.getElementById("builder-ribbon-tab-" + activeRibbonTab)?.focus();
+    }, className: "min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-white", "aria-label": "Close ribbon tools" }, "Close")), !ribbonCollapsed && activeRibbonTab === "review" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-review", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-review", className: "shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2" }, "                    ", /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: toggleA11yInspect,
@@ -9069,599 +9734,11 @@ ${pageCss}
         "aria-label": "Open word-level diff view between source PDF and remediated HTML"
       },
       "\u{1F4DD} Diff"
-    ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-slate-200" }), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? "bg-green-100 text-green-700 ring-1 ring-green-300" : exportAuditResult.score >= 70 ? "bg-amber-100 text-amber-700 ring-1 ring-amber-300" : "bg-red-100 text-red-700 ring-1 ring-red-300"}`, title: exportAuditResult.summary || "" }, "\u267F", " ", exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("button", { onClick: updateExportPreview2, className: "text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }), " Regenerate"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        "data-help-key": "doc_builder_export_action",
-        onClick: runExportFromPreview,
-        disabled: exportActionBusy || !!altExportBusy || exportPreviewMode === "slides" && !pptxLoaded,
-        "aria-busy": exportActionBusy,
-        "aria-label": exportActionBusy ? "Export in progress" : void 0,
-        className: "bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
-        title: exportPreviewMode === "slides" && !pptxLoaded ? "Slides library still loading..." : ""
-      },
-      /* @__PURE__ */ React.createElement(Download, { size: 14 }),
-      " ",
-      exportActionBusy ? "Preparing export..." : exportPreviewMode === "worksheet" || exportPreviewMode === "print" ? t("export_preview.action_print_pdf") || "Print / Save as PDF" : exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF"
-    ), exportPreviewMode === "slides" && typeof openInAlloStudio === "function" && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: openInAlloStudio,
-        className: "bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5",
-        title: "Open this content in Page Designer as an editable slide deck \u2014 reorder, restyle, and export PowerPoint from there."
-      },
-      "\u{1F3A8} ",
-      t("export_preview.edit_in_page_designer") || "Edit in Page Designer"
-    ), /* @__PURE__ */ React.createElement("style", null, `.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
-                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`), /* @__PURE__ */ React.createElement("details", { className: "relative", onKeyDownCapture: (event) => {
-      if (event.key === "Escape" && event.currentTarget.open) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.currentTarget.open = false;
-        event.currentTarget.querySelector("summary")?.focus();
-      }
-    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = exportPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      let text = "";
-      try {
-        let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-        _tClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style").forEach((el) => el.remove());
-        _tClone.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div").forEach((el) => {
-          try {
-            el.appendChild(doc.createTextNode("\n"));
-          } catch (_) {
-          }
-        });
-        text = (_tClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-      } catch (_) {
-        text = (doc.body.innerText || doc.body.textContent || "").trim();
-      }
-      const blob = new Blob([text], { type: "text/plain" });
-      downloadBuilderBlob(blob, { extension: "txt" });
-      addToast("Plain text downloaded", "success");
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const doc = exportPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const preflight = runBuilderPreflight("markdown", false);
-      if (preflight.errors) {
-        addToast("Markdown export stopped: fix the blocking preflight issues first.", "error");
-        return;
-      }
-      if (!beginAlternativeExport("markdown")) return;
-      try {
-        const root = _builderCleanMarkdownRoot(doc);
-        const math = Array.from(root.querySelectorAll("math"));
-        let spokenByBlock = null;
-        if (math.length) {
-          try {
-            if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin("sre_loader.js");
-            if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map((node) => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8e3 })));
-          } catch (_) {
-          }
-        }
-        const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
-        downloadBuilderBlob(new Blob([result.markdown], { type: "text/markdown;charset=utf-8" }), { extension: "md" });
-        addToast(result.warnings.length ? result.warnings.join(" ") : "Markdown prepared from the current document.", result.warnings.length ? "warning" : "success");
-      } catch (error) {
-        addToast("Markdown export failed: " + (error?.message || "unknown error"), "error");
-      } finally {
-        finishAlternativeExport();
-      }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DD} Markdown (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
-      if (altExportBusy) return;
-      if (!beginAlternativeExport("notebooklm")) return;
-      try {
-        const doc = exportPreviewRef.current?.contentDocument;
-        const items = Array.isArray(history) ? history.filter((h) => h && h.data != null) : [];
-        const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute("data-allo-user-edited") === "1");
-        const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-        const title = exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc && doc.title || items[0] && items[0].title || "AlloFlow Lesson";
-        const esc = (v) => v == null ? "" : String(v);
-        const out = ["---", "title: " + esc(title), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
-        if (items.length && !hasLiveEdits) {
-          items.forEach((it) => {
-            const ty = it.type, d = it.data;
-            out.push("## " + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, " ") : "Resource")), "");
-            if (typeof d === "string") {
-              out.push(d.trim(), "");
-            } else if (ty === "glossary" && Array.isArray(d)) {
-              d.forEach((g) => {
-                if (!g) return;
-                out.push("- **" + esc(g.term) + "** \u2014 " + esc(g.def));
-                if (g.translations && Object.keys(g.translations).length) out.push("  - _Translations:_ " + Object.values(g.translations).map((t2) => esc(t2)).join(" / "));
-                if (g.etymology) out.push("  - _Etymology:_ " + esc(g.etymology));
-              });
-              out.push("");
-            } else if (ty === "quiz" && d && Array.isArray(d.questions)) {
-              d.questions.forEach((q, i) => {
-                out.push("**Q" + (i + 1) + ". " + esc(q.question) + "**", "");
-                (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
-                out.push("");
-              });
-              if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
-                out.push("### Answer Key", "");
-                d.questions.forEach((q, i) => {
-                  const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                  out.push("- **Q" + (i + 1) + ":** " + (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(q.correctAnswer));
-                  if (q.factCheck) out.push("  - " + esc(q.factCheck));
-                });
-                out.push("");
-              } else {
-                out.push('*Answer key omitted from this export (assessment integrity \u2014 anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', "");
-              }
-            } else if (ty === "outline" && d && Array.isArray(d.branches)) {
-              if (d.main) out.push("**" + esc(d.main) + "**", "");
-              d.branches.forEach((b) => {
-                if (!b) return;
-                out.push("- " + esc(b.title));
-                if (Array.isArray(b.items)) b.items.forEach((s) => out.push("  - " + esc(s)));
-              });
-              out.push("");
-            } else if (ty === "timeline" && Array.isArray(d)) {
-              d.forEach((e) => {
-                if (e) out.push("- **" + esc(e.date) + ":** " + esc(e.event));
-              });
-              out.push("");
-            } else if (ty === "concept-sort" && d && Array.isArray(d.categories)) {
-              const its = Array.isArray(d.items) ? d.items : [];
-              d.categories.forEach((c) => {
-                if (!c) return;
-                out.push("### " + esc(c.label));
-                its.filter((x) => x && x.categoryId === c.id).forEach((x) => out.push("- " + esc(x.content)));
-                out.push("");
-              });
-            } else if (ty === "memory-aid" && d && typeof d === "object") {
-              const maRules = typeof window !== "undefined" && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
-              const maT = (key, fallback) => {
-                const fullKey = "memory_aid." + key;
-                try {
-                  const v = typeof t === "function" ? t(fullKey) : "";
-                  if (typeof v === "string" && v && v !== fullKey) return v;
-                } catch (_) {
-                }
-                return fallback;
-              };
-              if (d.instructions) out.push(esc(d.instructions), "");
-              const maCards = Array.isArray(d.cards) ? d.cards : d.cards && typeof d.cards === "object" ? Object.values(d.cards) : [];
-              maCards.slice(0, 8).forEach((c, ci) => {
-                if (!c || typeof c !== "object") return;
-                out.push("### " + (ci + 1) + ". " + esc(c.target || maT("memory_target", "Memory target")), "");
-                const cueBlock = maRules && typeof maRules.cueBlock === "function" ? maRules.cueBlock(c) : null;
-                const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
-                if (cue) out.push("**" + maT("export_memory_cue_label", "Memory cue:") + "** " + esc(cue), "");
-                if (cueBlock && cueBlock.steps.length) {
-                  out.push("**" + maT("scaffold_heading", "Build it with support") + ":**");
-                  cueBlock.steps.forEach((step, si) => out.push(si + 1 + ". " + esc(step)));
-                  out.push("");
-                }
-                if (cueBlock && cueBlock.visualDescription) out.push("**" + maT("export_visual_cue_described", "Picture cue, described:") + "** " + esc(cueBlock.visualDescription), "");
-                if (cueBlock && cueBlock.prompts.length) {
-                  out.push("**" + maT("coach_heading", "Coach questions") + ":**");
-                  cueBlock.prompts.forEach((prompt2) => out.push("- " + esc(prompt2)));
-                  out.push("");
-                }
-                const verified = !!(maRules && typeof maRules.isCardVerified === "function" && maRules.isCardVerified(c));
-                out.push("**" + (verified ? maT("facts_student_heading", "Facts to remember") : maT("facts_pending_student_note", "Your teacher is still checking these facts. Recall practice opens when they finish.")) + ":**");
-                (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
-                  if (f) out.push("- " + esc(f));
-                });
-                if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
-                const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
-                if (hook) {
-                  const mdText = String(hook.text || "").replace(/([\\`*_[\]()~>#+=|{}!-])/g, "\\$1");
-                  const mdUrl = String(hook.sourceUrl || "").replace(/[()\[\]\s]/g, encodeURIComponent);
-                  const mdTitle = String(hook.sourceTitle || hook.sourceUrl || "").replace(/([\\`*_[\]()~])/g, "\\$1");
-                  const cite = hook.webVerified && mdUrl ? " (" + maT("hook_from_web_note", "From the web. Check the source:") + " [" + mdTitle + "](" + mdUrl + ")" + (hook.sourceHost && hook.sourceTitle ? " \xB7 " + maT("hook_source_host", "goes to {host}").replace("{host}", hook.sourceHost) : "") + ")" : " (" + maT("hook_unsourced_note", "Fun fact from AI knowledge. Ask your teacher if you want to check it.") + ")";
-                  out.push("", "**" + maT("hook_heading", "Did you know?") + "** " + mdText + cite);
-                }
-                out.push("");
-              });
-            } else if (ty === "image" && d && d.prompt) {
-              out.push("_Image: " + esc(d.prompt) + "_", "");
-            } else {
-              const tx = d && (d.text || d.content || d.summary) || "";
-              if (tx) out.push(esc(tx).trim(), "");
-              else if (d && typeof d === "object") {
-                const eh = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ExportHandlers || null;
-                const lines = eh && typeof eh.summarizeResourceText === "function" ? eh.summarizeResourceText(it, { maxChars: 4e3 }) : [];
-                if (lines.length) {
-                  lines.forEach((line) => out.push("- " + esc(line)));
-                  out.push("");
-                } else out.push("_This resource has no text export yet. Use the HTML export for the full resource._", "");
-              }
-            }
-          });
-        } else if (doc) {
-          const root = _builderCleanMarkdownRoot(doc);
-          const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
-          out.push(converted.markdown);
-          converted.warnings.forEach((message) => addToast(message, "warning"));
-        } else {
-          addToast("Nothing to export yet \u2014 generate a lesson first", "error");
-          return;
-        }
-        const md = out.join("\n").trim() + "\n";
-        let copied = false;
-        try {
-          copied = window.alloCopyText ? await window.alloCopyText(md) : false;
-        } catch (_) {
-        }
-        const blob = new Blob([md], { type: "text/markdown" });
-        downloadBuilderBlob(blob, { extension: "md", suffix: "-notebooklm" });
-        addToast(copied ? "Copied to clipboard + downloaded .md \u2014 paste or upload into NotebookLM as a source" : "Downloaded .md \u2014 upload it into NotebookLM as a source", "success");
-      } catch (e) {
-        if (addToast) addToast("NotebookLM export failed", "error");
-      } finally {
-        finishAlternativeExport();
-      }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50" }, altExportBusy === "notebooklm" ? "Building NotebookLM source..." : "\u{1F4D3} Send to NotebookLM (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
-      const _preflight = runBuilderPreflight("epub", false);
-      if (_preflight.errors) {
-        addToast && addToast("ePub export stopped: fix the blocking preflight issues first.", "error");
-        return;
-      }
-      const doc = exportPreviewRef.current?.contentDocument;
-      if (!doc || !window.JSZip) {
-        addToast("ePub library loading...", "info");
-        return;
-      }
-      if (altExportBusy) return;
-      if (!beginAlternativeExport("epub")) return;
-      try {
-        let _clone = doc.documentElement.cloneNode(true);
-        try {
-          _clone = _builderFinalizeDocumentForExport(_clone);
-          _clone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script").forEach((el) => el.remove());
-          _clone.querySelectorAll("[data-allo-crop-tabindex-added]").forEach((el) => {
-            const added = el.getAttribute("data-allo-crop-tabindex-added") === "added";
-            el.removeAttribute("data-allo-crop-tabindex-added");
-            if (added) el.removeAttribute("tabindex");
-            el.removeAttribute("aria-keyshortcuts");
-          });
-          _clone.querySelectorAll("[contenteditable]").forEach((el) => el.removeAttribute("contenteditable"));
-          _builderStripEditorBreakMetadata(_clone);
-        } catch (_) {
-        }
-        const _escXml = (s) => String(s || "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-        const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || (doc.title || "").trim() || "AlloFlow Document").substring(0, 120);
-        _clone.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
-          try {
-            if (/^https?:/i.test(new URL(link.getAttribute("href") || "", doc.baseURI).href)) link.remove();
-          } catch (_) {
-          }
-        });
-        _clone.querySelectorAll("style").forEach((style) => {
-          const css = style.textContent || "";
-          style.textContent = css.replace(/@import\s+[^;]+;/gi, "").replace(/@font-face\s*\{[^}]*https?:[^}]*\}/gi, "").replace(/url\(\s*(['"]?)https?:[^)]+\)/gi, "none");
-        });
-        const _rawLang = (doc.documentElement.getAttribute("lang") || "en").trim().replace(/_/g, "-");
-        const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : "en";
-        const xmlTitle = _escXml(title);
-        const _navItems = [];
-        try {
-          const _hs = _clone.querySelectorAll("h1, h2, h3");
-          for (let _hi = 0; _hi < _hs.length; _hi++) {
-            const _h = _hs[_hi];
-            const _txt = (_h.textContent || "").replace(/\s+/g, " ").trim().substring(0, 120);
-            if (!_txt) continue;
-            if (!_h.id) _h.id = "allo-toc-" + _hi;
-            _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + "</a></li>");
-          }
-        } catch (_) {
-        }
-        const _navList = _navItems.length ? _navItems.join("") : '<li><a href="content.xhtml">' + xmlTitle + "</a></li>";
-        const zip = new window.JSZip();
-        zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
-        zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-        const _imageManifest = [];
-        let _hasRemoteResources = false;
-        let _unavailableRemoteImages = 0;
-        const _replaceImageFallback = (img) => {
-          const fallback = _clone.ownerDocument.createElement("span");
-          fallback.setAttribute("role", "img");
-          const alt = (img.getAttribute("alt") || "").trim();
-          fallback.setAttribute("aria-label", alt || "Image unavailable in this ePub");
-          fallback.textContent = alt ? "[Image: " + alt + "]" : "[Image unavailable]";
-          img.replaceWith(fallback);
-        };
-        const _images = Array.from(_clone.querySelectorAll("img[src]"));
-        for (let index = 0; index < _images.length; index++) {
-          const img = _images[index];
-          const src = img.getAttribute("src") || "";
-          const match = src.match(/^data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+)$/i);
-          if (match) {
-            const kind = match[1].toLowerCase();
-            const ext = kind === "jpeg" || kind === "jpg" ? "jpg" : kind;
-            const mediaType = ext === "jpg" ? "image/jpeg" : "image/" + ext;
-            const path = "images/image-" + (index + 1) + "." + ext;
-            zip.file("OEBPS/" + path, match[2].replace(/\s/g, ""), { base64: true });
-            img.setAttribute("src", path);
-            _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
-            continue;
-          }
-          try {
-            const absolute = new URL(src, doc.baseURI).href;
-            if (!/^https?:/i.test(absolute)) {
-              _replaceImageFallback(img);
-              continue;
-            }
-            const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
-            const path = "images/image-" + (index + 1) + "." + ext;
-            zip.file("OEBPS/" + path, bytes);
-            img.setAttribute("src", path);
-            _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
-          } catch (_) {
-            _unavailableRemoteImages += 1;
-            _replaceImageFallback(img);
-          }
-        }
-        const _uid = "alloflow-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-        try {
-          _hasRemoteResources = Array.from(_clone.querySelectorAll("audio[src],video[src],source[src],object[data]")).some((node) => {
-            const ref = node.getAttribute("src") || node.getAttribute("data") || "";
-            try {
-              return /^https?:/i.test(new URL(ref, doc.baseURI).href);
-            } catch (_) {
-              return false;
-            }
-          });
-        } catch (_) {
-        }
-        const _contentProps = [];
-        try {
-          if (_clone.querySelector("svg")) _contentProps.push("svg");
-          if (_clone.querySelector("math")) _contentProps.push("mathml");
-          if (_hasRemoteResources) _contentProps.push("remote-resources");
-        } catch (_) {
-        }
-        const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(" ") + '"' : "";
-        zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join("")}</manifest><spine><itemref idref="content"/></spine></package>`);
-        let xhtml;
-        try {
-          xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
-        } catch (_) {
-          xhtml = _clone.outerHTML.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
-        }
-        if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
-        zip.file("OEBPS/content.xhtml", xhtml);
-        zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} \u2014 Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
-        const blob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
-        downloadBuilderBlob(blob, { extension: "epub" });
-        if (_unavailableRemoteImages) {
-          addToast(`${_unavailableRemoteImages} remote image${_unavailableRemoteImages === 1 ? "" : "s"} could not be packaged and were replaced with accessible text.`, "warning");
-        } else {
-          addToast("ePub downloaded", "success");
-        }
-      } catch (error) {
-        addToast && addToast("ePub export failed: " + (error?.message || "unknown error"), "error");
-      } finally {
-        finishAlternativeExport();
-      }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "epub" ? "Building ePub..." : "\u{1F4DA} ePub (e-readers)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
-      const doc = exportPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      if (altExportBusy) return;
-      if (!beginAlternativeExport("brf")) return;
-      try {
-        let text = "";
-        try {
-          const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-          _bClone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style").forEach((el) => el.remove());
-          _bClone.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
-            try {
-              el.insertAdjacentText("beforebegin", "\n\n");
-              el.appendChild(doc.createTextNode("\n"));
-            } catch (_) {
-            }
-          });
-          _bClone.querySelectorAll("p,li,tr,figcaption,blockquote,div").forEach((el) => {
-            try {
-              el.appendChild(doc.createTextNode("\n"));
-            } catch (_) {
-            }
-          });
-          text = (_bClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-        } catch (_) {
-          throw new Error("Could not prepare the accepted revision view for Braille.");
-        }
-        const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
-        const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
-        const _brfSmart = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
-        const _brfOpenQuote = "\uE000", _brfCloseQuote = "\uE001";
-        const _brfPrefix = /[#,;@_^".]$/;
-        const _brfHardSplit = (word, into, cells) => {
-          if (/^#[A-J14]+$/.test(word)) {
-            while (word.length > cells) {
-              into.push(word.slice(0, cells - 1) + '"');
-              word = word.slice(cells - 1);
-            }
-            if (word) into.push(word);
-            return;
-          }
-          while (word.length > cells) {
-            let cut = cells;
-            while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
-            into.push(word.slice(0, cut));
-            word = word.slice(cut);
-          }
-          if (word) into.push(word);
-        };
-        const _brfWrap = (line, into, cells) => {
-          if (line.length <= cells) {
-            into.push(line);
-            return;
-          }
-          const words = line.split(" ");
-          let cur = "";
-          for (let word of words) {
-            if (word.length > cells) {
-              if (cur) {
-                into.push(cur);
-                cur = "";
-              }
-              _brfHardSplit(word, into, cells);
-              continue;
-            }
-            if (!cur) cur = word;
-            else if (cur.length + 1 + word.length <= cells) cur += " " + word;
-            else {
-              into.push(cur);
-              cur = word;
-            }
-          }
-          if (cur) into.push(cur);
-        };
-        const _toBRF = (src, opts) => {
-          const cells = opts && opts.cellsPerLine || 40;
-          let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
-          norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || "");
-          try {
-            norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          } catch (_) {
-          }
-          const out = [];
-          let dropped = 0;
-          for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
-            const chars = Array.from(line);
-            let bl = "";
-            let numMode = false;
-            for (let i = 0; i < chars.length; i++) {
-              const ch = chars[i];
-              if (ch >= "0" && ch <= "9") {
-                if (!numMode) {
-                  bl += "#";
-                  numMode = true;
-                }
-                bl += _brfDigit[ch];
-                continue;
-              }
-              if (numMode && (ch === "," || ch === ".")) {
-                bl += _brfPunct[ch];
-                continue;
-              }
-              if (numMode && ch >= "a" && ch <= "j") bl += ";";
-              numMode = false;
-              if (ch >= "a" && ch <= "z") {
-                bl += ch.toUpperCase();
-                continue;
-              }
-              if (ch >= "A" && ch <= "Z") {
-                let end = i;
-                while (end < chars.length && chars[end] >= "A" && chars[end] <= "Z") end++;
-                const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
-                const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
-                if (!prevIsLetter && !nextIsLetter && end - i >= 2) {
-                  bl += ",," + chars.slice(i, end).join("");
-                  i = end - 1;
-                } else bl += "," + ch;
-                continue;
-              }
-              if (ch === " " || ch === "	") {
-                bl += " ";
-                continue;
-              }
-              if (ch === _brfOpenQuote) {
-                bl += "8";
-                continue;
-              }
-              if (ch === _brfCloseQuote) {
-                bl += "0";
-                continue;
-              }
-              if (ch === '"') {
-                const prev = i > 0 ? chars[i - 1] : "";
-                bl += !prev || /\s|[([{]/.test(prev) ? "8" : "0";
-                continue;
-              }
-              if (_brfPunct[ch] !== void 0) {
-                bl += _brfPunct[ch];
-                continue;
-              }
-              dropped++;
-            }
-            _brfWrap(bl, out, cells);
-          }
-          const brf = out.join("\n");
-          return opts && opts.withMeta ? { brf, dropped } : brf;
-        };
-        const _downloadBRF = (brf) => {
-          const blob = new Blob([brf], { type: "application/x-brf" });
-          downloadBuilderBlob(blob, { extension: "brf" });
-        };
-        const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
-        await Promise.resolve(_ensureBrailleLoader).catch(() => false).then(async () => {
-          let _g1Dropped = 0, _grade1;
-          if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === "function") {
-            const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
-            _grade1 = _r.brf;
-            _g1Dropped = _r.dropped;
-          } else {
-            const _r = _toBRF(text, { withMeta: true });
-            _grade1 = _r.brf;
-            _g1Dropped = _r.dropped;
-          }
-          const _warnDrop = () => {
-            if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
-          };
-          if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
-            addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
-            await Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
-              if (ueb && ueb.replace(/\s/g, "").length) {
-                _downloadBRF(ueb);
-                addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
-              } else {
-                _downloadBRF(_grade1);
-                _warnDrop();
-                addToast("Electronic Braille (Grade 1) downloaded", "success");
-              }
-            }).catch(() => {
-              _downloadBRF(_grade1);
-              _warnDrop();
-              addToast("Electronic Braille (Grade 1) downloaded", "success");
-            });
-          } else {
-            _downloadBRF(_grade1);
-            _warnDrop();
-            addToast("Electronic Braille (BRF) downloaded", "success");
-          }
-        });
-      } catch (error) {
-        addToast && addToast("Braille export failed: " + (error?.message || "unknown error"), "error");
-      } finally {
-        finishAlternativeExport();
-      }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: exportActionBusy || altExportBusy ? "border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" : "sr-only" }, exportActionBusy ? "Preparing your export. Keep the builder open until it finishes." : altExportBusy ? "Preparing " + altExportBusy.toUpperCase() + " export. Keep the builder open until it finishes." : ""), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message)))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, draftRecovery.title || draftDocumentTitle, " \xB7 Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
-      const selected = activeRibbonTab === tab;
-      return /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: tab,
-          id: `builder-ribbon-tab-${tab}`,
-          type: "button",
-          role: "tab",
-          "aria-selected": selected,
-          "aria-controls": `builder-ribbon-panel-${tab}`,
-          tabIndex: selected ? 0 : -1,
-          onClick: () => {
-            setActiveRibbonTab(tab);
-            setRibbonCollapsed(false);
-          },
-          onKeyDown: (event) => {
-            const tabs = ["home", "insert", "layout", "review", "view", "expert"];
-            const current = tabs.indexOf(tab);
-            const next = event.key === "ArrowRight" ? (current + 1) % tabs.length : event.key === "ArrowLeft" ? (current - 1 + tabs.length) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : -1;
-            if (next < 0) return;
-            event.preventDefault();
-            setActiveRibbonTab(tabs[next]);
-            setRibbonCollapsed(false);
-            window.setTimeout(() => document.getElementById(`builder-ribbon-tab-${tabs[next]}`)?.focus(), 0);
-          },
-          className: `shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white hover:text-indigo-700"}`
-        },
-        label
-      );
-    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setRibbonCollapsed((value) => !value), "aria-expanded": !ribbonCollapsed, "aria-controls": `builder-ribbon-panel-${activeRibbonTab}`, className: "ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700", title: ribbonCollapsed ? "Expand the ribbon" : "Collapse the ribbon" }, ribbonCollapsed ? "Expand ribbon" : "Collapse ribbon")), !ribbonCollapsed && activeRibbonTab === "review" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-review", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-review", className: "shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5", role: "group", "aria-label": "Review tools" }, /* @__PURE__ */ React.createElement("button", { id: "builder-track-changes", type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => toggleTrackChanges(), "aria-pressed": trackChangesEnabled, "aria-keyshortcuts": "Control+Shift+E", className: `h-8 rounded px-2.5 text-[11px] font-bold shadow-sm ${trackChangesEnabled ? "bg-violet-700 text-white hover:bg-violet-800" : "border border-violet-500 bg-white text-violet-800 hover:bg-violet-50"}`, title: "Toggle Track Changes (Ctrl+Shift+E)" }, "Track Changes: ", trackChangesEnabled ? "On" : "Off"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-pressed": showNavigationPane && navigationPaneTab === "changes", "aria-controls": "document-builder-navigation", className: "h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50" }, "Changes (", pendingTrackedChangeCount, ")"), /* @__PURE__ */ React.createElement("label", { className: "sr-only", htmlFor: "builder-ribbon-markup-view" }, "Markup view"), /* @__PURE__ */ React.createElement("select", { id: "builder-ribbon-markup-view", value: trackedMarkupView, onChange: (event) => setTrackedMarkupView(event.target.value), className: "h-8 rounded border border-violet-400 bg-white px-1.5 text-[11px] font-bold text-violet-800", title: "Choose how revisions appear" }, /* @__PURE__ */ React.createElement("option", { value: "simple" }, "Simple Markup"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All Markup"), /* @__PURE__ */ React.createElement("option", { value: "none" }, "No Markup"), /* @__PURE__ */ React.createElement("option", { value: "original" }, "Original")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !activeTrackedChange, onClick: () => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, "accept"), className: "h-8 rounded border border-emerald-500 bg-white px-2 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40" }, "Accept"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !activeTrackedChange, onClick: () => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, "reject"), className: "h-8 rounded border border-red-400 bg-white px-2 text-[11px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40" }, "Reject"), /* @__PURE__ */ React.createElement("span", { className: "mx-0.5 h-6 w-px bg-slate-300", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { id: "builder-new-comment", type: "button", onMouseDown: (event) => event.preventDefault(), onClick: addReviewComment, "aria-keyshortcuts": "Control+Alt+M", className: "h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-700", title: "Comment on the selected text (Ctrl+Alt+M)" }, "New Comment"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openReviewComments(activeCommentId), "aria-pressed": showNavigationPane && navigationPaneTab === "comments", "aria-controls": "document-builder-navigation", className: "h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50" }, "Comments (", unresolvedReviewCommentCount, ")"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openWordCountDetails, "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-medium text-slate-600" }, pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? "" : "s"}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`, " \xB7 ", documentStatistics.readingMinutes || 0, " min reading time"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500" }, "Ctrl+Shift+E track \xB7 Ctrl+Alt+M comment \xB7 Ctrl+Alt+F footnote \xB7 Ctrl+Shift+G word count")), /* @__PURE__ */ React.createElement("details", { id: "builder-find-tools", className: "bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Find / Replace | Heading Outline (", headingOutline.length, ") ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, findMatchState.count ? `${findMatchState.current || 0}/${findMatchState.count} matches` : "No matches", " | Ctrl+F / Ctrl+H")), /* @__PURE__ */ React.createElement("div", { className: "grid gap-2 border-t border-slate-200 bg-slate-50 p-2 lg:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-find", className: "sr-only" }, "Find text"), /* @__PURE__ */ React.createElement("input", { id: "builder-find", value: findQuery, onChange: (e) => {
+    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setMobileSettingsOpen(true);
+      setRibbonCollapsed(true);
+      window.setTimeout(() => document.querySelector('[data-help-key="doc_builder_wcag_audit_btn"]')?.focus(), 0);
+    }, className: "m-2 min-h-8 rounded px-2 text-xs font-bold text-violet-800 hover:bg-violet-50" }, "Accessibility audit & results", exportAuditResult?.score >= 0 ? " \xB7 " + exportAuditResult.score + "/100" : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5", role: "group", "aria-label": "Review tools" }, /* @__PURE__ */ React.createElement("button", { id: "builder-track-changes", type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => toggleTrackChanges(), "aria-pressed": trackChangesEnabled, "aria-keyshortcuts": "Control+Shift+E", className: `h-8 rounded px-2.5 text-[11px] font-bold shadow-sm ${trackChangesEnabled ? "bg-violet-700 text-white hover:bg-violet-800" : "border border-violet-500 bg-white text-violet-800 hover:bg-violet-50"}`, title: "Toggle Track Changes (Ctrl+Shift+E)" }, "Track Changes: ", trackChangesEnabled ? "On" : "Off"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-pressed": showNavigationPane && navigationPaneTab === "changes", "aria-controls": "document-builder-navigation", className: "h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50" }, "Changes (", pendingTrackedChangeCount, ")"), /* @__PURE__ */ React.createElement("label", { className: "sr-only", htmlFor: "builder-ribbon-markup-view" }, "Markup view"), /* @__PURE__ */ React.createElement("select", { id: "builder-ribbon-markup-view", value: trackedMarkupView, onChange: (event) => setTrackedMarkupView(event.target.value), className: "h-8 rounded border border-violet-400 bg-white px-1.5 text-[11px] font-bold text-violet-800", title: "Choose how revisions appear" }, /* @__PURE__ */ React.createElement("option", { value: "simple" }, "Simple Markup"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All Markup"), /* @__PURE__ */ React.createElement("option", { value: "none" }, "No Markup"), /* @__PURE__ */ React.createElement("option", { value: "original" }, "Original")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !activeTrackedChange, onClick: () => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, "accept"), className: "h-8 rounded border border-emerald-500 bg-white px-2 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40" }, "Accept"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !activeTrackedChange, onClick: () => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, "reject"), className: "h-8 rounded border border-red-400 bg-white px-2 text-[11px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40" }, "Reject"), /* @__PURE__ */ React.createElement("span", { className: "mx-0.5 h-6 w-px bg-slate-300", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { id: "builder-new-comment", type: "button", onMouseDown: (event) => event.preventDefault(), onClick: addReviewComment, "aria-keyshortcuts": "Control+Alt+M", className: "h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-700", title: "Comment on the selected text (Ctrl+Alt+M)" }, "New Comment"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openReviewComments(activeCommentId), "aria-pressed": showNavigationPane && navigationPaneTab === "comments", "aria-controls": "document-builder-navigation", className: "h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50" }, "Comments (", unresolvedReviewCommentCount, ")"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openWordCountDetails, "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-medium text-slate-600" }, pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? "" : "s"}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`, " \xB7 ", documentStatistics.readingMinutes || 0, " min reading time"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-500" }, "Ctrl+Shift+E track \xB7 Ctrl+Alt+M comment \xB7 Ctrl+Alt+F footnote \xB7 Ctrl+Shift+G word count")), /* @__PURE__ */ React.createElement("details", { id: "builder-find-tools", className: "bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Find / Replace | Heading Outline (", headingOutline.length, ") ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, findMatchState.count ? `${findMatchState.current || 0}/${findMatchState.count} matches` : "No matches", " | Ctrl+F / Ctrl+H")), /* @__PURE__ */ React.createElement("div", { className: "grid gap-2 border-t border-slate-200 bg-slate-50 p-2 lg:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-find", className: "sr-only" }, "Find text"), /* @__PURE__ */ React.createElement("input", { id: "builder-find", value: findQuery, onChange: (e) => {
       setFindQuery(e.target.value);
       findCursorRef.current = { node: null, offset: 0 };
     }, onKeyDown: (e) => {
@@ -9937,7 +10014,7 @@ ${pageCss}
       /* @__PURE__ */ React.createElement("option", { value: "#bfdbfe" }, "Blue"),
       /* @__PURE__ */ React.createElement("option", { value: "#fecdd3" }, "Pink"),
       /* @__PURE__ */ React.createElement("option", { value: "transparent" }, "No highlight")
-    ))), !ribbonCollapsed && activeRibbonTab === "insert" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-insert", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-insert", className: "shrink-0 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 px-2 py-1.5", "aria-label": "Insert tools" }, /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-[22rem] flex-[1.1] flex-wrap items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50/60 px-2 py-1", "aria-describedby": "builder-structure-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800" }, "Document structure"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-700" }, "TOC depth", /* @__PURE__ */ React.createElement("select", { value: tocDepth, onChange: (event) => setTocDepth(Math.max(1, Math.min(6, Number(event.target.value) || 3))), className: "h-7 rounded border border-indigo-300 bg-white px-1.5 text-[10px] text-slate-700", "aria-label": "Table of contents heading depth" }, [1, 2, 3, 4, 5, 6].map((level) => /* @__PURE__ */ React.createElement("option", { key: level, value: level }, "H1\u2013H", level)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertOrRefreshTableOfContents, className: "h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800" }, "Insert / refresh TOC"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    ))), !ribbonCollapsed && activeRibbonTab === "insert" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-insert", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-insert", className: "shrink-0 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("button", { ref: imageAddButtonRef, type: "button", onClick: openImagePicker, className: "min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100", "aria-label": "Add an image and provide alternative text", title: "Insert image into document" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " Add Image"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 px-2 py-1.5", "aria-label": "Insert tools" }, /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-[22rem] flex-[1.1] flex-wrap items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50/60 px-2 py-1", "aria-describedby": "builder-structure-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800" }, "Document structure"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-700" }, "TOC depth", /* @__PURE__ */ React.createElement("select", { value: tocDepth, onChange: (event) => setTocDepth(Math.max(1, Math.min(6, Number(event.target.value) || 3))), className: "h-7 rounded border border-indigo-300 bg-white px-1.5 text-[10px] text-slate-700", "aria-label": "Table of contents heading depth" }, [1, 2, 3, 4, 5, 6].map((level) => /* @__PURE__ */ React.createElement("option", { key: level, value: level }, "H1\u2013H", level)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertOrRefreshTableOfContents, className: "h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800" }, "Insert / refresh TOC"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setNavigationPaneTab("headings");
       setShowNavigationPane(true);
     }, "aria-pressed": showNavigationPane && navigationPaneTab === "headings", "aria-controls": "document-builder-navigation", className: "h-7 rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100" }, "Open outline"), /* @__PURE__ */ React.createElement("details", { id: "builder-document-templates", className: "relative" }, /* @__PURE__ */ React.createElement("summary", { className: "flex h-7 cursor-pointer list-none items-center rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100" }, "Templates"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-full z-[85] mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-300 bg-white p-2 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black text-slate-800" }, "Document templates"), /* @__PURE__ */ React.createElement("p", { className: "text-[9px] text-slate-500" }, "Applying one replaces the document after confirmation.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveCurrentAsDocumentTemplate, className: "rounded bg-indigo-700 px-2 py-1.5 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Save current as template")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-72 space-y-1.5 overflow-y-auto", "aria-label": "Available document templates" }, documentTemplateGallery.map((templateOption) => /* @__PURE__ */ React.createElement("div", { key: templateOption.id, className: "rounded border border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "truncate text-[10px] font-black text-slate-800" }, templateOption.label, templateOption.custom ? /* @__PURE__ */ React.createElement("span", { className: "ml-1 rounded bg-indigo-100 px-1 py-0.5 text-[8px] font-bold uppercase text-indigo-700" }, "Custom") : null), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[9px] leading-snug text-slate-500" }, templateOption.description)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyDocumentTemplate(templateOption), className: "rounded bg-white px-2 py-1 text-[9px] font-bold text-indigo-800 ring-1 ring-indigo-300 hover:bg-indigo-100" }, "Apply")), templateOption.custom ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteCustomDocumentTemplate(templateOption.id), className: "mt-1 rounded px-1 py-0.5 text-[8px] font-bold text-rose-700 hover:bg-rose-100", "aria-label": "Delete template " + templateOption.label }, "Delete saved template") : null))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[9px] text-slate-500" }, "Custom templates are saved on this device \xB7 ", customDocumentTemplates.length, "/8"))), /* @__PURE__ */ React.createElement("span", { id: "builder-structure-help", className: "w-full text-[9px] text-slate-500" }, "The automatic table of contents follows live headings. Reorder full sections from the outline pane.")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-[24rem] flex-1 flex-wrap items-center gap-1.5 rounded border border-cyan-200 bg-cyan-50/60 px-2 py-1", "aria-describedby": "builder-references-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-cyan-900" }, "References"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertDocumentFootnote, "aria-keyshortcuts": "Control+Alt+F", className: "h-7 rounded bg-cyan-800 px-2.5 text-[10px] font-bold text-white hover:bg-cyan-900", title: "Insert footnote (Ctrl+Alt+F)" }, "Footnote"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertDocumentBookmark, className: "h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100" }, "Add bookmark"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-700" }, "Style", /* @__PURE__ */ React.createElement("select", { value: citationStyle, onChange: (event) => changeCitationStyle(event.target.value), className: "h-7 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700", "aria-label": "Citation style" }, _BUILDER_CITATION_STYLES.map((entry) => /* @__PURE__ */ React.createElement("option", { key: entry.id, value: entry.id }, entry.label)))), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-40 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-700" }, "Source", /* @__PURE__ */ React.createElement("select", { value: citationSourceTarget, onChange: (event) => setCitationSourceTarget(event.target.value), disabled: !documentReferences.sources?.length, className: "h-7 min-w-0 flex-1 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Citation source" }, !documentReferences.sources?.length && /* @__PURE__ */ React.createElement("option", { value: "" }, "Add a source first"), documentReferences.sources?.map((source) => /* @__PURE__ */ React.createElement("option", { key: source.id, value: source.id }, source.title || _builderCitationAuthorKey(source, citationStyle))))), /* @__PURE__ */ React.createElement("input", { value: citationLocator, onChange: (event) => setCitationLocator(event.target.value.slice(0, 80)), className: "h-7 w-24 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700", "aria-label": "Citation page or locator", placeholder: "Page" }), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertDocumentCitation, disabled: !citationSourceTarget, className: "h-7 rounded bg-cyan-800 px-2 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-45" }, "Insert citation"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openCitationSourceManager(), className: "h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100" }, "Source Manager"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openCitationSourceManager(null, "import"), className: "h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100" }, "Import sources"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertOrRefreshDocumentBibliography, disabled: !documentReferences.sources?.length, className: "h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:opacity-45" }, "Bibliography"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: updateAllDocumentFields, "aria-keyshortcuts": "F9", title: "Update all document fields (F9)", className: "h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100" }, "Update fields"), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-40 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-700" }, "Target", /* @__PURE__ */ React.createElement("select", { value: crossReferenceTarget, onChange: (event) => setCrossReferenceTarget(event.target.value), disabled: !documentReferences.bookmarks.length, className: "h-7 min-w-0 flex-1 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Cross-reference bookmark target" }, !documentReferences.bookmarks.length && /* @__PURE__ */ React.createElement("option", { value: "" }, "Add a bookmark first"), documentReferences.bookmarks.map((entry) => /* @__PURE__ */ React.createElement("option", { key: entry.id, value: entry.id }, entry.name)))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-700" }, "Label", /* @__PURE__ */ React.createElement("select", { value: crossReferenceLabelMode, onChange: (event) => setCrossReferenceLabelMode(event.target.value), className: "h-7 rounded border border-cyan-300 bg-white px-1.5 text-[10px] text-slate-700", "aria-label": "Cross-reference label style" }, /* @__PURE__ */ React.createElement("option", { value: "text" }, "Bookmarked text"), /* @__PURE__ */ React.createElement("option", { value: "name" }, "Bookmark name"))), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertDocumentCrossReference, disabled: !crossReferenceTarget, className: "h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-45" }, "Insert cross-reference"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openDocumentReferences, "aria-pressed": showNavigationPane && navigationPaneTab === "references", "aria-controls": "document-builder-navigation", className: "h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100" }, "Manage"), /* @__PURE__ */ React.createElement("span", { id: "builder-references-help", className: "w-full text-[9px] " + (documentReferences.brokenCount ? "font-bold text-red-700" : "text-slate-500") }, documentReferences.citations?.length || 0, " citation", documentReferences.citations?.length === 1 ? "" : "s", " \xB7 ", documentReferences.sources?.length || 0, " source", documentReferences.sources?.length === 1 ? "" : "s", " \xB7 ", documentReferences.footnotes.length, " footnote", documentReferences.footnotes.length === 1 ? "" : "s", " \xB7 ", documentReferences.bookmarks.length, " bookmark", documentReferences.bookmarks.length === 1 ? "" : "s", documentReferences.brokenCount ? " \xB7 " + documentReferences.brokenCount + " broken reference" + (documentReferences.brokenCount === 1 ? "" : "s") : " \xB7 Live fields update together.")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1", "aria-describedby": "builder-table-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Table"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Body rows", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "20", value: tableInsertConfig.rows, onChange: (e) => setTableInsertConfig((config) => ({ ...config, rows: Math.max(1, Math.min(20, Number(e.target.value) || 1)) })), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs", "aria-label": "Table body rows" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Columns", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "10", value: tableInsertConfig.columns, onChange: (e) => setTableInsertConfig((config) => ({ ...config, columns: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs", "aria-label": "Table columns" })), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-36 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Caption", /* @__PURE__ */ React.createElement("input", { value: tableInsertConfig.caption, maxLength: 160, onChange: (e) => setTableInsertConfig((config) => ({ ...config, caption: e.target.value })), placeholder: "Recommended", className: "h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-xs", "aria-label": "Table caption" })), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 text-[10px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: tableInsertConfig.headerRow, onChange: (e) => setTableInsertConfig((config) => ({ ...config, headerRow: e.target.checked })), className: "accent-indigo-700" }), "Header row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertAccessibleTable, className: "h-7 rounded bg-indigo-700 px-2.5 text-[11px] font-bold text-white hover:bg-indigo-800" }, "Insert table"), /* @__PURE__ */ React.createElement("span", { id: "builder-table-help", className: "sr-only" }, "Creates semantic table headers and an optional accessible caption.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1", role: "toolbar", "aria-label": "Insert document elements" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openImagePicker, className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Insert image with alternative text" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 13, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, "Image")), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => runEditorCommand("insertHorizontalRule"), className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", title: "Insert horizontal rule" }, "Rule"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => {
@@ -9963,7 +10040,26 @@ ${pageCss}
     }, className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Insert page break", "aria-keyshortcuts": "Control+Enter", title: "Insert a page break at the caret" }, "Page break"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setNavigationPaneTab("pages");
       setShowNavigationPane(true);
-    }, "aria-pressed": showNavigationPane && navigationPaneTab === "pages", className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-controls": "document-builder-navigation" }, "Open pages")))), !ribbonCollapsed && activeRibbonTab === "view" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-view", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-view", className: "shrink-0 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-wrap items-center gap-1.5", role: "group", "aria-label": "Interactive paragraph ruler" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Ruler"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Tab", /* @__PURE__ */ React.createElement("select", { value: rulerTabAlignment, onChange: (event) => setRulerTabAlignment(event.target.value), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[10px] text-slate-700", "aria-label": "New tab stop alignment", title: "Choose the kind of tab stop added when you click the ruler" }, /* @__PURE__ */ React.createElement("option", { value: "left" }, "Left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Right"), /* @__PURE__ */ React.createElement("option", { value: "decimal" }, "Decimal"))), /* @__PURE__ */ React.createElement("div", { ref: rulerRef, role: "group", "aria-describedby": "builder-ruler-help", onClick: handleRulerClick, className: "relative h-9 min-w-64 flex-1 cursor-crosshair select-none overflow-hidden rounded border border-slate-400 bg-white shadow-inner", "aria-label": `Paragraph ruler, ${paragraphContentWidth} inches wide. Click to add a ${rulerTabAlignment} tab stop.`, title: `Click to add a ${rulerTabAlignment} tab stop. Drag indent and tab markers; use arrow keys for precise movement.` }, /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute inset-0 opacity-70", style: { backgroundImage: "linear-gradient(to right,#cbd5e1 1px,transparent 1px)", backgroundSize: `${100 / Math.max(1, paragraphContentWidth * 4)}% 100%` }, "aria-hidden": "true" }), Array.from({ length: Math.floor(paragraphContentWidth) + 1 }, (_, inch) => /* @__PURE__ */ React.createElement("span", { key: "ruler-inch-" + inch, className: "pointer-events-none absolute top-2 -translate-x-1/2 text-[8px] font-mono text-slate-400", style: { left: `${inch / paragraphContentWidth * 100}%` }, "aria-hidden": "true" }, inch)), paragraphLayout.tabStops.map((tab, index) => /* @__PURE__ */ React.createElement("button", { key: tab.id || index, type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": `${tab.alignment} tab stop`, "aria-valuemin": 0.125, "aria-valuemax": paragraphContentWidth - 0.125, "aria-valuenow": tab.position, "aria-valuetext": `${tab.alignment} tab at ${tab.position} inches`, onPointerDown: (event) => startTabStopDrag(tab, index, event), onKeyDown: (event) => handleTabStopKeyDown(tab, index, event), onDoubleClick: () => removeRulerTabStop(index), className: "absolute top-0 z-30 flex h-3 min-w-3 -translate-x-1/2 items-center justify-center rounded-b border border-violet-800 bg-violet-600 px-0.5 text-[7px] font-black uppercase leading-none text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1", style: { left: `${tab.position / paragraphContentWidth * 100}%` }, title: `${tab.alignment} tab at ${tab.position} in. Drag or use arrows; Enter changes type; Delete removes.` }, tab.alignment.charAt(0))), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "First-line indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent, "aria-valuenow": paragraphLayout.leftIndent + paragraphLayout.firstLineIndent, "aria-valuetext": `${paragraphLayout.leftIndent + paragraphLayout.firstLineIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("first", event), onKeyDown: (event) => handleRulerMarkerKeyDown("first", event), className: "absolute top-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-b border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${(paragraphLayout.leftIndent + paragraphLayout.firstLineIndent) / paragraphContentWidth * 100}%` }, title: "First-line indent: drag or use Left/Right arrows" }, "F"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Hanging indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent - 0.5, "aria-valuenow": paragraphLayout.leftIndent, "aria-valuetext": `${paragraphLayout.leftIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("hanging", event), onKeyDown: (event) => handleRulerMarkerKeyDown("hanging", event), className: "absolute bottom-2 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-teal-900 bg-teal-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1", style: { left: `${paragraphLayout.leftIndent / paragraphContentWidth * 100}%` }, title: "Hanging indent: drag or use Left/Right arrows" }, "H"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Left paragraph indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent - 0.5, "aria-valuenow": paragraphLayout.leftIndent, "aria-valuetext": `${paragraphLayout.leftIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("left", event), onKeyDown: (event) => handleRulerMarkerKeyDown("left", event), className: "absolute bottom-0 z-10 flex h-2 w-3 -translate-x-1/2 items-center justify-center rounded-sm border border-indigo-900 bg-indigo-700 text-[6px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${paragraphLayout.leftIndent / paragraphContentWidth * 100}%` }, title: "Left indent: moves the whole paragraph" }, "L"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Right paragraph indent", "aria-valuemin": paragraphLayout.leftIndent + 0.5, "aria-valuemax": paragraphContentWidth, "aria-valuenow": paragraphContentWidth - paragraphLayout.rightIndent, "aria-valuetext": `${paragraphLayout.rightIndent} inches from the right margin`, onPointerDown: (event) => startRulerMarkerDrag("right", event), onKeyDown: (event) => handleRulerMarkerKeyDown("right", event), className: "absolute bottom-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${(paragraphContentWidth - paragraphLayout.rightIndent) / paragraphContentWidth * 100}%` }, title: "Right indent: drag or use Left/Right arrows" }, "R")), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: addNextRulerTabStop, "aria-label": `Add ${rulerTabAlignment} tab stop`, "aria-describedby": "builder-ruler-help", className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-violet-50 hover:text-violet-700" }, "Add tab"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertParagraphTab, "aria-keyshortcuts": "Control+Tab", "aria-describedby": "builder-ruler-help", className: "h-7 rounded border border-indigo-500 bg-white px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50", title: "Insert a tab at the next configured stop (Ctrl+Tab)" }, "Insert tab"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: clearRulerTabStops, disabled: !paragraphLayout.tabStops.length, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Clear tabs"), /* @__PURE__ */ React.createElement("span", { id: "builder-ruler-help", className: "basis-full text-[9px] text-slate-500" }, "Drag F/H/L/R markers or use their arrow keys. Click the ruler or choose Add tab. On a tab marker, press Enter to change alignment or Delete to remove it. Ctrl+Tab inserts a tab without trapping normal keyboard focus.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": "Paragraph layout controls" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Paragraph"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => nudgeParagraphIndent(-0.25), className: "h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Decrease paragraph indent" }, "\u2212 Indent"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => nudgeParagraphIndent(0.25), className: "h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Increase paragraph indent" }, "+ Indent"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Left", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: Math.max(0, paragraphContentWidth - paragraphLayout.rightIndent - 0.5), step: "0.125", value: paragraphLayout.leftIndent, onChange: (event) => applyParagraphLayout({ leftIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Left paragraph indent in inches" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "First", /* @__PURE__ */ React.createElement("input", { type: "number", min: -paragraphLayout.leftIndent, max: Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - paragraphLayout.rightIndent), step: "0.125", value: paragraphLayout.firstLineIndent, onChange: (event) => applyParagraphLayout({ firstLineIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "First-line indent in inches; use a negative value for a hanging indent" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Right", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - 0.5), step: "0.125", value: paragraphLayout.rightIndent, onChange: (event) => applyParagraphLayout({ rightIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Right paragraph indent in inches" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Line", /* @__PURE__ */ React.createElement("select", { value: paragraphLayout.lineSpacing, onChange: (event) => applyParagraphLayout({ lineSpacing: event.target.value }, { restoreFocus: false, announce: false }), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Line spacing" }, /* @__PURE__ */ React.createElement("option", { value: "normal" }, "Normal"), /* @__PURE__ */ React.createElement("option", { value: "1" }, "1.0"), /* @__PURE__ */ React.createElement("option", { value: "1.15" }, "1.15"), /* @__PURE__ */ React.createElement("option", { value: "1.5" }, "1.5"), /* @__PURE__ */ React.createElement("option", { value: "2" }, "2.0"))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Before", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "72", step: "3", value: paragraphLayout.spaceBefore, onChange: (event) => applyParagraphLayout({ spaceBefore: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Space before paragraph in points" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "After", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "72", step: "3", value: paragraphLayout.spaceAfter, onChange: (event) => applyParagraphLayout({ spaceAfter: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Space after paragraph in points" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ keepWithNext: !paragraphLayout.keepWithNext }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.keepWithNext, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepWithNext ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Prevent a page break after this paragraph" }, "Keep with next"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ keepLinesTogether: !paragraphLayout.keepLinesTogether }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.keepLinesTogether, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepLinesTogether ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Keep all lines of this paragraph on one page" }, "Keep lines"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ widowOrphanControl: !paragraphLayout.widowOrphanControl }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.widowOrphanControl, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.widowOrphanControl ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Keep at least three lines together at page boundaries" }, "Widow/orphan"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetParagraphLayout, className: "h-7 rounded px-2 text-[10px] font-bold text-slate-600 hover:bg-red-50 hover:text-red-700" }, "Reset paragraph")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-1", role: "group", "aria-label": "Page and zoom view controls" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "View"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => {
+    }, "aria-pressed": showNavigationPane && navigationPaneTab === "pages", className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-controls": "document-builder-navigation" }, "Open pages")))), !ribbonCollapsed && activeRibbonTab === "view" && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-view", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-view", className: "shrink-0 border-b border-slate-200 bg-white" }, "                    ", /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          const active = showNavigationPane && navigationPaneTab === "headings";
+          if (active) setShowNavigationPane(false);
+          else {
+            setNavigationPaneTab("headings");
+            setShowNavigationPane(true);
+          }
+        },
+        "aria-pressed": showNavigationPane && navigationPaneTab === "headings",
+        "aria-controls": "document-builder-navigation",
+        className: `text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === "headings" ? "bg-slate-700 text-white shadow-sm" : "text-slate-700 bg-slate-100 hover:bg-slate-200"}`,
+        title: showNavigationPane && navigationPaneTab === "headings" ? "Hide navigation" : "Open heading navigation"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2637"),
+      " Navigation"
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-wrap items-center gap-1.5", role: "group", "aria-label": "Interactive paragraph ruler" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Ruler"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Tab", /* @__PURE__ */ React.createElement("select", { value: rulerTabAlignment, onChange: (event) => setRulerTabAlignment(event.target.value), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[10px] text-slate-700", "aria-label": "New tab stop alignment", title: "Choose the kind of tab stop added when you click the ruler" }, /* @__PURE__ */ React.createElement("option", { value: "left" }, "Left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Right"), /* @__PURE__ */ React.createElement("option", { value: "decimal" }, "Decimal"))), /* @__PURE__ */ React.createElement("div", { ref: rulerRef, role: "group", "aria-describedby": "builder-ruler-help", onClick: handleRulerClick, className: "relative h-9 min-w-64 flex-1 cursor-crosshair select-none overflow-hidden rounded border border-slate-400 bg-white shadow-inner", "aria-label": `Paragraph ruler, ${paragraphContentWidth} inches wide. Click to add a ${rulerTabAlignment} tab stop.`, title: `Click to add a ${rulerTabAlignment} tab stop. Drag indent and tab markers; use arrow keys for precise movement.` }, /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute inset-0 opacity-70", style: { backgroundImage: "linear-gradient(to right,#cbd5e1 1px,transparent 1px)", backgroundSize: `${100 / Math.max(1, paragraphContentWidth * 4)}% 100%` }, "aria-hidden": "true" }), Array.from({ length: Math.floor(paragraphContentWidth) + 1 }, (_, inch) => /* @__PURE__ */ React.createElement("span", { key: "ruler-inch-" + inch, className: "pointer-events-none absolute top-2 -translate-x-1/2 text-[8px] font-mono text-slate-400", style: { left: `${inch / paragraphContentWidth * 100}%` }, "aria-hidden": "true" }, inch)), paragraphLayout.tabStops.map((tab, index) => /* @__PURE__ */ React.createElement("button", { key: tab.id || index, type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": `${tab.alignment} tab stop`, "aria-valuemin": 0.125, "aria-valuemax": paragraphContentWidth - 0.125, "aria-valuenow": tab.position, "aria-valuetext": `${tab.alignment} tab at ${tab.position} inches`, onPointerDown: (event) => startTabStopDrag(tab, index, event), onKeyDown: (event) => handleTabStopKeyDown(tab, index, event), onDoubleClick: () => removeRulerTabStop(index), className: "absolute top-0 z-30 flex h-3 min-w-3 -translate-x-1/2 items-center justify-center rounded-b border border-violet-800 bg-violet-600 px-0.5 text-[7px] font-black uppercase leading-none text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1", style: { left: `${tab.position / paragraphContentWidth * 100}%` }, title: `${tab.alignment} tab at ${tab.position} in. Drag or use arrows; Enter changes type; Delete removes.` }, tab.alignment.charAt(0))), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "First-line indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent, "aria-valuenow": paragraphLayout.leftIndent + paragraphLayout.firstLineIndent, "aria-valuetext": `${paragraphLayout.leftIndent + paragraphLayout.firstLineIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("first", event), onKeyDown: (event) => handleRulerMarkerKeyDown("first", event), className: "absolute top-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-b border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${(paragraphLayout.leftIndent + paragraphLayout.firstLineIndent) / paragraphContentWidth * 100}%` }, title: "First-line indent: drag or use Left/Right arrows" }, "F"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Hanging indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent - 0.5, "aria-valuenow": paragraphLayout.leftIndent, "aria-valuetext": `${paragraphLayout.leftIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("hanging", event), onKeyDown: (event) => handleRulerMarkerKeyDown("hanging", event), className: "absolute bottom-2 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-teal-900 bg-teal-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1", style: { left: `${paragraphLayout.leftIndent / paragraphContentWidth * 100}%` }, title: "Hanging indent: drag or use Left/Right arrows" }, "H"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Left paragraph indent", "aria-valuemin": 0, "aria-valuemax": paragraphContentWidth - paragraphLayout.rightIndent - 0.5, "aria-valuenow": paragraphLayout.leftIndent, "aria-valuetext": `${paragraphLayout.leftIndent} inches from the left margin`, onPointerDown: (event) => startRulerMarkerDrag("left", event), onKeyDown: (event) => handleRulerMarkerKeyDown("left", event), className: "absolute bottom-0 z-10 flex h-2 w-3 -translate-x-1/2 items-center justify-center rounded-sm border border-indigo-900 bg-indigo-700 text-[6px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${paragraphLayout.leftIndent / paragraphContentWidth * 100}%` }, title: "Left indent: moves the whole paragraph" }, "L"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "slider", "aria-orientation": "horizontal", "aria-describedby": "builder-ruler-help", "aria-label": "Right paragraph indent", "aria-valuemin": paragraphLayout.leftIndent + 0.5, "aria-valuemax": paragraphContentWidth, "aria-valuenow": paragraphContentWidth - paragraphLayout.rightIndent, "aria-valuetext": `${paragraphLayout.rightIndent} inches from the right margin`, onPointerDown: (event) => startRulerMarkerDrag("right", event), onKeyDown: (event) => handleRulerMarkerKeyDown("right", event), className: "absolute bottom-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1", style: { left: `${(paragraphContentWidth - paragraphLayout.rightIndent) / paragraphContentWidth * 100}%` }, title: "Right indent: drag or use Left/Right arrows" }, "R")), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: addNextRulerTabStop, "aria-label": `Add ${rulerTabAlignment} tab stop`, "aria-describedby": "builder-ruler-help", className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-violet-50 hover:text-violet-700" }, "Add tab"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: insertParagraphTab, "aria-keyshortcuts": "Control+Tab", "aria-describedby": "builder-ruler-help", className: "h-7 rounded border border-indigo-500 bg-white px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50", title: "Insert a tab at the next configured stop (Ctrl+Tab)" }, "Insert tab"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: clearRulerTabStops, disabled: !paragraphLayout.tabStops.length, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Clear tabs"), /* @__PURE__ */ React.createElement("span", { id: "builder-ruler-help", className: "basis-full text-[9px] text-slate-500" }, "Drag F/H/L/R markers or use their arrow keys. Click the ruler or choose Add tab. On a tab marker, press Enter to change alignment or Delete to remove it. Ctrl+Tab inserts a tab without trapping normal keyboard focus.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": "Paragraph layout controls" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Paragraph"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => nudgeParagraphIndent(-0.25), className: "h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Decrease paragraph indent" }, "\u2212 Indent"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => nudgeParagraphIndent(0.25), className: "h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Increase paragraph indent" }, "+ Indent"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Left", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: Math.max(0, paragraphContentWidth - paragraphLayout.rightIndent - 0.5), step: "0.125", value: paragraphLayout.leftIndent, onChange: (event) => applyParagraphLayout({ leftIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Left paragraph indent in inches" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "First", /* @__PURE__ */ React.createElement("input", { type: "number", min: -paragraphLayout.leftIndent, max: Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - paragraphLayout.rightIndent), step: "0.125", value: paragraphLayout.firstLineIndent, onChange: (event) => applyParagraphLayout({ firstLineIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "First-line indent in inches; use a negative value for a hanging indent" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Right", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - 0.5), step: "0.125", value: paragraphLayout.rightIndent, onChange: (event) => applyParagraphLayout({ rightIndent: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Right paragraph indent in inches" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Line", /* @__PURE__ */ React.createElement("select", { value: paragraphLayout.lineSpacing, onChange: (event) => applyParagraphLayout({ lineSpacing: event.target.value }, { restoreFocus: false, announce: false }), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Line spacing" }, /* @__PURE__ */ React.createElement("option", { value: "normal" }, "Normal"), /* @__PURE__ */ React.createElement("option", { value: "1" }, "1.0"), /* @__PURE__ */ React.createElement("option", { value: "1.15" }, "1.15"), /* @__PURE__ */ React.createElement("option", { value: "1.5" }, "1.5"), /* @__PURE__ */ React.createElement("option", { value: "2" }, "2.0"))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Before", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "72", step: "3", value: paragraphLayout.spaceBefore, onChange: (event) => applyParagraphLayout({ spaceBefore: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Space before paragraph in points" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "After", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "72", step: "3", value: paragraphLayout.spaceAfter, onChange: (event) => applyParagraphLayout({ spaceAfter: Number(event.target.value) }, { restoreFocus: false, announce: false }), className: "h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]", "aria-label": "Space after paragraph in points" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ keepWithNext: !paragraphLayout.keepWithNext }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.keepWithNext, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepWithNext ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Prevent a page break after this paragraph" }, "Keep with next"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ keepLinesTogether: !paragraphLayout.keepLinesTogether }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.keepLinesTogether, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepLinesTogether ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Keep all lines of this paragraph on one page" }, "Keep lines"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyParagraphLayout({ widowOrphanControl: !paragraphLayout.widowOrphanControl }, { restoreFocus: false, announce: false }), "aria-pressed": paragraphLayout.widowOrphanControl, className: `h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.widowOrphanControl ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: "Keep at least three lines together at page boundaries" }, "Widow/orphan"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetParagraphLayout, className: "h-7 rounded px-2 text-[10px] font-bold text-slate-600 hover:bg-red-50 hover:text-red-700" }, "Reset paragraph")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-1", role: "group", "aria-label": "Page and zoom view controls" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, "View"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (event) => event.preventDefault(), onClick: () => {
       restoreEditorSelection();
       insertPageBreak();
     }, className: "h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Insert page break", "aria-keyshortcuts": "Control+Enter" }, "Page break"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
@@ -10087,7 +10183,7 @@ ${pageCss}
     }, className: "text-[10px] text-cyan-300 hover:text-cyan-200 underline", title: "Copy the full agent/pipeline log to the clipboard" }, "\u{1F4CB} Copy log"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setAgentActivityLog([]);
       console.info("[ExpertWorkbench] log cleared");
-    }, className: "text-[10px] text-slate-300 hover:text-white underline ml-auto" }, "Clear")))), /* @__PURE__ */ React.createElement("div", { className: "builder-preview-stage flex flex-1 min-h-0 overflow-hidden bg-slate-100" }, showNavigationPane && /* @__PURE__ */ React.createElement("aside", { id: "document-builder-navigation", role: "complementary", "aria-label": "Document navigation", className: "relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white", style: { width: navigationPaneWidth } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Navigation"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, navigationPaneTab === "headings" ? headingOutline.length + " heading" + (headingOutline.length === 1 ? "" : "s") : navigationPaneTab === "sections" ? pageMetrics.documentSections.length + " section" + (pageMetrics.documentSections.length === 1 ? "" : "s") : navigationPaneTab === "references" ? (documentReferences.sources?.length || 0) + " source" + (documentReferences.sources?.length === 1 ? "" : "s") + " \xB7 " + (documentReferences.citations?.length || 0) + " citation" + (documentReferences.citations?.length === 1 ? "" : "s") + (documentReferences.brokenCount ? " \xB7 " + documentReferences.brokenCount + " broken" : "") : navigationPaneTab === "comments" ? unresolvedReviewCommentCount + " open / " + reviewComments.length + " total" : navigationPaneTab === "changes" ? pendingTrackedChangeCount + " pending change" + (pendingTrackedChangeCount === 1 ? "" : "s") : pageMetrics.count + " page" + (pageMetrics.count === 1 ? "" : "s"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowNavigationPane(false), "aria-label": "Close document navigation", className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1", role: "tablist", "aria-label": "Navigation view" }, /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-headings", type: "button", role: "tab", "aria-selected": navigationPaneTab === "headings", "aria-controls": "builder-navigation-panel-headings", tabIndex: navigationPaneTab === "headings" ? 0 : -1, onClick: () => setNavigationPaneTab("headings"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "headings"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "headings" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Headings"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-pages", type: "button", role: "tab", "aria-selected": navigationPaneTab === "pages", "aria-controls": "builder-navigation-panel-pages", tabIndex: navigationPaneTab === "pages" ? 0 : -1, onClick: () => setNavigationPaneTab("pages"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "pages"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "pages" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Pages"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-sections", type: "button", role: "tab", "aria-selected": navigationPaneTab === "sections", "aria-controls": "builder-navigation-panel-sections", tabIndex: navigationPaneTab === "sections" ? 0 : -1, onClick: () => setNavigationPaneTab("sections"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "sections"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "sections" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Sections"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-references", type: "button", role: "tab", "aria-selected": navigationPaneTab === "references", "aria-controls": "builder-navigation-panel-references", tabIndex: navigationPaneTab === "references" ? 0 : -1, onClick: () => setNavigationPaneTab("references"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "references"), className: "rounded px-0.5 py-1.5 text-[9px] font-bold " + (navigationPaneTab === "references" ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-300" : "text-slate-600 hover:bg-white") }, "References"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-comments", type: "button", role: "tab", "aria-selected": navigationPaneTab === "comments", "aria-controls": "builder-navigation-panel-comments", tabIndex: navigationPaneTab === "comments" ? 0 : -1, onClick: () => setNavigationPaneTab("comments"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "comments"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "comments" ? "bg-white text-amber-800 shadow-sm ring-1 ring-amber-300" : "text-slate-600 hover:bg-white"}` }, "Comments"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-changes", type: "button", role: "tab", "aria-selected": navigationPaneTab === "changes", "aria-controls": "builder-navigation-panel-changes", tabIndex: navigationPaneTab === "changes" ? 0 : -1, onClick: () => setNavigationPaneTab("changes"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "changes"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "changes" ? "bg-white text-violet-800 shadow-sm ring-1 ring-violet-300" : "text-slate-600 hover:bg-white"}` }, "Changes")), navigationPaneTab === "headings" ? /* @__PURE__ */ React.createElement("nav", { id: "builder-navigation-panel-headings", role: "tabpanel", "aria-labelledby": "builder-navigation-tab-headings", "aria-label": "Document heading navigation", className: "min-h-0 flex-1 overflow-y-auto p-2" }, headingOutline.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-indigo-50 px-2 py-1.5 text-[9px] leading-snug text-indigo-800" }, "Drag headings, or use the arrow buttons, to move a heading and all content beneath it. Nested headings stay with their section."), headingOutline.map((heading) => /* @__PURE__ */ React.createElement(
+    }, className: "text-[10px] text-slate-300 hover:text-white underline ml-auto" }, "Clear")))))), /* @__PURE__ */ React.createElement("div", { className: "builder-preview-stage flex flex-1 min-h-0 overflow-hidden bg-slate-100" }, showNavigationPane && /* @__PURE__ */ React.createElement("aside", { id: "document-builder-navigation", role: "complementary", "aria-label": "Document navigation", className: "relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white", style: { width: navigationPaneWidth } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Navigation"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, navigationPaneTab === "headings" ? headingOutline.length + " heading" + (headingOutline.length === 1 ? "" : "s") : navigationPaneTab === "sections" ? pageMetrics.documentSections.length + " section" + (pageMetrics.documentSections.length === 1 ? "" : "s") : navigationPaneTab === "references" ? (documentReferences.sources?.length || 0) + " source" + (documentReferences.sources?.length === 1 ? "" : "s") + " \xB7 " + (documentReferences.citations?.length || 0) + " citation" + (documentReferences.citations?.length === 1 ? "" : "s") + (documentReferences.brokenCount ? " \xB7 " + documentReferences.brokenCount + " broken" : "") : navigationPaneTab === "comments" ? unresolvedReviewCommentCount + " open / " + reviewComments.length + " total" : navigationPaneTab === "changes" ? pendingTrackedChangeCount + " pending change" + (pendingTrackedChangeCount === 1 ? "" : "s") : pageMetrics.count + " page" + (pageMetrics.count === 1 ? "" : "s"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowNavigationPane(false), "aria-label": "Close document navigation", className: "rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1", role: "tablist", "aria-label": "Navigation view" }, /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-headings", type: "button", role: "tab", "aria-selected": navigationPaneTab === "headings", "aria-controls": "builder-navigation-panel-headings", tabIndex: navigationPaneTab === "headings" ? 0 : -1, onClick: () => setNavigationPaneTab("headings"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "headings"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "headings" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Headings"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-pages", type: "button", role: "tab", "aria-selected": navigationPaneTab === "pages", "aria-controls": "builder-navigation-panel-pages", tabIndex: navigationPaneTab === "pages" ? 0 : -1, onClick: () => setNavigationPaneTab("pages"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "pages"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "pages" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Pages"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-sections", type: "button", role: "tab", "aria-selected": navigationPaneTab === "sections", "aria-controls": "builder-navigation-panel-sections", tabIndex: navigationPaneTab === "sections" ? 0 : -1, onClick: () => setNavigationPaneTab("sections"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "sections"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "sections" ? "bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300" : "text-slate-600 hover:bg-white"}` }, "Sections"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-references", type: "button", role: "tab", "aria-selected": navigationPaneTab === "references", "aria-controls": "builder-navigation-panel-references", tabIndex: navigationPaneTab === "references" ? 0 : -1, onClick: () => setNavigationPaneTab("references"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "references"), className: "rounded px-0.5 py-1.5 text-[9px] font-bold " + (navigationPaneTab === "references" ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-300" : "text-slate-600 hover:bg-white") }, "References"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-comments", type: "button", role: "tab", "aria-selected": navigationPaneTab === "comments", "aria-controls": "builder-navigation-panel-comments", tabIndex: navigationPaneTab === "comments" ? 0 : -1, onClick: () => setNavigationPaneTab("comments"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "comments"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "comments" ? "bg-white text-amber-800 shadow-sm ring-1 ring-amber-300" : "text-slate-600 hover:bg-white"}` }, "Comments"), /* @__PURE__ */ React.createElement("button", { id: "builder-navigation-tab-changes", type: "button", role: "tab", "aria-selected": navigationPaneTab === "changes", "aria-controls": "builder-navigation-panel-changes", tabIndex: navigationPaneTab === "changes" ? 0 : -1, onClick: () => setNavigationPaneTab("changes"), onKeyDown: (event) => handleNavigationTabKeyDown(event, "changes"), className: `rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === "changes" ? "bg-white text-violet-800 shadow-sm ring-1 ring-violet-300" : "text-slate-600 hover:bg-white"}` }, "Changes")), navigationPaneTab === "headings" ? /* @__PURE__ */ React.createElement("nav", { id: "builder-navigation-panel-headings", role: "tabpanel", "aria-labelledby": "builder-navigation-tab-headings", "aria-label": "Document heading navigation", className: "min-h-0 flex-1 overflow-y-auto p-2" }, headingOutline.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-indigo-50 px-2 py-1.5 text-[9px] leading-snug text-indigo-800" }, "Drag headings, or use the arrow buttons, to move a heading and all content beneath it. Nested headings stay with their section."), headingOutline.map((heading) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: heading.index + "-" + heading.text,
@@ -10252,6 +10348,10 @@ ${pageCss}
             const doc = exportPreviewRef.current?.contentDocument;
             if (!doc || doc.__alloPasteGuard) return;
             doc.__alloPasteGuard = true;
+            doc.addEventListener("pointerdown", () => {
+              exportDialogRef.current?.querySelectorAll("#builder-export-menu[open], .builder-status-details[open], #builder-quick-access-customize[open]").forEach((menu) => closeBuilderMenu(menu, false));
+              setRibbonCollapsed(true);
+            });
             syncPageSetupFromDocument();
             syncPageElementsFromDocument();
             refreshDocumentStats();
@@ -10446,14 +10546,14 @@ ${pageCss}
     ].map(([tabId, label]) => /* @__PURE__ */ React.createElement("button", { key: tabId, id: `advanced-review-tab-${tabId}`, type: "button", role: "tab", "aria-selected": advancedReviewTab === tabId, "aria-controls": `advanced-review-panel-${tabId}`, tabIndex: advancedReviewTab === tabId ? 0 : -1, onClick: () => setAdvancedReviewTab(tabId), className: `min-h-10 border-b-2 px-1 text-[9px] font-bold ${advancedReviewTab === tabId ? "border-indigo-700 bg-white text-indigo-800" : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900"}` }, label, tabId === "issues" && advancedReviewIssues.length ? ` (${advancedReviewIssues.length})` : ""))), /* @__PURE__ */ React.createElement("div", { className: "min-h-0 flex-1 overflow-y-auto" }, advancedReviewTab === "structure" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-structure", role: "tabpanel", "aria-labelledby": "advanced-review-tab-structure", className: "p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Semantic structure"), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] text-slate-500" }, advancedReviewTree.flat.length, " tagged source node", advancedReviewTree.flat.length === 1 ? "" : "s")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => refreshAdvancedReviewTree(), className: "min-h-8 rounded border border-slate-300 bg-white px-2 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Refresh")), advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-[10px] font-semibold text-amber-900" }, advancedReviewTreeError), advancedReviewTree.truncated && /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded bg-amber-50 p-2 text-[9px] text-amber-900" }, "The outline is capped for responsiveness."), /* @__PURE__ */ React.createElement("div", { role: "tree", "aria-label": "Document semantic structure", className: "space-y-0.5" }, advancedReviewOutline.map(({ node, depth }) => /* @__PURE__ */ React.createElement("button", { key: node.id, type: "button", role: "treeitem", "aria-selected": advancedReviewSelectedId === node.id, "aria-level": depth + 1, onClick: () => selectAdvancedReviewNode(node.id), onDoubleClick: () => {
       selectAdvancedReviewNode(node.id);
       setAdvancedReviewTab("properties");
-    }, style: { paddingLeft: Math.min(48, 6 + depth * 12) }, className: `flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? "bg-sky-100 text-sky-950 ring-1 ring-sky-400" : "text-slate-700 hover:bg-slate-100"}` }, /* @__PURE__ */ React.createElement("span", { className: "w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700" }, node.role), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 truncate" }, node.text || "(empty)"), node.warnings?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 shrink-0 rounded-full bg-amber-500", "aria-label": `${node.warnings.length} warning${node.warnings.length === 1 ? "" : "s"}`, title: node.warnings.join("; ") }))), !advancedReviewOutline.length && !advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { className: "rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No semantic source nodes found.")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[9px] leading-snug text-slate-500" }, "Select a node to highlight it in the preview. Double-click to open its properties.")), advancedReviewTab === "issues" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-issues", role: "tabpanel", "aria-labelledby": "advanced-review-tab-issues", className: "p-2.5" }, advancedReviewEvidenceStale && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950" }, /* @__PURE__ */ React.createElement("strong", null, "Content changed."), " Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runAdvancedReviewBuilderAudit, disabled: exportAuditLoading, "aria-busy": exportAuditLoading, className: "mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, exportAuditLoading ? "Running Builder audit..." : "Run Builder HTML audit"), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[9px] leading-snug text-slate-500" }, "This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, advancedReviewIssues.map((issue) => /* @__PURE__ */ React.createElement("article", { key: issue.source + "-" + issue.id, className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black text-slate-800" }, issue.title), /* @__PURE__ */ React.createElement("span", { className: `rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${["critical", "serious", "high"].includes(issue.severity) ? "bg-red-100 text-red-800" : ["moderate", "medium"].includes(issue.severity) ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}` }, issue.severity)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-600" }, issue.message), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400" }, issue.source))), !advancedReviewIssues.length && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600" }, "No findings are available in the current review data. Run the Builder audit for this HTML version."))), advancedReviewTab === "properties" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-properties", role: "tabpanel", "aria-labelledby": "advanced-review-tab-properties", className: "space-y-3 p-2.5" }, advancedReviewSelectedNode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white" }, advancedReviewSelectedNode.role), /* @__PURE__ */ React.createElement("strong", { className: "min-w-0 flex-1 truncate text-[10px] text-slate-900" }, advancedReviewSelectedNode.text || "(empty node)")), /* @__PURE__ */ React.createElement("code", { className: "mt-1 block truncate text-[8px] text-slate-500" }, advancedReviewSelectedNode.id)), ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Semantic role", /* @__PURE__ */ React.createElement("select", { value: advancedReviewSelectedNode.tag, onChange: (event) => applyAdvancedReviewCommand({ type: "retag", nodeId: advancedReviewSelectedNode.id, tag: event.target.value }), className: "mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "p" }, "Paragraph"), /* @__PURE__ */ React.createElement("option", { value: "h1" }, "Heading 1"), /* @__PURE__ */ React.createElement("option", { value: "h2" }, "Heading 2"), /* @__PURE__ */ React.createElement("option", { value: "h3" }, "Heading 3"), /* @__PURE__ */ React.createElement("option", { value: "h4" }, "Heading 4"), /* @__PURE__ */ React.createElement("option", { value: "h5" }, "Heading 5"), /* @__PURE__ */ React.createElement("option", { value: "h6" }, "Heading 6"), /* @__PURE__ */ React.createElement("option", { value: "blockquote" }, "Block quote"))), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Reading order"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "up" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "down" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move later"))), ["img", "figure"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Alternative text", /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: advancedReviewAltDraft, onChange: (event) => setAdvancedReviewAltDraft(event.target.value), className: "mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-alt", nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft }), className: "min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800" }, "Apply alternative text"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: Boolean(advancedReviewSelectedNode.properties?.artifact), onChange: (event) => applyAdvancedReviewCommand({ type: "set-artifact", nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked }) }), "Artifact / decorative image")), advancedReviewSelectedNode.tag === "table" && /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Table headers"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-row" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-column" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First column"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "both" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Both")))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600" }, "Select a node in Structure to edit its role, order, image semantics, language, or table headers."), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-lg border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, advancedReviewSelectedNode ? "Selected node language" : "Document language"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: advancedReviewLanguageDraft, onChange: (event) => setAdvancedReviewLanguageDraft(event.target.value), placeholder: "en-US", "aria-label": advancedReviewSelectedNode ? "Selected node language" : "Document language", className: "min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-language", nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft }), className: "min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Apply")))), advancedReviewTab === "history" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-history", role: "tabpanel", "aria-labelledby": "advanced-review-tab-history", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Review ledger"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2" }, advancedReviewHistory.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[10px] text-slate-800" }, entry.summary), /* @__PURE__ */ React.createElement("time", { className: "shrink-0 text-[8px] text-slate-400" }, new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[8px] uppercase tracking-wide text-slate-500" }, entry.type, entry.targetId ? ` - ${entry.targetId}` : ""))), !advancedReviewHistory.length && /* @__PURE__ */ React.createElement("li", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No specialist mutations in this session."))), advancedReviewTab === "compare" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-compare", role: "tabpanel", "aria-labelledby": "advanced-review-tab-compare", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Session comparison"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Session baseline"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review session baseline", sandbox: "", srcDoc: advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" })), /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Current edited HTML"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review current document", sandbox: "", srcDoc: advancedReviewCurrentHtml || advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" }))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), _builderSaveStatusLabel(draftCaptureState, draftCaptureAt)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
+    }, style: { paddingLeft: Math.min(48, 6 + depth * 12) }, className: `flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? "bg-sky-100 text-sky-950 ring-1 ring-sky-400" : "text-slate-700 hover:bg-slate-100"}` }, /* @__PURE__ */ React.createElement("span", { className: "w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700" }, node.role), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 truncate" }, node.text || "(empty)"), node.warnings?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 shrink-0 rounded-full bg-amber-500", "aria-label": `${node.warnings.length} warning${node.warnings.length === 1 ? "" : "s"}`, title: node.warnings.join("; ") }))), !advancedReviewOutline.length && !advancedReviewTreeError && /* @__PURE__ */ React.createElement("p", { className: "rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No semantic source nodes found.")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[9px] leading-snug text-slate-500" }, "Select a node to highlight it in the preview. Double-click to open its properties.")), advancedReviewTab === "issues" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-issues", role: "tabpanel", "aria-labelledby": "advanced-review-tab-issues", className: "p-2.5" }, advancedReviewEvidenceStale && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] leading-snug text-amber-950" }, /* @__PURE__ */ React.createElement("strong", null, "Content changed."), " Findings from the prior remediation run no longer prove the edited version. Run the Builder audit for quick HTML feedback, then reverify through the remediation pipeline before claiming a verified result."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runAdvancedReviewBuilderAudit, disabled: exportAuditLoading, "aria-busy": exportAuditLoading, className: "mb-3 min-h-9 w-full rounded-lg bg-indigo-700 px-3 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, exportAuditLoading ? "Running Builder audit..." : "Run Builder HTML audit"), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[9px] leading-snug text-slate-500" }, "This in-editor audit is a useful review aid; it does not replace final tagged-PDF verification."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, advancedReviewIssues.map((issue) => /* @__PURE__ */ React.createElement("article", { key: issue.source + "-" + issue.id, className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black text-slate-800" }, issue.title), /* @__PURE__ */ React.createElement("span", { className: `rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${["critical", "serious", "high"].includes(issue.severity) ? "bg-red-100 text-red-800" : ["moderate", "medium"].includes(issue.severity) ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}` }, issue.severity)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-600" }, issue.message), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400" }, issue.source))), !advancedReviewIssues.length && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600" }, "No findings are available in the current review data. Run the Builder audit for this HTML version."))), advancedReviewTab === "properties" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-properties", role: "tabpanel", "aria-labelledby": "advanced-review-tab-properties", className: "space-y-3 p-2.5" }, advancedReviewSelectedNode ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-sky-700 px-1.5 py-0.5 text-[9px] font-black text-white" }, advancedReviewSelectedNode.role), /* @__PURE__ */ React.createElement("strong", { className: "min-w-0 flex-1 truncate text-[10px] text-slate-900" }, advancedReviewSelectedNode.text || "(empty node)")), /* @__PURE__ */ React.createElement("code", { className: "mt-1 block truncate text-[8px] text-slate-500" }, advancedReviewSelectedNode.id)), ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Semantic role", /* @__PURE__ */ React.createElement("select", { value: advancedReviewSelectedNode.tag, onChange: (event) => applyAdvancedReviewCommand({ type: "retag", nodeId: advancedReviewSelectedNode.id, tag: event.target.value }), className: "mt-1 min-h-9 w-full rounded border border-slate-300 bg-white px-2 text-[11px] font-semibold normal-case text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "p" }, "Paragraph"), /* @__PURE__ */ React.createElement("option", { value: "h1" }, "Heading 1"), /* @__PURE__ */ React.createElement("option", { value: "h2" }, "Heading 2"), /* @__PURE__ */ React.createElement("option", { value: "h3" }, "Heading 3"), /* @__PURE__ */ React.createElement("option", { value: "h4" }, "Heading 4"), /* @__PURE__ */ React.createElement("option", { value: "h5" }, "Heading 5"), /* @__PURE__ */ React.createElement("option", { value: "h6" }, "Heading 6"), /* @__PURE__ */ React.createElement("option", { value: "blockquote" }, "Block quote"))), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Reading order"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "up" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "move", nodeId: advancedReviewSelectedNode.id, direction: "down" }), className: "min-h-9 rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Move later"))), ["img", "figure"].includes(advancedReviewSelectedNode.tag) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Alternative text", /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: advancedReviewAltDraft, onChange: (event) => setAdvancedReviewAltDraft(event.target.value), className: "mt-1 w-full rounded border border-slate-300 p-2 text-[10px] font-medium normal-case text-slate-900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-alt", nodeId: advancedReviewSelectedNode.id, alt: advancedReviewAltDraft }), className: "min-h-9 w-full rounded bg-sky-700 px-2 text-[10px] font-bold text-white hover:bg-sky-800" }, "Apply alternative text"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-10 cursor-pointer items-center gap-2 rounded border border-slate-300 px-2 text-[10px] font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: Boolean(advancedReviewSelectedNode.properties?.artifact), onChange: (event) => applyAdvancedReviewCommand({ type: "set-artifact", nodeId: advancedReviewSelectedNode.id, artifact: event.target.checked }) }), "Artifact / decorative image")), advancedReviewSelectedNode.tag === "table" && /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-[9px] font-black uppercase tracking-wide text-slate-600" }, "Table headers"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-row" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First row"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "first-column" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "First column"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-table-headers", nodeId: advancedReviewSelectedNode.id, mode: "both" }), className: "min-h-10 rounded border border-slate-300 bg-white px-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50" }, "Both")))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-[10px] leading-snug text-slate-600" }, "Select a node in Structure to edit its role, order, image semantics, language, or table headers."), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-lg border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[9px] font-black uppercase tracking-wide text-slate-600" }, advancedReviewSelectedNode ? "Selected node language" : "Document language"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: advancedReviewLanguageDraft, onChange: (event) => setAdvancedReviewLanguageDraft(event.target.value), placeholder: "en-US", "aria-label": advancedReviewSelectedNode ? "Selected node language" : "Document language", className: "min-h-9 min-w-0 flex-1 rounded border border-slate-300 px-2 text-[10px] text-slate-900" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyAdvancedReviewCommand({ type: "set-language", nodeId: advancedReviewSelectedNode?.id, language: advancedReviewLanguageDraft }), className: "min-h-9 rounded bg-indigo-700 px-2 text-[9px] font-bold text-white hover:bg-indigo-800" }, "Apply")))), advancedReviewTab === "history" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-history", role: "tabpanel", "aria-labelledby": "advanced-review-tab-history", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Review ledger"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2" }, advancedReviewHistory.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[10px] text-slate-800" }, entry.summary), /* @__PURE__ */ React.createElement("time", { className: "shrink-0 text-[8px] text-slate-400" }, new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[8px] uppercase tracking-wide text-slate-500" }, entry.type, entry.targetId ? ` - ${entry.targetId}` : ""))), !advancedReviewHistory.length && /* @__PURE__ */ React.createElement("li", { className: "rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500" }, "No specialist mutations in this session."))), advancedReviewTab === "compare" && /* @__PURE__ */ React.createElement("section", { id: "advanced-review-panel-compare", role: "tabpanel", "aria-labelledby": "advanced-review-tab-compare", className: "p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Session comparison"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[9px] leading-snug text-slate-500" }, "Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Session baseline"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review session baseline", sandbox: "", srcDoc: advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" })), /* @__PURE__ */ React.createElement("figure", null, /* @__PURE__ */ React.createElement("figcaption", { className: "mb-1 text-[9px] font-black text-slate-700" }, "Current edited HTML"), /* @__PURE__ */ React.createElement("iframe", { title: "Advanced Review current document", sandbox: "", srcDoc: advancedReviewCurrentHtml || advancedReviewBaselineRef.current, className: "h-52 w-full rounded border border-slate-300 bg-white" }))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0", "aria-label": "Document status bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-700" }, isFocusMode ? "Focus mode" : "Editing enabled"), /* @__PURE__ */ React.createElement("span", { "data-builder-save-status": true, role: "status", "aria-live": "polite", className: `inline-flex items-center gap-1 font-medium ${draftCaptureState === "capturing" ? "text-amber-700" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "text-emerald-700" : "text-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `h-1.5 w-1.5 rounded-full ${draftCaptureState === "capturing" ? "bg-amber-500 animate-pulse motion-reduce:animate-none" : ["saved", "restored", "captured"].includes(draftCaptureState) ? "bg-emerald-600" : "bg-slate-400"}`, "aria-hidden": "true" }), _builderSaveStatusLabel(draftCaptureState, draftCaptureAt)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openTrackedChanges(activeTrackedChangeId), "aria-controls": "document-builder-navigation", className: `rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? "bg-violet-100 text-violet-800 hover:bg-violet-200" : pendingTrackedChangeCount ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "text-slate-500 hover:bg-slate-200"}`, title: "Open tracked changes review" }, "Track: ", trackChangesEnabled ? "On" : "Off", " \xB7 ", pendingTrackedChangeCount, " change", pendingTrackedChangeCount === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("button", { ref: wordCountButtonRef, type: "button", onClick: (event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event), "aria-expanded": showWordCountDetails, "aria-controls": "builder-word-count-panel", "aria-keyshortcuts": "Control+Shift+G", className: "rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800", title: "Open detailed Word Count (Ctrl+Shift+G)" }, selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`), showWordCountDetails && /* @__PURE__ */ React.createElement("section", { ref: wordCountPanelRef, id: "builder-word-count-panel", tabIndex: -1, role: "dialog", "aria-modal": "false", "aria-labelledby": "builder-word-count-title", "aria-describedby": "builder-word-count-description", className: "absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "builder-word-count-title", className: "text-sm font-black text-slate-900" }, "Word Count"), /* @__PURE__ */ React.createElement("p", { id: "builder-word-count-description", className: "text-[10px] text-slate-500" }, "Live statistics for this document", selectionStatistics.active ? " and the selected text" : "", ".")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeWordCountDetails(true), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800", "aria-label": "Close Word Count details" }, "Close")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 overflow-hidden rounded-lg border border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full border-collapse text-[11px]" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, "Document and selection statistics"), /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-left" }, "Statistic"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Document"), selectionStatistics.active && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1 text-right" }, "Selection"))), /* @__PURE__ */ React.createElement("tbody", null, [
       ["Pages", pageMetrics.count, null],
       ["Words", documentStatistics.words, selectionStatistics.words],
       ["Characters (no spaces)", documentStatistics.charactersWithoutSpaces, selectionStatistics.charactersWithoutSpaces],
       ["Characters (with spaces)", documentStatistics.charactersWithSpaces, selectionStatistics.charactersWithSpaces],
       ["Paragraphs", documentStatistics.paragraphs, selectionStatistics.paragraphs],
       ["Sentences", documentStatistics.sentences, selectionStatistics.sentences]
-    ].map(([label, documentValue, selectionValue]) => /* @__PURE__ */ React.createElement("tr", { key: label, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "px-2 py-1 text-left font-semibold text-slate-600" }, label), /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, Number(documentValue || 0).toLocaleString()), selectionStatistics.active && /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, selectionValue == null ? /* @__PURE__ */ React.createElement("span", { "aria-label": "Not applicable" }, "\u2014") : Number(selectionValue || 0).toLocaleString())))))), /* @__PURE__ */ React.createElement("dl", { className: "mt-2 grid grid-cols-2 gap-2 text-[10px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-indigo-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-indigo-800" }, "Reading time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.readingMinutes || 0, " min at 225 wpm")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-violet-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-violet-800" }, "Speaking time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.speakingMinutes || 0, " min at 130 wpm"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-word-count-goal", className: "text-[10px] font-bold text-slate-600" }, "Word goal"), /* @__PURE__ */ React.createElement("input", { id: "builder-word-count-goal", type: "number", min: "0", step: "50", value: wordGoal || "", onChange: (event) => setWordGoal(Math.max(0, parseInt(event.target.value, 10) || 0)), placeholder: "None", className: "h-7 w-24 rounded border border-slate-400 bg-white px-1.5 text-[11px]" }), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-semibold text-slate-600" }, wordGoalProgress.goal > 0 ? `${wordGoalProgress.percent}%` : "No goal")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": "Word-count goal progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none", style: { width: `${wordGoalProgress.percent}%` } }))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[9px] leading-snug text-slate-500" }, "Counts exclude headers, footers, page controls, and other editor-only interface text."))), /* @__PURE__ */ React.createElement("span", null, headingOutline.length, " heading", headingOutline.length === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("span", null, "Page ", pageMetrics.active + 1, " of ", pageMetrics.count), /* @__PURE__ */ React.createElement("span", null, "Section ", pageMetrics.activeSection + 1, " of ", pageMetrics.documentSections.length, ": ", activeDocumentSection.name)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "Ctrl+Enter page break \xB7 Ctrl+Alt+F footnote \xB7 F9 update fields \xB7 Ctrl+Shift+Enter ", isFocusMode ? "exits focus mode" : "opens focus mode", " \xB7 Ctrl+Shift+G word count \xB7 Ctrl+Z undo"), /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline-block h-4 w-px bg-slate-300", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", "aria-label": "Editor zoom controls" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value - 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Zoom out", title: "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "50", max: "200", step: "5", value: editorZoom, onChange: (event) => setCustomEditorZoom(Number(event.target.value)), className: "w-24 accent-indigo-600", "aria-label": "Editor zoom", "aria-valuetext": `${editorZoomMode === "custom" ? "" : editorZoomMode === "fit-width" ? "Fit width, " : "Fit page, "}${editorZoom} percent` }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value + 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Zoom in", title: "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom(100), className: "min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100", "aria-label": "Reset editor zoom to 100 percent", title: "Reset editor zoom" }, editorZoom, "%"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetBuilderViewPreferences, className: "rounded px-1.5 py-1 font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700", "aria-label": "Reset Builder view preferences", title: "Reset zoom, page view, ribbon, navigation, and review display" }, "Reset view"))))))
+    ].map(([label, documentValue, selectionValue]) => /* @__PURE__ */ React.createElement("tr", { key: label, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "px-2 py-1 text-left font-semibold text-slate-600" }, label), /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, Number(documentValue || 0).toLocaleString()), selectionStatistics.active && /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1 text-right tabular-nums" }, selectionValue == null ? /* @__PURE__ */ React.createElement("span", { "aria-label": "Not applicable" }, "\u2014") : Number(selectionValue || 0).toLocaleString())))))), /* @__PURE__ */ React.createElement("dl", { className: "mt-2 grid grid-cols-2 gap-2 text-[10px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-indigo-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-indigo-800" }, "Reading time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.readingMinutes || 0, " min at 225 wpm")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg bg-violet-50 px-2 py-1.5" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold text-violet-800" }, "Speaking time"), /* @__PURE__ */ React.createElement("dd", null, documentStatistics.speakingMinutes || 0, " min at 130 wpm"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-word-count-goal", className: "text-[10px] font-bold text-slate-600" }, "Word goal"), /* @__PURE__ */ React.createElement("input", { id: "builder-word-count-goal", type: "number", min: "0", step: "50", value: wordGoal || "", onChange: (event) => setWordGoal(Math.max(0, parseInt(event.target.value, 10) || 0)), placeholder: "None", className: "h-7 w-24 rounded border border-slate-400 bg-white px-1.5 text-[11px]" }), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-semibold text-slate-600" }, wordGoalProgress.goal > 0 ? `${wordGoalProgress.percent}%` : "No goal")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": "Word-count goal progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none", style: { width: `${wordGoalProgress.percent}%` } }))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[9px] leading-snug text-slate-500" }, "Counts exclude headers, footers, page controls, and other editor-only interface text."))), /* @__PURE__ */ React.createElement("span", null, "Page ", pageMetrics.active + 1, " of ", pageMetrics.count), /* @__PURE__ */ React.createElement("details", { className: "builder-status-details relative", onKeyDownCapture: handleBuilderMenuEscape }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded px-2 py-1 font-semibold hover:bg-slate-200" }, "Details & shortcuts"), /* @__PURE__ */ React.createElement("div", { className: "builder-status-popover absolute bottom-full left-0 mb-2 rounded-lg border border-slate-300 bg-white p-3 shadow-xl space-y-2" }, /* @__PURE__ */ React.createElement("p", { "data-builder-document-context": true }, documentSourceLabel, !isRemediationDocument && " \xB7 " + includedResourceCount + " of " + resourceItems.length + " resources"), /* @__PURE__ */ React.createElement("p", null, headingOutline.length, " headings \xB7 Section ", pageMetrics.activeSection + 1, " of ", pageMetrics.documentSections.length, ": ", activeDocumentSection.name), /* @__PURE__ */ React.createElement("p", null, "Focus the preview and edit text directly"), /* @__PURE__ */ React.createElement("p", null, "Ctrl+Enter page break \xB7 Ctrl+Alt+F footnote \xB7 F9 update fields \xB7 Ctrl+Shift+Enter focus mode \xB7 Ctrl+Shift+G word count \xB7 Ctrl+Z undo"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetBuilderViewPreferences, className: "min-h-8 rounded px-2 font-semibold text-indigo-700 hover:bg-indigo-50", "aria-label": "Reset Builder view preferences" }, "Reset view")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": "Preview zoom mode", value: editorZoomMode, onChange: (event) => event.target.value === "custom" ? setCustomEditorZoom(editorZoom) : useEditorZoomPreset(event.target.value), className: "h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "fit-width" }, "Fit width"), /* @__PURE__ */ React.createElement("option", { value: "fit-page" }, "Fit page"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "Custom zoom")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", "aria-label": "Editor zoom controls" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value - 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Zoom out", title: "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "50", max: "200", step: "5", value: editorZoom, onChange: (event) => setCustomEditorZoom(Number(event.target.value)), className: "w-24 accent-indigo-600", "aria-label": "Editor zoom", "aria-valuetext": `${editorZoomMode === "custom" ? "" : editorZoomMode === "fit-width" ? "Fit width, " : "Fit page, "}${editorZoom} percent` }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom((value) => value + 5), className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": "Zoom in", title: "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCustomEditorZoom(100), className: "min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100", "aria-label": "Reset editor zoom to 100 percent", title: "Reset editor zoom" }, editorZoom, "%"))))))
   );
 }
 async function updateExportPreview(deps) {
@@ -10649,10 +10749,15 @@ ${_pageCss}
         try {
           e.preventDefault();
           const _parentDoc = window.parent && window.parent.document;
+          const _toolTray = _parentDoc?.getElementById("builder-tool-tray");
+          if (_parentDoc?.querySelector("#builder-export-menu[open]") || _toolTray && !_toolTray.hidden && _toolTray.getClientRects().length) {
+            _parentDoc.dispatchEvent(new window.parent.CustomEvent("alloflow-builder-dismiss-tools"));
+            return;
+          }
           if (_parentDoc && _parentDoc.documentElement.classList.contains("allo-docbuilder-focus")) {
             if (_parentDoc.fullscreenElement && _parentDoc.exitFullscreen) _parentDoc.exitFullscreen().catch(() => {
             });
-            window.parent.dispatchEvent(new window.parent.CustomEvent("alloflow-builder-exit-focus"));
+            _parentDoc.dispatchEvent(new window.parent.CustomEvent("alloflow-builder-exit-focus"));
             return;
           }
           const _cb = _parentDoc && _parentDoc.querySelector('[aria-label="' + (t("a11y.close_doc_builder") || "Close document builder") + '"]');

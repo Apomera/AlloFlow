@@ -1933,8 +1933,8 @@ window.StemLab = window.StemLab || {
             { id: 'explore', icon: '\uD83D\uDCCF', label: t('stem.numberline.explore', 'Explore') },
             { id: 'challenges', icon: '\uD83C\uDFAF', label: t('stem.numberline.challenges', 'Challenges') },
             { id: 'skipcount', icon: '\uD83D\uDD22', label: t('stem.numberline.skip_count', 'Skip Count') },
-            { id: 'fracdec', icon: '\u00BD', label: t('stem.numberline.frac_dec', 'Frac \u2194 Dec') },
-            { id: 'magCompare', icon: '\uD83D\uDD04', label: t('stem.numberline.compare', 'Compare') }
+            { id: 'fracdec', icon: '\u00BD', label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals") },
+            { id: 'magCompare', icon: '\uD83D\uDD04', label: t("stem.numberline.nav_compare_fractions", "Compare fractions") }
           ];
 
           var renderNumberLineFocus = function() {
@@ -1967,7 +1967,7 @@ window.StemLab = window.StemLab || {
               },
               {
                 id: 'fracdec',
-                label: t('stem.numberline.focus_frac_label', 'Frac/Dec'),
+                label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals"),
                 metric: fdDen + ' parts',
                 body: t('stem.numberline.focus_frac_body', 'Connect fractions, decimals, percents, and area models.'),
                 active: 'border-cyan-600 bg-cyan-50 text-cyan-900'
@@ -2153,7 +2153,7 @@ window.StemLab = window.StemLab || {
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   onKeyDown: function(e) { numberlineTabKeyDown(e, tabIndex); },
                   role: 'tab', 'aria-selected': tab === t2.id, tabIndex: tab === t2.id ? 0 : -1,
-                  className: 'min-h-[42px] py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+                  style: { minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' }, className: 'py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
                     (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-700 hover:text-blue-800')
                 }, t2.icon + ' ' + t2.label);
               })

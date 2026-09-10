@@ -1,0 +1,14 @@
+{
+  "doc_pipeline_source.jsx": "bd72bd8aada6f75997747efc00c1b31dfd5728373401433192d33431ff8c769e",
+  "doc_pipeline_module.js": "9e9a9cd0b2ed7f02fc5a6003ab13d827ee67b1f3f140f445d836e936d59aa22c",
+  "desktop/web-app/public/doc_pipeline_module.js": "9e9a9cd0b2ed7f02fc5a6003ab13d827ee67b1f3f140f445d836e936d59aa22c",
+  ".github/workflows/verify.yml": "c502822035ae80578a174d8ae5739cb174dfaf4487d79ad79bcba13d1cf24d89",
+  "package.json": "0da00e37f615c72f102657ca901318368831d7ec9fd64b141d08e77cfb2266cc",
+  "dev-tools/remediation_validation.cjs": "277ece33b1a66b445a5146b48096df283153a23b92d2b388ed8e650cff7f8779",
+  "dev-tools/remediation_validation.json": "f699ad45f4970568379ad3d92f77ea6681ae56ab31d9f4a3e3f81b74615d1658",
+  "tests/remediation_form_context.test.js": "4d1fe7ecd65f6c400ae4293288084196e0e2f2a2cfd4e90c376246cbf6ebe47a",
+  "tests/remediation_validation.test.js": "fcf97335512bf3d984a07d72ba754825c703c9198aa871495404e4f07392e8ff",
+  "tests/e2e/remediation_form_context.spec.ts": "5f6539d298f68040bf364035cd043e27771d9aee0e85ba4a30377fc0e506ed4e",
+  "tests/fixtures/remediation_form_context.json": "befff2033a5f6f3d944093c63fd784465a33c7162514284dd78729dcff29f5e8",
+  "docs/remediation-validation.md": "c93b8f052ca8f1b012f34497165b5d11174c0377627c85fc2eb56c28c7cdf2cd"
+}

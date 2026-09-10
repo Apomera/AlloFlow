@@ -1092,7 +1092,7 @@
             ])
           ]),
           h('nav', { key: 'nav', 'aria-label': t('stem.areaperimeter.area_and_perimeter_lab_modes', "Area and perimeter lab modes"), style: { marginTop: '16px' } },
-            h('div', { role: 'tablist', 'aria-label': t('stem.areaperimeter.lab_modes', "Lab modes"), style: { display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '7px', overflowX: 'auto' } }, MODES.map(function(item, index) {
+            h('div', { role: 'tablist', 'aria-label': t('stem.areaperimeter.lab_modes', "Lab modes"), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 125px), 1fr))', gap: '7px' } }, MODES.map(function(item, index) {
               var active = mode === item.id;
               return h('button', {
                 key: item.id, id: 'ap-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active,
@@ -1100,8 +1100,8 @@
                 onClick: function() { selectMode(item.id); },
                 onKeyDown: function(event) { handleModeKeyDown(event, index); },
                 className: 'rounded-xl border font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500',
-                style: { minWidth: '92px', padding: '10px 7px', borderColor: active ? COLORS.teal : COLORS.border, background: active ? COLORS.teal : COLORS.panel, color: active ? COLORS.onTeal : COLORS.text, cursor: 'pointer' }
-              }, h('span', null, [h('span', { key: 'icon', 'aria-hidden': true }, item.icon + ' '), h('span', { key: 'text' }, item.short)]));
+                style: { minWidth: 0, minHeight: '44px', whiteSpace: 'normal', overflowWrap: 'anywhere', padding: '10px 7px', borderColor: active ? COLORS.teal : COLORS.border, background: active ? COLORS.teal : COLORS.panel, color: active ? COLORS.onTeal : COLORS.text, cursor: 'pointer' }
+              }, h('span', null, [h('span', { key: 'icon', 'aria-hidden': true }, item.icon + ' '), h('span', { key: 'text' }, item.label)]));
             }))
           )
         ]),

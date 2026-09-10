@@ -1,0 +1,67 @@
+{
+  "pass": true,
+  "processExits": {
+    "home": 0,
+    "roundtrip": 0,
+    "regressions": 0
+  },
+  "sources": [
+    {
+      "file": "stem_tool_geometryworld.js",
+      "sha256": "8d780854f372cb3c6ea9b491cb1bca30b3287558ca238b9eae4e18ad3a16e4a8",
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_tool_geometryworld_builder.js",
+      "sha256": "afd45d3787e433f4a2c806210f849c095f189ff711799a37ae28891886446ef0",
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_tool_printlab.js",
+      "sha256": "f4629f78eea79605739fa4793d1bda36877a7b3cd848be89b3bc136e4651f742",
+      "mirrorIdentical": true,
+      "parses": true
+    }
+  ],
+  "regressionFiles": 8,
+  "regressionAssertions": 193,
+  "homeChecks": 47,
+  "homeFailures": [],
+  "inspectorViewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 414,
+      "height": 896
+    },
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 844,
+      "height": 390
+    }
+  ],
+  "utilityStates": 10,
+  "homeErrors": [],
+  "homeConsoleErrors": [],
+  "roundTripErrors": [],
+  "roundTripConsoleErrors": [],
+  "printLabReturn": {
+    "scaleMm": 12.5,
+    "selection": [
+      "60Blocks selected",
+      "6×4×5Block bounds"
+    ],
+    "fullWorkspacePreserved": true
+  }
+}

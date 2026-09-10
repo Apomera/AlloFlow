@@ -103,6 +103,7 @@
     "verify:research-drift": "node dev-tools/check_research_drift.cjs",
     "verify:source-pair": "node dev-tools/check_source_pair_drift.js",
     "verify:pipeline": "node dev-tools/check_pipeline_integrity.js",
+    "verify:remediation": "node dev-tools/remediation_validation.cjs",
     "verify:build": "node dev-tools/check_build_smoke.cjs",
     "verify:performance": "node dev-tools/check_performance_budget.cjs",
     "verify:allosheet-assets": "node dev-tools/sync_allosheet_assets.cjs --check",

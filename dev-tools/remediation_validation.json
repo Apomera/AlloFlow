@@ -1,0 +1,38 @@
+{
+  "unit": [
+    "tests/aifix_chunk_gates.test.js",
+    "tests/aifix_source_associations.test.js",
+    "tests/doc_pipeline_build_parity.test.js",
+    "tests/document_export_inspection_failures.test.js",
+    "tests/remediation_form_association_index.test.js",
+    "tests/remediation_form_context.test.js",
+    "tests/remediation_gate_regressions.test.js",
+    "tests/remediation_inline_math_option_groups.test.js",
+    "tests/remediation_residual_live.test.js",
+    "tests/remediation_review_evidence.test.js",
+    "tests/remediation_review_helpers.test.js",
+    "tests/remediation_semantic_fidelity.test.js",
+    "tests/remediation_source_contract_integration.test.js",
+    "tests/remediation_validation.test.js",
+    "tests/rendered_fidelity_calibration.test.js",
+    "tests/rendered_fidelity_resilience.test.js",
+    "tests/rendered_fidelity_review.test.js",
+    "tests/source_remediation_contract.test.js"
+  ],
+  "browser": [
+    "tests/e2e/document_dependency_parity.spec.ts",
+    "tests/e2e/document_export_artifact_binding.spec.ts",
+    "tests/e2e/document_export_at_acceptance.spec.ts",
+    "tests/e2e/document_export_baseline_fidelity.spec.ts",
+    "tests/e2e/document_export_link_acceptance.spec.ts",
+    "tests/e2e/document_export_residual_fixes.spec.ts",
+    "tests/e2e/document_export_review_fixes.spec.ts",
+    "tests/e2e/remediation_form_context.spec.ts",
+    "tests/e2e/rendered_document_fidelity.spec.ts",
+    "tests/e2e/rendered_fidelity_content_regressions.spec.ts",
+    "tests/e2e/rendered_fidelity_evidence.spec.ts",
+    "tests/e2e/rendered_fidelity_occurrence_regressions.spec.ts",
+    "tests/e2e/rendered_fidelity_profiles.spec.ts",
+    "tests/e2e/rendered_fidelity_recovery.spec.ts"
+  ]
+}

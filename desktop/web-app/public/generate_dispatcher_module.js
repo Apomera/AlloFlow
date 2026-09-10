@@ -1921,14 +1921,61 @@ function normalizeStandardsDimension(rawReports, configuredStandards, options) {
 // Shapes are documented in docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4
 // and must stay pure data (scan_fn_in_tool_state.cjs).
 const DISCUSSION_PROTOCOLS = ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'];
+// Parse complete JSON before applying the legacy repair regexes: those regexes
+// can change valid quoted content (for example, {claim: evidence} in a packet).
+// Keep this scoped to activities so other resource parsers retain their behavior.
+const parseStructuredActivityResponse = (raw, cleanJson) => {
+    if (raw && typeof raw === 'object') return raw;
+    if (typeof raw !== 'string' || !raw.trim()) return null;
+    const text = raw.trim();
+    const candidates = [text];
+    const start = text.search(/[\[{]/);
+    const end = start < 0 ? -1 : text.lastIndexOf(text[start] === '[' ? ']' : '}');
+    if (end > start && start >= 0) candidates.push(text.slice(start, end + 1));
+    for (const candidate of candidates) {
+        try { return JSON.parse(candidate); } catch (_) {}
+    }
+    // Never let the cleaner's empty-object fallback disguise a truncated reply.
+    if (start >= 0 && end > start && typeof cleanJson === 'function') {
+        try { return JSON.parse(cleanJson(candidates[candidates.length - 1])); } catch (_) {}
+    }
+    return null;
+};
+// Some providers wrap the requested single activity. Unwrap only known,
+// unambiguous envelopes; never silently select one of several activities.
+const unwrapStructuredActivity = (raw, mode) => {
+    const keys = mode === 'discussion'
+        ? ['discussionKit', 'discussion', 'activity', 'data', 'result']
+        : ['jigsawActivity', 'jigsaw', 'activity', 'data', 'result'];
+    const contentKey = mode === 'discussion' ? 'questionSets' : 'chunks';
+    for (let depth = 0; depth < 5; depth++) {
+        if (!raw || typeof raw !== 'object') return null;
+        if (Array.isArray(raw)) {
+            if (raw.length !== 1) return null;
+            raw = raw[0];
+        } else {
+            if (Object.prototype.hasOwnProperty.call(raw, contentKey)) return raw;
+            const envelopes = keys.filter(key => Object.prototype.hasOwnProperty.call(raw, key) && raw[key] && typeof raw[key] === 'object');
+            if (envelopes.length !== 1) return null;
+            raw = raw[envelopes[0]];
+        }
+    }
+    return null;
+};
 const normalizeDiscussionKit = (raw, fallbackProtocol) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const str = v => String(v == null ? '' : v).trim();
+    raw = unwrapStructuredActivity(raw, 'discussion');
+    if (!raw) return null;
+    const str = v => typeof v === 'string' ? v.trim() : '';
     const strList = v => (Array.isArray(v) ? v.map(str).filter(Boolean) : []);
-    const rawSets = Array.isArray(raw.questionSets) ? raw.questionSets : [];
+    const questionText = v => str(v) || (v && typeof v === 'object' && !Array.isArray(v)
+        ? str(v.question) || str(v.text) || str(v.q) : '');
+    const rawSets = Array.isArray(raw.questionSets) ? raw.questionSets
+        : (raw.questionSets && typeof raw.questionSets === 'object'
+            ? Object.entries(raw.questionSets).map(([depth, value]) => ({ depth, questions: Array.isArray(value) ? value : value && value.questions })) : []);
     const questionSets = ['literal', 'inferential', 'evaluative'].map(depth => {
-        const found = rawSets.find(s => s && String(s.depth || '').toLowerCase() === depth);
-        return { depth, questions: strList(found && found.questions).slice(0, 6) };
+        const questions = rawSets.filter(s => s && str(s.depth).toLowerCase() === depth)
+            .flatMap(s => Array.isArray(s.questions) ? s.questions.map(questionText).filter(Boolean) : []).slice(0, 6);
+        return { depth, questions };
     }).filter(s => s.questions.length);
     const stemsRaw = raw.talkStems && typeof raw.talkStems === 'object' && !Array.isArray(raw.talkStems) ? raw.talkStems : {};
     const talkStems = {};
@@ -1936,7 +1983,7 @@ const normalizeDiscussionKit = (raw, fallbackProtocol) => {
         const list = strList(stemsRaw[cat]).slice(0, 4);
         if (list.length) talkStems[cat] = list;
     });
-    const rawProtocol = String(raw.protocol || '').toLowerCase();
+    const rawProtocol = str(raw.protocol).toLowerCase();
     const protocol = DISCUSSION_PROTOCOLS.includes(rawProtocol) ? rawProtocol
         : (DISCUSSION_PROTOCOLS.includes(fallbackProtocol) ? fallbackProtocol : 'think-pair-share');
     const item = {
@@ -1955,8 +2002,9 @@ const normalizeDiscussionKit = (raw, fallbackProtocol) => {
     return item;
 };
 const normalizeJigsawActivity = (raw, requestedGroupSize) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const str = v => String(v == null ? '' : v).trim();
+    raw = unwrapStructuredActivity(raw, 'jigsaw');
+    if (!raw) return null;
+    const str = v => typeof v === 'string' ? v.trim() : '';
     const strList = v => (Array.isArray(v) ? v.map(str).filter(Boolean) : []);
     const chunks = (Array.isArray(raw.chunks) ? raw.chunks : []).map((c, i) => {
         const chunk = {
@@ -2417,23 +2465,31 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const message = String(error && error.message || error || '').toLowerCase();
         const code = String(error && error.code || '').toLowerCase();
         const status = Number(error && (error.status || error.statusCode || error.httpStatus));
+        if ([401, 403].includes(status)) return false;
         if (/401|403|quota|safety|blocked|policy|permission|forbidden|unauthorized/.test(message)
             || /auth|permission|forbidden|unauthorized|safety|policy|quota/.test(code)) return false;
         if ([408, 409, 425, 429].includes(status) || status >= 500) return true;
         return /json|parse|valid|shape|empty|timeout|network|fetch|429|5\d\d|service unavailable|temporarily/.test(message);
     };
-    const generateStructuredActivityWithRecovery = async (prompt, normalize, stepLabel) => {
+    const generateStructuredActivityWithRecovery = async (prompt, normalize, stepLabel, requiredShape = '') => {
         let lastError = null;
         for (let attempt = 1; attempt <= 2; attempt++) {
             throwIfGenerationAborted();
             try {
+                const feedback = lastError && lastError.code === 'STRUCTURED_ACTIVITY_INVALID' ? lastError.message : '';
                 const recovery = attempt > 1
-                    ? '\n\nRECOVERY: The previous response could not be accepted. Return ONLY a complete JSON object matching the required schema. Do not add markdown fences or commentary.'
+                    ? '\n\nRECOVERY: The previous response could not be accepted. ' + feedback + ' ' + requiredShape
+                        + ' Return ONLY a complete JSON object matching the required schema. Keep JSON field names and enum values exactly as shown; translate only the human-readable content. Do not add markdown fences or commentary.'
                     : '';
                 const raw = await callGemini(prompt + recovery, true);
-                const value = normalize(parseJsonLenient(raw, null));
+                throwIfGenerationAborted();
+                const parsed = parseStructuredActivityResponse(raw, cleanJson);
+                const value = normalize(parsed);
                 if (value) return { value, attempts: attempt };
-                lastError = new Error('Structured activity response did not match the required shape.');
+                lastError = new Error(parsed === null
+                    ? 'Structured activity response was not valid JSON.'
+                    : 'Structured activity response did not match the required shape. ' + requiredShape);
+                lastError.code = 'STRUCTURED_ACTIVITY_INVALID';
             } catch (error) {
                 if ((error && error.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw error;
                 lastError = error;
@@ -5270,7 +5326,8 @@ ${_itemsBlock}`;
                 - "grouping": ONE sentence on room/group setup for ${protocol}.
                 - "facilitationNotes": markdown for the TEACHER only (timing, pitfalls, how to restart a stalled discussion).
                 - "lookFors": observable participation indicators, never grades or scores.
-                Return ONLY valid JSON:
+                - Keep JSON field names and depth/protocol values exactly as shown in English; translate only the human-readable content.
+                Return ONLY one complete JSON object, with no wrapper or commentary:
                 { "title": "...", "protocol": "${protocol}", "grouping": "...", "openingQuestion": "...",
                   "questionSets": [ { "depth": "literal", "questions": ["..."] }, { "depth": "inferential", "questions": ["..."] }, { "depth": "evaluative", "questions": ["..."] } ],
                   "talkStems": { "agree": ["..."], "disagree": ["..."], "clarify": ["..."], "build": ["..."] },
@@ -5283,7 +5340,8 @@ ${_itemsBlock}`;
              const generated = await generateStructuredActivityWithRecovery(
                  prompt,
                  raw => normalizeDiscussionKit(raw, protocol),
-                 stepLabel
+                 stepLabel,
+                 'Discussion requires a non-empty title and questionSets with literal, inferential, or evaluative depth and non-empty question text.'
              );
              const kit = generated.value;
              content = [{
@@ -5316,6 +5374,8 @@ ${_itemsBlock}`;
                 - Vary the reading demand of the expert packets across chunks so experts can be assigned strategically: at least one lighter-demand chunk and one stretch chunk, every packet still carrying essential knowledge the group needs.
                 - Label each chunk with "suggestedLevel": "support" | "core" | "stretch", AND append the matching plain word (in the OUTPUT LANGUAGE, in parentheses) to that chunk's "label" so teachers see it without extra UI.` : ''}
                 Requirements:
+                - "chunks" must contain exactly ${groupSize} expert objects; the JSON example below shows the shape of one entry.
+                - Keep JSON field names and suggestedLevel values exactly as shown in English; translate only the human-readable content.
                 - "expertPacket": markdown a student expert reads to master ONLY their chunk (rewritten for ${effectiveGrade}, not copied).
                 - "teachBack": what that expert covers when teaching their home group, plus questions to check their group understood.
                 - "homeGroupTask": the group task that NEEDS all ${groupSize} chunks.
@@ -5334,7 +5394,8 @@ ${_itemsBlock}`;
              const generated = await generateStructuredActivityWithRecovery(
                  prompt,
                  raw => normalizeJigsawActivity(raw, groupSize),
-                 stepLabel
+                 stepLabel,
+                 'Jigsaw requires a non-empty title and a chunks array containing at least two non-empty expertPacket strings; provide all ' + groupSize + ' requested chunks.'
              );
              const activity = generated.value;
              content = [{
@@ -8021,6 +8082,7 @@ window.AlloModules.GenDispatcher = {
   composeAdaptedLeveledText,
   // Activities redesign (2026-08-16): pure structured-activity normalizers +
   // the shared per-kind serializer (ladder prompts + export both use it).
+  parseStructuredActivityResponse,
   normalizeDiscussionKit,
   normalizeJigsawActivity,
   describeActivityItem,

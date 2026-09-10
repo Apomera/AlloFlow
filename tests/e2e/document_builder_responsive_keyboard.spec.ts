@@ -81,7 +81,10 @@ for (const [width, height] of [[1440, 900], [1024, 768], [768, 1024], [390, 844]
     fs.writeFileSync(testInfo.outputPath('geometry.json'), JSON.stringify(facts, null, 2));
     await testInfo.attach('layout.json', { body: JSON.stringify(facts, null, 2), contentType: 'application/json' });
     await page.screenshot({ path: testInfo.outputPath('initial.png') });
-    expect(facts.frame.height).toBeGreaterThanOrEqual(width < 1024 ? 280 : 200);
+    expect(facts.frame.height).toBeGreaterThanOrEqual(height * 0.58);
+    expect(facts.frame.width).toBeGreaterThanOrEqual(width * 0.9);
+    await expect(page.getByRole('region', { name: 'Document settings', exact: true })).not.toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Preview zoom mode', exact: true })).toHaveValue('fit-width');
     expect(facts.visibleHeight).toBeGreaterThanOrEqual(width < 1024 ? 220 : 180);
     expect(facts.frame.x).toBeGreaterThanOrEqual(0);
     expect(facts.frame.right).toBeLessThanOrEqual(width);
@@ -89,7 +92,7 @@ for (const [width, height] of [[1440, 900], [1024, 768], [768, 1024], [390, 844]
     if (width < 1024) {
       await expect(page.getByRole('button', { name: 'Document settings', exact: true })).toHaveAttribute('aria-expanded', 'false');
       await expect(page.getByRole('region', { name: 'Document settings', exact: true })).not.toBeVisible();
-      await expect(page.getByRole('button', { name: 'Expand ribbon', exact: true })).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Home', exact: true })).toHaveAttribute('aria-expanded', 'false');
     }
     expect(errors).toEqual([]);
   });
@@ -224,6 +227,7 @@ test('current document heading and timestamped save context follow real edits', 
 test('remediation settings omit History assembly options while retaining the editable document', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const errors = await mount(page, 'remediation');
+  await page.getByRole('button', { name: 'Document settings', exact: true }).click();
   const settings = page.getByRole('region', { name: 'Document settings', exact: true });
   await expect(settings).toBeVisible();
   await expect(page.getByRole('radiogroup', { name: 'Export format' })).toBeVisible();
@@ -233,5 +237,147 @@ test('remediation settings omit History assembly options while retaining the edi
   await expect(page.locator('[data-builder-document-context]')).toContainText('Remediated');
   await expect(page.frameLocator('#document-builder-preview').getByRole('heading', { name: 'Classroom handout', exact: true })).toBeVisible();
   expect(await page.evaluate(() => (window as any).builderProps.exportPreviewRef.current.contentDocument.designMode)).toBe('on');
+  expect(errors).toEqual([]);
+});
+
+test('desktop settings, ribbon, and Focus mode preserve the live document and undo history', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const errors = await mount(page);
+  const original = await geometry(page);
+  const paragraph = page.frameLocator('#document-builder-preview').locator('#editable');
+  await paragraph.click(); await page.keyboard.press('End'); await page.keyboard.type(' Preserved edit.');
+  await page.evaluate(() => { (window as any).__layoutDocument = (window as any).builderProps.exportPreviewRef.current.contentDocument; });
+  const settingsButton = page.getByRole('button', { name: 'Document settings', exact: true });
+  await settingsButton.click();
+  await expect(page.getByRole('region', { name: 'Document settings', exact: true })).toBeVisible();
+  await expect(paragraph).toBeVisible();
+  expect((await geometry(page)).frame.width).toBeLessThan(original.frame.width);
+  await page.getByRole('button', { name: 'Back to document', exact: true }).click();
+  await expect(settingsButton).toBeFocused();
+  expect((await geometry(page)).frame.width).toBe(original.frame.width);
+  for (const name of ['Home', 'Insert', 'Layout', 'Review', 'View', '🤖 Expert Workbench']) {
+    await page.getByRole('tab', { name, exact: true }).click();
+    await expect(page.locator('#builder-tool-tray')).toBeVisible();
+    expect((await geometry(page)).frame.height).toBe(original.frame.height);
+    await page.getByRole('button', { name: 'Close ribbon tools', exact: true }).click();
+  }
+  await page.getByRole('button', { name: 'Focus mode', exact: true }).click();
+  await expect(page.locator('.builder-controls')).not.toBeVisible();
+  expect((await geometry(page)).frame.height).toBeGreaterThan(original.frame.height);
+  await page.getByRole('button', { name: 'Exit focus', exact: true }).click();
+  await expect(paragraph).toContainText('Preserved edit.');
+  expect(await page.evaluate(() => (window as any).__layoutDocument === (window as any).builderProps.exportPreviewRef.current.contentDocument)).toBe(true);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(paragraph).toHaveText('Original lesson text.');
+  await page.screenshot({ path: testInfo.outputPath('roomier-desktop.png') });
+  expect(errors).toEqual([]);
+});
+
+test('compact formatting restores the selection after visiting settings', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const errors = await mount(page);
+  await page.evaluate(() => {
+    const doc = (window as any).builderProps.exportPreviewRef.current.contentDocument;
+    const range = doc.createRange(); range.selectNodeContents(doc.getElementById('editable'));
+    doc.getSelection().removeAllRanges(); doc.getSelection().addRange(range);
+    doc.dispatchEvent(new Event('selectionchange'));
+  });
+  await page.getByRole('button', { name: 'Document settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Back to document', exact: true }).click();
+  await page.getByRole('group', { name: 'Quick formatting' }).getByRole('button', { name: 'Bold', exact: true }).click();
+  const paragraph = page.frameLocator('#document-builder-preview').locator('#editable');
+  await expect(paragraph.locator('b,strong')).toHaveText('Original lesson text.');
+  await page.getByRole('tab', { name: 'Home', exact: true }).click();
+  await page.getByRole('tab', { name: 'Insert', exact: true }).click();
+  await Promise.all([page.waitForEvent('filechooser'), page.getByRole('tabpanel').getByRole('button', { name: 'Insert image with alternative text', exact: true }).click()]);
+  expect(errors).toEqual([]);
+});
+
+for (const width of [1440, 390]) {
+  test('Export keeps all formats reachable and nested Escape contained at ' + width, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors = await mount(page);
+    await page.locator('#builder-export-menu > summary').click();
+    const panel = page.getByRole('region', { name: 'Export document', exact: true });
+    await expect(panel.getByRole('button', { name: 'Print / Save as PDF', exact: true })).toBeVisible();
+    const more = panel.locator('summary', { hasText: 'More export formats' });
+    await more.click();
+    const formats = panel.getByRole('group', { name: 'Additional export formats' });
+    await expect(formats.getByRole('button', { name: 'Accessible Word (.docx)', exact: true })).toBeVisible();
+    expect(await formats.getByRole('button').count()).toBeGreaterThan(5);
+    const box = await panel.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(900);
+    await page.screenshot({ path: testInfo.outputPath('export-menu.png') });
+    await formats.getByRole('button').first().focus(); await page.keyboard.press('Escape');
+    await expect(more).toBeFocused(); await expect(formats).not.toBeVisible();
+    await page.keyboard.press('Escape'); await expect(panel).not.toBeVisible();
+    await expect(page.locator('#builder-export-menu > summary')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__builderCloseRequests)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('settings and zoom preferences survive reopening and compact defaults can be restored', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await mount(page);
+  await page.getByRole('button', { name: 'Document settings', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Preview zoom mode', exact: true }).selectOption('fit-page');
+  await page.getByRole('tab', { name: 'Insert', exact: true }).click();
+  await mount(page);
+  await expect(page.getByRole('region', { name: 'Document settings', exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Preview zoom mode', exact: true })).toHaveValue('fit-page');
+  await expect(page.getByRole('tab', { name: 'Insert', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Close ribbon tools', exact: true }).click();
+  await page.locator('.builder-status-details > summary').click();
+  await page.getByRole('button', { name: 'Reset Builder view preferences', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Document settings', exact: true })).not.toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Preview zoom mode', exact: true })).toHaveValue('fit-width');
+  await expect(page.locator('#builder-tool-tray')).not.toBeVisible();
+});
+
+for (const theme of ['light', 'dark', 'contrast']) {
+  test('roomier workspace and tool panels render with application ' + theme + ' theme', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const errors = await mount(page);
+    await page.addScriptTag({ path: path.join(root, 'app_styles_module.js') });
+    await page.evaluate((theme) => {
+      const w = window as any;
+      document.documentElement.classList.add('theme-' + theme);
+      const styles = document.createElement('div'); document.body.appendChild(styles);
+      w.ReactDOM.createRoot(styles).render(w.React.createElement(w.AlloModules.AppStyles.AppStyles));
+    }, theme);
+    await page.getByRole('tab', { name: 'Review', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Run export preflight checks', exact: true })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('review-' + theme + '.png') });
+    const tray = await page.locator('#builder-tool-tray').boundingBox();
+    expect(tray!.x).toBeGreaterThanOrEqual(0); expect(tray!.x + tray!.width).toBeLessThanOrEqual(1280);
+    expect(tray!.y + tray!.height).toBeLessThanOrEqual(900);
+    await page.getByRole('button', { name: 'Close ribbon tools', exact: true }).click();
+    await page.getByRole('button', { name: 'Document settings', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('settings-' + theme + '.png') });
+    expect(errors).toEqual([]);
+  });
+}
+
+test('Escape inside the document dismisses tools and in-app Focus mode without closing the builder', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const errors = await mount(page);
+  await page.evaluate(() => { (document.documentElement as any).requestFullscreen = undefined; });
+  const focusDocument = () => page.evaluate(() => (window as any).builderProps.exportPreviewRef.current.contentDocument.body.focus());
+  await page.getByRole('button', { name: 'Focus mode', exact: true }).click();
+  await focusDocument(); await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Focus mode', exact: true })).toBeVisible();
+  const review = page.getByRole('tab', { name: 'Review', exact: true });
+  await review.click(); await focusDocument(); await page.keyboard.press('Escape');
+  await expect(page.locator('#builder-tool-tray')).not.toBeVisible(); await expect(review).toBeFocused();
+  const exportMenu = page.locator('#builder-export-menu > summary');
+  await exportMenu.click(); await focusDocument(); await page.keyboard.press('Escape');
+  await expect(page.getByRole('region', { name: 'Export document', exact: true })).not.toBeVisible();
+  await expect(exportMenu).toBeFocused();
+  await exportMenu.click();
+  await page.frameLocator('#document-builder-preview').locator('#editable').click();
+  await expect(page.getByRole('region', { name: 'Export document', exact: true })).not.toBeVisible();
+  expect(await page.evaluate(() => (window as any).__builderCloseRequests)).toBe(0);
   expect(errors).toEqual([]);
 });

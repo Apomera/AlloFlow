@@ -1,0 +1,53 @@
+      var homeOpen = !!data.showGeometryHome && !hasPendingReturn;
+      var homePage = data.geometryHomePage || 'start';
+      var homeRef = React.useRef(null);
+      React.useEffect(function () {
+        if (!homeOpen) return;
+        var eng=window[ENGINE_KEY];
+        if(eng){Object.keys(eng.moveState || {}).forEach(function(k){eng.moveState[k]=false;});Object.keys(eng.lookState || {}).forEach(function(k){eng.lookState[k]=false;});if(eng.velocity)eng.velocity.set(0,0,0);}
+        try{if(document.pointerLockElement && document.exitPointerLock)document.exitPointerLock();}catch(_){}
+        if(homeRef.current){homeRef.current.scrollTop=0;homeRef.current.focus();}
+      },[homeOpen,homePage]);
+      React.useEffect(function(){if(homeOpen && editablePreview && editableRecoveryRef.current)editableRecoveryRef.current.focus();},[homeOpen,editablePreview]);
+      function homeNavigate(page){cancelEditablePreview();patchGeometryState(ctx,{geometryHomePage:page});}
+      function continueWorkspace(){
+        if(!data.worldActive || data._geometryHomeInitial)return;
+        cancelEditablePreview();patchGeometryState(ctx,{showGeometryHome:false});focusWorldSurface(30);
+      }
+      function closeHome(){if(homePage!=='start')homeNavigate('start');else continueWorkspace();}
+      function homeLesson(key){var eng=window[ENGINE_KEY];if(eng && eng.startHomeLesson)eng.startHomeLesson(key);}
+      function homeCreator(blank){
+        if(blank && !startSandboxMode(ctx))return;
+        patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false,creatorMode:true,showSandboxLauncher:false});
+      }
+      function homeAi(){
+        patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false,showGameSettings:true});
+        setTimeout(function(){var input=document.querySelector('[aria-label="Describe a geometry lesson topic for AI generation"]');if(input){input.scrollIntoView({block:'center'});input.focus();}},50);
+      }
+      function homeArt(kind){
+        var paths={learn:'M8 10h18v28H8ZM26 10h18v28H26M13 17h8M13 23h8M31 17h8M31 23h8M7 42h38',build:'M26 5 45 16v22L26 49 7 38V16ZM7 16l19 11 19-11M26 27v22M16 11l19 11',explore:'M26 46V22M26 31C7 33 7 13 10 8c12 0 22 10 16 23ZM26 38c-2-14 9-22 19-22 2 14-5 24-19 22M10 47h34',create:'m9 39 3-11L34 6l10 10-22 22-13 1ZM28 12l10 10M12 28l10 10M8 46h37'};
+        return h('svg',{viewBox:'0 0 52 52',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:paths[kind]}));
+      }
+      function homeSaveNotice(){return data.worldActive && !data._geometryHomeInitial && h('div',{className:'gwe-home-save',role:'note'},h('p',null,'Starting a different world replaces the workspace shown. You can save its student-built blocks first.'),h('button',{type:'button',onClick:function(){saveEditableWorld(ctx);}},'Save current build JSON'));}
+      function homeStartSandbox(){if(startSandboxMode(ctx))patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false});}
+      function renderHome(){
+        var live=window[ENGINE_KEY],lessons=live && live.geometryHomeLessons || [],canContinue=!!data.worldActive && !data._geometryHomeInitial;
+        var chosen=homePage==='explore'?'geometryGarden':data.geometryHomeLesson || 'volumeExplorer';
+        var lesson=lessons.filter(function(l){return l.id===chosen;})[0] || lessons[0];
+        var titles={start:'What would you like to do?',learn:'Find your next discovery.',build:'Make something your own.',explore:'A little room to wonder.',create:'Create a lesson worth exploring.',open:'Pick up where you left off.'};
+        return h('div',{key:'gwe-home',className:'gwe-home-backdrop'},h('section',{className:'gwe-home',ref:homeRef,tabIndex:-1,role:'dialog','aria-modal':'true','aria-labelledby':'gwe-home-title','aria-describedby':'gwe-home-description',onKeyDown:function(event){trapDialogKeys(event,closeHome);event.stopPropagation();}},
+          h('header',{className:'gwe-home-top'},h('span',{className:'gwe-home-brand'},h('span',{'aria-hidden':'true'},studioCubeMark(h)),'Geometry World'),canContinue && h('button',{type:'button',className:'gwe-home-continue',onClick:continueWorkspace},'Continue your workspace',h('span',{'aria-hidden':'true'},' →'))),
+          h('div',{className:'gwe-home-heading'},homePage!=='start' && h('button',{type:'button',className:'gwe-home-back',onClick:function(){homeNavigate('start');}},'← All ways to explore'),h('p',{className:'gwe-home-eyebrow'},homePage==='start'?'LEARN · MAKE · DISCOVER':'GEOMETRY WORLD / '+homePage.toUpperCase()),h('h1',{id:'gwe-home-title'},titles[homePage] || titles.start),h('p',{id:'gwe-home-description'},homePage==='start'?'Follow your curiosity. Choose a starting point and see where it takes you.':homePage==='build'?'Start with blocks. Finish with something you can share, revisit, or hold in your hands.':homePage==='learn'?'Choose a guided world, meet its guides, and practise geometry through discovery.':homePage==='explore'?'Wander through the Geometry Garden. Measure what catches your eye. No questions. No score.':homePage==='create'?'Build a world, add characters and questions, and turn your idea into a learning experience.':'Open an editable Geometry World JSON file. Review its contents before replacing your workspace.')),
+          homePage==='start' && h('div',{className:'gwe-home-grid'},[
+            ['learn','Learn','Guided lessons','Meet your guides, solve challenges, and make geometry click.'],
+            ['build','Build','Free Build Studio','Build freely, showcase your creation, and prepare a 3D print.'],
+            ['explore','Explore','Geometry Garden','A quiet place to wander, notice patterns, and measure.'],
+            ['create','Create a lesson','Lesson Creator','Design a learning world with characters and questions.']
+          ].map(function(card){return h('button',{key:card[0],type:'button',className:'gwe-home-card','data-path':card[0],onClick:function(){homeNavigate(card[0]);}},h('span',{className:'gwe-home-art'},homeArt(card[0])),h('span',{className:'gwe-home-card-copy'},h('span',{className:'gwe-home-card-kicker'},card[2]),h('strong',null,card[1]),h('span',{className:'gwe-home-card-description'},card[3])),h('span',{className:'gwe-home-arrow','aria-hidden':'true'},'↗'));})),
+          homePage==='start' && h('footer',{className:'gwe-home-footer'},h('div',null,h('strong',null,'Already have a creation?'),h('p',null,'Bring an editable build back into Geometry World.')),h('button',{type:'button',onClick:function(){homeNavigate('open');}},'Open a saved build',h('span',{'aria-hidden':'true'},' →'))),
+          (homePage==='learn'||homePage==='explore') && h('div',{className:'gwe-home-detail'},homePage==='learn' && h('div',{className:'gwe-home-lesson-picker'},h('label',{htmlFor:'gwe-home-lesson'},'Choose a lesson'),h('select',{id:'gwe-home-lesson',value:lesson?lesson.id:chosen,onChange:function(event){patchGeometryState(ctx,{geometryHomeLesson:event.target.value});}},lessons.filter(function(l){return l.id!=='geometryGarden';}).map(function(l){return h('option',{key:l.id,value:l.id},l.title); }))),lesson && h('article',{className:'gwe-home-preview'},h('span',{className:'gwe-home-detail-art'},homeArt(homePage)),h('div',null,h('h2',null,lesson.title),h('p',null,lesson.description),lesson.objectives && h('ul',null,lesson.objectives.slice(0,3).map(function(o,i){return h('li',{key:i},o);})))),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson || !lesson,onClick:function(){homeLesson(lesson.id);}},homePage==='explore'?'Enter Geometry Garden':'Start this lesson')),
+          homePage==='build' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-journey'},[['01','Build freely','Cubes, slabs, wedges, materials, and room to experiment.'],['02','Showcase & save','Frame your creation beautifully. Save a picture or an editable build.'],['03','Prepare a 3D print','Set the scale, download STL, or continue in Print Lab.']].map(function(step){return h('article',{key:step[0]},h('span',null,step[0]),h('h2',null,step[1]),h('p',null,step[2]));})),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live,onClick:homeStartSandbox},'Open blank sandbox'),h('button',{type:'button',className:'gwe-home-secondary',onClick:function(){homeNavigate('open');}},'Open a saved build')),
+          homePage==='create' && h('div',{className:'gwe-home-detail'},canContinue && h('section',{className:'gwe-home-create-option'},h('h2',null,'Build on this workspace'),h('p',null,'Keep your current structures and add characters, dialogue, and questions.'),h('button',{type:'button',className:'gwe-home-primary',onClick:function(){homeCreator(false);}},'Create in this workspace')),h('section',{className:'gwe-home-create-option'},h('h2',null,'Start with a blank canvas'),h('p',null,'Build a new lesson from the ground up.'),homeSaveNotice(),h('button',{type:'button',className:canContinue?'gwe-home-secondary':'gwe-home-primary',disabled:!live,onClick:function(){homeCreator(true);}},'Start a blank lesson')),ctx.callGemini && h('section',{className:'gwe-home-create-option'},h('h2',null,'Develop an idea with AI'),h('p',null,'Choose your topic and grade level in the AI lesson builder.'),h('button',{type:'button',className:'gwe-home-secondary',onClick:homeAi},'Open AI lesson builder'))),
+          homePage==='open' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-file'},fileIcon('open'),h('h2',null,'Your blocks. Your next idea.'),h('p',null,'Editable JSON keeps block shapes, materials, and rotations. STL print files belong in Print Lab.'),h('button',{type:'button',ref:editableOpenRef,className:'gwe-home-primary',disabled:editableBusy || !live,onClick:chooseShowcaseFile},editableBusy?'Checking file…':'Choose editable JSON')),homeSaveNotice(),renderEditableRecovery())
+        ));
+      }

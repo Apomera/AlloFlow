@@ -1,0 +1,47 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0145251396648045,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "names": [
+      {
+        "name": "Explain your observations",
+        "description": "",
+        "groups": []
+      }
+    ],
+    "typed": "Blueberries grow well."
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "names": [
+      {
+        "name": "Explain your observations",
+        "description": "",
+        "groups": []
+      }
+    ],
+    "typed": "Blueberries grow well."
+  },
+  "candidate": {
+    "names": [
+      {
+        "name": "Explain your observations",
+        "description": "",
+        "groups": []
+      }
+    ],
+    "typed": "Blueberries grow well."
+  }
+}

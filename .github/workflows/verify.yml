@@ -48,6 +48,29 @@ jobs:
       - name: Promotional-site accuracy, accessibility, and local links
         run: npm run audit:promo
 
+  remediation-preservation:
+    name: Remediation preservation (source + browser + export)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install local-fixture browser
+        run: npx playwright install chromium
+      - name: Source, generated module, rendered fidelity and export regressions
+        run: npm run verify:remediation
+      - name: Retain remediation validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remediation-validation
+          path: test-results/remediation-validation/
+          if-no-files-found: warn
+
   gate:
     name: Static gate (crash + load classes)
     runs-on: windows-latest

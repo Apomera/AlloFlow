@@ -2066,8 +2066,13 @@ window.StemLab = window.StemLab || {
               { id: 'word', label: __alloT('stem.money.word_problems', '\uD83D\uDCDD Word Problems'), icon: '\uD83D\uDCDD' },
               { id: 'exchange', label: __alloT('stem.money.currency_exchange', '\uD83C\uDF0D Currency Exchange'), icon: '\uD83C\uDF0D' },
               { id: 'finance', label: __alloT('stem.money.personal_finance', '\uD83D\uDCB0 Personal Finance'), icon: '\uD83D\uDCB0' },
-              { id: 'inquiry', label: __alloT('stem.money.compound_inquiry', '\uD83D\uDD2C Compound Inquiry'), icon: '\uD83D\uDD2C' }
+              { id: 'inquiry', label: __alloT("stem.money.nav_growth_explorer", "Explore interest growth"), icon: '\uD83D\uDD2C' }
             ];
+            var primaryMoneyTabs = ['coins', 'change', 'tips', 'store'];
+            // A saved or selected secondary activity remains visible when the list is shortened.
+            var visibleMoneyTabs = tabs.filter(function(item) {
+              return d.showAllActivities || primaryMoneyTabs.indexOf(item.id) !== -1 || item.id === tab;
+            });
             var moneyPanelProps = function(className) {
               return {
                 id: 'money-tool-panel',
@@ -2079,10 +2084,10 @@ window.StemLab = window.StemLab || {
             };
             var moveMoneyTab = function(event, index) {
               var next = -1;
-              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % tabs.length;
-              else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + tabs.length - 1) % tabs.length;
+              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % visibleMoneyTabs.length;
+              else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + visibleMoneyTabs.length - 1) % visibleMoneyTabs.length;
               else if (event.key === 'Home') next = 0;
-              else if (event.key === 'End') next = tabs.length - 1;
+              else if (event.key === 'End') next = visibleMoneyTabs.length - 1;
               if (next < 0) return;
               event.preventDefault();
               var tabButtons = event.currentTarget.parentNode.querySelectorAll('[role="tab"]');
@@ -2512,13 +2517,22 @@ window.StemLab = window.StemLab || {
                 )
               ),
 
-              // ── TAB BAR ──
               renderMoneyStudioFocus(),
 
-              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 bg-slate-100 rounded-xl p-1", role: 'tablist', 'aria-label': __alloT('stem.money.money_tool_sections', 'Money Tool sections') },
-                tabs.map(function (t, tabIndex) {
+              // ── TAB BAR ──
+
+              React.createElement('div', { className: 'flex items-center justify-between gap-2 flex-wrap', 'data-money-activity-heading': true },
+                React.createElement('span', { className: 'text-sm font-bold', style: { color: ctx.isContrast ? '#ffffff' : '#334155' } }, __alloT("stem.money.nav_choose_activity", "Choose an activity")),
+                React.createElement('button', { type: 'button', 'data-money-more-activities': true, 'aria-expanded': !!d.showAllActivities, 'aria-controls': 'money-activity-list',
+                  onClick: function() { upd('showAllActivities', !d.showAllActivities); },
+                  className: 'rounded-lg border px-3 py-2 text-xs font-bold underline focus:outline-none focus:ring-2 focus:ring-emerald-500',
+                  style: { minHeight: 44, background: ctx.isContrast ? '#000000' : '#ffffff', color: ctx.isContrast ? '#ffffff' : '#065f46', borderColor: ctx.isContrast ? '#ffffff' : '#64748b' }
+                }, d.showAllActivities ? __alloT("stem.money.nav_show_fewer", "Show fewer activities") : __alloT("stem.money.nav_show_all", "Show all activities") + ' (' + tabs.length + ')')
+              ),
+              React.createElement("div", { id: 'money-activity-list', className: "gap-1 bg-slate-100 rounded-xl p-1", style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }, role: 'tablist', 'aria-label': __alloT('stem.money.money_tool_sections', 'Money Tool sections') },
+                visibleMoneyTabs.map(function (t, tabIndex) {
                   return React.createElement("button", { key: t.id, id: 'money-tool-tab-' + t.id, onClick: function () { upd('tab', t.id); }, onKeyDown: function(event) { moveMoneyTab(event, tabIndex); }, role: 'tab', 'aria-selected': tab === t.id, 'aria-controls': 'money-tool-panel', tabIndex: tab === t.id ? 0 : -1,
-                    className: "min-h-[42px] px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-700 hover:text-emerald-700 hover:bg-white/60')
+                    style: { minHeight: 44 }, className: "px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-700 hover:text-emerald-700 hover:bg-white/60')
                   }, t.label);
                 })
               ),

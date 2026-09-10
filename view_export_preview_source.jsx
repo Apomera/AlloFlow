@@ -3438,13 +3438,14 @@ function _builderNormalizeQuickAccessItems(value) {
 }
 
 function _readBuilderViewPreferences() {
-  const defaults = { zoom: 100, zoomMode: 'custom', pageView: true, pageSize: 'letter', pageOrientation: 'portrait', pageMargin: '1in', navigationPane: false, navigationTab: 'headings', navigationWidth: 248, ribbonTab: 'home', ribbonCollapsed: false, trackedMarkupView: 'all', revisionBalloons: false, reviewerName: 'You', quickAccess: [..._BUILDER_QUICK_ACCESS_DEFAULT] };
+  const defaults = { zoom: 100, zoomMode: 'fit-width', settingsOpen: false, pageView: true, pageSize: 'letter', pageOrientation: 'portrait', pageMargin: '1in', navigationPane: false, navigationTab: 'headings', navigationWidth: 248, ribbonTab: 'home', ribbonCollapsed: true, trackedMarkupView: 'all', revisionBalloons: false, reviewerName: 'You', quickAccess: [..._BUILDER_QUICK_ACCESS_DEFAULT] };
   if (typeof window === 'undefined') return defaults;
   try {
     const stored = JSON.parse(window.localStorage.getItem(_BUILDER_VIEW_PREFS_KEY) || 'null') || {};
     return {
       zoom: _builderClampEditorZoom(stored.zoom || defaults.zoom),
       zoomMode: ['custom', 'fit-width', 'fit-page'].includes(stored.zoomMode) ? stored.zoomMode : defaults.zoomMode,
+      settingsOpen: stored.settingsOpen === true,
       pageView: typeof stored.pageView === 'boolean' ? stored.pageView : defaults.pageView,
       pageSize: ['letter', 'legal', 'a4'].includes(stored.pageSize) ? stored.pageSize : defaults.pageSize,
       pageOrientation: ['portrait', 'landscape'].includes(stored.pageOrientation) ? stored.pageOrientation : defaults.pageOrientation,
@@ -3750,19 +3751,62 @@ function _builderKeyboardTargets(container) {
 }
 
 const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
-.allo-docsuite .builder-dialog { height:95vh; height:95dvh; min-height:0; }
-.allo-docsuite .builder-dialog[data-builder-focus="true"] { height:100%; }
-.allo-docsuite .builder-mobile-switch { display:none; }
+.allo-docsuite .builder-dialog { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); width:100%; height:100vh; height:100dvh; min-height:0; max-width:none; max-height:none; overflow:hidden; }
+.allo-docsuite .builder-dialog[data-builder-settings-open="true"] { grid-template-columns:minmax(0,1fr) 20rem; }
+.allo-docsuite .builder-workspace-header { grid-row:1; grid-column:1 / -1; display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; padding:.5rem .75rem; min-width:0; position:relative; z-index:100; }
+.allo-docsuite .builder-document-heading { min-width:0; flex:1 1 12rem; }
+.allo-docsuite .builder-workspace-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; }
+.allo-docsuite .builder-settings-panel { display:none; grid-row:2; grid-column:2; min-height:0; overflow:auto; overscroll-behavior:contain; }
+.allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; }
+.allo-docsuite .builder-editor-pane { grid-row:2; grid-column:1; min-width:0; min-height:0; overflow:hidden; position:relative; }
 .allo-docsuite .builder-preview-shell { display:flex; min-height:0; }
 .allo-docsuite .builder-preview-frame { display:block; flex:1; min-height:0; }
-@media (max-width:1023px) {
-  .allo-docsuite .builder-dialog { overflow:hidden; }
-  .allo-docsuite .builder-mobile-switch { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-shrink:0; padding:.5rem .75rem; border-bottom:1px solid #cbd5e1; background:#fff; }
-  .allo-docsuite .builder-settings-panel { display:none; }
-  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { display:block; flex:1 1 0; min-height:0; width:100%; overflow:auto; }
-  .allo-docsuite .builder-editor-pane { min-height:0; overflow-x:hidden; overflow-y:auto; }
+.allo-docsuite .builder-controls { position:relative; flex-shrink:0; z-index:70; }
+.allo-docsuite .builder-command-bar { display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; padding:.35rem .5rem; }
+.allo-docsuite .builder-compact-format { display:flex; align-items:center; gap:.15rem; }
+.allo-docsuite .builder-compact-format select { max-width:9rem; }
+.allo-docsuite .builder-ribbon-tabs { margin-left:auto; }
+.allo-docsuite .builder-ribbon-tabs button { min-height:2rem; }
+.allo-docsuite .builder-tool-tray { position:absolute; top:100%; right:.5rem; width:min(52rem,calc(100% - 1rem)); max-height:min(60dvh,32rem); overflow:auto; overscroll-behavior:contain; border-radius:0 0 .75rem .75rem; }
+.allo-docsuite .builder-tray-heading { position:sticky; top:0; z-index:90; }
+.allo-docsuite .builder-tool-tray [role="tabpanel"] { min-width:0; }
+.allo-docsuite .builder-header-menu { position:relative; }
+.allo-docsuite .builder-export-panel { position:absolute; top:calc(100% + .5rem); right:0; width:21rem; max-width:calc(100vw - 1.5rem); max-height:calc(100dvh - 8rem); overflow:auto; overscroll-behavior:contain; padding:.75rem; display:flex; flex-direction:column; gap:.65rem; }
+.allo-docsuite .builder-export-panel .allo-builder-export-formats { position:static; width:100%; max-width:100%; max-height:none; overflow:visible; }
+.allo-docsuite .builder-status-popover { width:22rem; max-width:calc(100vw - 1.5rem); z-index:95; max-height:50dvh; overflow:auto; }
+.allo-docsuite .builder-dialog [hidden] { display:none !important; }
+.allo-docsuite .builder-dialog[data-builder-focus="true"] #document-builder-navigation,
+.allo-docsuite .builder-dialog[data-builder-focus="true"] #document-builder-advanced-review { display:none; }
+.allo-docsuite .builder-dialog [aria-label="Document status bar"] { padding:.25rem .75rem; }
+.allo-docsuite .builder-dialog [aria-label="Document status bar"] input[type="range"] { width:4.5rem; }
+@media(max-width:1023px) {
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] { grid-template-columns:minmax(0,1fr); }
+  .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-settings-panel { grid-column:1; }
   .allo-docsuite .builder-dialog[data-builder-settings-open="true"] > .builder-editor-pane { display:none; }
-  .allo-docsuite .builder-preview-stage { flex:1 0 22rem; min-height:22rem; }
+  .allo-docsuite .builder-ribbon-tabs { margin-left:0; }
+  .allo-docsuite .builder-tool-tray { right:0; width:100%; max-height:55dvh; }
+}
+@media(max-width:639px) {
+  .allo-docsuite .builder-document-heading { flex-basis:100%; }
+  .allo-docsuite .builder-workspace-header { gap:.25rem; padding:.35rem .5rem; }
+  .allo-docsuite .builder-workspace-actions { width:100%; justify-content:space-between; gap:.1rem; }
+  .allo-docsuite .builder-workspace-actions > button { padding-left:.35rem; padding-right:.35rem; }
+  .allo-docsuite .builder-header-menu { position:static; }
+  .allo-docsuite .builder-export-panel { right:.5rem; top:100%; max-height:calc(100dvh - 9rem); }
+  .allo-docsuite .builder-ribbon-tabs { width:100%; gap:0; }
+  .allo-docsuite .builder-ribbon-toggle { display:none; }
+  .allo-docsuite .builder-ribbon-tabs button { padding-left:.5rem; padding-right:.5rem; }
+  .allo-docsuite .builder-status-details { position:static; }
+  .allo-docsuite .builder-status-popover { left:.5rem; bottom:5rem; }
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] { position:relative; gap:.1rem; }
+}
+@media(pointer:coarse) {
+  .allo-docsuite .builder-workspace-header button, .allo-docsuite .builder-workspace-header summary,
+  .allo-docsuite .builder-command-bar button, .allo-docsuite .builder-command-bar select,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] button,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] select,
+  .allo-docsuite .builder-dialog [aria-label="Document status bar"] summary { min-height:44px; }
+  .allo-docsuite .builder-compact-format button { min-width:36px; }
 }
 `;
 
@@ -3997,7 +4041,7 @@ function ExportPreviewView(props) {
   const [versionComparison, setVersionComparison] = React.useState(null);
   const [preflightResult, setPreflightResult] = React.useState(null);
   const [isFocusMode, setIsFocusMode] = React.useState(false);
-  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(false);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = React.useState(() => (typeof window === 'undefined' || !window.matchMedia?.('(max-width:1023px)').matches) && _readBuilderViewPreferences().settingsOpen);
   const mobileSettingsButtonRef = React.useRef(null);
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
@@ -4183,13 +4227,14 @@ function ExportPreviewView(props) {
 
   const resetBuilderViewPreferences = React.useCallback(() => {
     setEditorZoom(100);
-    setEditorZoomMode('custom');
+    setEditorZoomMode('fit-width');
+    setMobileSettingsOpen(false);
     setEditorPageView(true);
     setShowNavigationPane(false);
     setNavigationPaneTab('headings');
     setNavigationPaneWidth(248);
     setActiveRibbonTab('home');
-    setRibbonCollapsed(false);
+    setRibbonCollapsed(true);
     setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT]);
     setTrackedMarkupView('all');
     setShowRevisionBalloons(false);
@@ -4216,6 +4261,8 @@ function ExportPreviewView(props) {
   }, [isFocusMode]);
 
   const openFindTools = React.useCallback((mode = 'find') => {
+    setBuilderFocusMode(false);
+    setMobileSettingsOpen(false);
     setActiveRibbonTab('review');
     setRibbonCollapsed(false);
     try {
@@ -4226,7 +4273,7 @@ function ExportPreviewView(props) {
         if (input) { input.focus(); input.select?.(); }
       }, 0);
     } catch (_) {}
-  }, []);
+  }, [setBuilderFocusMode]);
 
   React.useEffect(() => {
     const root = document.documentElement;
@@ -4247,6 +4294,13 @@ function ExportPreviewView(props) {
       if (!document.fullscreenElement && isFocusMode) setIsFocusMode(false);
     };
     const onFocusExit = () => setBuilderFocusMode(false);
+    const onDismissTools = () => {
+      const dialog = exportDialogRef.current;
+      const menu = dialog?.querySelector('#builder-export-menu[open]');
+      if (menu) { menu.open = false; menu.querySelector('summary')?.focus(); return; }
+      setRibbonCollapsed(true);
+      dialog?.querySelector('.builder-ribbon-tabs [aria-selected="true"]')?.focus();
+    };
     const onOpenFind = (event) => openFindTools(event?.detail?.mode === 'replace' ? 'replace' : 'find');
     const onShortcut = (event) => {
       const target = event.target;
@@ -4274,26 +4328,49 @@ function ExportPreviewView(props) {
     };
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('alloflow-builder-exit-focus', onFocusExit);
+    document.addEventListener('alloflow-builder-dismiss-tools', onDismissTools);
     document.addEventListener('alloflow-builder-open-find', onOpenFind);
     document.addEventListener('keydown', onShortcut);
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('alloflow-builder-exit-focus', onFocusExit);
+      document.removeEventListener('alloflow-builder-dismiss-tools', onDismissTools);
       document.removeEventListener('alloflow-builder-open-find', onOpenFind);
       document.removeEventListener('keydown', onShortcut);
     };
   }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
 
+  const closeBuilderSettings = React.useCallback(() => {
+    setMobileSettingsOpen(false);
+    window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+  }, []);
+  const closeBuilderMenu = React.useCallback((menu, restoreFocus = true) => {
+    if (!menu) return;
+    menu.open = false;
+    if (restoreFocus) menu.querySelector('summary')?.focus();
+  }, []);
+  const handleBuilderMenuEscape = React.useCallback((event) => {
+    // Let nested menus close themselves first.
+    if (event.key !== 'Escape' || !event.currentTarget.open || event.target.closest('details[open]') !== event.currentTarget) return;
+    event.preventDefault(); event.stopPropagation(); closeBuilderMenu(event.currentTarget);
+  }, [closeBuilderMenu]);
   React.useEffect(() => {
-    if (!showExportPreview) { setMobileSettingsOpen(false); return undefined; }
-    const narrow = window.matchMedia('(max-width:1023px)');
-    const onResize = () => {
-      if (!narrow.matches) setMobileSettingsOpen(false);
-      else if (document.activeElement?.closest?.('#builder-settings-panel')) mobileSettingsButtonRef.current?.focus();
+    if (!showExportPreview || !mobileSettingsOpen || isFocusMode) return;
+    if (window.matchMedia('(max-width:1023px)').matches) {
+      const timer = window.setTimeout(() => document.querySelector('#builder-settings-panel button')?.focus(), 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, [showExportPreview, mobileSettingsOpen, isFocusMode]);
+  React.useEffect(() => {
+    if (!showExportPreview) return;
+    const closeOutsideMenu = (event) => {
+      exportDialogRef.current?.querySelectorAll('#builder-export-menu[open], .builder-status-details[open], #builder-quick-access-customize[open]').forEach((menu) => {
+        if (!menu.contains(event.target)) closeBuilderMenu(menu, false);
+      });
     };
-    narrow.addEventListener('change', onResize);
-    return () => narrow.removeEventListener('change', onResize);
-  }, [showExportPreview]);
+    document.addEventListener('pointerdown', closeOutsideMenu, true);
+    return () => document.removeEventListener('pointerdown', closeOutsideMenu, true);
+  }, [showExportPreview, closeBuilderMenu]);
 
   const closeImageDialog = React.useCallback(() => {
     imageInsertRunRef.current += 1;
@@ -4314,9 +4391,14 @@ function ExportPreviewView(props) {
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        if (dialog.getAttribute('data-builder-settings-open') === 'true' && window.matchMedia('(max-width:1023px)').matches) {
+        if (dialog.getAttribute('data-builder-settings-open') === 'true') {
           event.stopPropagation(); setMobileSettingsOpen(false);
           window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
+        } else if (dialog.getAttribute('data-builder-focus') === 'true') {
+          setBuilderFocusMode(false);
+        } else if (!dialog.querySelector('#builder-tool-tray')?.hidden) {
+          setRibbonCollapsed(true);
+          dialog.querySelector('[role="tab"][aria-selected="true"]')?.focus();
         } else setShowExportPreview(false);
         return;
       }
@@ -4329,7 +4411,7 @@ function ExportPreviewView(props) {
     };
     dialog.addEventListener('keydown', onKeyDown);
     return () => dialog.removeEventListener('keydown', onKeyDown);
-  }, [showExportPreview, pendingImageFile, setShowExportPreview]);
+  }, [showExportPreview, pendingImageFile, setShowExportPreview, setBuilderFocusMode]);
 
   React.useEffect(() => {
     if (!pendingImageFile) return undefined;
@@ -4623,13 +4705,14 @@ function ExportPreviewView(props) {
         navigationWidth: navigationPaneWidth,
         ribbonTab: activeRibbonTab,
         ribbonCollapsed,
+        settingsOpen: mobileSettingsOpen,
         quickAccess: quickAccessItems,
         trackedMarkupView,
         revisionBalloons: showRevisionBalloons,
         reviewerName,
       }));
     } catch (_) {}
-  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed, quickAccessItems, trackedMarkupView, showRevisionBalloons, reviewerName]);
+  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed, mobileSettingsOpen, quickAccessItems, trackedMarkupView, showRevisionBalloons, reviewerName]);
   React.useEffect(() => {
     try { window.localStorage.setItem(_BUILDER_CUSTOM_STYLES_KEY, JSON.stringify(_builderNormalizeCustomStyles(customBuilderStyles))); } catch (_) {}
   }, [customBuilderStyles]);
@@ -8045,7 +8128,7 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className={`allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center ${isFocusMode ? 'p-0' : 'p-4'}`} role="presentation"
+          <div className={`allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-0`} role="presentation"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
             <style>{_BUILDER_RESPONSIVE_LAYOUT_CSS}</style>
             {pendingImageFile && (
@@ -8074,7 +8157,7 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div data-help-key="doc_builder_document" data-builder-focus={isFocusMode ? 'true' : 'false'} data-builder-settings-open={mobileSettingsOpen ? 'true' : 'false'} ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div data-help-key="doc_builder_document" data-builder-focus={isFocusMode ? 'true' : 'false'} data-builder-settings-open={mobileSettingsOpen && !isFocusMode ? 'true' : 'false'} ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 rounded-none max-w-none max-h-none h-full`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {editingCitationId && (
                 <form ref={citationEditorRef} id="builder-citation-editor" data-builder-citation-editor="1" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-citation-editor-title" aria-describedby="builder-citation-editor-help" onSubmit={saveCitationEdit} className="absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
                   <div className="flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2">
@@ -8131,15 +8214,570 @@ function ExportPreviewView(props) {
                   </div>
                 </form>
               )}
-              <div className="builder-mobile-switch">
-                <button ref={mobileSettingsButtonRef} type="button" aria-controls="builder-settings-panel" aria-expanded={mobileSettingsOpen}
-                  onClick={() => setMobileSettingsOpen((open) => !open)}
-                  className="min-h-9 rounded border border-indigo-600 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50">
-                  {mobileSettingsOpen ? 'Back to document' : 'Document settings'}
-                </button>
-                <button type="button" onClick={() => setShowExportPreview(false)} aria-label={t('a11y.close_doc_builder') || 'Close Document Builder'}
-                  className="min-h-9 rounded px-3 py-1 text-xs font-bold text-slate-700 hover:bg-red-50">Close</button>
-              </div>
+              <header className="builder-workspace-header bg-white border-b border-slate-200">
+                <div className="builder-document-heading">
+                  <h2 id="document-builder-title" className="text-[11px] font-semibold text-slate-600">{isAdvancedReview ? 'Review Studio' : 'Document Builder'}</h2>
+                  <h3 id="builder-current-document-title" className="truncate text-sm font-bold text-slate-800" title={previewDocumentTitle}>{previewDocumentTitle}</h3>
+                </div>
+                <div className="builder-workspace-actions">
+                  <button ref={mobileSettingsButtonRef} type="button" aria-controls="builder-settings-panel" aria-expanded={mobileSettingsOpen && !isFocusMode}
+                    onClick={() => { if (isFocusMode) { setBuilderFocusMode(false); setMobileSettingsOpen(true); } else setMobileSettingsOpen((open) => !open); }}
+                    className="min-h-9 rounded px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50">Document settings</button>
+                    <button type="button" onClick={() => setBuilderFocusMode()} aria-pressed={isFocusMode}
+                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${isFocusMode ? 'bg-indigo-700 text-white shadow-sm' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'}`}
+                      title={isFocusMode ? 'Exit focus mode and restore the settings panel' : 'Hide settings for a distraction-free drafting surface'}>
+                      <span aria-hidden="true">{isFocusMode ? '↙' : '↗'}</span> {isFocusMode ? 'Exit focus' : 'Focus mode'}
+                    </button>
+
+                  <details id="builder-export-menu" className="builder-header-menu" onKeyDownCapture={handleBuilderMenuEscape}>
+                    <summary className="min-h-9 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 cursor-pointer list-none">{exportActionBusy || altExportBusy ? 'Preparing export…' : 'Export'} <span aria-hidden="true">▾</span></summary>
+                    <div className="builder-export-panel bg-white border border-slate-300 rounded-xl shadow-xl" role="region" aria-label="Export document">
+                      <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-slate-800">Export document</h3><button type="button" onClick={(event) => closeBuilderMenu(event.currentTarget.closest('details'))} className="min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-slate-100" aria-label="Close export menu">Close</button></div>
+                    <button data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
+                      disabled={exportActionBusy || !!altExportBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
+                      aria-busy={exportActionBusy}
+                      aria-label={exportActionBusy ? 'Export in progress' : undefined}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
+                    >{/* "Download PDF" was a lie: print and worksheet mode both
+                          open the browser print window, they never download
+                          anything. Say what the button does. */}
+                      <Download size={14} /> {exportActionBusy ? 'Preparing export...' : (exportPreviewMode === 'worksheet' || exportPreviewMode === 'print')
+                        ? (t('export_preview.action_print_pdf') || 'Print / Save as PDF')
+                        : exportPreviewMode === 'html' ? (t('export_preview.action_download_html') || 'Download HTML')
+                        : exportPreviewMode === 'slides' ? (pptxLoaded ? (t('export_preview.action_export_slides') || 'Export Slides') : 'Loading...')
+                        : (t('export_preview.action_print_pdf') || 'Print / Save as PDF')}</button>
+                    {/* Slides mode: same content as an EDITABLE deck (built directly in
+                        the studio — no .pptx round trip), reorder/refine, then export
+                        PPTX from there with the alt-text gate in force. */}
+                    {exportPreviewMode === 'slides' && typeof openInAlloStudio === 'function' && (
+                      <button onClick={openInAlloStudio}
+                        className="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                        title="Open this content in Page Designer as an editable slide deck — reorder, restyle, and export PowerPoint from there.">
+                        🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
+                    )}
+                    {/* Alternative format exports */}
+                    <style>{`.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
+                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`}</style>
+                    <details className="relative" onKeyDownCapture={(event) => {
+                      if (event.key === 'Escape' && event.currentTarget.open) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.currentTarget.open = false;
+                        event.currentTarget.querySelector('summary')?.focus();
+                      }
+                    }}>
+                      <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
+                        ♿ More export formats <span className="text-[11px] text-slate-600">▾</span>
+                      </summary>
+                      <fieldset disabled={exportActionBusy || !!altExportBusy} aria-label="Additional export formats" aria-busy={!!altExportBusy} className="allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
+                        {qtiAssessments.length > 0 && <>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Assessment packages</div>
+                          {qtiAssessments.length > 1 && <select aria-label="Quiz to export as QTI" value={selectedQtiKey} onChange={(event) => setSelectedQtiKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
+                            {qtiAssessments.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `Quiz ${index + 1}`}</option>)}
+                          </select>}
+                          <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('qti')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'qti' ? 'Building QTI...' : 'QTI quiz package'}</button>
+                          <div className="px-2 text-[10px] leading-tight text-slate-500">QTI uses the selected quiz's structured questions and answers.</div>
+                        </>}
+                        {h5pActivities.length > 0 && <>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Interactive H5P</div>
+                          {h5pActivities.length > 1 && <select aria-label="Activity to export as H5P" value={selectedH5PKey} onChange={(event) => setSelectedH5PKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
+                            {h5pActivities.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `${item.type === 'quiz' ? 'Quiz' : 'Study cards'} ${index + 1}`}</option>)}
+                          </select>}
+                          <button type="button" aria-describedby="h5p-compatibility-summary" disabled={!!altExportBusy || !h5pCompatibility.ready} onClick={() => runPackageExport('h5p')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50">{altExportBusy === 'h5p' ? 'Building H5P...' : 'H5P interactive activity (.h5p)'}</button>
+                          <div id="h5p-compatibility-summary" role="status" className={`px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? (h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? 'text-amber-700' : 'text-emerald-700') : 'text-red-700'}`}>
+                            {h5pCompatibility.valid} of {h5pCompatibility.total} {h5pCompatibility.unit}{h5pCompatibility.total === 1 ? '' : 's'} ready for {h5pCompatibility.library || 'H5P'}.
+                            {h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : ''}
+                            {h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : ''}
+                            {h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : ''}
+                            {h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : ''}
+                            {h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ''}
+                          </div>
+                          <div className="px-2 text-[10px] leading-tight text-slate-500">MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.</div>
+                        </>}
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Content package</div>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('ims')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'ims' ? 'Building IMS...' : 'IMS content package'}</button>
+                        <div className="px-2 text-[10px] leading-tight text-slate-500">IMS includes the current editable Builder document.</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Reading & text</div>
+                        <button onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          // #7/#14 (export-format review): the old export tag-stripped the RAW
+                          // outerHTML — <style>/<script> BODIES and editor-chrome labels landed in
+                          // the .txt as garbage lines. Flatten a CLEANED body clone instead, with a
+                          // newline per block element so the text keeps its reading structure.
+                          let text = '';
+                          try {
+                            let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                          } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
+                          const blob = new Blob([text], { type: 'text/plain' });
+                          downloadBuilderBlob(blob, { extension: 'txt' });
+                          addToast('Plain text downloaded', 'success');
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
+                        <button onClick={async () => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          const preflight = runBuilderPreflight('markdown', false);
+                          if (preflight.errors) { addToast('Markdown export stopped: fix the blocking preflight issues first.', 'error'); return; }
+                          if (!beginAlternativeExport('markdown')) return;
+                          try {
+                            const root = _builderCleanMarkdownRoot(doc);
+                            const math = Array.from(root.querySelectorAll('math'));
+                            let spokenByBlock = null;
+                            if (math.length) {
+                              try {
+                                if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
+                                if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map(node => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8000 })));
+                              } catch (_) {}
+                            }
+                            const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
+                            downloadBuilderBlob(new Blob([result.markdown], { type: 'text/markdown;charset=utf-8' }), { extension: 'md' });
+                            addToast(result.warnings.length ? result.warnings.join(' ') : 'Markdown prepared from the current document.', result.warnings.length ? 'warning' : 'success');
+                          } catch (error) { addToast('Markdown export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { finishAlternativeExport(); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
+                        <button disabled={!!altExportBusy} onClick={async () => {
+                          if (altExportBusy) return;
+                          if (!beginAlternativeExport('notebooklm')) return;
+                          // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
+                          // structured lesson `history` (front matter + one ## section per resource,
+                          // quiz answer keys, glossary/outline/timeline), falling back to converting
+                          // the rendered preview HTML when no structured lesson is loaded. Copy to
+                          // clipboard (NotebookLM's lowest-friction "paste a source" path) AND download
+                          // a .md (for the "upload a source" path) — whichever the user prefers.
+                          try {
+                            const doc = exportPreviewRef.current?.contentDocument;
+                            const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
+                            const today = new Date().toISOString().split('T')[0];
+                            const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
+                            const esc = (v) => (v == null ? '' : String(v));
+                            const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
+                            if (items.length && !hasLiveEdits) {
+                              items.forEach(it => {
+                                const ty = it.type, d = it.data;
+                                out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
+                                if (typeof d === 'string') { out.push(d.trim(), ''); }
+                                else if (ty === 'glossary' && Array.isArray(d)) {
+                                  d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
+                                    if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(t => esc(t)).join(' / '));
+                                    if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology)); });
+                                  out.push('');
+                                }
+                                else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
+                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
+                                    (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
+                                  // Answer-key gating (export-format review #13, 2026-07-01): this export
+                                  // travels — students, shared drives, NotebookLM — and it EMBEDDED the
+                                  // full answer key unconditionally, while the HTML pack gates keys behind
+                                  // an explicit teacher opt-in (default OFF). Same rule here: include only
+                                  // when exportConfig.includeAnswerKey is explicitly true; otherwise say
+                                  // where the key lives so teachers aren't surprised.
+                                  // 2026-07-01 (Aaron decision): the visible "📎 Teacher Answer Key"
+                                  // checkbox in Export Options now controls this too (default OFF), so
+                                  // the toggle is discoverable without a config file. Assessment mode
+                                  // wins if both are set.
+                                  if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
+                                    out.push('### Answer Key', '');
+                                    d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                                      out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
+                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
+                                    out.push('');
+                                  } else {
+                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
+                                  }
+                                }
+                                else if (ty === 'outline' && d && Array.isArray(d.branches)) {
+                                  if (d.main) out.push('**' + esc(d.main) + '**', '');
+                                  d.branches.forEach(b => { if (!b) return; out.push('- ' + esc(b.title));
+                                    if (Array.isArray(b.items)) b.items.forEach(s => out.push('  - ' + esc(s))); });
+                                  out.push('');
+                                }
+                                else if (ty === 'timeline' && Array.isArray(d)) {
+                                  d.forEach(e => { if (e) out.push('- **' + esc(e.date) + ':** ' + esc(e.event)); }); out.push('');
+                                }
+                                else if (ty === 'concept-sort' && d && Array.isArray(d.categories)) {
+                                  const its = Array.isArray(d.items) ? d.items : [];
+                                  d.categories.forEach(c => { if (!c) return; out.push('### ' + esc(c.label));
+                                    its.filter(x => x && x.categoryId === c.id).forEach(x => out.push('- ' + esc(x.content))); out.push(''); });
+                                }
+                                else if (ty === 'memory-aid' && d && typeof d === 'object') {
+                                  // Memory Aid Studio: a structured section, never the raw object (it carries the
+                                  // private source excerpt, lesson snippet, and visuals). Facts are labelled by the
+                                  // module's shared review rule and read as unverified when the module is absent.
+                                  const maRules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules) || null;
+                                  const maT = (key, fallback) => { const fullKey = 'memory_aid.' + key; try { const v = typeof t === 'function' ? t(fullKey) : ''; if (typeof v === 'string' && v && v !== fullKey) return v; } catch (_) {} return fallback; };
+                                  if (d.instructions) out.push(esc(d.instructions), '');
+                                  const maCards = Array.isArray(d.cards) ? d.cards : (d.cards && typeof d.cards === 'object' ? Object.values(d.cards) : []);
+                                  maCards.slice(0, 8).forEach((c, ci) => {
+                                    if (!c || typeof c !== 'object') return;
+                                    out.push('### ' + (ci + 1) + '. ' + esc(c.target || maT('memory_target', 'Memory target')), '');
+                                    const cueBlock = maRules && typeof maRules.cueBlock === 'function' ? maRules.cueBlock(c) : null;
+                                    const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
+                                    if (cue) out.push('**' + maT('export_memory_cue_label', 'Memory cue:') + '** ' + esc(cue), '');
+                                    // Exactly one rung is filled, so a card with no drafted
+                                    // cue still reaches the notebook with something to study.
+                                    if (cueBlock && cueBlock.steps.length) {
+                                      out.push('**' + maT('scaffold_heading', 'Build it with support') + ':**');
+                                      cueBlock.steps.forEach((step, si) => out.push((si + 1) + '. ' + esc(step)));
+                                      out.push('');
+                                    }
+                                    if (cueBlock && cueBlock.visualDescription) out.push('**' + maT('export_visual_cue_described', 'Picture cue, described:') + '** ' + esc(cueBlock.visualDescription), '');
+                                    if (cueBlock && cueBlock.prompts.length) {
+                                      out.push('**' + maT('coach_heading', 'Coach questions') + ':**');
+                                      cueBlock.prompts.forEach(prompt => out.push('- ' + esc(prompt)));
+                                      out.push('');
+                                    }
+                                    const verified = !!(maRules && typeof maRules.isCardVerified === 'function' && maRules.isCardVerified(c));
+                                    out.push('**' + (verified ? maT('facts_student_heading', 'Facts to remember') : maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + ':**');
+                                    (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach(f => { if (f) out.push('- ' + esc(f)); });
+                                    if (c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
+                                    const hook = maRules && typeof maRules.hookFact === 'function' ? maRules.hookFact(c) : null;
+                                    if (hook) {
+                                      // The lane-wide esc is a pass-through, so escape the
+                                      // markdown metacharacters here and percent-encode the
+                                      // URL: a ')' in a grounding link truncated the citation
+                                      // and a '[x](y)' in the text pasted in as a live link.
+                                      const mdText = String(hook.text || '').replace(/([\\`*_[\]()~>#+=|{}!-])/g, '\\$1');
+                                      const mdUrl = String(hook.sourceUrl || '').replace(/[()\[\]\s]/g, encodeURIComponent);
+                                      const mdTitle = String(hook.sourceTitle || hook.sourceUrl || '').replace(/([\\`*_[\]()~])/g, '\\$1');
+                                      const cite = hook.webVerified && mdUrl
+                                        ? ' (' + maT('hook_from_web_note', 'From the web. Check the source:') + ' [' + mdTitle + '](' + mdUrl + ')'
+                                            + (hook.sourceHost && hook.sourceTitle ? ' \u00b7 ' + maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost) : '') + ')'
+                                        : ' (' + maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + ')';
+                                      out.push('', '**' + maT('hook_heading', 'Did you know?') + '** ' + mdText + cite);
+                                    }
+                                    out.push('');
+                                  });
+                                }
+                                else if (ty === 'image' && d && d.prompt) { out.push('_Image: ' + esc(d.prompt) + '_', ''); }
+                                else {
+                                  const tx = (d && (d.text || d.content || d.summary)) || '';
+                                  if (tx) out.push(esc(tx).trim(), '');
+                                  else if (d && typeof d === 'object') {
+                                    // Object-shaped resource without a dedicated section: use the shared deny-listed
+                                    // summarizer (no source excerpts, learner evidence, or media), never an empty heading.
+                                    const eh = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportHandlers) || null;
+                                    const lines = eh && typeof eh.summarizeResourceText === 'function' ? eh.summarizeResourceText(it, { maxChars: 4000 }) : [];
+                                    if (lines.length) { lines.forEach((line) => out.push('- ' + esc(line))); out.push(''); }
+                                    else out.push('_This resource has no text export yet. Use the HTML export for the full resource._', '');
+                                  }
+                                }
+                              });
+                            } else if (doc) {
+                              const root = _builderCleanMarkdownRoot(doc);
+                              const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
+                              out.push(converted.markdown);
+                              converted.warnings.forEach(message => addToast(message, 'warning'));
+                            } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
+                            const md = out.join('\n').trim() + '\n';
+                            let copied = false;
+                            try { copied = window.alloCopyText ? await window.alloCopyText(md) : false; } catch (_) {}
+                            const blob = new Blob([md], { type: 'text/markdown' });
+                            downloadBuilderBlob(blob, { extension: 'md', suffix: '-notebooklm' });
+                            addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
+                          } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
+                          finally { finishAlternativeExport(); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50">{altExportBusy === 'notebooklm' ? 'Building NotebookLM source...' : '📓 Send to NotebookLM (.md)'}</button>
+                        <button disabled={!!altExportBusy} onClick={async () => {
+                          const _preflight = runBuilderPreflight('epub', false);
+                          if (_preflight.errors) { addToast && addToast('ePub export stopped: fix the blocking preflight issues first.', 'error'); return; }
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
+                          if (altExportBusy) return;
+                          if (!beginAlternativeExport('epub')) return; try {
+                          // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
+                          // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
+                          // TOC — the thing low-vision readers navigate by), title always "AlloFlow
+                          // Document" and language always "en". Now: strip editor chrome, build a real
+                          // EPUB3 toc nav from the content headings (ids assigned so targets resolve),
+                          // and carry the document's actual title + language into the OPF metadata.
+                          let _clone = doc.documentElement.cloneNode(true);
+                          try {
+                            _clone = _builderFinalizeDocumentForExport(_clone);
+                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
+                            _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+                            _builderStripEditorBreakMetadata(_clone);
+                          } catch (_) {}
+                          const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                          const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
+                            _clone.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+                              try { if (/^https?:/i.test(new URL(link.getAttribute('href') || '', doc.baseURI).href)) link.remove(); } catch (_) {}
+                            });
+                            _clone.querySelectorAll('style').forEach((style) => {
+                              const css = style.textContent || '';
+                              style.textContent = css.replace(/@import\s+[^;]+;/gi, '')
+                                .replace(/@font-face\s*\{[^}]*https?:[^}]*\}/gi, '')
+                                .replace(/url\(\s*(['"]?)https?:[^)]+\)/gi, 'none');
+                            });
+                          const _rawLang = (doc.documentElement.getAttribute('lang') || 'en').trim().replace(/_/g, '-');
+                          const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : 'en';
+                          const xmlTitle = _escXml(title);
+                          // Real TOC: every h1-h3 in content order, anchored by generated ids.
+                          const _navItems = [];
+                          try {
+                            const _hs = _clone.querySelectorAll('h1, h2, h3');
+                            for (let _hi = 0; _hi < _hs.length; _hi++) {
+                              const _h = _hs[_hi];
+                              const _txt = (_h.textContent || '').replace(/\s+/g, ' ').trim().substring(0, 120);
+                              if (!_txt) continue;
+                              if (!_h.id) _h.id = 'allo-toc-' + _hi;
+                              _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + '</a></li>');
+                            }
+                          } catch (_) {}
+                          const _navList = _navItems.length ? _navItems.join('') : '<li><a href="content.xhtml">' + xmlTitle + '</a></li>';
+                          const zip = new window.JSZip();
+                          zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+                          zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+                           const _imageManifest = [];
+                           let _hasRemoteResources = false;
+                           let _unavailableRemoteImages = 0;
+                           const _replaceImageFallback = (img) => {
+                             const fallback = _clone.ownerDocument.createElement('span');
+                             fallback.setAttribute('role', 'img');
+                             const alt = (img.getAttribute('alt') || '').trim();
+                             fallback.setAttribute('aria-label', alt || 'Image unavailable in this ePub');
+                             fallback.textContent = alt ? '[Image: ' + alt + ']' : '[Image unavailable]';
+                             img.replaceWith(fallback);
+                           };
+                           const _images = Array.from(_clone.querySelectorAll('img[src]'));
+                           for (let index = 0; index < _images.length; index++) {
+                             const img = _images[index];
+                             const src = img.getAttribute('src') || '';
+                             const match = src.match(/^data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+)$/i);
+                             if (match) {
+                               const kind = match[1].toLowerCase();
+                               const ext = kind === 'jpeg' || kind === 'jpg' ? 'jpg' : kind;
+                               const mediaType = ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
+                               const path = 'images/image-' + (index + 1) + '.' + ext;
+                               zip.file('OEBPS/' + path, match[2].replace(/\s/g, ''), { base64: true });
+                               img.setAttribute('src', path);
+                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+                               continue;
+                             }
+                             try {
+                               const absolute = new URL(src, doc.baseURI).href;
+                               if (!/^https?:/i.test(absolute)) { _replaceImageFallback(img); continue; }
+                               const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
+                               const path = 'images/image-' + (index + 1) + '.' + ext;
+                               zip.file('OEBPS/' + path, bytes);
+                               img.setAttribute('src', path);
+                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+                             } catch (_) {
+                               _unavailableRemoteImages += 1;
+                               _replaceImageFallback(img);
+                             }
+                           }
+                          const _uid = 'alloflow-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+                          try {
+                            _hasRemoteResources = Array.from(_clone.querySelectorAll('audio[src],video[src],source[src],object[data]')).some((node) => {
+                              const ref = node.getAttribute('src') || node.getAttribute('data') || ''; try { return /^https?:/i.test(new URL(ref, doc.baseURI).href); } catch (_) { return false; }
+                            });
+                          } catch (_) {}
+                          const _contentProps = [];
+                          try { if (_clone.querySelector('svg')) _contentProps.push('svg'); if (_clone.querySelector('math')) _contentProps.push('mathml'); if (_hasRemoteResources) _contentProps.push('remote-resources'); } catch (_) {}
+                          const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(' ') + '"' : '';
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join('')}</manifest><spine><itemref idref="content"/></spine></package>`);
+                          // #7 (export-format review R2): serialize via XMLSerializer so content.xhtml
+                          // is well-formed XML — every void element (<meta>, <input>, <col>, <br>, <img>)
+                          // self-closed and entities encoded. The old outerHTML+regex only patched
+                          // <br>/<hr>/<img>, so a generated <meta charset> or <input> left the file
+                          // invalid and epubcheck / Apple Books / Thorium rejected it.
+                          let xhtml;
+                          try {
+                            xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
+                          } catch (_) {
+                            xhtml = _clone.outerHTML.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                          }
+                          // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
+                          // `!includes('xmlns')` check was defeated by any child xmlns (MathML/SVG from
+                          // a transcribed equation), leaving the root in no namespace so conforming
+                          // readers blank-render or reject the whole book.
+                          if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
+                          zip.file('OEBPS/content.xhtml', xhtml);
+                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
+                          const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+                          downloadBuilderBlob(blob, { extension: 'epub' });
+                          if (_unavailableRemoteImages) {
+                            addToast(`${_unavailableRemoteImages} remote image${_unavailableRemoteImages === 1 ? '' : 's'} could not be packaged and were replaced with accessible text.`, 'warning');
+                          } else {
+                            addToast('ePub downloaded', 'success');
+                          }
+                          } catch (error) { addToast && addToast('ePub export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { finishAlternativeExport(); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'epub' ? 'Building ePub...' : '📚 ePub (e-readers)'}</button>
+                        <button disabled={!!altExportBusy} onClick={async () => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          if (altExportBusy) return;
+                          if (!beginAlternativeExport('brf')) return; try {
+                          // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
+                          // were being embossed into the braille output.
+                          // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
+                          // unit) with a blank line before each heading — braille convention for a
+                          // new section — instead of the layout-driven innerText soup. Footnote refs
+                          // and emphasis remain future work; structure is the big win.
+                          let text = '';
+                          try {
+                            const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                          } catch (_) { throw new Error('Could not prepare the accepted revision view for Braille.'); }
+                          // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
+                          // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
+                          // Computer Code), NOT Unicode braille patterns — embossers and braille
+                          // displays read the ASCII bytes. Capital sign (,) before each capital;
+                          // number sign (#) before a digit run with 1-0 → A-J; standard BRF
+                          // punctuation. Pages separated by form feed.
+                          const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+                          const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
+                          const _brfSmart = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+                          const _brfOpenQuote = '\ue000', _brfCloseQuote = '\ue001';
+                          const _brfPrefix = /[#,;@_^".]$/;
+                          const _brfHardSplit = (word, into, cells) => {
+                            if (/^#[A-J14]+$/.test(word)) {
+                              while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+                              if (word) into.push(word);
+                              return;
+                            }
+                            while (word.length > cells) {
+                              let cut = cells;
+                              while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
+                              into.push(word.slice(0, cut)); word = word.slice(cut);
+                            }
+                            if (word) into.push(word);
+                          };
+                          const _brfWrap = (line, into, cells) => {
+                            if (line.length <= cells) { into.push(line); return; }
+                            const words = line.split(' '); let cur = '';
+                            for (let word of words) {
+                              if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
+                              if (!cur) cur = word;
+                              else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
+                              else { into.push(cur); cur = word; }
+                            }
+                            if (cur) into.push(cur);
+                          };
+                          const _toBRF = (src, opts) => {
+                            const cells = (opts && opts.cellsPerLine) || 40;
+                            let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
+                            norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
+                            try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+                            const out = []; let dropped = 0;
+                            for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
+                              const chars = Array.from(line); let bl = ''; let numMode = false;
+                              for (let i = 0; i < chars.length; i++) {
+                                const ch = chars[i];
+                                if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
+                                if (numMode && (ch === ',' || ch === '.')) { bl += _brfPunct[ch]; continue; }
+                                if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
+                                numMode = false;
+                                if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+                                if (ch >= 'A' && ch <= 'Z') {
+                                  let end = i;
+                                  while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+                                  const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+                                  const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+                                  if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+                                  else bl += ',' + ch;
+                                  continue;
+                                }
+                                if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+                                if (ch === _brfOpenQuote) { bl += '8'; continue; }
+                                if (ch === _brfCloseQuote) { bl += '0'; continue; }
+                                if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
+                                if (_brfPunct[ch] !== undefined) { bl += _brfPunct[ch]; continue; }
+                                dropped++;
+                              }
+                              _brfWrap(bl, out, cells);
+                            }
+                            const brf = out.join('\n');
+                            return (opts && opts.withMeta) ? { brf, dropped } : brf;
+                          };
+const _downloadBRF = (brf) => {
+                            const blob = new Blob([brf], { type: 'application/x-brf' });
+                            downloadBuilderBlob(blob, { extension: 'brf' });
+                          };
+                          // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
+                          // fall back to the shared canonical Grade-1 converter (loaded with the
+                          // same file) on ANY failure so the export is never worse than before.
+                          // 2026-07-05: nothing ever INJECTED liblouis_braille_loader.js, so
+                          // window.AlloBraille could not exist and the UEB path was dead code.
+                          // Lazy-load it on demand via the __alloLoadPlugin injector first; the
+                          // inline _toBRF above is the last-resort fallback if the load fails.
+                          const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
+                            ? Promise.resolve(true)
+                            : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
+                          await Promise.resolve(_ensureBrailleLoader).catch(() => false).then(async () => {
+                            let _g1Dropped = 0, _grade1;
+                            if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
+                              const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
+                              _grade1 = _r.brf; _g1Dropped = _r.dropped;
+                            } else { const _r = _toBRF(text, { withMeta: true }); _grade1 = _r.brf; _g1Dropped = _r.dropped; }
+                            const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
+                            if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
+                              addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                              await Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                                if (ueb && ueb.replace(/\s/g, '').length) {
+                                  _downloadBRF(ueb);
+                                  addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
+                                } else {
+                                  _downloadBRF(_grade1); _warnDrop();
+                                  addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                                }
+                              }).catch(() => {
+                                _downloadBRF(_grade1); _warnDrop();
+                                addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                              });
+                            } else {
+                              _downloadBRF(_grade1); _warnDrop();
+                              addToast('Electronic Braille (BRF) downloaded', 'success');
+                            }
+                          });
+                          } catch (error) { addToast && addToast('Braille export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { finishAlternativeExport(); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'brf' ? 'Building Braille...' : '⠿ Electronic Braille (.brf)'}</button>
+                      </fieldset>
+                    </details>
+                    </div>
+                  </details>
+                    <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
+
+                  <button type="button" onClick={() => setShowExportPreview(false)} aria-label={t('a11y.close_doc_builder') || 'Close Document Builder'} className="min-h-9 rounded px-2 text-xs font-bold text-slate-700 hover:bg-red-50">Close</button>
+                </div>
+                <button type="button" aria-controls="document-builder-preview" onClick={() => exportPreviewRef.current?.focus()} className="sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white">Skip to editable preview</button>
+
+                    {/* Editing toolbar */}
+                    <input ref={imageFileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (!file) return;
+                        const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+                        if (!allowedTypes.has(String(file.type || '').toLowerCase())) {
+                          addToast && addToast('Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.', 'error');
+                          return;
+                        }
+                        if (file.size > 8 * 1024 * 1024) {
+                          addToast && addToast('That image is larger than 8 MB. Resize or compress it before inserting.', 'error');
+                          return;
+                        }
+                        setImageAltText('');
+                        setImageDecorative(false);
+                        setImageAltError('');
+                        setPendingImageFile(file);
+                      }} />
+
+              </header>
               {/* Left Panel — Settings */}
               <div id="builder-settings-panel" role="region" aria-label="Document settings"
                 onKeyDownCapture={(event) => {
@@ -8148,15 +8786,12 @@ function ExportPreviewView(props) {
                   setMobileSettingsOpen(false);
                   window.setTimeout(() => mobileSettingsButtonRef.current?.focus(), 0);
                 }}
-                className={`builder-settings-panel ${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
-                <div className="flex items-center justify-between mb-1">
-                  <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">{isAdvancedReview ? 'Review Studio' : 'Document Builder'}</h2>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
-                    <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
-                  </div>
+                className="builder-settings-panel bg-gradient-to-b from-slate-50 to-white border-l border-slate-200 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-slate-800">Document settings</h3>
+                  <button type="button" onClick={closeBuilderSettings} className="min-h-9 rounded px-2 text-xs font-bold text-indigo-800 hover:bg-indigo-50">Back to document</button>
                 </div>
+                <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
                 {Array.isArray(builderResourceIds) && exportPreviewSource === 'history' && <p role="status" className="rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950">{(t('guided.export_scope_label') || 'Current lesson: {count} selected resources.').replace('{count}', builderResourceIds.length)}{history.length === 0 && <span className="block">{t('guided.export_resources_missing') || 'This lesson has no available resources, or some are missing. Review History before opening its package.'}</span>}</p>}
                 {exportPreviewSource === 'remediation' && (
                   <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1" role="group" aria-label="Document Builder workspace">
@@ -8164,7 +8799,6 @@ function ExportPreviewView(props) {
                     <button type="button" onClick={() => setBuilderWorkspaceMode?.('advanced-review')} aria-pressed={isAdvancedReview} className={`min-h-9 rounded-md px-2 text-[11px] font-bold ${isAdvancedReview ? 'bg-indigo-700 text-white shadow-sm' : 'text-indigo-800 hover:bg-white'}`}>Advanced Review</button>
                   </div>
                 )}
-                <button type="button" aria-controls="document-builder-preview" onClick={() => exportPreviewRef.current?.focus()} className="sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white">Skip to editable preview</button>
                 {exportPreviewSource === 'remediation' && (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800" role="status">
                     <span className="font-bold">♿ {t('export_preview.remediation_banner_title') || 'Editing the remediated document.'}</span>{' '}
@@ -9215,18 +9849,31 @@ function ExportPreviewView(props) {
 
               {/* Right Panel — Live Preview with Editing */}
               <div className="builder-editor-pane flex-1 flex flex-col min-w-0 min-h-0">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="min-w-0" style={{ maxWidth: '28rem' }}>
-                      <h3 id="builder-current-document-title" className="truncate text-sm font-bold text-slate-800" title={previewDocumentTitle}>{previewDocumentTitle}</h3>
-                      <p className="text-[11px] text-slate-600" data-builder-document-context>{documentSourceLabel}{!isRemediationDocument && ' · ' + includedResourceCount + ' of ' + resourceItems.length + ' resources'}</p>
-                      <p className="text-[11px] text-slate-600" data-builder-save-status>{_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}</p>
+                <div role="status" aria-live="polite" aria-atomic="true" className={exportActionBusy || altExportBusy ? 'border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900' : 'sr-only'}>
+                  {exportActionBusy ? 'Preparing your export. Keep the builder open until it finishes.' : altExportBusy ? 'Preparing ' + altExportBusy.toUpperCase() + ' export. Keep the builder open until it finishes.' : ''}
+                </div>
+                {preflightResult && (
+                  <div className={`border-b px-3 py-2 text-xs ${preflightResult.errors ? 'bg-red-50 border-red-300 text-red-900' : preflightResult.warnings ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-green-50 border-green-300 text-green-900'}`} role="status" aria-live="polite">
+                    <div className="flex items-center gap-2">
+                      <strong>{preflightResult.errors ? 'Export blocked by preflight' : preflightResult.warnings ? 'Preflight passed with warnings' : 'Preflight passed'}</strong>
+                      <span>{preflightResult.errors} error{preflightResult.errors === 1 ? '' : 's'} / {preflightResult.warnings} warning{preflightResult.warnings === 1 ? '' : 's'}</span>
+                      <button type="button" onClick={() => setPreflightResult(null)} className="ml-auto underline font-bold">Dismiss</button>
                     </div>
-                    <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <span className="text-[11px] text-indigo-700 font-medium">{isFocusMode ? 'Focus mode · write without distractions' : 'Focus the preview and edit text directly'}</span>
-                    <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
+                    {!!preflightResult.issues.length && <details open={preflightResult.errors > 0}><summary className="cursor-pointer font-semibold">Review findings</summary><ul className="mt-1 list-disc pl-5 space-y-0.5 max-h-40 overflow-y-auto">
+                      {preflightResult.issues.map((issue, index) => <li key={issue.code + '-' + index}><strong>{issue.severity === 'error' ? 'Fix:' : 'Review:'}</strong> {issue.message}</li>)}
+                    </ul></details>}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                )}
+                {draftRecovery && (
+                  <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" role="status" aria-live="polite">
+                    <span className="font-bold">Local draft available</span>
+                    <span>{draftRecovery.title || draftDocumentTitle} · Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
+                    <button type="button" onClick={restoreLocalDraft} className="rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800">Restore draft</button>
+                    <button type="button" onClick={dismissLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
+                  </div>
+                )}
+                <div className="builder-controls" hidden={isFocusMode}>
+                  <div className="builder-command-bar bg-white border-b border-slate-200">
                     <div id="builder-quick-access-toolbar" role="toolbar" aria-label="Quick Access" className="flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm">
                       {quickAccessItems.map((itemId) => {
                         const option = _BUILDER_QUICK_ACCESS_OPTIONS.find((item) => item.id === itemId);
@@ -9260,45 +9907,50 @@ function ExportPreviewView(props) {
                         </div>
                       </details>
                     </div>
-                    <button type="button" onClick={() => {
-                      const active = showNavigationPane && navigationPaneTab === 'headings';
-                      if (active) setShowNavigationPane(false);
-                      else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
-                    }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation"
-                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === 'headings' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-700 bg-slate-100 hover:bg-slate-200'}`}
-                      title={showNavigationPane && navigationPaneTab === 'headings' ? 'Hide navigation' : 'Open heading navigation'}>
-                      <span aria-hidden="true">☷</span> Navigation
-                    </button>
-                    <button type="button" onClick={() => setBuilderFocusMode()} aria-pressed={isFocusMode}
-                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${isFocusMode ? 'bg-indigo-700 text-white shadow-sm' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'}`}
-                      title={isFocusMode ? 'Exit focus mode and restore the settings panel' : 'Hide settings for a distraction-free drafting surface'}>
-                      <span aria-hidden="true">{isFocusMode ? '↙' : '↗'}</span> {isFocusMode ? 'Exit focus' : 'Focus mode'}
-                    </button>
-                    {/* Editing toolbar */}
-                    <input ref={imageFileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = '';
-                        if (!file) return;
-                        const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
-                        if (!allowedTypes.has(String(file.type || '').toLowerCase())) {
-                          addToast && addToast('Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.', 'error');
-                          return;
-                        }
-                        if (file.size > 8 * 1024 * 1024) {
-                          addToast && addToast('That image is larger than 8 MB. Resize or compress it before inserting.', 'error');
-                          return;
-                        }
-                        setImageAltText('');
-                        setImageDecorative(false);
-                        setImageAltError('');
-                        setPendingImageFile(file);
-                      }} />
-                    <button ref={imageAddButtonRef} type="button" onClick={openImagePicker} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
-                      <ImageIcon size={12} aria-hidden="true" /> Add Image
-                    </button>
-                    <div className="w-px h-5 bg-slate-200"></div>
-                    <button onClick={toggleA11yInspect}
+
+                    <div className="builder-compact-format" role="group" aria-label="Quick formatting">
+                      <select aria-label="Paragraph style" value={formatState.namedStyle} onChange={(event) => applyBuilderStyle(event.target.value)} className="h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700">
+                        {builderStyleGallery.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                      </select>
+                      {['bold', 'italic', 'underline'].map((command) => <button key={command} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand(command)} aria-label={command === 'bold' ? 'Bold' : command === 'italic' ? 'Italic' : 'Underline'} aria-pressed={formatState[command]} className={'w-8 h-8 rounded text-sm font-bold ' + (formatState[command] ? 'bg-indigo-700 text-white' : 'text-slate-700 hover:bg-indigo-50')}><span style={{ fontStyle: command === 'italic' ? 'italic' : undefined, textDecoration: command === 'underline' ? 'underline' : undefined }}>{command[0].toUpperCase()}</span></button>)}
+                    </div>
+                <div className="builder-ribbon-tabs flex flex-wrap items-center gap-1" role="tablist" aria-label="Document Builder ribbon">
+                  {/* The Expert Workbench IS here and always has been — this tab
+                      panel mounts it unconditionally. It was called just "Expert",
+                      which reads as a difficulty setting rather than as the same
+                      named tool the remediation panel offers, so nobody found it.
+                      Same name in both places now. */}
+                  {[['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['review', 'Review'], ['view', 'View'], ['expert', isAgentRunning ? '🤖 Expert Workbench •' : '🤖 Expert Workbench']].map(([tab, label]) => {
+                    const selected = activeRibbonTab === tab;
+                    return <button key={tab} id={`builder-ribbon-tab-${tab}`} type="button" role="tab" aria-selected={selected} aria-controls={`builder-ribbon-panel-${tab}`} aria-expanded={selected && !ribbonCollapsed} tabIndex={selected ? 0 : -1}
+                      onClick={() => { setActiveRibbonTab(tab); setRibbonCollapsed(activeRibbonTab === tab ? !ribbonCollapsed : false); }}
+                      onKeyDown={(event) => {
+                        const tabs = ['home', 'insert', 'layout', 'review', 'view', 'expert'];
+                        const current = tabs.indexOf(tab);
+                        const next = event.key === 'ArrowRight' ? (current + 1) % tabs.length : event.key === 'ArrowLeft' ? (current - 1 + tabs.length) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+                        if (next < 0) return;
+                        event.preventDefault();
+                        setActiveRibbonTab(tabs[next]);
+                        setRibbonCollapsed(false);
+                        window.setTimeout(() => document.getElementById(`builder-ribbon-tab-${tabs[next]}`)?.focus(), 0);
+                      }}
+                      className={`shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white hover:text-indigo-700'}`}>{label}{tab === 'review' && preflightResult && (preflightResult.errors + preflightResult.warnings > 0) ? ` · ${preflightResult.errors + preflightResult.warnings}` : ''}</button>;
+                  })}
+                  <button type="button" onClick={() => setRibbonCollapsed((value) => !value)} aria-expanded={!ribbonCollapsed} aria-controls={`builder-ribbon-panel-${activeRibbonTab}`} className="builder-ribbon-toggle ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700" title={ribbonCollapsed ? 'Expand the ribbon' : 'Collapse the ribbon'}>{ribbonCollapsed ? 'Expand ribbon' : 'Collapse ribbon'}</button>
+                </div>
+                  </div>
+                  <div id="builder-tool-tray" className="builder-tool-tray bg-white border border-slate-300 shadow-xl" hidden={ribbonCollapsed} onKeyDownCapture={(event) => {
+                    if (event.key !== 'Escape' || event.defaultPrevented || event.target.closest('details[open]')) return;
+                    event.preventDefault(); event.stopPropagation(); setRibbonCollapsed(true);
+                    window.setTimeout(() => document.getElementById('builder-ribbon-tab-' + activeRibbonTab)?.focus(), 0);
+                  }}>
+                    <div className="builder-tray-heading flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
+                      <span className="text-xs font-bold text-slate-700">{activeRibbonTab === 'expert' ? 'Expert Workbench' : activeRibbonTab === 'home' ? 'Formatting' : activeRibbonTab.charAt(0).toUpperCase() + activeRibbonTab.slice(1)}</span>
+                      <button type="button" onClick={() => { setRibbonCollapsed(true); document.getElementById('builder-ribbon-tab-' + activeRibbonTab)?.focus(); }} className="min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-white" aria-label="Close ribbon tools">Close</button>
+                    </div>
+                {!ribbonCollapsed && activeRibbonTab === 'review' && (
+                  <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">                    <button onClick={toggleA11yInspect}
                       aria-pressed={a11yInspectMode}
                       className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
                       title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Editable badges support Enter, Space, and click.">
@@ -9331,575 +9983,8 @@ function ExportPreviewView(props) {
                         📝 Diff
                       </button>
                     )}
-                    <div className="w-px h-5 bg-slate-200"></div>
-                                        {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
-<button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
-                    <button data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
-                      disabled={exportActionBusy || !!altExportBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
-                      aria-busy={exportActionBusy}
-                      aria-label={exportActionBusy ? 'Export in progress' : undefined}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
-                    >{/* "Download PDF" was a lie: print and worksheet mode both
-                          open the browser print window, they never download
-                          anything. Say what the button does. */}
-                      <Download size={14} /> {exportActionBusy ? 'Preparing export...' : (exportPreviewMode === 'worksheet' || exportPreviewMode === 'print')
-                        ? (t('export_preview.action_print_pdf') || 'Print / Save as PDF')
-                        : exportPreviewMode === 'html' ? (t('export_preview.action_download_html') || 'Download HTML')
-                        : exportPreviewMode === 'slides' ? (pptxLoaded ? (t('export_preview.action_export_slides') || 'Export Slides') : 'Loading...')
-                        : (t('export_preview.action_print_pdf') || 'Print / Save as PDF')}</button>
-                    {/* Slides mode: same content as an EDITABLE deck (built directly in
-                        the studio — no .pptx round trip), reorder/refine, then export
-                        PPTX from there with the alt-text gate in force. */}
-                    {exportPreviewMode === 'slides' && typeof openInAlloStudio === 'function' && (
-                      <button onClick={openInAlloStudio}
-                        className="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5"
-                        title="Open this content in Page Designer as an editable slide deck — reorder, restyle, and export PowerPoint from there.">
-                        🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
-                    )}
-                    {/* Alternative format exports */}
-                    <style>{`.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
-                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`}</style>
-                    <details className="relative" onKeyDownCapture={(event) => {
-                      if (event.key === 'Escape' && event.currentTarget.open) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.currentTarget.open = false;
-                        event.currentTarget.querySelector('summary')?.focus();
-                      }
-                    }}>
-                      <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
-                        ♿ More export formats <span className="text-[11px] text-slate-600">▾</span>
-                      </summary>
-                      <fieldset disabled={exportActionBusy || !!altExportBusy} aria-label="Additional export formats" aria-busy={!!altExportBusy} className="allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
-                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
-                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
-                        {qtiAssessments.length > 0 && <>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Assessment packages</div>
-                          {qtiAssessments.length > 1 && <select aria-label="Quiz to export as QTI" value={selectedQtiKey} onChange={(event) => setSelectedQtiKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
-                            {qtiAssessments.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `Quiz ${index + 1}`}</option>)}
-                          </select>}
-                          <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('qti')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'qti' ? 'Building QTI...' : 'QTI quiz package'}</button>
-                          <div className="px-2 text-[10px] leading-tight text-slate-500">QTI uses the selected quiz's structured questions and answers.</div>
-                        </>}
-                        {h5pActivities.length > 0 && <>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Interactive H5P</div>
-                          {h5pActivities.length > 1 && <select aria-label="Activity to export as H5P" value={selectedH5PKey} onChange={(event) => setSelectedH5PKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
-                            {h5pActivities.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `${item.type === 'quiz' ? 'Quiz' : 'Study cards'} ${index + 1}`}</option>)}
-                          </select>}
-                          <button type="button" aria-describedby="h5p-compatibility-summary" disabled={!!altExportBusy || !h5pCompatibility.ready} onClick={() => runPackageExport('h5p')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50">{altExportBusy === 'h5p' ? 'Building H5P...' : 'H5P interactive activity (.h5p)'}</button>
-                          <div id="h5p-compatibility-summary" role="status" className={`px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? (h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? 'text-amber-700' : 'text-emerald-700') : 'text-red-700'}`}>
-                            {h5pCompatibility.valid} of {h5pCompatibility.total} {h5pCompatibility.unit}{h5pCompatibility.total === 1 ? '' : 's'} ready for {h5pCompatibility.library || 'H5P'}.
-                            {h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : ''}
-                            {h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : ''}
-                            {h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : ''}
-                            {h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : ''}
-                            {h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ''}
-                          </div>
-                          <div className="px-2 text-[10px] leading-tight text-slate-500">MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.</div>
-                        </>}
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Content package</div>
-                        <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('ims')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'ims' ? 'Building IMS...' : 'IMS content package'}</button>
-                        <div className="px-2 text-[10px] leading-tight text-slate-500">IMS includes the current editable Builder document.</div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Reading & text</div>
-                        <button onClick={() => {
-                          const doc = exportPreviewRef.current?.contentDocument;
-                          if (!doc) return;
-                          // #7/#14 (export-format review): the old export tag-stripped the RAW
-                          // outerHTML — <style>/<script> BODIES and editor-chrome labels landed in
-                          // the .txt as garbage lines. Flatten a CLEANED body clone instead, with a
-                          // newline per block element so the text keeps its reading structure.
-                          let text = '';
-                          try {
-                            let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
-                            _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
-                            text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-                          } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
-                          const blob = new Blob([text], { type: 'text/plain' });
-                          downloadBuilderBlob(blob, { extension: 'txt' });
-                          addToast('Plain text downloaded', 'success');
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
-                        <button onClick={async () => {
-                          const doc = exportPreviewRef.current?.contentDocument;
-                          if (!doc) return;
-                          const preflight = runBuilderPreflight('markdown', false);
-                          if (preflight.errors) { addToast('Markdown export stopped: fix the blocking preflight issues first.', 'error'); return; }
-                          if (!beginAlternativeExport('markdown')) return;
-                          try {
-                            const root = _builderCleanMarkdownRoot(doc);
-                            const math = Array.from(root.querySelectorAll('math'));
-                            let spokenByBlock = null;
-                            if (math.length) {
-                              try {
-                                if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
-                                if (window.AlloMathSpeech?.toSpeech) spokenByBlock = await Promise.all(math.map(node => window.AlloMathSpeech.toSpeech(node.outerHTML, { timeoutMs: 8000 })));
-                              } catch (_) {}
-                            }
-                            const result = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI, spokenByBlock });
-                            downloadBuilderBlob(new Blob([result.markdown], { type: 'text/markdown;charset=utf-8' }), { extension: 'md' });
-                            addToast(result.warnings.length ? result.warnings.join(' ') : 'Markdown prepared from the current document.', result.warnings.length ? 'warning' : 'success');
-                          } catch (error) { addToast('Markdown export failed: ' + (error?.message || 'unknown error'), 'error'); }
-                          finally { finishAlternativeExport(); }
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
-                          if (altExportBusy) return;
-                          if (!beginAlternativeExport('notebooklm')) return;
-                          // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
-                          // structured lesson `history` (front matter + one ## section per resource,
-                          // quiz answer keys, glossary/outline/timeline), falling back to converting
-                          // the rendered preview HTML when no structured lesson is loaded. Copy to
-                          // clipboard (NotebookLM's lowest-friction "paste a source" path) AND download
-                          // a .md (for the "upload a source" path) — whichever the user prefers.
-                          try {
-                            const doc = exportPreviewRef.current?.contentDocument;
-                            const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
-                            const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
-                            const today = new Date().toISOString().split('T')[0];
-                            const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
-                            const esc = (v) => (v == null ? '' : String(v));
-                            const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
-                            if (items.length && !hasLiveEdits) {
-                              items.forEach(it => {
-                                const ty = it.type, d = it.data;
-                                out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
-                                if (typeof d === 'string') { out.push(d.trim(), ''); }
-                                else if (ty === 'glossary' && Array.isArray(d)) {
-                                  d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
-                                    if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(t => esc(t)).join(' / '));
-                                    if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology)); });
-                                  out.push('');
-                                }
-                                else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
-                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
-                                    (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
-                                  // Answer-key gating (export-format review #13, 2026-07-01): this export
-                                  // travels — students, shared drives, NotebookLM — and it EMBEDDED the
-                                  // full answer key unconditionally, while the HTML pack gates keys behind
-                                  // an explicit teacher opt-in (default OFF). Same rule here: include only
-                                  // when exportConfig.includeAnswerKey is explicitly true; otherwise say
-                                  // where the key lives so teachers aren't surprised.
-                                  // 2026-07-01 (Aaron decision): the visible "📎 Teacher Answer Key"
-                                  // checkbox in Export Options now controls this too (default OFF), so
-                                  // the toggle is discoverable without a config file. Assessment mode
-                                  // wins if both are set.
-                                  if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
-                                    out.push('### Answer Key', '');
-                                    d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                                      out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
-                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
-                                    out.push('');
-                                  } else {
-                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
-                                  }
-                                }
-                                else if (ty === 'outline' && d && Array.isArray(d.branches)) {
-                                  if (d.main) out.push('**' + esc(d.main) + '**', '');
-                                  d.branches.forEach(b => { if (!b) return; out.push('- ' + esc(b.title));
-                                    if (Array.isArray(b.items)) b.items.forEach(s => out.push('  - ' + esc(s))); });
-                                  out.push('');
-                                }
-                                else if (ty === 'timeline' && Array.isArray(d)) {
-                                  d.forEach(e => { if (e) out.push('- **' + esc(e.date) + ':** ' + esc(e.event)); }); out.push('');
-                                }
-                                else if (ty === 'concept-sort' && d && Array.isArray(d.categories)) {
-                                  const its = Array.isArray(d.items) ? d.items : [];
-                                  d.categories.forEach(c => { if (!c) return; out.push('### ' + esc(c.label));
-                                    its.filter(x => x && x.categoryId === c.id).forEach(x => out.push('- ' + esc(x.content))); out.push(''); });
-                                }
-                                else if (ty === 'memory-aid' && d && typeof d === 'object') {
-                                  // Memory Aid Studio: a structured section, never the raw object (it carries the
-                                  // private source excerpt, lesson snippet, and visuals). Facts are labelled by the
-                                  // module's shared review rule and read as unverified when the module is absent.
-                                  const maRules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules) || null;
-                                  const maT = (key, fallback) => { const fullKey = 'memory_aid.' + key; try { const v = typeof t === 'function' ? t(fullKey) : ''; if (typeof v === 'string' && v && v !== fullKey) return v; } catch (_) {} return fallback; };
-                                  if (d.instructions) out.push(esc(d.instructions), '');
-                                  const maCards = Array.isArray(d.cards) ? d.cards : (d.cards && typeof d.cards === 'object' ? Object.values(d.cards) : []);
-                                  maCards.slice(0, 8).forEach((c, ci) => {
-                                    if (!c || typeof c !== 'object') return;
-                                    out.push('### ' + (ci + 1) + '. ' + esc(c.target || maT('memory_target', 'Memory target')), '');
-                                    const cueBlock = maRules && typeof maRules.cueBlock === 'function' ? maRules.cueBlock(c) : null;
-                                    const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
-                                    if (cue) out.push('**' + maT('export_memory_cue_label', 'Memory cue:') + '** ' + esc(cue), '');
-                                    // Exactly one rung is filled, so a card with no drafted
-                                    // cue still reaches the notebook with something to study.
-                                    if (cueBlock && cueBlock.steps.length) {
-                                      out.push('**' + maT('scaffold_heading', 'Build it with support') + ':**');
-                                      cueBlock.steps.forEach((step, si) => out.push((si + 1) + '. ' + esc(step)));
-                                      out.push('');
-                                    }
-                                    if (cueBlock && cueBlock.visualDescription) out.push('**' + maT('export_visual_cue_described', 'Picture cue, described:') + '** ' + esc(cueBlock.visualDescription), '');
-                                    if (cueBlock && cueBlock.prompts.length) {
-                                      out.push('**' + maT('coach_heading', 'Coach questions') + ':**');
-                                      cueBlock.prompts.forEach(prompt => out.push('- ' + esc(prompt)));
-                                      out.push('');
-                                    }
-                                    const verified = !!(maRules && typeof maRules.isCardVerified === 'function' && maRules.isCardVerified(c));
-                                    out.push('**' + (verified ? maT('facts_student_heading', 'Facts to remember') : maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + ':**');
-                                    (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach(f => { if (f) out.push('- ' + esc(f)); });
-                                    if (c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
-                                    const hook = maRules && typeof maRules.hookFact === 'function' ? maRules.hookFact(c) : null;
-                                    if (hook) {
-                                      // The lane-wide esc is a pass-through, so escape the
-                                      // markdown metacharacters here and percent-encode the
-                                      // URL: a ')' in a grounding link truncated the citation
-                                      // and a '[x](y)' in the text pasted in as a live link.
-                                      const mdText = String(hook.text || '').replace(/([\\`*_[\]()~>#+=|{}!-])/g, '\\$1');
-                                      const mdUrl = String(hook.sourceUrl || '').replace(/[()\[\]\s]/g, encodeURIComponent);
-                                      const mdTitle = String(hook.sourceTitle || hook.sourceUrl || '').replace(/([\\`*_[\]()~])/g, '\\$1');
-                                      const cite = hook.webVerified && mdUrl
-                                        ? ' (' + maT('hook_from_web_note', 'From the web. Check the source:') + ' [' + mdTitle + '](' + mdUrl + ')'
-                                            + (hook.sourceHost && hook.sourceTitle ? ' \u00b7 ' + maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost) : '') + ')'
-                                        : ' (' + maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + ')';
-                                      out.push('', '**' + maT('hook_heading', 'Did you know?') + '** ' + mdText + cite);
-                                    }
-                                    out.push('');
-                                  });
-                                }
-                                else if (ty === 'image' && d && d.prompt) { out.push('_Image: ' + esc(d.prompt) + '_', ''); }
-                                else {
-                                  const tx = (d && (d.text || d.content || d.summary)) || '';
-                                  if (tx) out.push(esc(tx).trim(), '');
-                                  else if (d && typeof d === 'object') {
-                                    // Object-shaped resource without a dedicated section: use the shared deny-listed
-                                    // summarizer (no source excerpts, learner evidence, or media), never an empty heading.
-                                    const eh = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportHandlers) || null;
-                                    const lines = eh && typeof eh.summarizeResourceText === 'function' ? eh.summarizeResourceText(it, { maxChars: 4000 }) : [];
-                                    if (lines.length) { lines.forEach((line) => out.push('- ' + esc(line))); out.push(''); }
-                                    else out.push('_This resource has no text export yet. Use the HTML export for the full resource._', '');
-                                  }
-                                }
-                              });
-                            } else if (doc) {
-                              const root = _builderCleanMarkdownRoot(doc);
-                              const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
-                              out.push(converted.markdown);
-                              converted.warnings.forEach(message => addToast(message, 'warning'));
-                            } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
-                            const md = out.join('\n').trim() + '\n';
-                            let copied = false;
-                            try { copied = window.alloCopyText ? await window.alloCopyText(md) : false; } catch (_) {}
-                            const blob = new Blob([md], { type: 'text/markdown' });
-                            downloadBuilderBlob(blob, { extension: 'md', suffix: '-notebooklm' });
-                            addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
-                          } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
-                          finally { finishAlternativeExport(); }
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50">{altExportBusy === 'notebooklm' ? 'Building NotebookLM source...' : '📓 Send to NotebookLM (.md)'}</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
-                          const _preflight = runBuilderPreflight('epub', false);
-                          if (_preflight.errors) { addToast && addToast('ePub export stopped: fix the blocking preflight issues first.', 'error'); return; }
-                          const doc = exportPreviewRef.current?.contentDocument;
-                          if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
-                          if (altExportBusy) return;
-                          if (!beginAlternativeExport('epub')) return; try {
-                          // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
-                          // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
-                          // TOC — the thing low-vision readers navigate by), title always "AlloFlow
-                          // Document" and language always "en". Now: strip editor chrome, build a real
-                          // EPUB3 toc nav from the content headings (ids assigned so targets resolve),
-                          // and carry the document's actual title + language into the OPF metadata.
-                          let _clone = doc.documentElement.cloneNode(true);
-                          try {
-                            _clone = _builderFinalizeDocumentForExport(_clone);
-                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
-                            _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
-                            _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-                            _builderStripEditorBreakMetadata(_clone);
-                          } catch (_) {}
-                          const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                          const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
-                            _clone.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
-                              try { if (/^https?:/i.test(new URL(link.getAttribute('href') || '', doc.baseURI).href)) link.remove(); } catch (_) {}
-                            });
-                            _clone.querySelectorAll('style').forEach((style) => {
-                              const css = style.textContent || '';
-                              style.textContent = css.replace(/@import\s+[^;]+;/gi, '')
-                                .replace(/@font-face\s*\{[^}]*https?:[^}]*\}/gi, '')
-                                .replace(/url\(\s*(['"]?)https?:[^)]+\)/gi, 'none');
-                            });
-                          const _rawLang = (doc.documentElement.getAttribute('lang') || 'en').trim().replace(/_/g, '-');
-                          const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : 'en';
-                          const xmlTitle = _escXml(title);
-                          // Real TOC: every h1-h3 in content order, anchored by generated ids.
-                          const _navItems = [];
-                          try {
-                            const _hs = _clone.querySelectorAll('h1, h2, h3');
-                            for (let _hi = 0; _hi < _hs.length; _hi++) {
-                              const _h = _hs[_hi];
-                              const _txt = (_h.textContent || '').replace(/\s+/g, ' ').trim().substring(0, 120);
-                              if (!_txt) continue;
-                              if (!_h.id) _h.id = 'allo-toc-' + _hi;
-                              _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + '</a></li>');
-                            }
-                          } catch (_) {}
-                          const _navList = _navItems.length ? _navItems.join('') : '<li><a href="content.xhtml">' + xmlTitle + '</a></li>';
-                          const zip = new window.JSZip();
-                          zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
-                          zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-                           const _imageManifest = [];
-                           let _hasRemoteResources = false;
-                           let _unavailableRemoteImages = 0;
-                           const _replaceImageFallback = (img) => {
-                             const fallback = _clone.ownerDocument.createElement('span');
-                             fallback.setAttribute('role', 'img');
-                             const alt = (img.getAttribute('alt') || '').trim();
-                             fallback.setAttribute('aria-label', alt || 'Image unavailable in this ePub');
-                             fallback.textContent = alt ? '[Image: ' + alt + ']' : '[Image unavailable]';
-                             img.replaceWith(fallback);
-                           };
-                           const _images = Array.from(_clone.querySelectorAll('img[src]'));
-                           for (let index = 0; index < _images.length; index++) {
-                             const img = _images[index];
-                             const src = img.getAttribute('src') || '';
-                             const match = src.match(/^data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+)$/i);
-                             if (match) {
-                               const kind = match[1].toLowerCase();
-                               const ext = kind === 'jpeg' || kind === 'jpg' ? 'jpg' : kind;
-                               const mediaType = ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
-                               const path = 'images/image-' + (index + 1) + '.' + ext;
-                               zip.file('OEBPS/' + path, match[2].replace(/\s/g, ''), { base64: true });
-                               img.setAttribute('src', path);
-                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
-                               continue;
-                             }
-                             try {
-                               const absolute = new URL(src, doc.baseURI).href;
-                               if (!/^https?:/i.test(absolute)) { _replaceImageFallback(img); continue; }
-                               const { bytes, mediaType, extension: ext } = await _builderFetchExportImage(absolute);
-                               const path = 'images/image-' + (index + 1) + '.' + ext;
-                               zip.file('OEBPS/' + path, bytes);
-                               img.setAttribute('src', path);
-                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
-                             } catch (_) {
-                               _unavailableRemoteImages += 1;
-                               _replaceImageFallback(img);
-                             }
-                           }
-                          const _uid = 'alloflow-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-                          try {
-                            _hasRemoteResources = Array.from(_clone.querySelectorAll('audio[src],video[src],source[src],object[data]')).some((node) => {
-                              const ref = node.getAttribute('src') || node.getAttribute('data') || ''; try { return /^https?:/i.test(new URL(ref, doc.baseURI).href); } catch (_) { return false; }
-                            });
-                          } catch (_) {}
-                          const _contentProps = [];
-                          try { if (_clone.querySelector('svg')) _contentProps.push('svg'); if (_clone.querySelector('math')) _contentProps.push('mathml'); if (_hasRemoteResources) _contentProps.push('remote-resources'); } catch (_) {}
-                          const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(' ') + '"' : '';
-                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join('')}</manifest><spine><itemref idref="content"/></spine></package>`);
-                          // #7 (export-format review R2): serialize via XMLSerializer so content.xhtml
-                          // is well-formed XML — every void element (<meta>, <input>, <col>, <br>, <img>)
-                          // self-closed and entities encoded. The old outerHTML+regex only patched
-                          // <br>/<hr>/<img>, so a generated <meta charset> or <input> left the file
-                          // invalid and epubcheck / Apple Books / Thorium rejected it.
-                          let xhtml;
-                          try {
-                            xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
-                          } catch (_) {
-                            xhtml = _clone.outerHTML.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
-                          }
-                          // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
-                          // `!includes('xmlns')` check was defeated by any child xmlns (MathML/SVG from
-                          // a transcribed equation), leaving the root in no namespace so conforming
-                          // readers blank-render or reject the whole book.
-                          if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
-                          zip.file('OEBPS/content.xhtml', xhtml);
-                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
-                          const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
-                          downloadBuilderBlob(blob, { extension: 'epub' });
-                          if (_unavailableRemoteImages) {
-                            addToast(`${_unavailableRemoteImages} remote image${_unavailableRemoteImages === 1 ? '' : 's'} could not be packaged and were replaced with accessible text.`, 'warning');
-                          } else {
-                            addToast('ePub downloaded', 'success');
-                          }
-                          } catch (error) { addToast && addToast('ePub export failed: ' + (error?.message || 'unknown error'), 'error'); }
-                          finally { finishAlternativeExport(); }
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'epub' ? 'Building ePub...' : '📚 ePub (e-readers)'}</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
-                          const doc = exportPreviewRef.current?.contentDocument;
-                          if (!doc) return;
-                          if (altExportBusy) return;
-                          if (!beginAlternativeExport('brf')) return; try {
-                          // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
-                          // were being embossed into the braille output.
-                          // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
-                          // unit) with a blank line before each heading — braille convention for a
-                          // new section — instead of the layout-driven innerText soup. Footnote refs
-                          // and emphasis remain future work; structure is the big win.
-                          let text = '';
-                          try {
-                            const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
-                            _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
-                            _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
-                            text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-                          } catch (_) { throw new Error('Could not prepare the accepted revision view for Braille.'); }
-                          // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
-                          // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
-                          // Computer Code), NOT Unicode braille patterns — embossers and braille
-                          // displays read the ASCII bytes. Capital sign (,) before each capital;
-                          // number sign (#) before a digit run with 1-0 → A-J; standard BRF
-                          // punctuation. Pages separated by form feed.
-                          const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-                          const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
-                          const _brfSmart = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
-                          const _brfOpenQuote = '\ue000', _brfCloseQuote = '\ue001';
-                          const _brfPrefix = /[#,;@_^".]$/;
-                          const _brfHardSplit = (word, into, cells) => {
-                            if (/^#[A-J14]+$/.test(word)) {
-                              while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
-                              if (word) into.push(word);
-                              return;
-                            }
-                            while (word.length > cells) {
-                              let cut = cells;
-                              while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
-                              into.push(word.slice(0, cut)); word = word.slice(cut);
-                            }
-                            if (word) into.push(word);
-                          };
-                          const _brfWrap = (line, into, cells) => {
-                            if (line.length <= cells) { into.push(line); return; }
-                            const words = line.split(' '); let cur = '';
-                            for (let word of words) {
-                              if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
-                              if (!cur) cur = word;
-                              else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
-                              else { into.push(cur); cur = word; }
-                            }
-                            if (cur) into.push(cur);
-                          };
-                          const _toBRF = (src, opts) => {
-                            const cells = (opts && opts.cellsPerLine) || 40;
-                            let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
-                            norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
-                            try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
-                            const out = []; let dropped = 0;
-                            for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
-                              const chars = Array.from(line); let bl = ''; let numMode = false;
-                              for (let i = 0; i < chars.length; i++) {
-                                const ch = chars[i];
-                                if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
-                                if (numMode && (ch === ',' || ch === '.')) { bl += _brfPunct[ch]; continue; }
-                                if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
-                                numMode = false;
-                                if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
-                                if (ch >= 'A' && ch <= 'Z') {
-                                  let end = i;
-                                  while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
-                                  const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
-                                  const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
-                                  if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
-                                  else bl += ',' + ch;
-                                  continue;
-                                }
-                                if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
-                                if (ch === _brfOpenQuote) { bl += '8'; continue; }
-                                if (ch === _brfCloseQuote) { bl += '0'; continue; }
-                                if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
-                                if (_brfPunct[ch] !== undefined) { bl += _brfPunct[ch]; continue; }
-                                dropped++;
-                              }
-                              _brfWrap(bl, out, cells);
-                            }
-                            const brf = out.join('\n');
-                            return (opts && opts.withMeta) ? { brf, dropped } : brf;
-                          };
-const _downloadBRF = (brf) => {
-                            const blob = new Blob([brf], { type: 'application/x-brf' });
-                            downloadBuilderBlob(blob, { extension: 'brf' });
-                          };
-                          // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
-                          // fall back to the shared canonical Grade-1 converter (loaded with the
-                          // same file) on ANY failure so the export is never worse than before.
-                          // 2026-07-05: nothing ever INJECTED liblouis_braille_loader.js, so
-                          // window.AlloBraille could not exist and the UEB path was dead code.
-                          // Lazy-load it on demand via the __alloLoadPlugin injector first; the
-                          // inline _toBRF above is the last-resort fallback if the load fails.
-                          const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
-                            ? Promise.resolve(true)
-                            : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
-                          await Promise.resolve(_ensureBrailleLoader).catch(() => false).then(async () => {
-                            let _g1Dropped = 0, _grade1;
-                            if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
-                              const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
-                              _grade1 = _r.brf; _g1Dropped = _r.dropped;
-                            } else { const _r = _toBRF(text, { withMeta: true }); _grade1 = _r.brf; _g1Dropped = _r.dropped; }
-                            const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
-                            if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
-                              addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
-                              await Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
-                                if (ueb && ueb.replace(/\s/g, '').length) {
-                                  _downloadBRF(ueb);
-                                  addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
-                                } else {
-                                  _downloadBRF(_grade1); _warnDrop();
-                                  addToast('Electronic Braille (Grade 1) downloaded', 'success');
-                                }
-                              }).catch(() => {
-                                _downloadBRF(_grade1); _warnDrop();
-                                addToast('Electronic Braille (Grade 1) downloaded', 'success');
-                              });
-                            } else {
-                              _downloadBRF(_grade1); _warnDrop();
-                              addToast('Electronic Braille (BRF) downloaded', 'success');
-                            }
-                          });
-                          } catch (error) { addToast && addToast('Braille export failed: ' + (error?.message || 'unknown error'), 'error'); }
-                          finally { finishAlternativeExport(); }
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'brf' ? 'Building Braille...' : '⠿ Electronic Braille (.brf)'}</button>
-                      </fieldset>
-                    </details>
-                  </div>
-                </div>
-                <div role="status" aria-live="polite" aria-atomic="true" className={exportActionBusy || altExportBusy ? 'border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900' : 'sr-only'}>
-                  {exportActionBusy ? 'Preparing your export. Keep the builder open until it finishes.' : altExportBusy ? 'Preparing ' + altExportBusy.toUpperCase() + ' export. Keep the builder open until it finishes.' : ''}
-                </div>
-                {preflightResult && (
-                  <div className={`border-b px-3 py-2 text-xs ${preflightResult.errors ? 'bg-red-50 border-red-300 text-red-900' : preflightResult.warnings ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-green-50 border-green-300 text-green-900'}`} role="status" aria-live="polite">
-                    <div className="flex items-center gap-2">
-                      <strong>{preflightResult.errors ? 'Export blocked by preflight' : preflightResult.warnings ? 'Preflight passed with warnings' : 'Preflight passed'}</strong>
-                      <span>{preflightResult.errors} error{preflightResult.errors === 1 ? '' : 's'} / {preflightResult.warnings} warning{preflightResult.warnings === 1 ? '' : 's'}</span>
-                      <button type="button" onClick={() => setPreflightResult(null)} className="ml-auto underline font-bold">Dismiss</button>
-                    </div>
-                    {!!preflightResult.issues.length && <ul className="mt-1 list-disc pl-5 space-y-0.5">
-                      {preflightResult.issues.map((issue, index) => <li key={issue.code + '-' + index}><strong>{issue.severity === 'error' ? 'Fix:' : 'Review:'}</strong> {issue.message}</li>)}
-                    </ul>}
-                  </div>
-                )}
-                {draftRecovery && (
-                  <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" role="status" aria-live="polite">
-                    <span className="font-bold">Local draft available</span>
-                    <span>{draftRecovery.title || draftDocumentTitle} · Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
-                    <button type="button" onClick={restoreLocalDraft} className="rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800">Restore draft</button>
-                    <button type="button" onClick={dismissLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
-                  </div>
-                )}
-                <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1" role="tablist" aria-label="Document Builder ribbon">
-                  {/* The Expert Workbench IS here and always has been — this tab
-                      panel mounts it unconditionally. It was called just "Expert",
-                      which reads as a difficulty setting rather than as the same
-                      named tool the remediation panel offers, so nobody found it.
-                      Same name in both places now. */}
-                  {[['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['review', 'Review'], ['view', 'View'], ['expert', isAgentRunning ? '🤖 Expert Workbench •' : '🤖 Expert Workbench']].map(([tab, label]) => {
-                    const selected = activeRibbonTab === tab;
-                    return <button key={tab} id={`builder-ribbon-tab-${tab}`} type="button" role="tab" aria-selected={selected} aria-controls={`builder-ribbon-panel-${tab}`} tabIndex={selected ? 0 : -1}
-                      onClick={() => { setActiveRibbonTab(tab); setRibbonCollapsed(false); }}
-                      onKeyDown={(event) => {
-                        const tabs = ['home', 'insert', 'layout', 'review', 'view', 'expert'];
-                        const current = tabs.indexOf(tab);
-                        const next = event.key === 'ArrowRight' ? (current + 1) % tabs.length : event.key === 'ArrowLeft' ? (current - 1 + tabs.length) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
-                        if (next < 0) return;
-                        event.preventDefault();
-                        setActiveRibbonTab(tabs[next]);
-                        setRibbonCollapsed(false);
-                        window.setTimeout(() => document.getElementById(`builder-ribbon-tab-${tabs[next]}`)?.focus(), 0);
-                      }}
-                      className={`shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white hover:text-indigo-700'}`}>{label}</button>;
-                  })}
-                  <button type="button" onClick={() => setRibbonCollapsed((value) => !value)} aria-expanded={!ribbonCollapsed} aria-controls={`builder-ribbon-panel-${activeRibbonTab}`} className="ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700" title={ribbonCollapsed ? 'Expand the ribbon' : 'Collapse the ribbon'}>{ribbonCollapsed ? 'Expand ribbon' : 'Collapse ribbon'}</button>
-                </div>
-                {!ribbonCollapsed && activeRibbonTab === 'review' && (
-                  <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
+</div>
+                    <button type="button" onClick={() => { setMobileSettingsOpen(true); setRibbonCollapsed(true); window.setTimeout(() => document.querySelector('[data-help-key="doc_builder_wcag_audit_btn"]')?.focus(), 0); }} className="m-2 min-h-8 rounded px-2 text-xs font-bold text-violet-800 hover:bg-violet-50">Accessibility audit & results{exportAuditResult?.score >= 0 ? ' · ' + exportAuditResult.score + '/100' : ''}</button>
                     <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5" role="group" aria-label="Review tools">
                       <button id="builder-track-changes" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => toggleTrackChanges()} aria-pressed={trackChangesEnabled} aria-keyshortcuts="Control+Shift+E" className={`h-8 rounded px-2.5 text-[11px] font-bold shadow-sm ${trackChangesEnabled ? 'bg-violet-700 text-white hover:bg-violet-800' : 'border border-violet-500 bg-white text-violet-800 hover:bg-violet-50'}`} title="Toggle Track Changes (Ctrl+Shift+E)">Track Changes: {trackChangesEnabled ? 'On' : 'Off'}</button>
                       <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-pressed={showNavigationPane && navigationPaneTab === 'changes'} aria-controls="document-builder-navigation" className="h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50">Changes ({pendingTrackedChangeCount})</button>
@@ -10208,6 +10293,10 @@ const _downloadBRF = (brf) => {
                 )}
                 {!ribbonCollapsed && activeRibbonTab === 'insert' && (
                   <div id="builder-ribbon-panel-insert" role="tabpanel" aria-labelledby="builder-ribbon-tab-insert" className="shrink-0 border-b border-slate-200 bg-white">
+                                        <button ref={imageAddButtonRef} type="button" onClick={openImagePicker} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
+                      <ImageIcon size={12} aria-hidden="true" /> Add Image
+                    </button>
+
                     <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" aria-label="Insert tools">
                       <fieldset className="flex min-w-[22rem] flex-[1.1] flex-wrap items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50/60 px-2 py-1" aria-describedby="builder-structure-help">
                         <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800">Document structure</legend>
@@ -10394,7 +10483,16 @@ const _downloadBRF = (brf) => {
                   </div>
                 )}
                 {!ribbonCollapsed && activeRibbonTab === 'view' && (
-                  <div id="builder-ribbon-panel-view" role="tabpanel" aria-labelledby="builder-ribbon-tab-view" className="shrink-0 border-b border-slate-200 bg-white">
+                  <div id="builder-ribbon-panel-view" role="tabpanel" aria-labelledby="builder-ribbon-tab-view" className="shrink-0 border-b border-slate-200 bg-white">                    <button type="button" onClick={() => {
+                      const active = showNavigationPane && navigationPaneTab === 'headings';
+                      if (active) setShowNavigationPane(false);
+                      else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
+                    }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation"
+                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === 'headings' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-700 bg-slate-100 hover:bg-slate-200'}`}
+                      title={showNavigationPane && navigationPaneTab === 'headings' ? 'Hide navigation' : 'Open heading navigation'}>
+                      <span aria-hidden="true">☷</span> Navigation
+                    </button>
+
                     <div className="flex flex-col gap-1.5 px-2 py-1.5">
                       <div className="flex min-w-0 flex-wrap items-center gap-1.5" role="group" aria-label="Interactive paragraph ruler">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Ruler</span>
@@ -10600,6 +10698,8 @@ const _downloadBRF = (brf) => {
                 )}
                   </div>
                 )}
+                  </div>
+                </div>
                 <div className="builder-preview-stage flex flex-1 min-h-0 overflow-hidden bg-slate-100">
                   {showNavigationPane && (
                     <aside id="document-builder-navigation" role="complementary" aria-label="Document navigation" className="relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white" style={{ width: navigationPaneWidth }}>
@@ -11094,6 +11194,10 @@ const _downloadBRF = (brf) => {
                         const doc = exportPreviewRef.current?.contentDocument;
                         if (!doc || doc.__alloPasteGuard) return;
                         doc.__alloPasteGuard = true;
+                        doc.addEventListener('pointerdown', () => {
+                          exportDialogRef.current?.querySelectorAll('#builder-export-menu[open], .builder-status-details[open], #builder-quick-access-customize[open]').forEach((menu) => closeBuilderMenu(menu, false));
+                          setRibbonCollapsed(true);
+                        });
                         syncPageSetupFromDocument();
                         syncPageElementsFromDocument();
                         refreshDocumentStats();
@@ -11380,7 +11484,7 @@ const _downloadBRF = (brf) => {
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-semibold text-slate-700">{isFocusMode ? 'Focus mode' : 'Editing enabled'}</span>
-                    <span role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${draftCaptureState === 'capturing' ? 'text-amber-700' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
+                    <span data-builder-save-status role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${draftCaptureState === 'capturing' ? 'text-amber-700' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
                       {_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}
                     </span>
@@ -11438,19 +11542,26 @@ const _downloadBRF = (brf) => {
                         </section>
                       )}
                     </div>
-                    <span>{headingOutline.length} heading{headingOutline.length === 1 ? '' : 's'}</span>
                     <span>Page {pageMetrics.active + 1} of {pageMetrics.count}</span>
-                    <span>Section {pageMetrics.activeSection + 1} of {pageMetrics.documentSections.length}: {activeDocumentSection.name}</span>
+                    <details className="builder-status-details relative" onKeyDownCapture={handleBuilderMenuEscape}>
+                      <summary className="cursor-pointer rounded px-2 py-1 font-semibold hover:bg-slate-200">Details & shortcuts</summary>
+                      <div className="builder-status-popover absolute bottom-full left-0 mb-2 rounded-lg border border-slate-300 bg-white p-3 shadow-xl space-y-2">
+                        <p data-builder-document-context>{documentSourceLabel}{!isRemediationDocument && ' · ' + includedResourceCount + ' of ' + resourceItems.length + ' resources'}</p>
+                        <p>{headingOutline.length} headings · Section {pageMetrics.activeSection + 1} of {pageMetrics.documentSections.length}: {activeDocumentSection.name}</p>
+                        <p>Focus the preview and edit text directly</p>
+                        <p>Ctrl+Enter page break · Ctrl+Alt+F footnote · F9 update fields · Ctrl+Shift+Enter focus mode · Ctrl+Shift+G word count · Ctrl+Z undo</p>
+                        <button type="button" onClick={resetBuilderViewPreferences} className="min-h-8 rounded px-2 font-semibold text-indigo-700 hover:bg-indigo-50" aria-label="Reset Builder view preferences">Reset view</button>
+                      </div>
+                    </details>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-slate-500">Ctrl+Enter page break · Ctrl+Alt+F footnote · F9 update fields · Ctrl+Shift+Enter {isFocusMode ? 'exits focus mode' : 'opens focus mode'} · Ctrl+Shift+G word count &middot; Ctrl+Z undo</span>
-                    <span className="hidden sm:inline-block h-4 w-px bg-slate-300" aria-hidden="true"></span>
+                    <select aria-label="Preview zoom mode" value={editorZoomMode} onChange={(event) => event.target.value === 'custom' ? setCustomEditorZoom(editorZoom) : useEditorZoomPreset(event.target.value)} className="h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700"><option value="fit-width">Fit width</option><option value="fit-page">Fit page</option><option value="custom">Custom zoom</option></select>
                     <div className="flex items-center gap-1" aria-label="Editor zoom controls">
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value - 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom out" title="Zoom out">−</button>
                       <input type="range" min="50" max="200" step="5" value={editorZoom} onChange={(event) => setCustomEditorZoom(Number(event.target.value))} className="w-24 accent-indigo-600" aria-label="Editor zoom" aria-valuetext={`${editorZoomMode === 'custom' ? '' : editorZoomMode === 'fit-width' ? 'Fit width, ' : 'Fit page, '}${editorZoom} percent`} />
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value + 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom in" title="Zoom in">+</button>
                       <button type="button" onClick={() => setCustomEditorZoom(100)} className="min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100" aria-label="Reset editor zoom to 100 percent" title="Reset editor zoom">{editorZoom}%</button>
-                      <button type="button" onClick={resetBuilderViewPreferences} className="rounded px-1.5 py-1 font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700" aria-label="Reset Builder view preferences" title="Reset zoom, page view, ribbon, navigation, and review display">Reset view</button>
+
                     </div>
                   </div>
                 </div>
@@ -11657,9 +11768,14 @@ async function updateExportPreview(deps) {
           try {
             e.preventDefault();
             const _parentDoc = window.parent && window.parent.document;
+            const _toolTray = _parentDoc?.getElementById('builder-tool-tray');
+            if (_parentDoc?.querySelector('#builder-export-menu[open]') || (_toolTray && !_toolTray.hidden && _toolTray.getClientRects().length)) {
+              _parentDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-dismiss-tools'));
+              return;
+            }
             if (_parentDoc && _parentDoc.documentElement.classList.contains('allo-docbuilder-focus')) {
               if (_parentDoc.fullscreenElement && _parentDoc.exitFullscreen) _parentDoc.exitFullscreen().catch(() => {});
-              window.parent.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-exit-focus'));
+              _parentDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-exit-focus'));
               return;
             }
             const _cb = _parentDoc && _parentDoc.querySelector('[aria-label="' + (t('a11y.close_doc_builder') || 'Close document builder') + '"]');

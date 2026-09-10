@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "complex-table-accessibility-report.json",
+    "accessibleHtml": "complex-table-accessible.html",
+    "privacyReceipt": "complex-table-privacy-receipt.json",
+    "taggedPdf": "complex-table-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-09-10T22:16:28Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "complex-table.pdf",
+    "bytes": 678,
+    "kind": "pdf",
+    "sha256": "5e5d69b10511b30cd4178e219f96e052852c3f3b3bb4c4baf2ad146a70130ac4"
+  },
+  "systemWideNetworkUseVerified": false
+}

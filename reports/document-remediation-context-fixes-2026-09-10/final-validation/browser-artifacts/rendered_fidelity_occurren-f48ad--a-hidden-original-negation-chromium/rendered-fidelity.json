@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "aef647a959336d20258927d3583821ffb7192e0cfb0600404365898e60d0c213",
+    "bytes": 102
+  },
+  "candidate": {
+    "sha256": "84598772bc0cdca0f7b5dab3beff7f075abd4b5f709ad181980a1022c2b2f035",
+    "bytes": 102
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 634.0437999999995,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "text",
+          "status": "passed",
+          "source": "请不要打开阀门。请不要打开阀门。",
+          "candidate": "请不要打开阀门。请不要打开阀门。"
+        },
+        {
+          "property": "visible",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        },
+        {
+          "property": "visibleText",
+          "status": "failed",
+          "source": "请不要打开阀门。",
+          "candidate": "请打开阀门。请不要打开阀门。",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                8
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                16
+              ]
+            ]
+          }
+        },
+        {
+          "property": "exposedText",
+          "status": "failed",
+          "source": "请不要打开阀门。",
+          "candidate": "请打开阀门。请不要打开阀门。",
+          "occurrences": {
+            "basis": "canonical-dom-text-offsets",
+            "source": [
+              [
+                0,
+                8
+              ]
+            ],
+            "candidate": [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                16
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}
