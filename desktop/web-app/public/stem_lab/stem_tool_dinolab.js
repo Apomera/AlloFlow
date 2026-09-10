@@ -6189,6 +6189,57 @@ window.StemLab = window.StemLab || {
     });
     return lines.join('\n');
   }
+
+  // Continuous elliptical skin lofts, independent of the fossil skeleton.
+  function dinoSurfaceGeometry(THREE, points, radii) {
+    var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
+    var rings = 48, sides = 24, vertices = [], uv = [], indices = [];
+    for (var i = 0; i <= rings; i++) {
+      var t = i / rings, center = curve.getPoint(t), tangent = curve.getTangent(t).normalize();
+      var normal = new THREE.Vector3().crossVectors(Math.abs(tangent.z) < 0.9 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tangent).normalize();
+      var binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
+      var rt = t * (radii.length - 1), ri = Math.min(radii.length - 2, Math.floor(rt)), mix = rt - ri;
+      mix = mix * mix * (3 - 2 * mix);
+      var a = Array.isArray(radii[ri]) ? radii[ri] : [radii[ri], radii[ri]];
+      var b = Array.isArray(radii[ri + 1]) ? radii[ri + 1] : [radii[ri + 1], radii[ri + 1]];
+      var ry = Math.max(0.001, a[0] + (b[0] - a[0]) * mix), rz = Math.max(0.001, a[1] + (b[1] - a[1]) * mix);
+      for (var j = 0; j <= sides; j++) {
+        var angle = j / sides * Math.PI * 2;
+        var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * ry).addScaledVector(binormal, Math.sin(angle) * rz);
+        vertices.push(vertex.x, vertex.y, vertex.z); uv.push(t, j / sides);
+        if (i < rings && j < sides) {
+          var n = i * (sides + 1) + j;
+          indices.push(n, n + 1, n + sides + 1, n + 1, n + sides + 2, n + sides + 1);
+        }
+      }
+    }
+    [0, rings].forEach(function (ring) {
+      var center = curve.getPoint(ring / rings), ci = vertices.length / 3;
+      vertices.push(center.x, center.y, center.z); uv.push(ring / rings, 0.5);
+      for (var side = 0; side < sides; side++) {
+        var start = ring * (sides + 1) + side;
+        if (ring === 0) indices.push(ci, start + 1, start); else indices.push(ci, start, start + 1);
+      }
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    // Match normals at the UV seam, so light does not reveal a longitudinal join.
+    var normals = geometry.attributes.normal;
+    for (var ring = 0; ring <= rings; ring++) {
+      var first = ring * (sides + 1), last = first + sides;
+      var blend = new THREE.Vector3(normals.getX(first) + normals.getX(last), normals.getY(first) + normals.getY(last), normals.getZ(first) + normals.getZ(last)).normalize();
+      normals.setXYZ(first, blend.x, blend.y, blend.z); normals.setXYZ(last, blend.x, blend.y, blend.z);
+    }
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+  function dinoFrameDistance(halfWidth, halfHeight, halfDepth, verticalFov, aspect) {
+    var tangent = Math.tan(verticalFov * Math.PI / 360);
+    return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
+  }
+
   var DinoFieldStation3DStable = null;
 
   window.StemLab.registerTool('dinoLab', {
@@ -6920,6 +6971,8 @@ window.StemLab = window.StemLab || {
 
       function DinoFieldStation3D(props) {
         var canvasRef = React.useRef(null);
+        var labelModeRef = React.useRef(props.labelMode || 'key');
+        labelModeRef.current = props.labelMode || 'key';
         var statusRef = React.useRef(null);
         var cameraReadoutRef = React.useRef(null);
         var sceneRef = React.useRef(null);
@@ -6945,12 +6998,12 @@ window.StemLab = window.StemLab || {
         var cameraPresetState = React.useState(null), cameraPreset = cameraPresetState[0], setCameraPreset = cameraPresetState[1];
         var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
         var surfaceHypothesis = hypothesisSet.active;
-        var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });
+        var yawRef = React.useRef({ speciesId: props.species.id, value: 0.35, pitch: 0.18, zoom: 1 });
         var autoRotateRef = React.useRef(props.autoRotate);
         var readySpeciesRef = React.useRef(null);
         var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
         autoRotateRef.current = props.autoRotate;
-        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 };
+        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: 0.35, pitch: 0.18, zoom: 1 };
 
         function notifyOrientationInteraction() {
           if (props.orientationCueVisible && typeof props.onOrientationDismiss === 'function') props.onOrientationDismiss();
@@ -7024,6 +7077,17 @@ window.StemLab = window.StemLab || {
             };
             var fieldPalette = naturalDietPalette[dn.diet] || { skin: props.dietColor || '#667066', dark: '#343b36', accent: '#8f9b87' };
             var habitat = habitatProfileFor(dn);
+            var studio = props.stage !== 'habitat';
+            if (studio) Object.assign(habitat, {
+              skyTop: '#101c2d', skyMid: '#233749', skyHorizon: '#31485a', skyGround: '#233441', clear: '#1b2b3b',
+              sunGlow: 'rgba(0,0,0,0)', cloud: 'rgba(0,0,0,0)', fog: '#263b4b', fogNear: 4, fogFar: 12,
+              ambient: '#e6eef7', ambientIntensity: 0.30, hemiSky: '#d7e9ff', hemiGround: '#3b3540', hemiIntensity: 0.65,
+              sun: '#ffefd9', sunIntensity: 1.25, sunPosition: [-8, 12, 10],
+              fill: '#c1dcff', fillIntensity: 0.50, fillPosition: [10, 6, 8],
+              rim: '#a5ddeb', rimIntensity: 0.95, rimPosition: [2, 8, -12],
+              ground: '#263b49', groundTint: '#334858', groundLight: 'rgba(126,157,179,0.035)', groundDark: 'rgba(15,24,38,0.035)',
+              groundPatch: 'rgba(0,0,0,0)', patchCount: 0, scrubCount: 0, water: false
+            });
             if (surfaceHypothesis.paletteMode === 'classic') fieldPalette = { skin: '#69704b', dark: '#343922', accent: '#8d8454' };
             else if (surfaceHypothesis.paletteMode === 'avian') fieldPalette = { skin: '#6b625b', dark: '#342f35', accent: '#9f7968' };
             else if (surfaceHypothesis.paletteMode === 'neutral') fieldPalette = { skin: '#77766f', dark: '#41413d', accent: '#98968d' };
@@ -7069,7 +7133,7 @@ window.StemLab = window.StemLab || {
               skyContext.fillRect(0, 0, 512, 256);
               var sunGlow = skyContext.createRadialGradient(398, 66, 2, 398, 66, 78);
               sunGlow.addColorStop(0, habitat.sunGlow);
-              sunGlow.addColorStop(0.16, 'rgba(255,224,158,0.46)');
+              sunGlow.addColorStop(0.16, studio ? 'rgba(0,0,0,0)' : 'rgba(255,224,158,0.46)');
               sunGlow.addColorStop(1, 'rgba(255,214,143,0)');
               skyContext.fillStyle = sunGlow;
               skyContext.fillRect(300, 0, 212, 160);
@@ -7111,7 +7175,7 @@ window.StemLab = window.StemLab || {
             scene.add(new THREE.AmbientLight(habitat.ambient, habitat.ambientIntensity));
             scene.add(new THREE.HemisphereLight(habitat.hemiSky, habitat.hemiGround, habitat.hemiIntensity));
             var sun = new THREE.DirectionalLight(habitat.sun, habitat.sunIntensity);
-            sun.position.set(habitat.sunPosition[0], habitat.sunPosition[1], habitat.sunPosition[2]);
+            sun.position.set(habitat.sunPosition[0], habitat.sunPosition[1], habitat.sunPosition[2]).multiplyScalar(Math.max(0.15, len / 12));
             sun.castShadow = true;
             sun.shadow.mapSize.width = 1024;
             sun.shadow.mapSize.height = 1024;
@@ -7119,7 +7183,7 @@ window.StemLab = window.StemLab || {
               sun.shadow.mapSize.width = 2048;
               sun.shadow.mapSize.height = 2048;
             }
-            sun.shadow.camera.near = 0.5;
+            sun.shadow.camera.near = 0.05;
             sun.shadow.camera.far = Math.max(60, len * 3.2);
             var shadowSpan = Math.max(12, len * 0.82);
             sun.shadow.camera.left = -shadowSpan;
@@ -7136,8 +7200,8 @@ window.StemLab = window.StemLab || {
             rim.position.set(habitat.rimPosition[0], habitat.rimPosition[1], habitat.rimPosition[2]);
             scene.add(rim);
 
-            var groundWidth = Math.max(26, len * 1.7);
-            var groundDepth = Math.max(16, len * 0.95);
+            var groundWidth = studio ? Math.max(40, len * 40) : Math.max(26, len * 1.7);
+            var groundDepth = studio ? Math.max(40, len * 40) : Math.max(16, len * 0.95);
             var groundCanvas = document.createElement('canvas');
             groundCanvas.width = 512;
             groundCanvas.height = 512;
@@ -7177,7 +7241,7 @@ window.StemLab = window.StemLab || {
                 var groundY = groundPositions.getY(groundVertex);
                 var edgeLift = Math.min(1, Math.abs(groundX) / (groundWidth * 0.42) + Math.abs(groundY) / (groundDepth * 0.58));
                 var groundLift = (Math.sin(groundX * 0.47) + Math.cos(groundY * 0.61) + Math.sin((groundX + groundY) * 0.23)) * 0.075 * edgeLift * edgeLift;
-                groundPositions.setZ(groundVertex, groundLift);
+                groundPositions.setZ(groundVertex, studio ? 0 : groundLift);
               }
               groundPositions.needsUpdate = true;
               groundGeometry.computeVertexNormals();
@@ -7199,7 +7263,7 @@ window.StemLab = window.StemLab || {
               water.renderOrder = 1;
               scene.add(water);
             }
-            if (props.showEvidence) {
+            if (props.showEvidence && !studio) {
             var digPad = new THREE.Mesh(
               new THREE.BoxGeometry(Math.max(8, len * 0.72), 0.06, Math.max(3.4, len * 0.18)),
               THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.digPad, roughness: 1, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: habitat.digPad, shininess: 4 })
@@ -7231,7 +7295,7 @@ window.StemLab = window.StemLab || {
             var rockMaterials = habitat.rockColors.map(function (color) {
               return THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: color, roughness: 0.96, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: color, shininess: 3 });
             });
-            for (var rockIndex = 0; rockIndex < 22; rockIndex++) {
+            for (var rockIndex = 0; rockIndex < (studio ? 0 : 22); rockIndex++) {
               var rockAngle = scatterRng() * Math.PI * 2;
               var rockRadius = 0.38 + scatterRng() * 0.95;
               var rockX = Math.cos(rockAngle) * groundWidth * rockRadius * 0.50;
@@ -7290,6 +7354,7 @@ window.StemLab = window.StemLab || {
             }
 
             model = new THREE.Group();
+            model.name = 'dinolab-specimen';
             scene.add(model);
 
             var inferenceOpacity = Math.max(10, Math.min(100, Number(bodyOpacityRef.current) || 28)) / 100;
@@ -7333,7 +7398,7 @@ window.StemLab = window.StemLab || {
               var skinRng = mulberry32(String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 37) + char.charCodeAt(0)) >>> 0; }, 97));
               // Broad pigment patches keep the procedural surface from reading as a flat plastic shell.
               for (var pigmentPatch = 0; pigmentPatch < 46; pigmentPatch++) {
-                skinContext.fillStyle = pigmentPatch % 3 === 0 ? 'rgba(25,20,14,0.055)' : 'rgba(244,225,181,0.045)';
+                skinContext.fillStyle = pigmentPatch % 3 === 0 ? 'rgba(25,20,14,0.022)' : 'rgba(244,225,181,0.018)';
                 skinContext.beginPath();
                 skinContext.ellipse(skinRng() * 768, skinRng() * 384, 18 + skinRng() * 84, 8 + skinRng() * 38, skinRng() * Math.PI, 0, Math.PI * 2);
                 skinContext.fill();
@@ -7347,16 +7412,7 @@ window.StemLab = window.StemLab || {
                 skinContext.ellipse(skinRng() * 768, skinRng() * 384, 0.7 + skinRng() * 2.6, 0.45 + skinRng() * 1.6, skinRng() * Math.PI, 0, Math.PI * 2);
                 skinContext.fill();
               }
-              if (surfaceHypothesis.featureScales) {
-                skinContext.strokeStyle = 'rgba(40,36,28,0.12)';
-                skinContext.lineWidth = 16;
-                for (var skinBand = -1; skinBand < 9; skinBand++) {
-                  skinContext.beginPath();
-                  skinContext.moveTo(skinBand * 96, -10);
-                  skinContext.bezierCurveTo(skinBand * 96 + 58, 108, skinBand * 96 - 36, 246, skinBand * 96 + 72, 394);
-                  skinContext.stroke();
-                }
-              } else if (surfaceHypothesis.filamentCoverage > 0) {
+              if (surfaceHypothesis.filamentCoverage > 0) {
                 skinContext.strokeStyle = 'rgba(48,42,34,0.18)';
                 skinContext.lineWidth = 1.4;
                 for (var filamentStroke = 0; filamentStroke < 420; filamentStroke++) {
@@ -7391,16 +7447,7 @@ window.StemLab = window.StemLab || {
                   bumpContext.ellipse(skinRng() * 768, skinRng() * 384, 0.55 + skinRng() * 1.9, 0.35 + skinRng() * 1.2, skinRng() * Math.PI, 0, Math.PI * 2);
                   bumpContext.fill();
                 }
-                if (surfaceHypothesis.featureScales) {
-                  bumpContext.strokeStyle = '#a6a6a6';
-                  bumpContext.lineWidth = 10;
-                  for (var bumpBand = -1; bumpBand < 9; bumpBand++) {
-                    bumpContext.beginPath();
-                    bumpContext.moveTo(bumpBand * 96, -10);
-                    bumpContext.bezierCurveTo(bumpBand * 96 + 58, 108, bumpBand * 96 - 36, 246, bumpBand * 96 + 72, 394);
-                    bumpContext.stroke();
-                  }
-                }
+
                 skinBumpTexture = new THREE.CanvasTexture(bumpCanvas);
                 skinBumpTexture.wrapS = THREE.RepeatWrapping;
                 skinBumpTexture.wrapT = THREE.RepeatWrapping;
@@ -7436,9 +7483,9 @@ window.StemLab = window.StemLab || {
             var jawJointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xb99d73, roughness: 0.66, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xb99d73, shininess: 18 });
             var hyoidMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc4b5d9, roughness: 0.80, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc4b5d9, shininess: 10 });
             var anatomyCalloutMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.62, depthWrite: false });
-            var bodyMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.040, roughnessMap: skinRoughnessTexture, transparent: !lifeSurface, opacity: lifeSurface ? 1 : inferenceOpacity, roughness: 0.86, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.040, transparent: !lifeSurface, opacity: lifeSurface ? 1 : inferenceOpacity, shininess: 8, side: THREE.DoubleSide, depthWrite: lifeSurface });
-            var headMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.032, roughnessMap: skinRoughnessTexture, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.87, inferenceOpacity + 0.12), roughness: 0.78, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.032, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.87, inferenceOpacity + 0.12), shininess: 12, depthWrite: lifeSurface });
-            var bodyWireMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: true, opacity: lifeSurface ? 0 : Math.max(0.08, inferenceOpacity * 0.42), wireframe: true, depthWrite: false });
+            var bodyMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: Math.min(0.025, ht * 0.006), roughnessMap: skinRoughnessTexture, transparent: !lifeSurface, opacity: lifeSurface ? 1 : inferenceOpacity, roughness: 0.86, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.040, transparent: !lifeSurface, opacity: lifeSurface ? 1 : inferenceOpacity, shininess: 8, side: THREE.DoubleSide, depthWrite: lifeSurface });
+            var headMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: Math.min(0.018, ht * 0.004), roughnessMap: skinRoughnessTexture, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.87, inferenceOpacity + 0.12), roughness: 0.78, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: skinTexture ? 0xffffff : new THREE.Color(bodyColor), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: Math.min(0.018, ht * 0.004), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.87, inferenceOpacity + 0.12), shininess: 12, depthWrite: lifeSurface });
+            var bodyWireMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: true, opacity: lifeSurface ? 0 : 0.16, side: THREE.BackSide, depthWrite: false });
             var anatomyAccentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.accent), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.024, roughnessMap: skinRoughnessTexture, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, inferenceOpacity + 0.40), roughness: 0.74, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.accent), map: skinTexture, bumpMap: skinBumpTexture, bumpScale: 0.024, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, inferenceOpacity + 0.40), shininess: 14, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var eyeMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x6d5434, roughness: 0.22, metalness: 0.03 }) : new THREE.MeshPhongMaterial({ color: 0x6d5434, shininess: 82 });
             var eyePupilMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x090705, roughness: 0.14, metalness: 0.02 }) : new THREE.MeshPhongMaterial({ color: 0x090705, shininess: 96 });
@@ -7454,9 +7501,11 @@ window.StemLab = window.StemLab || {
             var pneumaticMarkerMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
             var keratinMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), roughness: 0.90, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), shininess: 5, depthWrite: lifeSurface });
             var filamentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), roughness: 0.96, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), shininess: 2, side: THREE.DoubleSide, depthWrite: lifeSurface });
-            var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
+            var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var scaleReliefMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.72, 0.18 + inferenceOpacity * 0.62), roughness: 0.98, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.72, 0.18 + inferenceOpacity * 0.62), shininess: 1, depthWrite: lifeSurface });
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
+            activeMaterialSet.callout = anatomyCalloutMat;
+            [muscleMat, lungMat, airSacMat, anatomyCalloutMat].forEach(function (material) { material.visible = !lifeSurface; });
             visualMaterialsRef.current = activeMaterialSet;
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
@@ -7707,18 +7756,15 @@ window.StemLab = window.StemLab || {
               return mesh;
             }
             function addSoftTissueChain(points, radii, mat) {
-              var segments = [];
-              if (!props.showBody || !points || points.length < 2) return segments;
-              for (var chainIndex = 0; chainIndex < points.length - 1; chainIndex++) {
-                var chainMesh = addSoftTissueCylinder(points[chainIndex], points[chainIndex + 1], radii[chainIndex], radii[chainIndex + 1], mat);
-                if (chainMesh) segments.push(chainMesh);
-              }
-              for (var jointIndex = 1; jointIndex < points.length - 1; jointIndex++) {
-                var jointRadius = radii[jointIndex];
-                var blend = addEllipsoid(points[jointIndex], vec(jointRadius * 1.06, jointRadius * 1.04, jointRadius * 1.02), mat || bodyMat);
-                if (blend) segments.push(blend);
-              }
-              return segments;
+              if (!props.showBody || !points || points.length < 2) return [];
+              var surfaceGeometry = dinoSurfaceGeometry(THREE, points, radii);
+              surfaceGeometry.translate(-points[0].x, -points[0].y, -points[0].z);
+              var mesh = new THREE.Mesh(surfaceGeometry, mat || bodyMat);
+              mesh.position.copy(points[0]);
+              mesh.castShadow = true; mesh.receiveShadow = true;
+              mesh.userData.dinoSurface = 'continuous';
+              model.add(mesh);
+              return [mesh];
             }
             function addContourGroup(meshes) {
               var contours = [];
@@ -7744,11 +7790,12 @@ window.StemLab = window.StemLab || {
             }
             function addBodyContour(mesh) {
               if (!mesh || !props.showBody) return null;
-              var contour = new THREE.Mesh(mesh.geometry.clone(), bodyWireMat);
+              var contour = new THREE.Mesh(mesh.geometry, bodyWireMat);
               contour.position.copy(mesh.position);
               contour.quaternion.copy(mesh.quaternion);
-              contour.scale.copy(mesh.scale);
-              contour.renderOrder = 9;
+              contour.scale.copy(mesh.scale).multiplyScalar(1.012);
+              contour.renderOrder = 1;
+              contour.userData.dinoContour = true;
               model.add(contour);
               return contour;
             }
@@ -7866,6 +7913,7 @@ window.StemLab = window.StemLab || {
             }
 
             var measurementIntervalLabels = [];
+            var sceneLabels = [];
             function addTextLabel(text, pos, color, scaleFactor, parent) {
               var labelCanvas = document.createElement('canvas');
               labelCanvas.width = 256;
@@ -7892,57 +7940,61 @@ window.StemLab = window.StemLab || {
               var labelScale = scaleFactor == null ? 1 : scaleFactor;
               sprite.scale.set(Math.max(1.25, len * 0.13) * labelScale, Math.max(0.46, ht * 0.15) * labelScale, 1);
               sprite.renderOrder = 20;
+              sprite.userData.dinoLabel = text;
+              sprite.userData.labelScale = labelScale;
+              sceneLabels.push(sprite);
               (parent || model).add(sprite);
               return sprite;
             }
-            var hip = vec(len * 0.12, Math.max(0.35, ht * 0.45) * reconstructionProfile.stance * posture.hipHeight, 0);
-            var shoulder = vec(-len * 0.18, Math.max(0.35, isSauropod ? ht * 0.55 : ht * 0.48) * reconstructionProfile.stance * reconstructionProfile.shoulder * posture.shoulderHeight, 0);
-            var tail = vec(len * 0.52, Math.max(0.22, ht * 0.34) * reconstructionProfile.stance * reconstructionProfile.tail * posture.tailHeight, 0);
-            var head = vec(-len * 0.42, Math.max(0.5, isSauropod ? ht * 0.90 : ht * 0.68) * reconstructionProfile.neck * posture.headHeight, 0);
-            var snout = vec(-len * 0.49, Math.max(0.42, isSauropod ? ht * 0.86 : ht * 0.64) * reconstructionProfile.neck * posture.headHeight - Math.max(0.08, ht * 0.04) * posture.snoutDrop, 0);
+            var detailScale = Math.min(1, ht / 2);
+            var hip = vec(len * 0.12, Math.max(0.12 * detailScale, ht * (isTheropod ? 0.78 : 0.45)) * reconstructionProfile.stance * posture.hipHeight, 0);
+            var shoulder = vec(-len * (isTheropod ? 0.12 : 0.18), Math.max(0.12 * detailScale, isSauropod ? ht * 0.55 : ht * (isTheropod ? 0.73 : 0.48)) * reconstructionProfile.stance * reconstructionProfile.shoulder * posture.shoulderHeight, 0);
+            var tail = vec(len * 0.52, Math.max(0.10 * detailScale, ht * (isTheropod ? 0.65 : 0.34)) * reconstructionProfile.stance * reconstructionProfile.tail * posture.tailHeight, 0);
+            var head = vec(-len * (isSauropod ? 0.42 : 0.30), Math.max(0.16 * detailScale, isSauropod ? ht * 1.06 : ht * (isTheropod ? 0.93 : 0.68)) * reconstructionProfile.neck * posture.headHeight, 0);
+            var snout = vec(-len * (isTheropod ? 0.40 : 0.49), Math.max(0.14 * detailScale, isSauropod ? ht * 1.02 : ht * (isTheropod ? 0.89 : 0.64)) * reconstructionProfile.neck * posture.headHeight - Math.max(0.08 * detailScale, ht * 0.04) * posture.snoutDrop, 0);
             var bodyCenter = new THREE.Vector3().copy(hip).add(shoulder).multiplyScalar(0.5);
-            var bodyLen = Math.max(0.45, Math.abs(hip.x - shoulder.x) * 0.72) * reconstructionProfile.torsoLength;
-            var bodyHeight = Math.max(0.22, ht * (isSauropod ? 0.22 : 0.27)) * reconstructionProfile.bodyHeight * reconstructionProfile.chestFullness;
-            var bodyDepth = Math.max(0.16, bodyHeight * (isTheropod ? 0.92 : 1.08)) * reconstructionProfile.bodyDepth * reconstructionProfile.hipFullness;
+            var bodyLen = Math.max(0.45 * detailScale, Math.abs(hip.x - shoulder.x) * 0.72) * reconstructionProfile.torsoLength;
+            var bodyHeight = Math.max(0.065 * detailScale, ht * (isSauropod ? 0.18 : 0.19)) * reconstructionProfile.bodyHeight * reconstructionProfile.chestFullness;
+            var bodyDepth = Math.max(0.050 * detailScale, bodyHeight * (isTheropod ? 0.92 : 1.08)) * reconstructionProfile.bodyDepth * reconstructionProfile.hipFullness;
             var evidenceAnchorPoints = { skull: head, shoulder: shoulder, hip: hip };
 
             if (props.showEvidence) {
               var footprintMat = new THREE.MeshPhongMaterial({ color: 0x2b3a4f, transparent: true, opacity: 0.78, shininess: 4 });
               for (var fp = 0; fp < 7; fp++) {
                 var fx = -len * 0.34 + fp * len * 0.11;
-                var fz = (fp % 2 ? -1 : 1) * Math.max(0.46, bodyDepth * 1.35);
-                addGroundOval(fx, fz, Math.max(0.11, len * 0.020), Math.max(0.18, len * 0.035), footprintMat, -0.22 + fp * 0.06);
+                var fz = (fp % 2 ? -1 : 1) * Math.max(0.46 * detailScale, bodyDepth * 1.35);
+                addGroundOval(fx, fz, Math.max(0.11 * detailScale, len * 0.020), Math.max(0.18 * detailScale, len * 0.035), footprintMat, -0.22 + fp * 0.06);
               }
             }
             if (props.showEvidence || props.showHuman) {
             var rulerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var rulerZ = Math.max(1.05, bodyDepth * 2.45);
-            var rulerR = Math.max(0.012, ht * 0.004);
+            var rulerR = Math.max(0.012 * detailScale, ht * 0.004);
             addSceneCylinder(vec(snout.x, 0.05, rulerZ), vec(tail.x, 0.05, rulerZ), rulerR, rulerMat);
             addSceneCylinder(vec(snout.x, 0.05, rulerZ - 0.22), vec(snout.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
             addSceneCylinder(vec(tail.x, 0.05, rulerZ - 0.22), vec(tail.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
-            var rulerSpan = Math.max(0.1, tail.x - snout.x);
+            var rulerSpan = Math.max(0.1 * detailScale, tail.x - snout.x);
             var rulerTicks = Math.min(40, Math.max(1, Math.floor(rulerSpan)));
             for (var rt = 0; rt <= rulerTicks; rt++) {
               var tickX = snout.x + Math.min(rulerSpan, rt);
               var tickHalf = rt % 5 === 0 ? 0.20 : 0.11;
-              addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008, rulerR * 0.66), rulerMat);
-              if (rt % 5 === 0) measurementIntervalLabels.push(addTextLabel(rt + ' m', vec(tickX, Math.max(0.20, ht * 0.025), rulerZ + Math.max(0.36, bodyDepth * 0.45)), '#38bdf8', 0.46, scene));
+              addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008 * detailScale, rulerR * 0.66), rulerMat);
+              if (rt % 5 === 0) measurementIntervalLabels.push(addTextLabel(rt + ' m', vec(tickX, Math.max(0.20 * detailScale, ht * 0.025), rulerZ + Math.max(0.36 * detailScale, bodyDepth * 0.45)), '#38bdf8', 0.46, scene));
             }
-            addTextLabel(fmtLength(dn.lengthM), vec(tail.x, Math.max(0.20, ht * 0.025), rulerZ - Math.max(0.42, bodyDepth * 0.50)), '#38bdf8', 0.52, scene);
+            addTextLabel(fmtLength(dn.lengthM), vec(tail.x, Math.max(0.20 * detailScale, ht * 0.025), rulerZ - Math.max(0.42 * detailScale, bodyDepth * 0.50)), '#38bdf8', 0.52, scene);
             var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-            var heightGuideX = snout.x - Math.max(0.42, len * 0.035);
+            var heightGuideX = snout.x - Math.max(0.42 * detailScale, len * 0.035);
             var heightGuideZ = -Math.max(1.0, bodyDepth * 2.2);
-            var heightGuideTop = Math.max(0.5, ht);
-            addSceneCylinder(vec(heightGuideX, 0.04, heightGuideZ), vec(heightGuideX, heightGuideTop, heightGuideZ), Math.max(0.010, rulerR * 0.82), heightGuideMat);
+            var heightGuideTop = Math.max(0.5 * detailScale, ht);
+            addSceneCylinder(vec(heightGuideX, 0.04, heightGuideZ), vec(heightGuideX, heightGuideTop, heightGuideZ), Math.max(0.010 * detailScale, rulerR * 0.82), heightGuideMat);
             var heightTicks = Math.min(30, Math.max(1, Math.ceil(heightGuideTop)));
             for (var htick = 0; htick <= heightTicks; htick++) {
               var tickY = Math.min(heightGuideTop, htick);
               var heightTickHalf = htick % 5 === 0 ? 0.24 : 0.13;
-              addSceneCylinder(vec(heightGuideX - heightTickHalf, tickY, heightGuideZ), vec(heightGuideX + heightTickHalf, tickY, heightGuideZ), Math.max(0.008, rulerR * 0.64), heightGuideMat);
-              if (htick % 5 === 0) measurementIntervalLabels.push(addTextLabel(htick + ' m', vec(heightGuideX - Math.max(0.52, len * 0.035), tickY, heightGuideZ), '#facc15', 0.44, scene));
+              addSceneCylinder(vec(heightGuideX - heightTickHalf, tickY, heightGuideZ), vec(heightGuideX + heightTickHalf, tickY, heightGuideZ), Math.max(0.008 * detailScale, rulerR * 0.64), heightGuideMat);
+              if (htick % 5 === 0) measurementIntervalLabels.push(addTextLabel(htick + ' m', vec(heightGuideX - Math.max(0.52 * detailScale, len * 0.035), tickY, heightGuideZ), '#facc15', 0.44, scene));
             }
-            addTextLabel(fmtLength(dn.heightM), vec(heightGuideX + Math.max(0.65, len * 0.045), heightGuideTop, heightGuideZ), '#facc15', 0.50, scene);
+            addTextLabel(fmtLength(dn.heightM), vec(heightGuideX + Math.max(0.65 * detailScale, len * 0.045), heightGuideTop, heightGuideZ), '#facc15', 0.50, scene);
             }
             if (props.showEvidence) {
             var surveyPostMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 24 });
@@ -7956,59 +8008,69 @@ window.StemLab = window.StemLab || {
               vec(-surveyHalfX, 0, surveyHalfZ)
             ];
             surveyCorners.forEach(function (corner, cornerIndex) {
-              addSceneCylinder(corner, vec(corner.x, 0.46, corner.z), Math.max(0.025, ht * 0.007), surveyPostMat);
+              addSceneCylinder(corner, vec(corner.x, 0.46, corner.z), Math.max(0.025 * detailScale, ht * 0.007), surveyPostMat);
               var nextCorner = surveyCorners[(cornerIndex + 1) % surveyCorners.length];
-              addSceneCylinder(vec(corner.x, 0.38, corner.z), vec(nextCorner.x, 0.38, nextCorner.z), Math.max(0.010, ht * 0.003), surveyRopeMat);
+              addSceneCylinder(vec(corner.x, 0.38, corner.z), vec(nextCorner.x, 0.38, nextCorner.z), Math.max(0.010 * detailScale, ht * 0.003), surveyRopeMat);
             });
-            var compassRadius = Math.max(0.26, ht * 0.065);
+            var compassRadius = Math.max(0.26 * detailScale, ht * 0.065);
             var compassCenter = vec(-surveyHalfX * 0.78, 0.055, -surveyHalfZ * 0.70);
-            var compassRing = new THREE.Mesh(new THREE.TorusGeometry(compassRadius, Math.max(0.010, ht * 0.003), 8, 36), surveyRopeMat);
+            var compassRing = new THREE.Mesh(new THREE.TorusGeometry(compassRadius, Math.max(0.010 * detailScale, ht * 0.003), 8, 36), surveyRopeMat);
             compassRing.position.copy(compassCenter);
             compassRing.rotation.x = Math.PI / 2;
             scene.add(compassRing);
             var compassNorth = vec(compassCenter.x, compassCenter.y, compassCenter.z - compassRadius * 1.55);
-            addSceneCylinder(compassCenter, compassNorth, Math.max(0.012, ht * 0.0035), surveyRopeMat);
-            addSceneCylinder(compassNorth, vec(compassNorth.x - compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
-            addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
+            addSceneCylinder(compassCenter, compassNorth, Math.max(0.012 * detailScale, ht * 0.0035), surveyRopeMat);
+            addSceneCylinder(compassNorth, vec(compassNorth.x - compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012 * detailScale, ht * 0.0035), surveyRopeMat);
+            addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012 * detailScale, ht * 0.0035), surveyRopeMat);
             }
 
             var cladeName = String(dn.clade || '');
             var surfaceBodyHeight = bodyHeight * surfaceHypothesis.bodyHeightScale;
             var surfaceBodyDepth = bodyDepth * surfaceHypothesis.bodyDepthScale;
-            var thoraxCenter = new THREE.Vector3().copy(bodyCenter).lerp(shoulder, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.dorsalRise, 0));
-            var abdomenCenter = bodyCenter.clone().add(vec(0, -surfaceBodyHeight * postcranialSurface.bellyDrop, 0));
-            var pelvisCenter = new THREE.Vector3().copy(bodyCenter).lerp(hip, 0.42).add(vec(0, surfaceBodyHeight * postcranialSurface.dorsalRise * 0.45, 0));
-            var bodyShell = addEllipsoid(thoraxCenter, vec(bodyLen * 0.62, surfaceBodyHeight * 0.96 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.96 * postcranialSurface.ribcageFullness), bodyMat);
-            var abdomenShell = addEllipsoid(abdomenCenter, vec(bodyLen * 0.70, surfaceBodyHeight * 0.84 * postcranialSurface.bellyFullness, surfaceBodyDepth * 0.90 * postcranialSurface.bellyFullness), bodyMat);
-            var pelvisShell = addEllipsoid(pelvisCenter, vec(bodyLen * 0.52, surfaceBodyHeight * 0.88 * postcranialSurface.pelvicFullness, surfaceBodyDepth * 0.94 * postcranialSurface.pelvicFullness), bodyMat);
+            var thoraxCenter = new THREE.Vector3().copy(shoulder).lerp(hip, 0.28);
+            var abdomenCenter = new THREE.Vector3().copy(shoulder).lerp(hip, 0.53);
+            var pelvisCenter = new THREE.Vector3().copy(shoulder).lerp(hip, 0.78);
+            var torsoPoints = [
+              shoulder.clone().add(vec(-bodyLen * 0.25, 0, 0)), shoulder.clone(), thoraxCenter, abdomenCenter, pelvisCenter,
+              hip.clone(), hip.clone().add(vec(bodyLen * 0.24, 0, 0))
+            ];
+            var torsoRadii = [
+              [surfaceBodyHeight * 0.24, surfaceBodyDepth * 0.28],
+              [surfaceBodyHeight * 0.76 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.88 * postcranialSurface.shoulderFullness],
+              [surfaceBodyHeight * 0.96 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.96 * postcranialSurface.ribcageFullness],
+              [surfaceBodyHeight * 0.91 * postcranialSurface.bellyFullness, surfaceBodyDepth * 0.94 * postcranialSurface.bellyFullness],
+              [surfaceBodyHeight * 0.88 * postcranialSurface.pelvicFullness, surfaceBodyDepth * 0.94 * postcranialSurface.pelvicFullness],
+              [surfaceBodyHeight * 0.70, surfaceBodyDepth * 0.76],
+              [surfaceBodyHeight * 0.12, surfaceBodyDepth * 0.16]
+            ];
+            var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;
+            if (bodyShell) bodyShell.name = 'continuous-torso';
             if (bodyShell) {
               idleMotion.body = bodyShell;
               idleMotion.bodyBaseScale = bodyShell.scale.clone();
             }
-            [abdomenShell, pelvisShell].forEach(function (breathingMesh) {
-              if (breathingMesh) idleMotion.breathingMeshes.push({ mesh: breathingMesh, contour: null, baseScale: breathingMesh.scale.clone() });
-            });
             var surfaceHeadFactor = reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale;
-            var surfaceHeadLength = Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)) * surfaceHeadFactor * cranialSurface.headLengthScale;
-            var surfaceHeadHeight = Math.max(0.12, ht * 0.055) * surfaceHeadFactor * cranialSurface.headHeightScale;
-            var surfaceHeadDepth = Math.max(0.10, ht * 0.050) * surfaceHeadFactor * cranialSurface.headDepthScale;
+            var surfaceHeadLength = Math.max(0.18 * detailScale, len * (isSauropod ? 0.035 : 0.055)) * surfaceHeadFactor * cranialSurface.headLengthScale;
+            var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.085 : 0.055)) * surfaceHeadFactor * cranialSurface.headHeightScale;
+            var surfaceHeadDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.082 : 0.050)) * surfaceHeadFactor * cranialSurface.headDepthScale;
             var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));
-            var headShell = addEllipsoid(head, vec(surfaceHeadLength, surfaceHeadHeight, surfaceHeadDepth), headMat);
+            var headShell = isTheropod ? addSoftTissueChain([
+              head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
+              head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.10, 0, 0))
+            ], [
+              [surfaceHeadHeight * 0.40, surfaceHeadDepth * 0.40], [surfaceHeadHeight * 0.86, surfaceHeadDepth],
+              [surfaceHeadHeight * 0.70, surfaceHeadDepth * 0.72], [surfaceHeadHeight * 0.48, surfaceHeadDepth * 0.60],
+              [surfaceHeadHeight * 0.30, surfaceHeadDepth * 0.38]
+            ], headMat)[0] : addEllipsoid(head, vec(surfaceHeadLength, surfaceHeadHeight, surfaceHeadDepth), headMat);
             var bodyContour = addBodyContour(bodyShell);
             if (bodyContour) idleMotion.bodyContour = bodyContour;
             idleMotion.breathingMeshes.forEach(function (breathingEntry) { breathingEntry.contour = addBodyContour(breathingEntry.mesh); });
             addBodyContour(headShell);
             if (props.showBody) {
-              var neckBaseRadius = Math.max(0.11, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
-              var neckTipRadius = Math.max(0.08, ht * 0.038) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
-              var tailBaseRadius = Math.max(0.16, ht * 0.060) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
-              var shoulderBlend = addEllipsoid(new THREE.Vector3().copy(bodyCenter).lerp(shoulder, 0.78), vec(Math.max(neckBaseRadius * 1.20, bodyLen * 0.28), surfaceBodyHeight * 0.76 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.88 * postcranialSurface.shoulderFullness), bodyMat);
-              var hipBlend = addEllipsoid(new THREE.Vector3().copy(bodyCenter).lerp(hip, 0.78), vec(Math.max(tailBaseRadius * 1.18, bodyLen * 0.30), surfaceBodyHeight * 0.82 * postcranialSurface.pelvicFullness, surfaceBodyDepth * 0.94 * postcranialSurface.pelvicFullness), bodyMat);
-              var neckBaseBlend = addEllipsoid(new THREE.Vector3().copy(shoulder).lerp(head, 0.10), vec(neckBaseRadius * 1.16, neckBaseRadius * 1.20, neckBaseRadius * 1.08), bodyMat);
-              [shoulderBlend, hipBlend, neckBaseBlend].forEach(function (transitionMesh) {
-                var transitionContour = addBodyContour(transitionMesh);
-                if (transitionMesh) idleMotion.breathingMeshes.push({ mesh: transitionMesh, contour: transitionContour, baseScale: transitionMesh.scale.clone() });
-              });
+              var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
+              var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
+              var tailBaseRadius = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.105 : 0.075)) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
+              // Neck and tail overlap the continuous trunk within its tapered ends.
               var neckMidA = new THREE.Vector3().copy(shoulder).lerp(head, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.neckBaseCurve, 0));
               var neckMidB = new THREE.Vector3().copy(shoulder).lerp(head, 0.70).add(vec(0, surfaceBodyHeight * postcranialSurface.neckMidCurve, 0));
               var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head], [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius], bodyMat);
@@ -8019,11 +8081,11 @@ window.StemLab = window.StemLab || {
                 idleMotion.neckContour = neckContours[0] || null;
                 neckMeshes.slice(1).forEach(function (neckMesh, neckIndex) { idleMotion.breathingMeshes.push({ mesh: neckMesh, contour: neckContours[neckIndex + 1] || null, baseScale: neckMesh.scale.clone(), crossSection: neckIndex < 2 }); });
               }
-              var muzzleShell = addSoftTissueCylinder(
+              var muzzleShell = isTheropod ? null : addSoftTissueCylinder(
                 head,
                 surfaceSnout,
-                Math.max(0.08, ht * 0.042) * surfaceHeadFactor * reconstructionProfile.neckTip * cranialSurface.muzzleBaseScale,
-                Math.max(0.055, ht * 0.030) * surfaceHeadFactor * reconstructionProfile.neckTip * cranialSurface.muzzleTipScale
+                Math.max(0.08 * detailScale, ht * 0.042) * surfaceHeadFactor * reconstructionProfile.neckTip * cranialSurface.muzzleBaseScale,
+                Math.max(0.055 * detailScale, ht * 0.030) * surfaceHeadFactor * reconstructionProfile.neckTip * cranialSurface.muzzleTipScale
               );
               if (muzzleShell) {
                 muzzleShell.scale.x *= cranialSurface.muzzleHeightScale;
@@ -8032,14 +8094,9 @@ window.StemLab = window.StemLab || {
               addBodyContour(muzzleShell);
               var tailMidA = new THREE.Vector3().copy(hip).lerp(tail, 0.28).add(vec(0, surfaceBodyHeight * postcranialSurface.tailProximalCurve, 0));
               var tailMidB = new THREE.Vector3().copy(hip).lerp(tail, 0.64).add(vec(0, surfaceBodyHeight * postcranialSurface.tailMidCurve, 0));
-              var tailTipRadius = Math.max(0.04, ht * 0.025) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailTip;
+              var tailTipRadius = Math.max(0.006 * detailScale, ht * 0.005) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailTip;
               var tailRadii = [tailBaseRadius, tailBaseRadius * 0.72, tailBaseRadius * 0.38, tailTipRadius];
-              var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail], tailRadii, bodyMat);
-              tailMeshes.forEach(function (tailSegment, tailMeshIndex) {
-                if (tailMeshIndex < 3) tailSegment.scale.x *= postcranialSurface.tailHeightScale;
-                else tailSegment.scale.y *= postcranialSurface.tailHeightScale;
-                tailSegment.scale.z *= postcranialSurface.tailDepthScale;
-              });
+              var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail], tailRadii.map(function (r) { return [r * postcranialSurface.tailHeightScale, r * postcranialSurface.tailDepthScale]; }), bodyMat);
               var tailContours = addContourGroup(tailMeshes);
               var tailRootBlend = addEllipsoid(new THREE.Vector3().copy(hip).lerp(tailMidA, 0.24), vec(tailBaseRadius * 1.38, tailBaseRadius * 1.16 * postcranialSurface.tailHeightScale, tailBaseRadius * 1.16 * postcranialSurface.tailDepthScale), bodyMat);
               addBodyContour(tailRootBlend);
@@ -8060,9 +8117,9 @@ window.StemLab = window.StemLab || {
                 if (skeletalProfile.cervicalAirSacs) {
                   for (var cervicalSacIndex = 1; cervicalSacIndex <= 5; cervicalSacIndex++) {
                     var cervicalSacT = cervicalSacIndex / 7;
-                    var cervicalSacCenter = new THREE.Vector3().copy(shoulder).lerp(head, cervicalSacT).add(vec(0, -Math.max(0.015, ht * 0.006), 0));
+                    var cervicalSacCenter = new THREE.Vector3().copy(shoulder).lerp(head, cervicalSacT).add(vec(0, -Math.max(0.015 * detailScale, ht * 0.006), 0));
                     [-1, 1].forEach(function (cervicalSacSide) {
-                      addRespiratoryVolume(cervicalSacCenter.clone().add(vec(0, 0, cervicalSacSide * Math.max(0.030, bodyDepth * 0.16))), vec(Math.max(0.035, ht * 0.014), Math.max(0.025, ht * 0.010), Math.max(0.022, bodyDepth * 0.10)), airSacMat, 9);
+                      addRespiratoryVolume(cervicalSacCenter.clone().add(vec(0, 0, cervicalSacSide * Math.max(0.030 * detailScale, bodyDepth * 0.16))), vec(Math.max(0.035 * detailScale, ht * 0.014), Math.max(0.025 * detailScale, ht * 0.010), Math.max(0.022 * detailScale, bodyDepth * 0.10)), airSacMat, 9);
                     });
                   }
                   addRespiratoryVolume(shoulder.clone().add(vec(-bodyLen * 0.05, -bodyHeight * 0.08, 0)), vec(bodyLen * 0.15, bodyHeight * 0.22, bodyDepth * 0.36), airSacMat, 9);
@@ -8080,31 +8137,31 @@ window.StemLab = window.StemLab || {
               }
 
               // Evidence-constrained muscle envelopes: attachment paths are stronger evidence than rendered thickness.
-              var jawMuscleRadius = Math.max(0.026, ht * 0.015) * skeletalProfile.jawMuscleScale * reconstructionProfile.head;
+              var jawMuscleRadius = Math.max(0.026 * detailScale, ht * 0.015) * skeletalProfile.jawMuscleScale * reconstructionProfile.head;
               var cranialSideDepth = surfaceHeadDepth;
               [-1, 1].forEach(function (muscleSide) {
-                var temporalOrigin = head.clone().add(vec(Math.max(0.006, len * 0.002), Math.max(0.025, ht * 0.018), muscleSide * cranialSideDepth * 0.82));
-                var jawInsertion = head.clone().add(vec(-Math.max(0.012, len * 0.004), -Math.max(0.048, ht * 0.030), muscleSide * cranialSideDepth * 0.88));
+                var temporalOrigin = head.clone().add(vec(Math.max(0.006 * detailScale, len * 0.002), Math.max(0.025 * detailScale, ht * 0.018), muscleSide * cranialSideDepth * 0.82));
+                var jawInsertion = head.clone().add(vec(-Math.max(0.012 * detailScale, len * 0.004), -Math.max(0.048 * detailScale, ht * 0.030), muscleSide * cranialSideDepth * 0.88));
                 addMuscleBelly(temporalOrigin, jawInsertion, jawMuscleRadius, 0.68);
                 if (skeletalProfile.buccalTissue) {
-                  var buccalStart = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.22).add(vec(0, -Math.max(0.020, ht * 0.012) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.78 * cranialSurface.cheekScale));
-                  var buccalEnd = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.82).add(vec(0, -Math.max(0.025, ht * 0.015) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.68 * cranialSurface.cheekScale));
+                  var buccalStart = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.22).add(vec(0, -Math.max(0.020 * detailScale, ht * 0.012) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.78 * cranialSurface.cheekScale));
+                  var buccalEnd = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.82).add(vec(0, -Math.max(0.025 * detailScale, ht * 0.015) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.68 * cranialSurface.cheekScale));
                   addMuscleBelly(buccalStart, buccalEnd, jawMuscleRadius * 0.42, 0.46);
                 }
-                var neckOrigin = shoulder.clone().add(vec(Math.max(0.010, len * 0.006), bodyHeight * 0.16, muscleSide * bodyDepth * 0.34));
-                var neckInsertion = head.clone().add(vec(Math.max(0.010, len * 0.004), Math.max(0.018, ht * 0.012), muscleSide * cranialSideDepth * 0.44));
-                addMuscleBelly(neckOrigin, neckInsertion, Math.max(0.045, bodyHeight * 0.20) * skeletalProfile.neckMuscleScale, 0.72);
+                var neckOrigin = shoulder.clone().add(vec(Math.max(0.010 * detailScale, len * 0.006), bodyHeight * 0.16, muscleSide * bodyDepth * 0.34));
+                var neckInsertion = head.clone().add(vec(Math.max(0.010 * detailScale, len * 0.004), Math.max(0.018 * detailScale, ht * 0.012), muscleSide * cranialSideDepth * 0.44));
+                addMuscleBelly(neckOrigin, neckInsertion, Math.max(0.045 * detailScale, bodyHeight * 0.20) * skeletalProfile.neckMuscleScale, 0.72);
                 var pectoralOrigin = shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.12, muscleSide * bodyDepth * 0.42));
                 var pectoralInsertion = bodyCenter.clone().lerp(shoulder, 0.72).add(vec(0, -bodyHeight * 0.34, muscleSide * bodyDepth * 0.34));
-                addMuscleBelly(pectoralOrigin, pectoralInsertion, Math.max(0.045, bodyHeight * 0.20) * skeletalProfile.chestMuscleScale, 0.78);
+                addMuscleBelly(pectoralOrigin, pectoralInsertion, Math.max(0.045 * detailScale, bodyHeight * 0.20) * skeletalProfile.chestMuscleScale, 0.78);
                 var caudofemoralOrigin = new THREE.Vector3().copy(hip).lerp(tail, 0.34).add(vec(0, -bodyHeight * 0.18, muscleSide * bodyDepth * 0.24));
                 var caudofemoralInsertion = hip.clone().add(vec(-len * 0.012, -bodyHeight * 0.34, muscleSide * bodyDepth * 0.38));
-                addMuscleBelly(caudofemoralOrigin, caudofemoralInsertion, Math.max(0.050, bodyHeight * 0.22) * skeletalProfile.tailBaseMuscleScale, 0.74);
+                addMuscleBelly(caudofemoralOrigin, caudofemoralInsertion, Math.max(0.050 * detailScale, bodyHeight * 0.22) * skeletalProfile.tailBaseMuscleScale, 0.74);
               });
               if (skeletalProfile.keratinBeak) {
                 var beakBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.68);
-                var beakTip = surfaceSnout.clone().add(vec(-Math.max(0.06, len * 0.016), -Math.max(0.006, ht * 0.003) * cranialSurface.muzzleHeightScale, 0));
-                var keratinBeak = addKeratinCone(beakBase, beakTip, Math.max(0.050, ht * 0.022) * reconstructionProfile.head * Math.max(0.68, cranialSurface.muzzleTipScale));
+                var beakTip = surfaceSnout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.016), -Math.max(0.006 * detailScale, ht * 0.003) * cranialSurface.muzzleHeightScale, 0));
+                var keratinBeak = addKeratinCone(beakBase, beakTip, Math.max(0.050 * detailScale, ht * 0.022) * reconstructionProfile.head * Math.max(0.68, cranialSurface.muzzleTipScale));
                 if (keratinBeak) {
                   keratinBeak.scale.x *= cranialSurface.muzzleHeightScale;
                   keratinBeak.scale.z = 1.34 * cranialSurface.muzzleDepthScale;
@@ -8121,7 +8178,7 @@ window.StemLab = window.StemLab || {
                     var featureScalePos = new THREE.Vector3().copy(shoulder).lerp(hip, featureScaleT);
                     featureScalePos.y = bodyCenter.y + surfaceBodyHeight * (-0.22 + (featureScaleIndex % 4) * 0.16);
                     featureScalePos.z = scaleSide * surfaceBodyDepth * (0.82 + (featureScaleIndex % 2) * 0.075);
-                    var featureScaleSize = Math.max(0.018, ht * (0.0055 + integumentRng() * 0.0045));
+                    var featureScaleSize = Math.max(0.018 * detailScale, ht * (0.0055 + integumentRng() * 0.0045));
                     addEllipsoid(featureScalePos, vec(featureScaleSize * 1.22, featureScaleSize, featureScaleSize * 0.24), scaleReliefMat);
                   }
                 });
@@ -8130,7 +8187,7 @@ window.StemLab = window.StemLab || {
                   var dorsalScalePos = new THREE.Vector3().copy(shoulder).lerp(hip, dorsalScaleT);
                   dorsalScalePos.y = bodyCenter.y + surfaceBodyHeight * (0.66 + (dorsalScaleIndex % 2) * 0.08);
                   dorsalScalePos.z = (dorsalScaleIndex % 2 ? -1 : 1) * surfaceBodyDepth * 0.18;
-                  var dorsalScaleSize = Math.max(0.016, ht * (0.0045 + integumentRng() * 0.003));
+                  var dorsalScaleSize = Math.max(0.016 * detailScale, ht * (0.0045 + integumentRng() * 0.003));
                   addEllipsoid(dorsalScalePos, vec(dorsalScaleSize * 1.45, dorsalScaleSize * 0.82, dorsalScaleSize * 0.36), scaleReliefMat);
                 }
               }
@@ -8143,71 +8200,71 @@ window.StemLab = window.StemLab || {
                   coatBase.y = bodyCenter.y + Math.cos(coatAngle) * surfaceBodyHeight * 0.78;
                   coatBase.z = Math.sin(coatAngle) * surfaceBodyDepth * 0.87;
                   var coatNormal = vec(0, Math.cos(coatAngle), Math.sin(coatAngle)).normalize();
-                  var coatLength = Math.max(0.035, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
-                  var coatTip = coatBase.clone().add(coatNormal.multiplyScalar(coatLength)).add(vec(Math.max(0.006, len * 0.0035), 0, 0));
-                  addIntegumentFilament(coatBase, coatTip, Math.max(0.004, ht * 0.0017));
+                  var coatLength = Math.max(0.035 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
+                  var coatTip = coatBase.clone().add(coatNormal.multiplyScalar(coatLength)).add(vec(Math.max(0.006 * detailScale, len * 0.0035), 0, 0));
+                  addIntegumentFilament(coatBase, coatTip, Math.max(0.004 * detailScale, ht * 0.0017));
                 }
                 for (var neckFilamentIndex = 0; neckFilamentIndex < 18; neckFilamentIndex++) {
                   var neckFilamentT = (neckFilamentIndex + 0.45) / 18.5;
                   var neckBase = new THREE.Vector3().copy(shoulder).lerp(head, neckFilamentT);
                   var neckSide = neckFilamentIndex % 2 ? 1 : -1;
-                  neckBase.add(vec(0, Math.max(0.025, surfaceBodyHeight * 0.17), neckSide * surfaceBodyDepth * 0.19));
-                  var neckTip = neckBase.clone().add(vec(Math.max(0.008, len * 0.003), Math.max(0.040, ht * 0.019) * (0.75 + integumentRng() * 0.55), neckSide * Math.max(0.012, surfaceBodyDepth * 0.08)));
-                  addIntegumentFilament(neckBase, neckTip, Math.max(0.004, ht * 0.0016));
+                  neckBase.add(vec(0, Math.max(0.025 * detailScale, surfaceBodyHeight * 0.17), neckSide * surfaceBodyDepth * 0.19));
+                  var neckTip = neckBase.clone().add(vec(Math.max(0.008 * detailScale, len * 0.003), Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55), neckSide * Math.max(0.012 * detailScale, surfaceBodyDepth * 0.08)));
+                  addIntegumentFilament(neckBase, neckTip, Math.max(0.004 * detailScale, ht * 0.0016));
                 }
                 for (var tailFilamentIndex = 0; tailFilamentIndex < 22; tailFilamentIndex++) {
                   var tailFilamentT = 0.08 + tailFilamentIndex / 25;
                   var tailCoatBase = new THREE.Vector3().copy(hip).lerp(tail, tailFilamentT);
                   var tailCoatSide = tailFilamentIndex % 2 ? 1 : -1;
-                  tailCoatBase.add(vec(0, Math.max(0.016, surfaceBodyHeight * (0.14 - tailFilamentT * 0.07)), tailCoatSide * surfaceBodyDepth * (0.20 - tailFilamentT * 0.10)));
-                  var tailCoatTip = tailCoatBase.clone().add(vec(Math.max(0.008, len * 0.003), Math.max(0.028, ht * 0.014) * (0.72 + integumentRng() * 0.46), tailCoatSide * Math.max(0.008, surfaceBodyDepth * 0.05)));
-                  addIntegumentFilament(tailCoatBase, tailCoatTip, Math.max(0.0035, ht * 0.0014));
+                  tailCoatBase.add(vec(0, Math.max(0.016 * detailScale, surfaceBodyHeight * (0.14 - tailFilamentT * 0.07)), tailCoatSide * surfaceBodyDepth * (0.20 - tailFilamentT * 0.10)));
+                  var tailCoatTip = tailCoatBase.clone().add(vec(Math.max(0.008 * detailScale, len * 0.003), Math.max(0.028 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.46), tailCoatSide * Math.max(0.008 * detailScale, surfaceBodyDepth * 0.05)));
+                  addIntegumentFilament(tailCoatBase, tailCoatTip, Math.max(0.0035 * detailScale, ht * 0.0014));
                 }
               }
               if (surfaceHypothesis.dorsalBristles) {
                 var bristleLengthScale = /^psittacosaurus$/i.test(String(dn.id || '')) ? 1.34 : 0.88;
                 for (var bristleIndex = 0; bristleIndex < 12; bristleIndex++) {
                   var bristleT = 0.16 + bristleIndex * 0.052;
-                  var bristleBase = new THREE.Vector3().copy(hip).lerp(tail, bristleT).add(vec(0, Math.max(0.025, surfaceBodyHeight * (0.22 - bristleT * 0.08)), 0));
-                  var bristleTip = bristleBase.clone().add(vec(Math.max(0.010, len * 0.004), Math.max(0.07, ht * 0.055) * bristleLengthScale * (0.80 + bristleIndex * 0.018), 0));
-                  addIntegumentFilament(bristleBase, bristleTip, Math.max(0.004, ht * 0.0018));
+                  var bristleBase = new THREE.Vector3().copy(hip).lerp(tail, bristleT).add(vec(0, Math.max(0.025 * detailScale, surfaceBodyHeight * (0.22 - bristleT * 0.08)), 0));
+                  var bristleTip = bristleBase.clone().add(vec(Math.max(0.010 * detailScale, len * 0.004), Math.max(0.07 * detailScale, ht * 0.055) * bristleLengthScale * (0.80 + bristleIndex * 0.018), 0));
+                  addIntegumentFilament(bristleBase, bristleTip, Math.max(0.004 * detailScale, ht * 0.0018));
                 }
               }
               if (surfaceHypothesis.tailFan) {
                 var tailFanBase = new THREE.Vector3().copy(hip).lerp(tail, 0.86);
                 for (var tailFanIndex = 0; tailFanIndex < 9; tailFanIndex++) {
                   var fanOffset = tailFanIndex - 4;
-                  var tailFanRoot = tailFanBase.clone().add(vec(fanOffset * Math.max(0.006, len * 0.0013), 0, 0));
-                  var tailFanTip = tailFanRoot.clone().add(vec(Math.max(0.18, len * 0.050) * (0.90 + (4 - Math.abs(fanOffset)) * 0.025), fanOffset * Math.max(0.020, ht * 0.010), fanOffset * Math.max(0.030, surfaceBodyDepth * 0.18)));
-                  addFeatherVane(tailFanRoot, tailFanTip, Math.max(0.020, ht * 0.010));
+                  var tailFanRoot = tailFanBase.clone().add(vec(fanOffset * Math.max(0.006 * detailScale, len * 0.0013), 0, 0));
+                  var tailFanTip = tailFanRoot.clone().add(vec(Math.max(0.18 * detailScale, len * 0.12) * (0.90 + (4 - Math.abs(fanOffset)) * 0.025), fanOffset * Math.max(0.020 * detailScale, ht * 0.036), fanOffset * Math.max(0.030 * detailScale, surfaceBodyDepth * 0.18)));
+                  addFeatherVane(tailFanRoot, tailFanTip, Math.max(0.020 * detailScale, ht * 0.010));
                 }
               } else if (surfaceHypothesis.tailFrond) {
                 for (var tailFrondIndex = 0; tailFrondIndex < 8; tailFrondIndex++) {
                   var tailFrondT = 0.26 + tailFrondIndex * 0.085;
                   [-1, 1].forEach(function (frondSide) {
                     var tailFrondBase = new THREE.Vector3().copy(hip).lerp(tail, tailFrondT);
-                    var tailFrondTip = tailFrondBase.clone().add(vec(Math.max(0.025, len * 0.010), Math.max(0.018, ht * 0.008), frondSide * Math.max(0.10, surfaceBodyDepth * (0.50 - tailFrondT * 0.16))));
-                    addFeatherVane(tailFrondBase, tailFrondTip, Math.max(0.014, ht * 0.0065));
+                    var tailFrondTip = tailFrondBase.clone().add(vec(Math.max(0.025 * detailScale, len * 0.010), Math.max(0.018 * detailScale, ht * 0.008), frondSide * Math.max(0.10 * detailScale, surfaceBodyDepth * (0.50 - tailFrondT * 0.16))));
+                    addFeatherVane(tailFrondBase, tailFrondTip, Math.max(0.014 * detailScale, ht * 0.0065));
                   });
                 }
               }
 
               var faceScale = reconstructionProfile.head;
               var facialMuzzleDepthScale = cranialSurface.muzzleDepthScale * ((cranialSurface.muzzleBaseScale + cranialSurface.muzzleTipScale) * 0.5);
-              var lowerJawStart = head.clone().lerp(surfaceSnout, 0.16).add(vec(0, -Math.max(0.052, ht * 0.030) * cranialSurface.jawHeightScale, 0));
-              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.94).add(vec(0, -Math.max(0.045, ht * 0.024) * cranialSurface.jawHeightScale, 0));
-              var lowerJawShell = addSoftTissueCylinder(lowerJawStart, lowerJawEnd, Math.max(0.052, ht * 0.028) * faceScale * cranialSurface.jawHeightScale, Math.max(0.036, ht * 0.019) * faceScale * cranialSurface.jawHeightScale, headMat);
+              var lowerJawStart = head.clone().lerp(surfaceSnout, 0.16).add(vec(0, -Math.max(0.052 * detailScale, ht * 0.030) * cranialSurface.jawHeightScale, 0));
+              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.94).add(vec(0, -Math.max(0.045 * detailScale, ht * 0.024) * cranialSurface.jawHeightScale, 0));
+              var lowerJawShell = addSoftTissueCylinder(lowerJawStart, lowerJawEnd, Math.max(0.052 * detailScale, ht * 0.028) * faceScale * cranialSurface.jawHeightScale, Math.max(0.036 * detailScale, ht * 0.019) * faceScale * cranialSurface.jawHeightScale, headMat);
               if (lowerJawShell) lowerJawShell.scale.z *= cranialSurface.jawDepthScale / Math.max(0.01, cranialSurface.jawHeightScale);
               addBodyContour(lowerJawShell);
-              addBodyContour(addEllipsoid(lowerJawEnd.clone().add(vec(-Math.max(0.008, len * 0.002), -Math.max(0.006, ht * 0.0025) * cranialSurface.jawHeightScale, 0)), vec(Math.max(0.045, len * 0.010) * faceScale, Math.max(0.032, ht * 0.016) * faceScale * cranialSurface.jawHeightScale, Math.max(0.046, ht * 0.024) * faceScale * cranialSurface.jawDepthScale), headMat));
+              addBodyContour(addEllipsoid(lowerJawEnd.clone().add(vec(-Math.max(0.008 * detailScale, len * 0.002), -Math.max(0.006 * detailScale, ht * 0.0025) * cranialSurface.jawHeightScale, 0)), vec(Math.max(0.045 * detailScale, len * 0.010) * faceScale, Math.max(0.032 * detailScale, ht * 0.016) * faceScale * cranialSurface.jawHeightScale, Math.max(0.046 * detailScale, ht * 0.024) * faceScale * cranialSurface.jawDepthScale), headMat));
               [-1, 1].forEach(function (cheekSide) {
                 var cheekCenter = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, cheekSide * surfaceHeadDepth * 0.64));
                 var cheekShell = addEllipsoid(cheekCenter, vec(surfaceHeadLength * 0.34, surfaceHeadHeight * 0.34 * cranialSurface.cheekScale, surfaceHeadDepth * 0.32 * cranialSurface.cheekScale), headMat);
                 addBodyContour(cheekShell);
               });
               [-1, 1].forEach(function (faceSide) {
-                var eyePos = head.clone().add(vec(-Math.max(0.025, len * 0.010) * cranialSurface.eyeForwardScale, Math.max(0.035, ht * 0.020) * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.90));
-                var eyeRadius = Math.max(0.022, ht * 0.012) * faceScale * cranialSurface.eyeScale;
+                var eyePos = head.clone().add(vec(-Math.max(0.025 * detailScale, len * 0.010) * cranialSurface.eyeForwardScale, Math.max(0.035 * detailScale, ht * 0.020) * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.90));
+                var eyeRadius = Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale;
                 var browStart = eyePos.clone().add(vec(-eyeRadius * 1.22, eyeRadius * 0.84, -faceSide * eyeRadius * 0.16));
                 var browEnd = eyePos.clone().add(vec(eyeRadius * 1.02, eyeRadius * 0.96, -faceSide * eyeRadius * 0.12));
                 addSoftTissueCylinder(browStart, browEnd, eyeRadius * 0.25 * cranialSurface.browScale, eyeRadius * 0.18 * cranialSurface.browScale, headMat);
@@ -8217,12 +8274,12 @@ window.StemLab = window.StemLab || {
                 eye.renderOrder = 10;
                 model.add(eye);
                 var pupil = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 0.58, 14, 10), eyePupilMat);
-                pupil.position.copy(eyePos).add(vec(-Math.max(0.006, len * 0.0012), Math.max(0.004, ht * 0.0015), faceSide * eyeRadius * 0.34));
+                pupil.position.copy(eyePos).add(vec(-Math.max(0.006 * detailScale, len * 0.0012), Math.max(0.004 * detailScale, ht * 0.0015), faceSide * eyeRadius * 0.34));
                 pupil.scale.set(1, 0.88, 0.28);
                 pupil.renderOrder = 11;
                 model.add(pupil);
-                var glint = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.006, ht * 0.0032) * faceScale, 10, 8), eyeGlintMat);
-                glint.position.copy(eyePos).add(vec(-Math.max(0.006, len * 0.0012), Math.max(0.008, ht * 0.003), faceSide * Math.max(0.011, ht * 0.004)));
+                var glint = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.006 * detailScale, ht * 0.0032) * faceScale, 10, 8), eyeGlintMat);
+                glint.position.copy(eyePos).add(vec(-Math.max(0.006 * detailScale, len * 0.0012), Math.max(0.008 * detailScale, ht * 0.003), faceSide * Math.max(0.011 * detailScale, ht * 0.004)));
                 glint.renderOrder = 12;
                 model.add(glint);
                 var cornea = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 1.03, 20, 14), corneaMat);
@@ -8230,37 +8287,37 @@ window.StemLab = window.StemLab || {
                 cornea.scale.set(1, 0.84, 0.50);
                 cornea.renderOrder = 12;
                 model.add(cornea);
-                var upperLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.04, Math.max(0.004, eyeRadius * 0.17), 7, 22, Math.PI), headMat);
+                var upperLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.04, Math.max(0.004 * detailScale, eyeRadius * 0.17), 7, 22, Math.PI), headMat);
                 upperLid.position.copy(eyePos).add(vec(0, 0, faceSide * eyeRadius * 0.47));
                 upperLid.scale.y = 0.82;
                 upperLid.renderOrder = 13;
                 model.add(upperLid);
-                var lowerLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.02, Math.max(0.0035, eyeRadius * 0.13), 7, 22, Math.PI), headMat);
+                var lowerLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.02, Math.max(0.0035 * detailScale, eyeRadius * 0.13), 7, 22, Math.PI), headMat);
                 lowerLid.position.copy(upperLid.position);
                 lowerLid.rotation.z = Math.PI;
                 lowerLid.scale.y = 0.82;
                 lowerLid.renderOrder = 13;
                 model.add(lowerLid);
                 idleMotion.eyes.push({ eye: eye, pupil: pupil, glint: glint, cornea: cornea, upperLid: upperLid, lowerLid: lowerLid, eyeBaseY: eye.scale.y, pupilBaseY: pupil.scale.y, corneaBaseY: cornea.scale.y, lidBaseY: upperLid.scale.y });
-                var nostrilPos = new THREE.Vector3().copy(head).lerp(surfaceSnout, cranialSurface.nostrilPosition).add(vec(-Math.max(0.012, len * 0.004), Math.max(0.012, ht * 0.006) * cranialSurface.nostrilHeightScale, faceSide * Math.max(0.048, ht * 0.026) * faceScale * facialMuzzleDepthScale));
-                var nostrilRadius = Math.max(0.010, ht * 0.0055) * faceScale * cranialSurface.nostrilScale;
+                var nostrilPos = new THREE.Vector3().copy(head).lerp(surfaceSnout, cranialSurface.nostrilPosition).add(vec(-Math.max(0.012 * detailScale, len * 0.004), Math.max(0.012 * detailScale, ht * 0.006) * cranialSurface.nostrilHeightScale, faceSide * Math.max(0.048 * detailScale, ht * 0.026) * faceScale * facialMuzzleDepthScale));
+                var nostrilRadius = Math.max(0.010 * detailScale, ht * 0.0055) * faceScale * cranialSurface.nostrilScale;
                 var nostril = new THREE.Mesh(new THREE.SphereGeometry(nostrilRadius, 12, 8), mouthMat);
                 nostril.position.copy(nostrilPos);
                 nostril.scale.set(1.25, 0.55, 0.42);
                 nostril.renderOrder = 10;
                 model.add(nostril);
-                var nostrilRim = new THREE.Mesh(new THREE.TorusGeometry(nostrilRadius * 1.18, Math.max(0.0025, nostrilRadius * 0.20), 7, 18), headMat);
+                var nostrilRim = new THREE.Mesh(new THREE.TorusGeometry(nostrilRadius * 1.18, Math.max(0.0025 * detailScale, nostrilRadius * 0.20), 7, 18), headMat);
                 nostrilRim.position.copy(nostrilPos).add(vec(0, 0, faceSide * nostrilRadius * 0.40));
                 nostrilRim.scale.set(1.25, 0.56, 1);
                 nostrilRim.renderOrder = 11;
                 model.add(nostrilRim);
-                var mouthStart = head.clone().lerp(surfaceSnout, 0.18).add(vec(0, -Math.max(0.030, ht * 0.017) * cranialSurface.jawHeightScale, faceSide * Math.max(0.060, ht * 0.033) * faceScale * cranialSurface.cheekScale));
-                var mouthEnd = head.clone().lerp(surfaceSnout, 0.92).add(vec(0, -Math.max(0.026, ht * 0.014) * cranialSurface.jawHeightScale, faceSide * Math.max(0.052, ht * 0.029) * faceScale * facialMuzzleDepthScale));
-                addModelCylinder(mouthStart, mouthEnd, Math.max(0.006, ht * 0.0028), mouthMat, 10);
-                var lowerLipStart = mouthStart.clone().add(vec(0, -Math.max(0.006, ht * 0.0030), faceSide * Math.max(0.002, ht * 0.0010)));
-                var lowerLipEnd = mouthEnd.clone().add(vec(0, -Math.max(0.005, ht * 0.0024), faceSide * Math.max(0.002, ht * 0.0010)));
-                addModelCylinder(lowerLipStart, lowerLipEnd, Math.max(0.004, ht * 0.0020), oralTissueMat, 10);
-                var mouthCorner = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.008, ht * 0.0040) * faceScale, 12, 8), oralTissueMat);
+                var mouthStart = head.clone().lerp(surfaceSnout, 0.18).add(vec(0, -Math.max(0.030 * detailScale, ht * 0.017) * cranialSurface.jawHeightScale, faceSide * Math.max(0.060 * detailScale, ht * 0.033) * faceScale * cranialSurface.cheekScale));
+                var mouthEnd = head.clone().lerp(surfaceSnout, 0.92).add(vec(0, -Math.max(0.026 * detailScale, ht * 0.014) * cranialSurface.jawHeightScale, faceSide * Math.max(0.052 * detailScale, ht * 0.029) * faceScale * facialMuzzleDepthScale));
+                addModelCylinder(mouthStart, mouthEnd, Math.max(0.006 * detailScale, ht * 0.0028), mouthMat, 10);
+                var lowerLipStart = mouthStart.clone().add(vec(0, -Math.max(0.006 * detailScale, ht * 0.0030), faceSide * Math.max(0.002 * detailScale, ht * 0.0010)));
+                var lowerLipEnd = mouthEnd.clone().add(vec(0, -Math.max(0.005 * detailScale, ht * 0.0024), faceSide * Math.max(0.002 * detailScale, ht * 0.0010)));
+                addModelCylinder(lowerLipStart, lowerLipEnd, Math.max(0.004 * detailScale, ht * 0.0020), oralTissueMat, 10);
+                var mouthCorner = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.008 * detailScale, ht * 0.0040) * faceScale, 12, 8), oralTissueMat);
                 mouthCorner.position.copy(mouthStart);
                 mouthCorner.scale.set(0.72, 1.16, 0.48);
                 mouthCorner.renderOrder = 11;
@@ -8270,104 +8327,104 @@ window.StemLab = window.StemLab || {
               if (/Ceratops/i.test(cladeName)) {
                 if (cranialSurface.frillScale > 0.08) {
                   var frillCenter = head.clone().add(vec(len * 0.025 * cranialSurface.frillScale, ht * 0.035, 0));
-                  addEllipsoid(frillCenter, vec(Math.max(0.04, len * 0.014 * cranialSurface.frillScale), Math.max(0.10, ht * 0.15 * cranialSurface.frillScale), Math.max(0.10, bodyDepth * 0.92 * cranialSurface.frillScale)), anatomyAccentMat);
+                  addEllipsoid(frillCenter, vec(Math.max(0.04 * detailScale, len * 0.014 * cranialSurface.frillScale), Math.max(0.10 * detailScale, ht * 0.15 * cranialSurface.frillScale), Math.max(0.10 * detailScale, bodyDepth * 0.92 * cranialSurface.frillScale)), anatomyAccentMat);
                 }
                 if (cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (side) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * surfaceHeadDepth * 0.62));
-                  addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)));
+                  addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06 * detailScale, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024 * detailScale, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)));
                 });
                 if (cranialSurface.noseHornScale > 0.08) {
                   var noseHornBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.58).add(vec(0, surfaceHeadHeight * 0.60, 0));
-                  addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)));
+                  addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)));
                 }
               } else if (/Stegosaur/i.test(cladeName)) {
                 for (var plateIndex = 0; plateIndex < 7; plateIndex++) {
                   var plateT = plateIndex / 6;
                   var plateX = shoulder.x + (hip.x - shoulder.x + len * 0.16) * plateT;
-                  var plateHeight = Math.max(0.20, bodyHeight * (0.70 + Math.sin(plateT * Math.PI) * 0.72));
-                  var plate = addAccentCone(vec(plateX, bodyCenter.y + bodyHeight * 0.72, 0), vec(plateX, bodyCenter.y + bodyHeight * 0.72 + plateHeight, 0), Math.max(0.10, bodyDepth * 0.34));
+                  var plateHeight = Math.max(0.20 * detailScale, bodyHeight * (0.70 + Math.sin(plateT * Math.PI) * 0.72));
+                  var plate = addAccentCone(vec(plateX, bodyCenter.y + bodyHeight * 0.72, 0), vec(plateX, bodyCenter.y + bodyHeight * 0.72 + plateHeight, 0), Math.max(0.10 * detailScale, bodyDepth * 0.34));
                   if (plate) plate.scale.z = 0.30;
                 }
               } else if (/Spinosaur/i.test(cladeName)) {
                 for (var sailIndex = 0; sailIndex < 9; sailIndex++) {
                   var sailT = sailIndex / 8;
                   var sailX = shoulder.x + (hip.x - shoulder.x) * sailT;
-                  var sailHeight = Math.max(0.18, ht * (0.10 + Math.sin(sailT * Math.PI) * 0.16));
-                  addAccentCone(vec(sailX, bodyCenter.y + bodyHeight * 0.58, 0), vec(sailX, bodyCenter.y + bodyHeight * 0.58 + sailHeight, 0), Math.max(0.025, ht * 0.010));
+                  var sailHeight = Math.max(0.18 * detailScale, ht * (0.10 + Math.sin(sailT * Math.PI) * 0.16));
+                  addAccentCone(vec(sailX, bodyCenter.y + bodyHeight * 0.58, 0), vec(sailX, bodyCenter.y + bodyHeight * 0.58 + sailHeight, 0), Math.max(0.025 * detailScale, ht * 0.010));
                 }
               } else if (/Ankylosaur/i.test(cladeName)) {
                 for (var armorIndex = 0; armorIndex < 8; armorIndex++) {
                   var armorT = armorIndex / 7;
                   var armorX = shoulder.x + (hip.x - shoulder.x) * armorT;
                   [-1, 1].forEach(function (side) {
-                    addEllipsoid(vec(armorX, bodyCenter.y + bodyHeight * 0.62, side * bodyDepth * 0.56), vec(Math.max(0.07, len * 0.012), Math.max(0.045, ht * 0.018), Math.max(0.05, bodyDepth * 0.16)), anatomyAccentMat);
+                    addEllipsoid(vec(armorX, bodyCenter.y + bodyHeight * 0.62, side * bodyDepth * 0.56), vec(Math.max(0.07 * detailScale, len * 0.012), Math.max(0.045 * detailScale, ht * 0.018), Math.max(0.05 * detailScale, bodyDepth * 0.16)), anatomyAccentMat);
                   });
                 }
-                addEllipsoid(tail.clone(), vec(Math.max(0.18, len * 0.032), Math.max(0.10, ht * 0.040), Math.max(0.13, bodyDepth * 0.52)), anatomyAccentMat);
+                addEllipsoid(tail.clone(), vec(Math.max(0.18 * detailScale, len * 0.032), Math.max(0.10 * detailScale, ht * 0.040), Math.max(0.13 * detailScale, bodyDepth * 0.52)), anatomyAccentMat);
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
                 if (cranialSurface.crestMode !== 'none') {
                   var crestBase = head.clone().add(vec(len * 0.010, surfaceHeadHeight * 0.70, 0));
                   if (cranialSurface.crestMode === 'tube') {
-                    var tubularCrest = addSoftTissueCylinder(crestBase, crestBase.clone().add(vec(Math.max(0.24, len * 0.075), Math.max(0.12, ht * 0.060), 0)), Math.max(0.045, ht * 0.020), Math.max(0.026, ht * 0.012), anatomyAccentMat);
+                    var tubularCrest = addSoftTissueCylinder(crestBase, crestBase.clone().add(vec(Math.max(0.24 * detailScale, len * 0.075), Math.max(0.12 * detailScale, ht * 0.060), 0)), Math.max(0.045 * detailScale, ht * 0.020), Math.max(0.026 * detailScale, ht * 0.012), anatomyAccentMat);
                     addBodyContour(tubularCrest);
                   } else if (cranialSurface.crestMode === 'helmet') {
-                    addEllipsoid(crestBase.clone().add(vec(len * 0.018, ht * 0.040, 0)), vec(Math.max(0.12, len * 0.030), Math.max(0.13, ht * 0.070), Math.max(0.07, surfaceHeadDepth * 0.54)), anatomyAccentMat);
+                    addEllipsoid(crestBase.clone().add(vec(len * 0.018, ht * 0.040, 0)), vec(Math.max(0.12 * detailScale, len * 0.030), Math.max(0.13 * detailScale, ht * 0.070), Math.max(0.07 * detailScale, surfaceHeadDepth * 0.54)), anatomyAccentMat);
                   } else {
-                    addEllipsoid(crestBase.clone().add(vec(-len * 0.010, ht * 0.018, 0)), vec(Math.max(0.08, len * 0.018), Math.max(0.07, ht * 0.035), Math.max(0.06, surfaceHeadDepth * 0.48)), anatomyAccentMat);
+                    addEllipsoid(crestBase.clone().add(vec(-len * 0.010, ht * 0.018, 0)), vec(Math.max(0.08 * detailScale, len * 0.018), Math.max(0.07 * detailScale, ht * 0.035), Math.max(0.06 * detailScale, surfaceHeadDepth * 0.48)), anatomyAccentMat);
                   }
                 }
               } else if (/Pachycephalosaur/i.test(cladeName)) {
-                addEllipsoid(head.clone().add(vec(0, Math.max(0.03, ht * 0.055 * cranialSurface.domeScale), 0)), vec(Math.max(0.07, len * 0.035 * (0.48 + cranialSurface.domeScale * 0.52)), Math.max(0.035, ht * 0.050 * cranialSurface.domeScale), Math.max(0.07, bodyDepth * 0.62 * (0.55 + cranialSurface.domeScale * 0.45))), anatomyAccentMat);
+                addEllipsoid(head.clone().add(vec(0, Math.max(0.03 * detailScale, ht * 0.055 * cranialSurface.domeScale), 0)), vec(Math.max(0.07 * detailScale, len * 0.035 * (0.48 + cranialSurface.domeScale * 0.52)), Math.max(0.035 * detailScale, ht * 0.050 * cranialSurface.domeScale), Math.max(0.07 * detailScale, bodyDepth * 0.62 * (0.55 + cranialSurface.domeScale * 0.45))), anatomyAccentMat);
               } else if (/Therizinosaur/i.test(cladeName)) {
                 [-1, 1].forEach(function (side) {
                   for (var clawIndex = -1; clawIndex <= 1; clawIndex++) {
                     var clawBase = shoulder.clone().add(vec(-len * 0.040, -ht * 0.12, side * (bodyDepth * 0.46 + clawIndex * bodyDepth * 0.12)));
-                    addKeratinCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34, len * 0.095), -Math.max(0.06, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.021, ht * 0.007));
+                    addKeratinCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34 * detailScale, len * 0.095), -Math.max(0.06 * detailScale, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.021 * detailScale, ht * 0.007));
                   }
                 });
 
               } else if (/Tyrannosaur/i.test(cladeName)) {
                 var tyrantSnout = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.60);
-                addEllipsoid(tyrantSnout, vec(Math.max(0.16, len * 0.040), Math.max(0.10, ht * 0.040), Math.max(0.10, bodyDepth * 0.52)), anatomyAccentMat);
+                addEllipsoid(tyrantSnout, vec(Math.max(0.16 * detailScale, len * 0.040), Math.max(0.10 * detailScale, ht * 0.040), Math.max(0.10 * detailScale, bodyDepth * 0.52)), anatomyAccentMat);
                 [-1, 1].forEach(function (side) {
-                  addEllipsoid(head.clone().add(vec(-len * 0.012, ht * 0.045, side * bodyDepth * 0.32)), vec(Math.max(0.06, len * 0.012), Math.max(0.04, ht * 0.018), Math.max(0.04, bodyDepth * 0.15)), anatomyAccentMat);
+                  addEllipsoid(head.clone().add(vec(-len * 0.012, ht * 0.045, side * bodyDepth * 0.32)), vec(Math.max(0.06 * detailScale, len * 0.012), Math.max(0.04 * detailScale, ht * 0.018), Math.max(0.04 * detailScale, bodyDepth * 0.15)), anatomyAccentMat);
                 });
               } else if (/Abelisaur/i.test(cladeName) && /horn/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
                 [-1, 1].forEach(function (side) {
                   var abelisaurHornBase = head.clone().add(vec(-len * 0.010, ht * 0.050, side * bodyDepth * 0.28));
-                  addAccentCone(abelisaurHornBase, abelisaurHornBase.clone().add(vec(0, Math.max(0.10, ht * 0.065), side * bodyDepth * 0.08)), Math.max(0.030, ht * 0.012));
+                  addAccentCone(abelisaurHornBase, abelisaurHornBase.clone().add(vec(0, Math.max(0.10 * detailScale, ht * 0.065), side * bodyDepth * 0.08)), Math.max(0.030 * detailScale, ht * 0.012));
                 });
               } else if (/Oviraptor/i.test(cladeName) && /crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
                 var oviraptorCrestBase = head.clone().add(vec(len * 0.006, ht * 0.038, 0));
-                var oviraptorCrest = addAccentCone(oviraptorCrestBase, oviraptorCrestBase.clone().add(vec(len * 0.018, Math.max(0.18, ht * 0.13), 0)), Math.max(0.07, ht * 0.030));
+                var oviraptorCrest = addAccentCone(oviraptorCrestBase, oviraptorCrestBase.clone().add(vec(len * 0.018, Math.max(0.18 * detailScale, ht * 0.13), 0)), Math.max(0.07 * detailScale, ht * 0.030));
                 if (oviraptorCrest) oviraptorCrest.scale.z = 0.46;
 
               } else if (/Iguanodont/i.test(cladeName)) {
                 [-1, 1].forEach(function (side) {
-                  var thumbBase = vec(shoulder.x - len * 0.035, Math.max(0.12, shoulder.y * 0.25), side * bodyDepth * 0.52);
-                  addAccentCone(thumbBase, thumbBase.clone().add(vec(-Math.max(0.12, len * 0.025), Math.max(0.10, ht * 0.050), side * bodyDepth * 0.08)), Math.max(0.020, ht * 0.008));
+                  var thumbBase = vec(shoulder.x - len * 0.035, Math.max(0.12 * detailScale, shoulder.y * 0.25), side * bodyDepth * 0.52);
+                  addAccentCone(thumbBase, thumbBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.025), Math.max(0.10 * detailScale, ht * 0.050), side * bodyDepth * 0.08)), Math.max(0.020 * detailScale, ht * 0.008));
                 });
               }
             }
 
             if (props.showSkeleton) {
-              addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050, ht * 0.017), Math.max(0.055, ht * 0.019), 1.55, 'dorsal');
-              addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050, ht * 0.017), Math.max(0.014, ht * 0.0045), 1.20, 'caudal');
-              var skullLength = Math.max(0.20, len * (isSauropod ? 0.040 : 0.066)) * reconstructionProfile.head;
-              var skullHeight = Math.max(0.13, ht * (isTheropod ? 0.068 : 0.058)) * reconstructionProfile.head;
-              var skullDepth = Math.max(0.12, ht * 0.058) * reconstructionProfile.head;
+              addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.055 * detailScale, ht * 0.019), 1.55, 'dorsal');
+              addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.014 * detailScale, ht * 0.0045), 1.20, 'caudal');
+              var skullLength = Math.max(0.20 * detailScale, len * (isSauropod ? 0.040 : 0.066)) * reconstructionProfile.head;
+              var skullHeight = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.080 : 0.058)) * reconstructionProfile.head;
+              var skullDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.073 : 0.058)) * reconstructionProfile.head;
               var neckAxis = new THREE.Vector3().subVectors(shoulder, head).normalize();
               var axisCenter = skeletalProfile.craniocervicalDetail ? head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.84)) : head.clone();
-              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044, ht * 0.015), Math.max(0.032, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');
+              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');
 
               addSkeletonEllipsoid(head, vec(skullLength * 0.68, skullHeight, skullDepth), boneMat);
               var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);
-              addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);
-              addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012, ht * 0.0045));
+              addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09 * detailScale, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);
+              addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));
 
               if (skeletalProfile.craniocervicalDetail) {
                 // Head-neck transition: braincase, single condyle, atlas ring, and odontoid-bearing axis.
-                var craniocervicalRadius = Math.max(0.008, ht * 0.0030);
+                var craniocervicalRadius = Math.max(0.008 * detailScale, ht * 0.0030);
                 var braincaseCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.25));
                 var occipitalCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.43));
                 var occipitalCondyleCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.53));
@@ -8403,27 +8460,27 @@ window.StemLab = window.StemLab || {
 
               [-1, 1].forEach(function (skullSide) {
                 var sideZ = skullSide * skullDepth * 0.78;
-                var orbit = addSkeletonEllipsoid(head.clone().add(vec(-skullLength * 0.12, skullHeight * 0.10, sideZ)), vec(skullLength * 0.25, skullHeight * 0.44, Math.max(0.012, skullDepth * 0.18)), skeletonCavityMat);
+                var orbit = addSkeletonEllipsoid(head.clone().add(vec(-skullLength * 0.12, skullHeight * 0.10, sideZ)), vec(skullLength * 0.25, skullHeight * 0.44, Math.max(0.012 * detailScale, skullDepth * 0.18)), skeletonCavityMat);
                 if (orbit) orbit.renderOrder = 13;
                 if (skeletalProfile.scleroticRing) {
-                  var scleroticRing = new THREE.Mesh(new THREE.TorusGeometry(skullHeight * 0.27, Math.max(0.006, ht * 0.0022), 8, 28), boneMat);
+                  var scleroticRing = new THREE.Mesh(new THREE.TorusGeometry(skullHeight * 0.27, Math.max(0.006 * detailScale, ht * 0.0022), 8, 28), boneMat);
                   scleroticRing.position.copy(orbit.position);
                   scleroticRing.rotation.y = Math.PI / 2;
                   scleroticRing.renderOrder = 14;
                   scleroticRing.castShadow = true;
                   model.add(scleroticRing);
                 }
-                var temporalOpening = addSkeletonEllipsoid(head.clone().add(vec(skullLength * 0.30, skullHeight * 0.02, sideZ * 0.96)), vec(skullLength * 0.17, skullHeight * 0.28, Math.max(0.010, skullDepth * 0.14)), skeletonCavityMat);
+                var temporalOpening = addSkeletonEllipsoid(head.clone().add(vec(skullLength * 0.30, skullHeight * 0.02, sideZ * 0.96)), vec(skullLength * 0.17, skullHeight * 0.28, Math.max(0.010 * detailScale, skullDepth * 0.14)), skeletonCavityMat);
                 if (temporalOpening) temporalOpening.renderOrder = 13;
-                var nasalOpening = addSkeletonEllipsoid(rostrumCenter.clone().lerp(snout, 0.45).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008, skullDepth * 0.10)), skeletonCavityMat);
+                var nasalOpening = addSkeletonEllipsoid(rostrumCenter.clone().lerp(snout, 0.45).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008 * detailScale, skullDepth * 0.10)), skeletonCavityMat);
                 if (nasalOpening) nasalOpening.renderOrder = 13;
                 if (skeletalProfile.antorbitalFenestra) {
-                  var antorbitalFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(head).lerp(rostrumCenter, 0.62).add(vec(0, -skullHeight * 0.02, skullSide * skullDepth * 0.64)), vec(skullLength * 0.19, skullHeight * (/Spinosaur/i.test(cladeName) ? 0.20 : 0.30), Math.max(0.009, skullDepth * 0.12)), skeletonCavityMat);
+                  var antorbitalFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(head).lerp(rostrumCenter, 0.62).add(vec(0, -skullHeight * 0.02, skullSide * skullDepth * 0.64)), vec(skullLength * 0.19, skullHeight * (/Spinosaur/i.test(cladeName) ? 0.20 : 0.30), Math.max(0.009 * detailScale, skullDepth * 0.12)), skeletonCavityMat);
                   if (antorbitalFenestra) antorbitalFenestra.renderOrder = 13;
                 }
 
                 // Modular cranial frame: homologous load paths remain visible around the fenestrae.
-                var cranialBarRadius = Math.max(0.007, ht * 0.0027);
+                var cranialBarRadius = Math.max(0.007 * detailScale, ht * 0.0027);
                 var jawHinge = head.clone().add(vec(skullLength * 0.34, -skullHeight * 0.52, skullSide * skullDepth * 0.52));
                 var jawTip = snout.clone().add(vec(0, -skullHeight * 0.42, skullSide * skullDepth * 0.38));
                 var premaxillaUpper = snout.clone().add(vec(skullLength * 0.04, skullHeight * 0.18, skullSide * skullDepth * 0.38));
@@ -8477,7 +8534,7 @@ window.StemLab = window.StemLab || {
                   addCranialBone(hyoidFront.clone().add(vec(0, 0, -skullDepth * 0.16)), hyoidFront.clone().add(vec(0, 0, skullDepth * 0.16)), cranialBarRadius * 0.46 * skeletalProfile.hyoidScale, hyoidMat);
                 }
                 if (skeletalProfile.mandibularFenestra) {
-                  var mandibularFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.43), vec(skullLength * 0.13, skullHeight * 0.13, Math.max(0.007, skullDepth * 0.08)), skeletonCavityMat);
+                  var mandibularFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.43), vec(skullLength * 0.13, skullHeight * 0.13, Math.max(0.007 * detailScale, skullDepth * 0.08)), skeletonCavityMat);
                   if (mandibularFenestra) mandibularFenestra.renderOrder = 13;
                 }
                 if (skeletalProfile.toothed) {
@@ -8487,10 +8544,10 @@ window.StemLab = window.StemLab || {
                     var toothT = toothStart + (toothIndex / (toothCount + 1)) * (1 - toothStart);
                     var toothBase = new THREE.Vector3().copy(head).lerp(snout, toothT).add(vec(0, -skullHeight * 0.34, skullSide * skullDepth * 0.48));
                     var toothScale = skeletalProfile.toothProfile === 'incrassate' ? 1.18 : (/pencil|spoon|leaf/.test(skeletalProfile.toothProfile) ? 0.72 : 1);
-                    var toothLength = Math.max(0.025, ht * 0.010) * toothScale * (0.72 + Math.sin(toothT * Math.PI) * 0.38);
+                    var toothLength = Math.max(0.025 * detailScale, ht * 0.010) * toothScale * (0.72 + Math.sin(toothT * Math.PI) * 0.38);
                     var toothCurve = skeletalProfile.toothProfile === 'conical' ? -0.03 : (skeletalProfile.toothProfile === 'incrassate' ? -0.08 : -0.18);
                     var toothRadiusScale = skeletalProfile.toothProfile === 'incrassate' ? 0.34 : (skeletalProfile.toothProfile === 'spoon' ? 0.30 : (skeletalProfile.toothProfile === 'pencil' ? 0.14 : 0.22));
-                    var toothMesh = addSkeletonCone(toothBase, toothBase.clone().add(vec(toothLength * toothCurve, -toothLength, 0)), Math.max(0.005, toothLength * toothRadiusScale), toothMat);
+                    var toothMesh = addSkeletonCone(toothBase, toothBase.clone().add(vec(toothLength * toothCurve, -toothLength, 0)), Math.max(0.005 * detailScale, toothLength * toothRadiusScale), toothMat);
                     if (toothMesh) toothMesh.scale.z = skeletalProfile.toothProfile === 'spoon' ? 1.28 : (skeletalProfile.toothProfile === 'conical' ? 0.92 : (skeletalProfile.toothProfile === 'incrassate' ? 0.78 : 0.48));
                   }
                 }
@@ -8498,8 +8555,8 @@ window.StemLab = window.StemLab || {
 
               if (/Ceratops/i.test(cladeName)) {
                 if (cranialSurface.frillScale > 0.08) {
-                  var frillRadius = Math.max(0.10, ht * 0.14 * cranialSurface.frillScale);
-                  var frillBone = new THREE.Mesh(new THREE.TorusGeometry(frillRadius, Math.max(0.010, ht * 0.007 * Math.sqrt(cranialSurface.frillScale)), 9, 42), boneMat);
+                  var frillRadius = Math.max(0.10 * detailScale, ht * 0.14 * cranialSurface.frillScale);
+                  var frillBone = new THREE.Mesh(new THREE.TorusGeometry(frillRadius, Math.max(0.010 * detailScale, ht * 0.007 * Math.sqrt(cranialSurface.frillScale)), 9, 42), boneMat);
                   frillBone.position.copy(head).add(vec(len * 0.022 * cranialSurface.frillScale, ht * 0.040, 0));
                   frillBone.rotation.y = Math.PI / 2;
                   frillBone.scale.set(0.62, 1.18, 1);
@@ -8508,17 +8565,17 @@ window.StemLab = window.StemLab || {
                 }
                 if (cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (hornSide) {
                   var hornCore = head.clone().add(vec(-len * 0.018, ht * 0.055, hornSide * skullDepth * 0.62));
-                  addSkeletonCone(hornCore, hornCore.clone().add(vec(-Math.max(0.10, len * 0.052 * cranialSurface.browHornScale), Math.max(0.05, ht * 0.048 * cranialSurface.browHornScale), hornSide * skullDepth * 0.08 * cranialSurface.browHornScale)), Math.max(0.016, ht * 0.010 * Math.sqrt(cranialSurface.browHornScale)), boneMat);
+                  addSkeletonCone(hornCore, hornCore.clone().add(vec(-Math.max(0.10 * detailScale, len * 0.052 * cranialSurface.browHornScale), Math.max(0.05 * detailScale, ht * 0.048 * cranialSurface.browHornScale), hornSide * skullDepth * 0.08 * cranialSurface.browHornScale)), Math.max(0.016 * detailScale, ht * 0.010 * Math.sqrt(cranialSurface.browHornScale)), boneMat);
                 });
-                if (cranialSurface.noseHornScale > 0.08) addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat);
+                if (cranialSurface.noseHornScale > 0.08) addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014 * detailScale, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat);
               } else if (/Spinosaur/i.test(cladeName)) {
                 var spinosaurRostrum = new THREE.Vector3().copy(head).lerp(snout, 0.76);
                 addSkeletonEllipsoid(spinosaurRostrum, vec(skullLength * 0.92, skullHeight * 0.34, skullDepth * 0.46), boneMat);
                 for (var neuralSpineIndex = 1; neuralSpineIndex < 9; neuralSpineIndex++) {
                   var neuralSpineT = neuralSpineIndex / 9;
                   var neuralSpineBase = new THREE.Vector3().copy(shoulder).lerp(hip, neuralSpineT);
-                  var neuralSpineHeight = Math.max(0.14, ht * (0.10 + Math.sin(neuralSpineT * Math.PI) * 0.15));
-                  addBone(neuralSpineBase, neuralSpineBase.clone().add(vec(0, neuralSpineHeight, 0)), Math.max(0.009, ht * 0.0035));
+                  var neuralSpineHeight = Math.max(0.14 * detailScale, ht * (0.10 + Math.sin(neuralSpineT * Math.PI) * 0.15));
+                  addBone(neuralSpineBase, neuralSpineBase.clone().add(vec(0, neuralSpineHeight, 0)), Math.max(0.009 * detailScale, ht * 0.0035));
                 }
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
                 var duckBillCenter = snout.clone().add(vec(-skullLength * 0.20, -skullHeight * 0.04, 0));
@@ -8526,8 +8583,8 @@ window.StemLab = window.StemLab || {
                 if (cranialSurface.crestMode !== 'none') {
                   var crestBaseBone = head.clone().add(vec(skullLength * 0.12, skullHeight * 0.64, 0));
                   if (cranialSurface.crestMode === 'tube') {
-                    var crestTipBone = crestBaseBone.clone().add(vec(Math.max(0.18, len * 0.064), Math.max(0.10, ht * 0.058), 0));
-                    addSkeletonCone(crestBaseBone, crestTipBone, Math.max(0.038, ht * 0.016), boneMat);
+                    var crestTipBone = crestBaseBone.clone().add(vec(Math.max(0.18 * detailScale, len * 0.064), Math.max(0.10 * detailScale, ht * 0.058), 0));
+                    addSkeletonCone(crestBaseBone, crestTipBone, Math.max(0.038 * detailScale, ht * 0.016), boneMat);
                   } else {
                     addSkeletonEllipsoid(crestBaseBone.clone().add(vec(skullLength * 0.08, skullHeight * 0.24, 0)), vec(skullLength * 0.34, skullHeight * (cranialSurface.crestMode === 'helmet' ? 0.48 : 0.24), skullDepth * 0.48), boneMat);
                   }
@@ -8537,15 +8594,15 @@ window.StemLab = window.StemLab || {
                 [-1, 1].forEach(function (domeSide) {
                   for (var domeNode = 0; domeNode < 3; domeNode++) {
                     var domeBase = head.clone().add(vec(skullLength * (0.10 + domeNode * 0.18), skullHeight * 0.34, domeSide * skullDepth * 0.70));
-                    addSkeletonCone(domeBase, domeBase.clone().add(vec(skullLength * 0.04, skullHeight * (0.20 + domeNode * 0.05), domeSide * skullDepth * 0.09)), Math.max(0.010, ht * 0.004), boneMat);
+                    addSkeletonCone(domeBase, domeBase.clone().add(vec(skullLength * 0.04, skullHeight * (0.20 + domeNode * 0.05), domeSide * skullDepth * 0.09)), Math.max(0.010 * detailScale, ht * 0.004), boneMat);
                   }
                 });
               } else if (/Oviraptor/i.test(cladeName)) {
-                var beakBone = addSkeletonCone(snout.clone().add(vec(skullLength * 0.05, 0, 0)), snout.clone().add(vec(-skullLength * 0.48, -skullHeight * 0.04, 0)), Math.max(0.040, skullDepth * 0.46), boneMat);
+                var beakBone = addSkeletonCone(snout.clone().add(vec(skullLength * 0.05, 0, 0)), snout.clone().add(vec(-skullLength * 0.48, -skullHeight * 0.04, 0)), Math.max(0.040 * detailScale, skullDepth * 0.46), boneMat);
                 if (beakBone) beakBone.scale.z = 1.28;
                 if (/crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
                   var crestBoneBase = head.clone().add(vec(0, skullHeight * 0.56, 0));
-                  var crestBone = addSkeletonCone(crestBoneBase, crestBoneBase.clone().add(vec(skullLength * 0.12, skullHeight * 0.84, 0)), Math.max(0.038, skullDepth * 0.32), boneMat);
+                  var crestBone = addSkeletonCone(crestBoneBase, crestBoneBase.clone().add(vec(skullLength * 0.12, skullHeight * 0.84, 0)), Math.max(0.038 * detailScale, skullDepth * 0.32), boneMat);
                   if (crestBone) crestBone.scale.z = 0.40;
                 }
               } else if (/Tyrannosaur/i.test(cladeName)) {
@@ -8556,25 +8613,25 @@ window.StemLab = window.StemLab || {
                 for (var skeletalPlateIndex = 0; skeletalPlateIndex < 8; skeletalPlateIndex++) {
                   var skeletalPlateT = skeletalPlateIndex / 7;
                   var skeletalPlateBase = new THREE.Vector3().copy(shoulder).lerp(hip, Math.min(1, skeletalPlateT * 1.08));
-                  var skeletalPlateHeight = Math.max(0.14, bodyHeight * (0.48 + Math.sin(skeletalPlateT * Math.PI) * 0.60));
-                  var skeletalPlate = addSkeletonCone(skeletalPlateBase, skeletalPlateBase.clone().add(vec(0, skeletalPlateHeight, 0)), Math.max(0.055, bodyDepth * 0.19), boneMat);
+                  var skeletalPlateHeight = Math.max(0.14 * detailScale, bodyHeight * (0.48 + Math.sin(skeletalPlateT * Math.PI) * 0.60));
+                  var skeletalPlate = addSkeletonCone(skeletalPlateBase, skeletalPlateBase.clone().add(vec(0, skeletalPlateHeight, 0)), Math.max(0.055 * detailScale, bodyDepth * 0.19), boneMat);
                   if (skeletalPlate) skeletalPlate.scale.z = 0.24;
                 }
                 var thagomizerBase = new THREE.Vector3().copy(hip).lerp(tail, 0.76);
                 [-1, 1].forEach(function (spikeSide) {
-                  addSkeletonCone(thagomizerBase.clone().add(vec(-len * 0.025, 0, spikeSide * bodyDepth * 0.24)), thagomizerBase.clone().add(vec(-len * 0.035, Math.max(0.12, ht * 0.065), spikeSide * Math.max(0.24, bodyDepth * 1.10))), Math.max(0.018, ht * 0.007), boneMat);
-                  addSkeletonCone(thagomizerBase.clone().add(vec(len * 0.035, 0, spikeSide * bodyDepth * 0.18)), thagomizerBase.clone().add(vec(len * 0.055, Math.max(0.08, ht * 0.045), spikeSide * Math.max(0.20, bodyDepth * 0.92))), Math.max(0.016, ht * 0.006), boneMat);
+                  addSkeletonCone(thagomizerBase.clone().add(vec(-len * 0.025, 0, spikeSide * bodyDepth * 0.24)), thagomizerBase.clone().add(vec(-len * 0.035, Math.max(0.12 * detailScale, ht * 0.065), spikeSide * Math.max(0.24 * detailScale, bodyDepth * 1.10))), Math.max(0.018 * detailScale, ht * 0.007), boneMat);
+                  addSkeletonCone(thagomizerBase.clone().add(vec(len * 0.035, 0, spikeSide * bodyDepth * 0.18)), thagomizerBase.clone().add(vec(len * 0.055, Math.max(0.08 * detailScale, ht * 0.045), spikeSide * Math.max(0.20 * detailScale, bodyDepth * 0.92))), Math.max(0.016 * detailScale, ht * 0.006), boneMat);
                 });
               } else if (/Ankylosaur/i.test(cladeName)) {
                 for (var osteodermIndex = 0; osteodermIndex < 9; osteodermIndex++) {
                   var osteodermT = osteodermIndex / 8;
                   var osteodermPoint = new THREE.Vector3().copy(shoulder).lerp(hip, osteodermT);
                   [-1, 1].forEach(function (armorSide) {
-                    addSkeletonEllipsoid(osteodermPoint.clone().add(vec(0, bodyHeight * 0.48, armorSide * bodyDepth * 0.68)), vec(Math.max(0.045, len * 0.009), Math.max(0.025, ht * 0.010), Math.max(0.035, bodyDepth * 0.12)), boneMat);
+                    addSkeletonEllipsoid(osteodermPoint.clone().add(vec(0, bodyHeight * 0.48, armorSide * bodyDepth * 0.68)), vec(Math.max(0.045 * detailScale, len * 0.009), Math.max(0.025 * detailScale, ht * 0.010), Math.max(0.035 * detailScale, bodyDepth * 0.12)), boneMat);
                   });
                 }
                 [-1, 1].forEach(function (clubSide) {
-                  addSkeletonEllipsoid(tail.clone().add(vec(len * 0.012, 0, clubSide * Math.max(0.08, bodyDepth * 0.34))), vec(Math.max(0.16, len * 0.030), Math.max(0.085, ht * 0.035), Math.max(0.10, bodyDepth * 0.42)), boneMat);
+                  addSkeletonEllipsoid(tail.clone().add(vec(len * 0.012, 0, clubSide * Math.max(0.08 * detailScale, bodyDepth * 0.34))), vec(Math.max(0.16 * detailScale, len * 0.030), Math.max(0.085 * detailScale, ht * 0.035), Math.max(0.10 * detailScale, bodyDepth * 0.42)), boneMat);
                 });
               }
 
@@ -8587,9 +8644,9 @@ window.StemLab = window.StemLab || {
                 var ribFullness = 0.72 + Math.sin(ribT * Math.PI) * 0.30;
                 ribDistalAnchors[ribIndex] = [null, null];
                 [-1, 1].forEach(function (ribSide) {
-                  var ribBoneRadius = Math.max(0.007, ht * 0.0032);
-                  var capitulumFacet = ribSpine.clone().add(vec(0, -bodyHeight * 0.025, ribSide * Math.max(0.018, bodyDepth * 0.070)));
-                  var tuberculumFacet = ribSpine.clone().add(vec(0, bodyHeight * 0.070, ribSide * Math.max(0.040, bodyDepth * 0.205)));
+                  var ribBoneRadius = Math.max(0.007 * detailScale, ht * 0.0032);
+                  var capitulumFacet = ribSpine.clone().add(vec(0, -bodyHeight * 0.025, ribSide * Math.max(0.018 * detailScale, bodyDepth * 0.070)));
+                  var tuberculumFacet = ribSpine.clone().add(vec(0, bodyHeight * 0.070, ribSide * Math.max(0.040 * detailScale, bodyDepth * 0.205)));
                   var ribNeck = ribSpine.clone().add(vec(0, -bodyHeight * 0.025, ribSide * bodyDepth * 0.34 * ribFullness));
                   var ribUpper = ribSpine.clone().add(vec(0, -bodyHeight * 0.13, ribSide * bodyDepth * 0.60 * ribFullness));
                   var ribLateral = ribSpine.clone().add(vec(0, -bodyHeight * 0.47, ribSide * bodyDepth * 0.78 * ribFullness));
@@ -8607,8 +8664,8 @@ window.StemLab = window.StemLab || {
                   ribDistalAnchors[ribIndex][ribSide > 0 ? 1 : 0] = ribVentral.clone();
                   if (skeletalProfile.uncinateProcesses && ribIndex >= 1 && ribIndex < 1 + skeletalProfile.uncinateCount) {
                     var uncinateBase = new THREE.Vector3().copy(ribUpper).lerp(ribLateral, 0.54);
-                    var uncinateTip = uncinateBase.clone().add(vec(uncinateCaudalSign * Math.max(0.11, bodyLen * 0.12), bodyHeight * 0.12, -ribSide * Math.max(0.010, bodyDepth * 0.035)));
-                    addGirdleBlade(uncinateBase, uncinateTip, Math.max(0.018, ht * 0.0065), Math.max(0.005, ht * 0.0018), boneMat);
+                    var uncinateTip = uncinateBase.clone().add(vec(uncinateCaudalSign * Math.max(0.11 * detailScale, bodyLen * 0.12), bodyHeight * 0.12, -ribSide * Math.max(0.010 * detailScale, bodyDepth * 0.035)));
+                    addGirdleBlade(uncinateBase, uncinateTip, Math.max(0.018 * detailScale, ht * 0.0065), Math.max(0.005 * detailScale, ht * 0.0018), boneMat);
                   }
                 });
               }
@@ -8617,13 +8674,13 @@ window.StemLab = window.StemLab || {
                   var gastralT = gastralIndex / 6;
                   var gastralCenter = new THREE.Vector3().copy(shoulder).lerp(hip, gastralT).add(vec(0, -bodyHeight * (0.90 + gastralT * 0.025), 0));
                   var gastralSweep = bodyDepth * (0.34 + Math.sin(gastralT * Math.PI) * 0.10);
-                  var gastralRadius = Math.max(0.005, ht * 0.0023);
+                  var gastralRadius = Math.max(0.005 * detailScale, ht * 0.0023);
                   var leftGastralOuter = gastralCenter.clone().add(vec(len * 0.010, 0, -gastralSweep));
-                  var leftGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004, ht * 0.0015), -gastralSweep * 0.46));
-                  var leftGastralMedial = gastralCenter.clone().add(vec(len * 0.006, 0, Math.max(0.009, bodyDepth * 0.032)));
+                  var leftGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004 * detailScale, ht * 0.0015), -gastralSweep * 0.46));
+                  var leftGastralMedial = gastralCenter.clone().add(vec(len * 0.006, 0, Math.max(0.009 * detailScale, bodyDepth * 0.032)));
                   var rightGastralOuter = gastralCenter.clone().add(vec(len * 0.010, 0, gastralSweep));
-                  var rightGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004, ht * 0.0015), gastralSweep * 0.46));
-                  var rightGastralMedial = gastralCenter.clone().add(vec(-len * 0.006, -Math.max(0.003, ht * 0.0010), -Math.max(0.009, bodyDepth * 0.032)));
+                  var rightGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004 * detailScale, ht * 0.0015), gastralSweep * 0.46));
+                  var rightGastralMedial = gastralCenter.clone().add(vec(-len * 0.006, -Math.max(0.003 * detailScale, ht * 0.0010), -Math.max(0.009 * detailScale, bodyDepth * 0.032)));
                   addCurvedBone([leftGastralOuter, leftGastralBend, leftGastralMedial], gastralRadius * 0.72, gastralRadius, boneMat);
                   addCurvedBone([rightGastralOuter, rightGastralBend, rightGastralMedial], gastralRadius * 0.72, gastralRadius, boneMat);
                   addSkeletonEllipsoid(gastralCenter, vec(gastralRadius * 1.55, gastralRadius * 0.68, gastralRadius * 1.80), costalJointMat);
@@ -8634,10 +8691,10 @@ window.StemLab = window.StemLab || {
               for (var cervicalRibIndex = 1; cervicalRibIndex <= cervicalRibCount; cervicalRibIndex++) {
                 var cervicalRibT = cervicalRibIndex / (cervicalRibCount + 1);
                 var cervicalRibBase = new THREE.Vector3().copy(shoulder).lerp(head, cervicalRibT);
-                var cervicalRibLength = Math.max(0.10, len * (isSauropod ? 0.030 : 0.016)) * (1 - cervicalRibT * 0.42);
+                var cervicalRibLength = Math.max(0.10 * detailScale, len * (isSauropod ? 0.030 : 0.016)) * (1 - cervicalRibT * 0.42);
                 [-1, 1].forEach(function (cervicalSide) {
-                  var cervicalRibTip = cervicalRibBase.clone().add(vec(cervicalRibLength, -Math.max(0.025, ht * 0.012), cervicalSide * Math.max(0.035, bodyDepth * 0.16)));
-                  addBone(cervicalRibBase, cervicalRibTip, Math.max(0.005, ht * 0.0020));
+                  var cervicalRibTip = cervicalRibBase.clone().add(vec(cervicalRibLength, -Math.max(0.025 * detailScale, ht * 0.012), cervicalSide * Math.max(0.035 * detailScale, bodyDepth * 0.16)));
+                  addBone(cervicalRibBase, cervicalRibTip, Math.max(0.005 * detailScale, ht * 0.0020));
                 });
               }
               if (skeletalProfile.axialPneumaticity) {
@@ -8645,10 +8702,10 @@ window.StemLab = window.StemLab || {
                   var pneumaticT = pneumaticIndex / (skeletalProfile.pneumaticCervicals + 1);
                   var pneumaticCenter = new THREE.Vector3().copy(shoulder).lerp(head, pneumaticT);
                   [-1, 1].forEach(function (pneumaticSide) {
-                    var pneumaticSideOffset = pneumaticSide * Math.max(0.020, ht * 0.008);
-                    var pneumaticFossa = addSkeletonEllipsoid(pneumaticCenter.clone().add(vec(0, 0, pneumaticSideOffset)), vec(Math.max(0.025, ht * 0.010), Math.max(0.016, ht * 0.006), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                    var pneumaticSideOffset = pneumaticSide * Math.max(0.020 * detailScale, ht * 0.008);
+                    var pneumaticFossa = addSkeletonEllipsoid(pneumaticCenter.clone().add(vec(0, 0, pneumaticSideOffset)), vec(Math.max(0.025 * detailScale, ht * 0.010), Math.max(0.016 * detailScale, ht * 0.006), Math.max(0.008 * detailScale, ht * 0.003)), skeletonCavityMat);
                     if (pneumaticFossa) pneumaticFossa.renderOrder = 13;
-                    var pneumaticRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.016, ht * 0.0065), Math.max(0.0025, ht * 0.0010), 6, 20), pneumaticMarkerMat);
+                    var pneumaticRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.016 * detailScale, ht * 0.0065), Math.max(0.0025 * detailScale, ht * 0.0010), 6, 20), pneumaticMarkerMat);
                     pneumaticRim.position.copy(pneumaticCenter).add(vec(0, 0, pneumaticSideOffset * 1.18));
                     pneumaticRim.rotation.y = Math.PI / 2;
                     pneumaticRim.renderOrder = 14;
@@ -8659,10 +8716,10 @@ window.StemLab = window.StemLab || {
                   var dorsalPneumaticT = dorsalPneumaticIndex / (skeletalProfile.pneumaticDorsals + 1);
                   var dorsalPneumaticCenter = new THREE.Vector3().copy(shoulder).lerp(hip, dorsalPneumaticT);
                   [-1, 1].forEach(function (dorsalPneumaticSide) {
-                    var dorsalSideOffset = dorsalPneumaticSide * Math.max(0.024, ht * 0.0095);
-                    var dorsalFossa = addSkeletonEllipsoid(dorsalPneumaticCenter.clone().add(vec(0, 0, dorsalSideOffset)), vec(Math.max(0.028, ht * 0.011), Math.max(0.017, ht * 0.0065), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                    var dorsalSideOffset = dorsalPneumaticSide * Math.max(0.024 * detailScale, ht * 0.0095);
+                    var dorsalFossa = addSkeletonEllipsoid(dorsalPneumaticCenter.clone().add(vec(0, 0, dorsalSideOffset)), vec(Math.max(0.028 * detailScale, ht * 0.011), Math.max(0.017 * detailScale, ht * 0.0065), Math.max(0.008 * detailScale, ht * 0.003)), skeletonCavityMat);
                     if (dorsalFossa) dorsalFossa.renderOrder = 13;
-                    var dorsalRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.017, ht * 0.007), Math.max(0.0025, ht * 0.0010), 6, 20), pneumaticMarkerMat);
+                    var dorsalRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.017 * detailScale, ht * 0.007), Math.max(0.0025 * detailScale, ht * 0.0010), 6, 20), pneumaticMarkerMat);
                     dorsalRim.position.copy(dorsalPneumaticCenter).add(vec(0, 0, dorsalSideOffset * 1.18));
                     dorsalRim.rotation.y = Math.PI / 2;
                     dorsalRim.renderOrder = 14;
@@ -8673,9 +8730,9 @@ window.StemLab = window.StemLab || {
               for (var chevronIndex = 1; chevronIndex <= skeletalProfile.chevronCount; chevronIndex++) {
                 var chevronT = chevronIndex / (skeletalProfile.chevronCount + 2);
                 var chevronBase = new THREE.Vector3().copy(hip).lerp(tail, chevronT);
-                var chevronLength = Math.max(0.055, bodyHeight * 0.32 * (1 - chevronT * 0.72));
-                var chevronRadius = Math.max(0.004, ht * 0.0020) * (1 - chevronT * 0.28);
-                var chevronRootSpread = Math.max(0.012, ht * 0.0050) * (1 - chevronT * 0.52);
+                var chevronLength = Math.max(0.055 * detailScale, bodyHeight * 0.32 * (1 - chevronT * 0.72));
+                var chevronRadius = Math.max(0.004 * detailScale, ht * 0.0020) * (1 - chevronT * 0.28);
+                var chevronRootSpread = Math.max(0.012 * detailScale, ht * 0.0050) * (1 - chevronT * 0.52);
                 var chevronLeftRoot = chevronBase.clone().add(vec(0, -chevronLength * 0.05, -chevronRootSpread));
                 var chevronRightRoot = chevronBase.clone().add(vec(0, -chevronLength * 0.05, chevronRootSpread));
                 var chevronJunction = chevronBase.clone().add(vec(len * 0.002, -chevronLength * 0.30, 0));
@@ -8692,66 +8749,66 @@ window.StemLab = window.StemLab || {
                     for (var tailBraceIndex = 0; tailBraceIndex < 6; tailBraceIndex++) {
                       var braceStartT = 0.12 + tailBraceIndex * 0.105;
                       var braceEndT = Math.min(0.94, braceStartT + 0.31);
-                      var braceStart = new THREE.Vector3().copy(hip).lerp(tail, braceStartT).add(vec(0, braceLevel * Math.max(0.012, ht * 0.0045), braceSide * Math.max(0.018, bodyDepth * 0.075)));
-                      var braceEnd = new THREE.Vector3().copy(hip).lerp(tail, braceEndT).add(vec(0, braceLevel * Math.max(0.008, ht * 0.0030), braceSide * Math.max(0.012, bodyDepth * 0.050)));
-                      addBone(braceStart, braceEnd, Math.max(0.0035, ht * 0.0014));
+                      var braceStart = new THREE.Vector3().copy(hip).lerp(tail, braceStartT).add(vec(0, braceLevel * Math.max(0.012 * detailScale, ht * 0.0045), braceSide * Math.max(0.018 * detailScale, bodyDepth * 0.075)));
+                      var braceEnd = new THREE.Vector3().copy(hip).lerp(tail, braceEndT).add(vec(0, braceLevel * Math.max(0.008 * detailScale, ht * 0.0030), braceSide * Math.max(0.012 * detailScale, bodyDepth * 0.050)));
+                      addBone(braceStart, braceEnd, Math.max(0.0035 * detailScale, ht * 0.0014));
                     }
                   });
                 });
               }
               if (skeletalProfile.sacralDetail) {
-                var sacrumHalf = Math.max(0.12, bodyDepth * 0.66);
-                var sacralSpacing = Math.max(0.030, len * 0.010);
+                var sacrumHalf = Math.max(0.12 * detailScale, bodyDepth * 0.66);
+                var sacralSpacing = Math.max(0.030 * detailScale, len * 0.010);
                 var previousSacralCenter = null;
                 for (var sacralIndex = 0; sacralIndex < skeletalProfile.sacralCount; sacralIndex++) {
                   var sacralT = skeletalProfile.sacralCount > 1 ? sacralIndex / (skeletalProfile.sacralCount - 1) : 0.5;
                   var sacralX = hip.x + (sacralIndex - (skeletalProfile.sacralCount - 1) * 0.5) * sacralSpacing;
                   var sacralCenter = vec(sacralX, hip.y, 0);
-                  var sacralCentrum = addSkeletonEllipsoid(sacralCenter, vec(Math.max(0.050, ht * 0.018), Math.max(0.036, ht * 0.013), Math.max(0.042, ht * 0.015)), boneMat);
+                  var sacralCentrum = addSkeletonEllipsoid(sacralCenter, vec(Math.max(0.050 * detailScale, ht * 0.018), Math.max(0.036 * detailScale, ht * 0.013), Math.max(0.042 * detailScale, ht * 0.015)), boneMat);
                   if (sacralCentrum) sacralCentrum.rotation.z = (0.5 - sacralT) * 0.06;
-                  if (previousSacralCenter) addTaperedBoneSegment(previousSacralCenter, sacralCenter, Math.max(0.015, ht * 0.0055), Math.max(0.015, ht * 0.0055), jointMat);
-                  var sacralArchCenter = sacralCenter.clone().add(vec(0, Math.max(0.040, ht * 0.014), 0));
-                  addBone(sacralCenter.clone().add(vec(0, 0, -Math.max(0.020, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, -Math.max(0.014, ht * 0.005))), Math.max(0.005, ht * 0.0019));
-                  addBone(sacralCenter.clone().add(vec(0, 0, Math.max(0.020, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, Math.max(0.014, ht * 0.005))), Math.max(0.005, ht * 0.0019));
-                  var sacralSpineTip = sacralArchCenter.clone().add(vec((0.5 - sacralT) * sacralSpacing * 0.22, Math.max(0.070, ht * 0.026), 0));
-                  addTaperedBoneSegment(sacralArchCenter, sacralSpineTip, Math.max(0.010, ht * 0.0037), Math.max(0.005, ht * 0.0019), boneMat);
+                  if (previousSacralCenter) addTaperedBoneSegment(previousSacralCenter, sacralCenter, Math.max(0.015 * detailScale, ht * 0.0055), Math.max(0.015 * detailScale, ht * 0.0055), jointMat);
+                  var sacralArchCenter = sacralCenter.clone().add(vec(0, Math.max(0.040 * detailScale, ht * 0.014), 0));
+                  addBone(sacralCenter.clone().add(vec(0, 0, -Math.max(0.020 * detailScale, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, -Math.max(0.014 * detailScale, ht * 0.005))), Math.max(0.005 * detailScale, ht * 0.0019));
+                  addBone(sacralCenter.clone().add(vec(0, 0, Math.max(0.020 * detailScale, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, Math.max(0.014 * detailScale, ht * 0.005))), Math.max(0.005 * detailScale, ht * 0.0019));
+                  var sacralSpineTip = sacralArchCenter.clone().add(vec((0.5 - sacralT) * sacralSpacing * 0.22, Math.max(0.070 * detailScale, ht * 0.026), 0));
+                  addTaperedBoneSegment(sacralArchCenter, sacralSpineTip, Math.max(0.010 * detailScale, ht * 0.0037), Math.max(0.005 * detailScale, ht * 0.0019), boneMat);
                   [-1, 1].forEach(function (sacralSide) {
-                    var sacralRibRoot = sacralCenter.clone().add(vec(0, Math.max(0.010, ht * 0.0038), sacralSide * Math.max(0.020, bodyDepth * 0.10)));
-                    var sacralRibShoulder = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.20, Math.max(0.025, bodyHeight * 0.075), sacralSide * sacrumHalf * 0.58));
-                    var sacralIliacContact = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.32, Math.max(0.020, bodyHeight * 0.060), sacralSide * sacrumHalf));
-                    addTaperedBoneSegment(sacralRibRoot, sacralRibShoulder, Math.max(0.014, ht * 0.0052), Math.max(0.020, ht * 0.0074), boneMat);
-                    addGirdleBlade(sacralRibShoulder, sacralIliacContact, Math.max(0.030, bodyHeight * 0.095), Math.max(0.014, bodyDepth * 0.045), boneMat);
-                    addSkeletonEllipsoid(sacralIliacContact, vec(Math.max(0.026, ht * 0.0095), Math.max(0.018, ht * 0.0065), Math.max(0.012, bodyDepth * 0.040)), jointMat);
+                    var sacralRibRoot = sacralCenter.clone().add(vec(0, Math.max(0.010 * detailScale, ht * 0.0038), sacralSide * Math.max(0.020 * detailScale, bodyDepth * 0.10)));
+                    var sacralRibShoulder = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.20, Math.max(0.025 * detailScale, bodyHeight * 0.075), sacralSide * sacrumHalf * 0.58));
+                    var sacralIliacContact = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.32, Math.max(0.020 * detailScale, bodyHeight * 0.060), sacralSide * sacrumHalf));
+                    addTaperedBoneSegment(sacralRibRoot, sacralRibShoulder, Math.max(0.014 * detailScale, ht * 0.0052), Math.max(0.020 * detailScale, ht * 0.0074), boneMat);
+                    addGirdleBlade(sacralRibShoulder, sacralIliacContact, Math.max(0.030 * detailScale, bodyHeight * 0.095), Math.max(0.014 * detailScale, bodyDepth * 0.045), boneMat);
+                    addSkeletonEllipsoid(sacralIliacContact, vec(Math.max(0.026 * detailScale, ht * 0.0095), Math.max(0.018 * detailScale, ht * 0.0065), Math.max(0.012 * detailScale, bodyDepth * 0.040)), jointMat);
                   });
                   previousSacralCenter = sacralCenter;
                 }
               }
 
-              var shoulderHalf = Math.max(0.13, bodyDepth * 0.66);
+              var shoulderHalf = Math.max(0.13 * detailScale, bodyDepth * 0.66);
               [-1, 1].forEach(function (girdleSide) {
                 var shoulderSocket = shoulder.clone().add(vec(0, 0, girdleSide * shoulderHalf));
                 var scapulaMid = shoulder.clone().add(vec(len * 0.046, bodyHeight * 0.30, girdleSide * shoulderHalf * 0.80));
                 var scapulaTip = shoulder.clone().add(vec(len * 0.115, bodyHeight * 0.56, girdleSide * shoulderHalf * 0.68));
-                var scapularWidth = Math.max(0.050, bodyHeight * 0.15) * skeletalProfile.scapularBladeScale;
-                addTaperedBoneSegment(shoulderSocket, scapulaMid, Math.max(0.034, ht * 0.012), Math.max(0.025, ht * 0.009), boneMat);
-                addGirdleBlade(scapulaMid, scapulaTip, scapularWidth, Math.max(0.018, bodyDepth * 0.055), boneMat);
+                var scapularWidth = Math.max(0.050 * detailScale, bodyHeight * 0.15) * skeletalProfile.scapularBladeScale;
+                addTaperedBoneSegment(shoulderSocket, scapulaMid, Math.max(0.034 * detailScale, ht * 0.012), Math.max(0.025 * detailScale, ht * 0.009), boneMat);
+                addGirdleBlade(scapulaMid, scapulaTip, scapularWidth, Math.max(0.018 * detailScale, bodyDepth * 0.055), boneMat);
                 var coracoidCenter = shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.31, girdleSide * shoulderHalf * 0.90));
                 var coracoidTip = shoulder.clone().add(vec(-len * 0.025, -bodyHeight * 0.61, girdleSide * shoulderHalf * 0.82));
-                addGirdleBlade(shoulderSocket, coracoidTip, Math.max(0.052, bodyHeight * 0.14) * skeletalProfile.coracoidPlateScale, Math.max(0.020, bodyDepth * 0.065), boneMat);
-                addTaperedBoneSegment(shoulderSocket, coracoidCenter, Math.max(0.030, ht * 0.011), Math.max(0.020, ht * 0.007), boneMat);
-                var glenoidRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.042, ht * 0.015), Math.max(0.006, ht * 0.0023), 7, 22), boneMat);
-                glenoidRim.position.copy(shoulderSocket).add(vec(0, -Math.max(0.008, ht * 0.003), girdleSide * Math.max(0.026, bodyDepth * 0.075)));
+                addGirdleBlade(shoulderSocket, coracoidTip, Math.max(0.052 * detailScale, bodyHeight * 0.14) * skeletalProfile.coracoidPlateScale, Math.max(0.020 * detailScale, bodyDepth * 0.065), boneMat);
+                addTaperedBoneSegment(shoulderSocket, coracoidCenter, Math.max(0.030 * detailScale, ht * 0.011), Math.max(0.020 * detailScale, ht * 0.007), boneMat);
+                var glenoidRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.042 * detailScale, ht * 0.015), Math.max(0.006 * detailScale, ht * 0.0023), 7, 22), boneMat);
+                glenoidRim.position.copy(shoulderSocket).add(vec(0, -Math.max(0.008 * detailScale, ht * 0.003), girdleSide * Math.max(0.026 * detailScale, bodyDepth * 0.075)));
                 glenoidRim.scale.set(1.10, 0.90, 1);
                 glenoidRim.castShadow = true;
                 model.add(glenoidRim);
-                var glenoidCavity = addSkeletonEllipsoid(glenoidRim.position.clone().add(vec(0, 0, girdleSide * Math.max(0.004, ht * 0.0015))), vec(Math.max(0.033, ht * 0.012), Math.max(0.025, ht * 0.009), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                var glenoidCavity = addSkeletonEllipsoid(glenoidRim.position.clone().add(vec(0, 0, girdleSide * Math.max(0.004 * detailScale, ht * 0.0015))), vec(Math.max(0.033 * detailScale, ht * 0.012), Math.max(0.025 * detailScale, ht * 0.009), Math.max(0.008 * detailScale, ht * 0.003)), skeletonCavityMat);
                 if (glenoidCavity) glenoidCavity.renderOrder = 13;
-                var coracoidForamen = addSkeletonEllipsoid(coracoidCenter.clone().add(vec(0, 0, girdleSide * Math.max(0.024, bodyDepth * 0.070))), vec(Math.max(0.014, ht * 0.005), Math.max(0.020, ht * 0.007), Math.max(0.006, ht * 0.0022)), skeletonCavityMat);
+                var coracoidForamen = addSkeletonEllipsoid(coracoidCenter.clone().add(vec(0, 0, girdleSide * Math.max(0.024 * detailScale, bodyDepth * 0.070))), vec(Math.max(0.014 * detailScale, ht * 0.005), Math.max(0.020 * detailScale, ht * 0.007), Math.max(0.006 * detailScale, ht * 0.0022)), skeletonCavityMat);
                 if (coracoidForamen) coracoidForamen.renderOrder = 13;
               });
               if (skeletalProfile.sternalPlates) {
                 [-1, 1].forEach(function (sternalSide) {
-                  var sternalPlate = addSkeletonEllipsoid(shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.58, sternalSide * shoulderHalf * 0.32)), vec(Math.max(0.080, len * 0.020), Math.max(0.018, ht * 0.007), Math.max(0.045, bodyDepth * 0.18)), boneMat);
+                  var sternalPlate = addSkeletonEllipsoid(shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.58, sternalSide * shoulderHalf * 0.32)), vec(Math.max(0.080 * detailScale, len * 0.020), Math.max(0.018 * detailScale, ht * 0.007), Math.max(0.045 * detailScale, bodyDepth * 0.18)), boneMat);
                   if (sternalPlate) sternalPlate.rotation.x = sternalSide * 0.10;
                 });
               }
@@ -8764,63 +8821,63 @@ window.StemLab = window.StemLab || {
                     if (!sternalCostalAnchor) return;
                     var sternalRibAnchor = shoulder.clone().add(vec(len * (0.005 + sternalRibIndex * 0.014), -bodyHeight * 0.60, sternalRibSide * shoulderHalf * 0.30));
                     var sternalRibBend = new THREE.Vector3().copy(sternalCostalAnchor).lerp(sternalRibAnchor, 0.52).add(vec(len * 0.004, -bodyHeight * 0.025, -sternalRibSide * bodyDepth * 0.035));
-                    addSkeletonEllipsoid(sternalCostalAnchor, vec(Math.max(0.010, ht * 0.0038), Math.max(0.008, ht * 0.0030), Math.max(0.009, ht * 0.0034)), costalJointMat);
-                    addCurvedBone([sternalCostalAnchor, sternalRibBend, sternalRibAnchor], Math.max(0.005, ht * 0.0022), Math.max(0.004, ht * 0.0017), boneMat);
+                    addSkeletonEllipsoid(sternalCostalAnchor, vec(Math.max(0.010 * detailScale, ht * 0.0038), Math.max(0.008 * detailScale, ht * 0.0030), Math.max(0.009 * detailScale, ht * 0.0034)), costalJointMat);
+                    addCurvedBone([sternalCostalAnchor, sternalRibBend, sternalRibAnchor], Math.max(0.005 * detailScale, ht * 0.0022), Math.max(0.004 * detailScale, ht * 0.0017), boneMat);
                   });
                 }
               }
               if (isTheropod) {
                 var furculaCenter = shoulder.clone().add(vec(-len * 0.028, -bodyHeight * 0.34, 0));
-                addBone(shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.05, -shoulderHalf * 0.62)), furculaCenter, Math.max(0.010, ht * 0.0038));
-                addBone(shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.05, shoulderHalf * 0.62)), furculaCenter, Math.max(0.010, ht * 0.0038));
-                addJoint(furculaCenter, Math.max(0.014, ht * 0.0050));
+                addBone(shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.05, -shoulderHalf * 0.62)), furculaCenter, Math.max(0.010 * detailScale, ht * 0.0038));
+                addBone(shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.05, shoulderHalf * 0.62)), furculaCenter, Math.max(0.010 * detailScale, ht * 0.0038));
+                addJoint(furculaCenter, Math.max(0.014 * detailScale, ht * 0.0050));
               }
 
-              var pelvisHalf = Math.max(0.16, bodyDepth * 0.76);
+              var pelvisHalf = Math.max(0.16 * detailScale, bodyDepth * 0.76);
               var pelvisLeft = vec(hip.x, hip.y, -pelvisHalf);
               var pelvisRight = vec(hip.x, hip.y, pelvisHalf);
-              addTaperedBoneSegment(pelvisLeft, pelvisRight, Math.max(0.042, ht * 0.015), Math.max(0.042, ht * 0.015), boneMat);
+              addTaperedBoneSegment(pelvisLeft, pelvisRight, Math.max(0.042 * detailScale, ht * 0.015), Math.max(0.042 * detailScale, ht * 0.015), boneMat);
               [-1, 1].forEach(function (pelvisSide) {
                 var hipSocket = hip.clone().add(vec(0, 0, pelvisSide * pelvisHalf));
                 var iliumCrown = hip.clone().add(vec(0, bodyHeight * 0.24, pelvisSide * pelvisHalf * 0.90));
                 var iliumAnterior = hip.clone().add(vec(-len * 0.112, bodyHeight * 0.18, pelvisSide * pelvisHalf * 0.86));
                 var iliumPosterior = hip.clone().add(vec(len * 0.124, bodyHeight * 0.22, pelvisSide * pelvisHalf * 0.86));
-                var iliacBladeWidth = Math.max(0.055, bodyHeight * 0.17);
-                addGirdleBlade(iliumAnterior, iliumCrown, iliacBladeWidth, Math.max(0.020, bodyDepth * 0.060), boneMat);
-                addGirdleBlade(iliumCrown, iliumPosterior, iliacBladeWidth * 0.92, Math.max(0.021, bodyDepth * 0.064), boneMat);
+                var iliacBladeWidth = Math.max(0.055 * detailScale, bodyHeight * 0.17);
+                addGirdleBlade(iliumAnterior, iliumCrown, iliacBladeWidth, Math.max(0.020 * detailScale, bodyDepth * 0.060), boneMat);
+                addGirdleBlade(iliumCrown, iliumPosterior, iliacBladeWidth * 0.92, Math.max(0.021 * detailScale, bodyDepth * 0.064), boneMat);
                 var pubisOffsetX = skeletalProfile.pubisMode === 'posterior' ? len * 0.105 : (skeletalProfile.pubisMode === 'vertical' ? len * 0.012 : -len * 0.050);
-                var pubisTip = hip.clone().add(vec(pubisOffsetX * skeletalProfile.pubisScale, -Math.max(0.18, hip.y * 0.44) * skeletalProfile.pubisScale, pelvisSide * pelvisHalf * 0.62));
-                var ischiumTip = hip.clone().add(vec(len * 0.120, -Math.max(0.16, hip.y * 0.34), pelvisSide * pelvisHalf * 0.58));
+                var pubisTip = hip.clone().add(vec(pubisOffsetX * skeletalProfile.pubisScale, -Math.max(0.18 * detailScale, hip.y * 0.44) * skeletalProfile.pubisScale, pelvisSide * pelvisHalf * 0.62));
+                var ischiumTip = hip.clone().add(vec(len * 0.120, -Math.max(0.16 * detailScale, hip.y * 0.34), pelvisSide * pelvisHalf * 0.58));
                 var pubicPeduncle = hipSocket.clone().add(vec(-len * 0.014, -bodyHeight * 0.13, -pelvisSide * pelvisHalf * 0.07));
                 var ischialPeduncle = hipSocket.clone().add(vec(len * 0.018, -bodyHeight * 0.12, -pelvisSide * pelvisHalf * 0.06));
-                addGirdleBlade(hipSocket, pubicPeduncle, Math.max(0.034, ht * 0.012), Math.max(0.020, bodyDepth * 0.060), boneMat);
-                addGirdleBlade(hipSocket, ischialPeduncle, Math.max(0.036, ht * 0.013), Math.max(0.020, bodyDepth * 0.060), boneMat);
-                addTaperedBoneSegment(pubicPeduncle, pubisTip, Math.max(0.022, ht * 0.0080) * skeletalProfile.pubisScale, Math.max(0.012, ht * 0.0048) * skeletalProfile.pubisScale, boneMat);
-                addTaperedBoneSegment(ischialPeduncle, ischiumTip, Math.max(0.026, ht * 0.0090), Math.max(0.015, ht * 0.0055), boneMat);
-                var acetabularRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.050, ht * 0.018), Math.max(0.007, ht * 0.0027), 8, 24), boneMat);
-                acetabularRim.position.copy(hipSocket).add(vec(0, 0, pelvisSide * Math.max(0.030, bodyDepth * 0.085)));
+                addGirdleBlade(hipSocket, pubicPeduncle, Math.max(0.034 * detailScale, ht * 0.012), Math.max(0.020 * detailScale, bodyDepth * 0.060), boneMat);
+                addGirdleBlade(hipSocket, ischialPeduncle, Math.max(0.036 * detailScale, ht * 0.013), Math.max(0.020 * detailScale, bodyDepth * 0.060), boneMat);
+                addTaperedBoneSegment(pubicPeduncle, pubisTip, Math.max(0.022 * detailScale, ht * 0.0080) * skeletalProfile.pubisScale, Math.max(0.012 * detailScale, ht * 0.0048) * skeletalProfile.pubisScale, boneMat);
+                addTaperedBoneSegment(ischialPeduncle, ischiumTip, Math.max(0.026 * detailScale, ht * 0.0090), Math.max(0.015 * detailScale, ht * 0.0055), boneMat);
+                var acetabularRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.050 * detailScale, ht * 0.018), Math.max(0.007 * detailScale, ht * 0.0027), 8, 24), boneMat);
+                acetabularRim.position.copy(hipSocket).add(vec(0, 0, pelvisSide * Math.max(0.030 * detailScale, bodyDepth * 0.085)));
                 acetabularRim.scale.set(1.16, 0.94, 1);
                 acetabularRim.castShadow = true;
                 model.add(acetabularRim);
-                var acetabularOpening = addSkeletonEllipsoid(acetabularRim.position.clone().add(vec(0, 0, pelvisSide * Math.max(0.004, ht * 0.0016))), vec(Math.max(0.041, ht * 0.015), Math.max(0.033, ht * 0.012), Math.max(0.010, ht * 0.004)), skeletonCavityMat);
+                var acetabularOpening = addSkeletonEllipsoid(acetabularRim.position.clone().add(vec(0, 0, pelvisSide * Math.max(0.004 * detailScale, ht * 0.0016))), vec(Math.max(0.041 * detailScale, ht * 0.015), Math.max(0.033 * detailScale, ht * 0.012), Math.max(0.010 * detailScale, ht * 0.004)), skeletonCavityMat);
                 if (acetabularOpening) acetabularOpening.renderOrder = 13;
-                var shelfStart = hipSocket.clone().add(vec(-len * 0.038, bodyHeight * 0.12, pelvisSide * Math.max(0.020, bodyDepth * 0.070)));
-                var shelfEnd = hipSocket.clone().add(vec(len * 0.046, bodyHeight * 0.13, pelvisSide * Math.max(0.026, bodyDepth * 0.090) * skeletalProfile.supracetabularShelfScale));
-                addGirdleBlade(shelfStart, shelfEnd, Math.max(0.024, ht * 0.009) * skeletalProfile.supracetabularShelfScale, Math.max(0.012, bodyDepth * 0.040), boneMat);
+                var shelfStart = hipSocket.clone().add(vec(-len * 0.038, bodyHeight * 0.12, pelvisSide * Math.max(0.020 * detailScale, bodyDepth * 0.070)));
+                var shelfEnd = hipSocket.clone().add(vec(len * 0.046, bodyHeight * 0.13, pelvisSide * Math.max(0.026 * detailScale, bodyDepth * 0.090) * skeletalProfile.supracetabularShelfScale));
+                addGirdleBlade(shelfStart, shelfEnd, Math.max(0.024 * detailScale, ht * 0.009) * skeletalProfile.supracetabularShelfScale, Math.max(0.012 * detailScale, bodyDepth * 0.040), boneMat);
                 var obturatorProcess = new THREE.Vector3().copy(ischialPeduncle).lerp(ischiumTip, 0.38);
-                addTaperedBoneSegment(obturatorProcess, obturatorProcess.clone().add(vec(-len * 0.022, -bodyHeight * 0.045, pelvisSide * Math.max(0.010, bodyDepth * 0.035))), Math.max(0.011, ht * 0.0042), Math.max(0.006, ht * 0.0024), boneMat);
+                addTaperedBoneSegment(obturatorProcess, obturatorProcess.clone().add(vec(-len * 0.022, -bodyHeight * 0.045, pelvisSide * Math.max(0.010 * detailScale, bodyDepth * 0.035))), Math.max(0.011 * detailScale, ht * 0.0042), Math.max(0.006 * detailScale, ht * 0.0024), boneMat);
                 if (skeletalProfile.prepubicProcess) {
                   var prepubicTip = hip.clone().add(vec(-len * 0.138, -bodyHeight * 0.08, pelvisSide * pelvisHalf * 0.72));
-                  addGirdleBlade(pubicPeduncle, prepubicTip, Math.max(0.026, ht * 0.0095), Math.max(0.014, bodyDepth * 0.045), boneMat);
+                  addGirdleBlade(pubicPeduncle, prepubicTip, Math.max(0.026 * detailScale, ht * 0.0095), Math.max(0.014 * detailScale, bodyDepth * 0.045), boneMat);
                 }
               });
 
               function addAnatomyCallout(label, anchor, offset) {
                 var labelPoint = anchor.clone().add(offset);
-                addModelCylinder(anchor, labelPoint, Math.max(0.008, ht * 0.0028), anatomyCalloutMat, 18);
+                addModelCylinder(anchor, labelPoint, Math.max(0.008 * detailScale, ht * 0.0028), anatomyCalloutMat, 18);
                 addTextLabel(label, labelPoint, '#f8fafc', 0.70);
               }
-              var calloutLift = Math.max(0.42, ht * 0.14);
+              var calloutLift = Math.max(0.42 * detailScale, ht * 0.14);
               var tailCalloutPoint = new THREE.Vector3().copy(hip).lerp(tail, 0.58);
               addAnatomyCallout('Skull', head, vec(-len * 0.025, calloutLift, bodyDepth * 0.72));
               addAnatomyCallout('Spine', bodyCenter, vec(-len * 0.025, calloutLift * 1.15, -bodyDepth * 0.92));
@@ -8833,22 +8890,22 @@ window.StemLab = window.StemLab || {
               var digitCount = front ? skeletalProfile.manualDigits : skeletalProfile.pedalDigits;
               var ungualCount = front ? skeletalProfile.manualUnguals : skeletalProfile.pedalUnguals;
               var phalangealFormula = front ? skeletalProfile.manualPhalanxFormula : skeletalProfile.pedalPhalanxFormula;
-              var baseLength = Math.max(0.10, len * (front ? 0.018 : 0.026)) * (isSauropod ? 0.76 : 1);
+              var baseLength = Math.max(0.10 * detailScale, len * (front ? 0.018 : 0.026)) * (isSauropod ? 0.76 : 1);
               if (front && skeletalProfile.columnarManus) {
-                var manusRadius = Math.max(0.045, bodyDepth * 0.16);
-                var carpalBlock = addSkeletonEllipsoid(root.clone().add(vec(0, Math.max(0.030, ht * 0.012), 0)), vec(manusRadius * 0.72, Math.max(0.025, ht * 0.010), manusRadius * 1.08), boneMat);
+                var manusRadius = Math.max(0.045 * detailScale, bodyDepth * 0.16);
+                var carpalBlock = addSkeletonEllipsoid(root.clone().add(vec(0, Math.max(0.030 * detailScale, ht * 0.012), 0)), vec(manusRadius * 0.72, Math.max(0.025 * detailScale, ht * 0.010), manusRadius * 1.08), boneMat);
                 if (carpalBlock) carpalBlock.rotation.y = sideSign * 0.10;
                 for (var metacarpalIndex = 0; metacarpalIndex < digitCount; metacarpalIndex++) {
                   var manusAngle = -Math.PI * 0.62 + (Math.PI * 1.24 * metacarpalIndex / Math.max(1, digitCount - 1));
                   var manusOffsetX = Math.cos(manusAngle) * manusRadius * 0.34;
                   var manusOffsetZ = Math.sin(manusAngle) * manusRadius;
-                  var metacarpalTop = root.clone().add(vec(manusOffsetX + baseLength * 0.10, Math.max(0.060, ht * 0.024), manusOffsetZ * 0.84));
+                  var metacarpalTop = root.clone().add(vec(manusOffsetX + baseLength * 0.10, Math.max(0.060 * detailScale, ht * 0.024), manusOffsetZ * 0.84));
                   var metacarpalBase = root.clone().add(vec(manusOffsetX - baseLength * 0.16, 0.010, manusOffsetZ * 1.04));
-                  addTaperedBoneSegment(metacarpalTop, metacarpalBase, Math.max(0.014, ht * 0.0052), Math.max(0.010, ht * 0.0038), boneMat);
-                  addLimbJoint(metacarpalBase, new THREE.Vector3().subVectors(metacarpalBase, metacarpalTop), Math.max(0.013, ht * 0.0048), 1.10);
+                  addTaperedBoneSegment(metacarpalTop, metacarpalBase, Math.max(0.014 * detailScale, ht * 0.0052), Math.max(0.010 * detailScale, ht * 0.0038), boneMat);
+                  addLimbJoint(metacarpalBase, new THREE.Vector3().subVectors(metacarpalBase, metacarpalTop), Math.max(0.013 * detailScale, ht * 0.0048), 1.10);
                   if (metacarpalIndex < ungualCount) {
-                    var manusClawTip = metacarpalBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010, ht * 0.004), sideSign * manusOffsetZ * 0.05));
-                    addSkeletonCone(metacarpalBase, manusClawTip, Math.max(0.006, ht * 0.0024), toothMat);
+                    var manusClawTip = metacarpalBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010 * detailScale, ht * 0.004), sideSign * manusOffsetZ * 0.05));
+                    addSkeletonCone(metacarpalBase, manusClawTip, Math.max(0.006 * detailScale, ht * 0.0024), toothMat);
 
                   }
                 }
@@ -8857,13 +8914,13 @@ window.StemLab = window.StemLab || {
               var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;
               for (var digitIndex = 0; digitIndex < digitCount; digitIndex++) {
                 var digitOffset = digitIndex - (digitCount - 1) * 0.5;
-                var digitSpread = digitOffset * Math.max(0.045, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
+                var digitSpread = digitOffset * Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
                 var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10) * (front && skeletalProfile.compactManus ? 0.86 : 1);
                 var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 0;
-                var metapodialEnd = root.clone().add(vec(-digitLength * 0.30, sickleDigit ? Math.max(0.040, ht * 0.016) : 0.014, digitSpread * 0.46));
-                addTaperedBoneSegment(root.clone().add(vec(0, Math.max(0.012, ht * 0.004), digitSpread * 0.10)), metapodialEnd, Math.max(0.010, ht * 0.0038), Math.max(0.008, ht * 0.0030), boneMat);
-                addLimbJoint(metapodialEnd, new THREE.Vector3().subVectors(metapodialEnd, root), Math.max(0.010, ht * 0.0038), 1.12);
-                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11, ht * 0.050) : 0.004, digitSpread));
+                var metapodialEnd = root.clone().add(vec(-digitLength * 0.30, sickleDigit ? Math.max(0.040 * detailScale, ht * 0.016) : 0.014, digitSpread * 0.46));
+                addTaperedBoneSegment(root.clone().add(vec(0, Math.max(0.012 * detailScale, ht * 0.004), digitSpread * 0.10)), metapodialEnd, Math.max(0.010 * detailScale, ht * 0.0038), Math.max(0.008 * detailScale, ht * 0.0030), boneMat);
+                addLimbJoint(metapodialEnd, new THREE.Vector3().subVectors(metapodialEnd, root), Math.max(0.010 * detailScale, ht * 0.0038), 1.12);
+                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11 * detailScale, ht * 0.050) : 0.004, digitSpread));
                 var visibleUngual = digitIndex < ungualCount;
                 var formulaCount = phalangealFormula && phalangealFormula[digitIndex] ? phalangealFormula[digitIndex] : (visibleUngual ? 3 : 2);
                 var nonUngualCount = Math.max(0, Math.min(4, formulaCount - 1));
@@ -8871,68 +8928,68 @@ window.StemLab = window.StemLab || {
                 for (var phalanxIndex = 0; phalanxIndex < nonUngualCount; phalanxIndex++) {
                   var phalanxT = (phalanxIndex + 1) / nonUngualCount;
                   var phalanxEnd = new THREE.Vector3().copy(metapodialEnd).lerp(digitTip, phalanxT);
-                  phalanxEnd.y += Math.sin(Math.PI * phalanxT) * (sickleDigit ? Math.max(0.030, ht * 0.013) : Math.max(0.004, ht * 0.0016));
-                  var phalanxRadius = Math.max(0.005, ht * (0.0026 - phalanxIndex * 0.00025));
+                  phalanxEnd.y += Math.sin(Math.PI * phalanxT) * (sickleDigit ? Math.max(0.030 * detailScale, ht * 0.013) : Math.max(0.004 * detailScale, ht * 0.0016));
+                  var phalanxRadius = Math.max(0.005 * detailScale, ht * (0.0026 - phalanxIndex * 0.00025));
                   addTaperedBoneSegment(previousPhalanx, phalanxEnd, phalanxRadius * 1.24, phalanxRadius, boneMat);
                   if (phalanxIndex < nonUngualCount - 1) addLimbJoint(phalanxEnd, new THREE.Vector3().subVectors(phalanxEnd, previousPhalanx), phalanxRadius * 1.34, 1.18);
                   previousPhalanx = phalanxEnd;
                 }
-                var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.18), sickleDigit ? -Math.max(0.10, ht * 0.045) : -Math.max(0.015, ht * 0.006), sideSign * digitSpread * 0.05));
+                var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.18), sickleDigit ? -Math.max(0.10 * detailScale, ht * 0.045) : -Math.max(0.015 * detailScale, ht * 0.006), sideSign * digitSpread * 0.05));
                 if (visibleUngual) {
-                  addSkeletonCone(digitTip, clawTip, Math.max(0.005, ht * 0.0022), toothMat);
+                  addSkeletonCone(digitTip, clawTip, Math.max(0.005 * detailScale, ht * 0.0022), toothMat);
 
                 } else {
-                  var terminalScale = skeletalProfile.hoofedDigits ? vec(Math.max(0.020, digitLength * 0.22), Math.max(0.007, ht * 0.0028), Math.max(0.018, bodyDepth * 0.055)) : vec(Math.max(0.014, digitLength * 0.16), Math.max(0.009, ht * 0.0035), Math.max(0.010, bodyDepth * 0.035));
+                  var terminalScale = skeletalProfile.hoofedDigits ? vec(Math.max(0.020 * detailScale, digitLength * 0.22), Math.max(0.007 * detailScale, ht * 0.0028), Math.max(0.018 * detailScale, bodyDepth * 0.055)) : vec(Math.max(0.014 * detailScale, digitLength * 0.16), Math.max(0.009 * detailScale, ht * 0.0035), Math.max(0.010 * detailScale, bodyDepth * 0.035));
                   addSkeletonEllipsoid(digitTip, terminalScale, boneMat);
                 }
               }
               if (!front && skeletalProfile.hallux) {
-                var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025, ht * 0.010), 0));
-                var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015, ht * 0.006), sideSign * Math.max(0.025, bodyDepth * 0.08)));
-                addTaperedBoneSegment(halluxBase, halluxTip, Math.max(0.007, ht * 0.0027), Math.max(0.005, ht * 0.0020), boneMat);
-                addLimbJoint(halluxBase, new THREE.Vector3().subVectors(halluxTip, halluxBase), Math.max(0.009, ht * 0.0034), 1.08);
+                var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025 * detailScale, ht * 0.010), 0));
+                var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015 * detailScale, ht * 0.006), sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
+                addTaperedBoneSegment(halluxBase, halluxTip, Math.max(0.007 * detailScale, ht * 0.0027), Math.max(0.005 * detailScale, ht * 0.0020), boneMat);
+                addLimbJoint(halluxBase, new THREE.Vector3().subVectors(halluxTip, halluxBase), Math.max(0.009 * detailScale, ht * 0.0034), 1.08);
               }
             }
             function addSoftTissueDigitFan(root, front, sideSign, distalScale) {
               if (!props.showBody) return;
               var digitCount = front ? skeletalProfile.manualDigits : skeletalProfile.pedalDigits;
               var ungualCount = front ? skeletalProfile.manualUnguals : skeletalProfile.pedalUnguals;
-              var baseLength = Math.max(0.10, len * (front ? 0.018 : 0.026)) * (isSauropod ? 0.76 : 1);
-              var padDepth = Math.max(0.035, bodyDepth * (front ? 0.12 : 0.16));
+              var baseLength = Math.max(0.10 * detailScale, len * (front ? 0.018 : 0.026)) * (isSauropod ? 0.76 : 1);
+              var padDepth = Math.max(0.035 * detailScale, bodyDepth * (front ? 0.12 : 0.16));
               if (front && skeletalProfile.columnarManus) {
-                var manusRadius = Math.max(0.045, bodyDepth * 0.16);
-                addBodyContour(addEllipsoid(root.clone().add(vec(-baseLength * 0.04, Math.max(0.022, ht * 0.009), 0)), vec(manusRadius * 0.82, Math.max(0.028, ht * 0.012), manusRadius * 1.18), headMat));
+                var manusRadius = Math.max(0.045 * detailScale, bodyDepth * 0.16);
+                addBodyContour(addEllipsoid(root.clone().add(vec(-baseLength * 0.04, Math.max(0.022 * detailScale, ht * 0.009), 0)), vec(manusRadius * 0.82, Math.max(0.028 * detailScale, ht * 0.012), manusRadius * 1.18), headMat));
                 for (var manusDigitIndex = 0; manusDigitIndex < ungualCount; manusDigitIndex++) {
                   var manusAngle = -Math.PI * 0.62 + (Math.PI * 1.24 * manusDigitIndex / Math.max(1, digitCount - 1));
-                  var manusClawBase = root.clone().add(vec(Math.cos(manusAngle) * manusRadius * 0.20 - baseLength * 0.14, Math.max(0.018, ht * 0.007), Math.sin(manusAngle) * manusRadius));
-                  addKeratinCone(manusClawBase, manusClawBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010, ht * 0.004), sideSign * Math.sin(manusAngle) * manusRadius * 0.04)), Math.max(0.008, ht * 0.0031));
+                  var manusClawBase = root.clone().add(vec(Math.cos(manusAngle) * manusRadius * 0.20 - baseLength * 0.14, Math.max(0.018 * detailScale, ht * 0.007), Math.sin(manusAngle) * manusRadius));
+                  addKeratinCone(manusClawBase, manusClawBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010 * detailScale, ht * 0.004), sideSign * Math.sin(manusAngle) * manusRadius * 0.04)), Math.max(0.008 * detailScale, ht * 0.0031));
                 }
                 return;
               }
               var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;
-              addBodyContour(addEllipsoid(root.clone().add(vec(-baseLength * 0.12, Math.max(0.020, ht * 0.008), 0)), vec(baseLength * (front ? 0.34 : 0.42) * (distalScale || 1), Math.max(0.026, ht * 0.011), padDepth), headMat));
+              addBodyContour(addEllipsoid(root.clone().add(vec(-baseLength * 0.12, Math.max(0.020 * detailScale, ht * 0.008), 0)), vec(baseLength * (front ? 0.34 : 0.42) * (distalScale || 1), Math.max(0.026 * detailScale, ht * 0.011), padDepth), headMat));
               for (var digitIndex = 0; digitIndex < digitCount; digitIndex++) {
                 var digitOffset = digitIndex - (digitCount - 1) * 0.5;
-                var digitSpread = digitOffset * Math.max(0.045, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
+                var digitSpread = digitOffset * Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
                 var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10) * (front && skeletalProfile.compactManus ? 0.86 : 1) * (distalScale || 1);
                 var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 0;
-                var digitBase = root.clone().add(vec(-digitLength * 0.12, Math.max(0.018, ht * 0.007), digitSpread * 0.12));
-                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11, ht * 0.050) : Math.max(0.012, ht * 0.0045), digitSpread));
-                var digitRadius = Math.max(0.012, ht * (front ? 0.0048 : 0.0062));
+                var digitBase = root.clone().add(vec(-digitLength * 0.12, Math.max(0.018 * detailScale, ht * 0.007), digitSpread * 0.12));
+                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11 * detailScale, ht * 0.050) : Math.max(0.012 * detailScale, ht * 0.0045), digitSpread));
+                var digitRadius = Math.max(0.012 * detailScale, ht * (front ? 0.0048 : 0.0062));
                 addBodyContour(addSoftTissueCylinder(digitBase, digitTip, digitRadius * 1.18, digitRadius * 0.72, headMat));
                 if (digitIndex < ungualCount) {
-                  var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.20), sickleDigit ? -Math.max(0.10, ht * 0.045) : -Math.max(0.015, ht * 0.006), sideSign * digitSpread * 0.05));
-                  addKeratinCone(digitTip, new THREE.Vector3().copy(digitTip).lerp(clawTip, 1.12), Math.max(0.007, ht * 0.0030));
+                  var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.20), sickleDigit ? -Math.max(0.10 * detailScale, ht * 0.045) : -Math.max(0.015 * detailScale, ht * 0.006), sideSign * digitSpread * 0.05));
+                  addKeratinCone(digitTip, new THREE.Vector3().copy(digitTip).lerp(clawTip, 1.12), Math.max(0.007 * detailScale, ht * 0.0030));
                 } else {
                   var terminalMat = skeletalProfile.hoofedDigits ? keratinMat : headMat;
-                  addBodyContour(addEllipsoid(digitTip, vec(Math.max(0.014, digitLength * 0.17), Math.max(0.009, ht * 0.0038), digitRadius * 0.82), terminalMat));
+                  addBodyContour(addEllipsoid(digitTip, vec(Math.max(0.014 * detailScale, digitLength * 0.17), Math.max(0.009 * detailScale, ht * 0.0038), digitRadius * 0.82), terminalMat));
                 }
               }
               if (!front && skeletalProfile.hallux) {
-                var halluxBase = root.clone().add(vec(baseLength * 0.08, Math.max(0.025, ht * 0.010), 0));
-                var halluxTip = root.clone().add(vec(baseLength * 0.38, Math.max(0.015, ht * 0.006), sideSign * Math.max(0.025, bodyDepth * 0.08)));
-                addBodyContour(addSoftTissueCylinder(halluxBase, halluxTip, Math.max(0.009, ht * 0.0036), Math.max(0.006, ht * 0.0025), headMat));
-                addKeratinCone(halluxTip, halluxTip.clone().add(vec(baseLength * 0.16, -Math.max(0.012, ht * 0.005), sideSign * Math.max(0.006, bodyDepth * 0.018))), Math.max(0.006, ht * 0.0024));
+                var halluxBase = root.clone().add(vec(baseLength * 0.08, Math.max(0.025 * detailScale, ht * 0.010), 0));
+                var halluxTip = root.clone().add(vec(baseLength * 0.38, Math.max(0.015 * detailScale, ht * 0.006), sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
+                addBodyContour(addSoftTissueCylinder(halluxBase, halluxTip, Math.max(0.009 * detailScale, ht * 0.0036), Math.max(0.006 * detailScale, ht * 0.0025), headMat));
+                addKeratinCone(halluxTip, halluxTip.clone().add(vec(baseLength * 0.16, -Math.max(0.012 * detailScale, ht * 0.005), sideSign * Math.max(0.006 * detailScale, bodyDepth * 0.018))), Math.max(0.006 * detailScale, ht * 0.0024));
               }
             }
             function addLeg(x, z, front) {
@@ -8942,77 +8999,75 @@ window.StemLab = window.StemLab || {
               var columnFactor = skeletalProfile.columnarLimbs ? 0.34 : 1;
               var distalScale = front ? 1 : skeletalProfile.distalLegScale;
               var topPoint = vec(x, top.y, z);
-              var knee = vec(x + (front ? -len * 0.012 : len * 0.030) * columnFactor, Math.max(0.20, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20, top.y)), z + sideSign * Math.max(0.015, bodyDepth * 0.06) * columnFactor);
-              var ankle = vec(x + (front ? -len * 0.026 : len * 0.060 * distalScale) * columnFactor, Math.max(0.10, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045, bodyDepth * 0.12) * columnFactor);
-              var foot = vec(x + (front ? -len * 0.050 : len * 0.082 * distalScale) * posture.footReach * columnFactor, 0.055, z + sideSign * Math.max(0.08, bodyDepth * 0.20) * columnFactor);
-              var upperRadius = Math.max(0.034, ht * (front ? 0.011 : 0.013)) * limbRobustness;
-              var lowerRadius = Math.max(0.028, ht * (front ? 0.009 : 0.011)) * limbRobustness;
+              var knee = vec(x + (front ? -len * 0.012 : len * 0.030) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
+              var ankle = vec(x + (front ? -len * 0.026 : len * 0.060 * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
+              var foot = vec(x + (front ? -len * 0.050 : len * 0.082 * distalScale) * posture.footReach * columnFactor, 0.055, z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
+              var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
+              var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
               var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;
               addLongBone(topPoint, knee, upperRadius, upperBoneBow, front ? -sideSign : sideSign, front ? 1.42 : 1.30, front ? 1.22 : 1.34);
               addLongBone(knee, ankle, lowerRadius, skeletalProfile.columnarLimbs ? 0.002 : upperBoneBow * 0.42, -sideSign, 1.34, 1.18);
-              var pairedOffset = sideSign * Math.max(0.018, bodyDepth * 0.075);
+              var pairedOffset = sideSign * Math.max(0.018 * detailScale, bodyDepth * 0.075);
               var companionProximal = knee.clone().add(vec(front ? -lowerRadius * 0.22 : lowerRadius * 0.18, lowerRadius * 0.16, pairedOffset * 0.54));
               var companionDistal = ankle.clone().add(vec(0, 0, pairedOffset * 0.82));
-              addLongBone(companionProximal, companionDistal, Math.max(0.008, lowerRadius * skeletalProfile.companionBoneScale), skeletalProfile.columnarLimbs ? 0.001 : 0.006, sideSign, 1.28, 1.10);
+              addLongBone(companionProximal, companionDistal, Math.max(0.008 * detailScale, lowerRadius * skeletalProfile.companionBoneScale), skeletalProfile.columnarLimbs ? 0.001 : 0.006, sideSign, 1.28, 1.10);
               if (front) {
                 var deltopectoralBase = new THREE.Vector3().copy(topPoint).lerp(knee, 0.24);
-                var deltopectoralTip = deltopectoralBase.clone().add(vec(-Math.max(0.018, upperRadius * 1.20) * skeletalProfile.deltopectoralCrestScale, upperRadius * 0.18, sideSign * upperRadius * 0.64));
+                var deltopectoralTip = deltopectoralBase.clone().add(vec(-Math.max(0.018 * detailScale, upperRadius * 1.20) * skeletalProfile.deltopectoralCrestScale, upperRadius * 0.18, sideSign * upperRadius * 0.64));
                 addLimbCrest(deltopectoralBase, deltopectoralTip, upperRadius * 0.46);
               } else {
                 var femoralTrochanterBase = new THREE.Vector3().copy(topPoint).lerp(knee, 0.14);
                 addLimbCrest(femoralTrochanterBase, femoralTrochanterBase.clone().add(vec(upperRadius * 0.54, upperRadius * 0.24, sideSign * upperRadius * 0.96)), upperRadius * 0.40);
                 var cnemialBase = new THREE.Vector3().copy(knee).lerp(ankle, 0.10);
-                var cnemialTip = cnemialBase.clone().add(vec(-Math.max(0.020, lowerRadius * 1.45) * skeletalProfile.cnemialCrestScale, lowerRadius * 0.28, sideSign * lowerRadius * 0.48));
+                var cnemialTip = cnemialBase.clone().add(vec(-Math.max(0.020 * detailScale, lowerRadius * 1.45) * skeletalProfile.cnemialCrestScale, lowerRadius * 0.28, sideSign * lowerRadius * 0.48));
                 addLimbCrest(cnemialBase, cnemialTip, lowerRadius * 0.42);
               }
               if (!front && skeletalProfile.arctometatarsus) {
                 for (var metatarsalIndex = 0; metatarsalIndex < 3; metatarsalIndex++) {
-                  var metatarsalOffset = (metatarsalIndex - 1) * Math.max(0.018, bodyDepth * 0.075);
+                  var metatarsalOffset = (metatarsalIndex - 1) * Math.max(0.018 * detailScale, bodyDepth * 0.075);
                   var proximalT = metatarsalIndex === 1 ? 0.20 : 0.03;
                   var metatarsalTop = ankle.clone().lerp(foot, proximalT).add(vec(0, 0, metatarsalOffset * 0.36));
                   var metatarsalBase = foot.clone().add(vec(0, 0, metatarsalOffset));
-                  addBone(metatarsalTop, metatarsalBase, Math.max(0.007, ht * (metatarsalIndex === 1 ? 0.0025 : 0.0032)) * limbRobustness);
+                  addBone(metatarsalTop, metatarsalBase, Math.max(0.007 * detailScale, ht * (metatarsalIndex === 1 ? 0.0025 : 0.0032)) * limbRobustness);
                 }
               } else {
-                addBone(ankle, foot, Math.max(0.016, ht * 0.0065) * limbRobustness);
+                addBone(ankle, foot, Math.max(0.016 * detailScale, ht * 0.0065) * limbRobustness);
               }
-              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);
-              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050, ht * 0.017) * limbRobustness, 1.34);
-              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034, ht * 0.012) * limbRobustness, 1.20);
+              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046 * detailScale, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);
+              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050 * detailScale, ht * 0.017) * limbRobustness, 1.34);
+              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * detailScale, ht * 0.012) * limbRobustness, 1.20);
               addDigitFan(foot, front, sideSign);
               addSoftTissueDigitFan(foot, front, sideSign, distalScale);
               if (props.showBody && !front && surfaceHypothesis.hindWingFeathers) {
                 for (var hindFeatherIndex = 0; hindFeatherIndex < 6; hindFeatherIndex++) {
                   var hindFeatherT = 0.12 + hindFeatherIndex * 0.13;
                   var hindFeatherRoot = new THREE.Vector3().copy(knee).lerp(ankle, hindFeatherT);
-                  var hindFeatherTip = hindFeatherRoot.clone().add(vec(Math.max(0.06, len * (0.022 + hindFeatherIndex * 0.0015)), -Math.max(0.025, ht * 0.012), sideSign * Math.max(0.08, bodyDepth * (0.34 + hindFeatherIndex * 0.035))));
-                  addFeatherVane(hindFeatherRoot, hindFeatherTip, Math.max(0.012, ht * 0.006));
+                  var hindFeatherTip = hindFeatherRoot.clone().add(vec(Math.max(0.06 * detailScale, len * (0.075 + hindFeatherIndex * 0.006)), -Math.max(0.025 * detailScale, ht * 0.012), sideSign * Math.max(0.08 * detailScale, bodyDepth * (0.34 + hindFeatherIndex * 0.035))));
+                  addFeatherVane(hindFeatherRoot, hindFeatherTip, Math.max(0.012 * detailScale, ht * 0.040));
                 }
               }
               if (props.showBody) {
                 var upperMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.68 : skeletalProfile.thighMuscleScale;
                 var lowerMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.54 : skeletalProfile.calfMuscleScale;
-                addMuscleBelly(topPoint, knee, Math.max(0.055, ht * (front ? 0.025 : 0.038)) * limbRobustness * upperMuscleScale, front ? 0.76 : 0.88);
-                addMuscleBelly(knee, ankle, Math.max(0.040, ht * (front ? 0.018 : 0.026)) * limbRobustness * lowerMuscleScale, 0.72);
+                addMuscleBelly(topPoint, knee, Math.max(0.055 * detailScale, ht * (front ? 0.025 : 0.038)) * limbRobustness * upperMuscleScale, front ? 0.76 : 0.88);
+                addMuscleBelly(knee, ankle, Math.max(0.040 * detailScale, ht * (front ? 0.018 : 0.026)) * limbRobustness * lowerMuscleScale, 0.72);
               }
               if (props.showBody) {
                 var upperSurfaceScale = front ? postcranialSurface.shoulderFullness : postcranialSurface.thighFullness;
                 var lowerSurfaceScale = front ? Math.max(0.94, postcranialSurface.jointFullness * 0.96) : postcranialSurface.calfFullness;
                 var limbJointScale = postcranialSurface.jointFullness;
-                var upperLimbShell = addSoftTissueCylinder(topPoint, knee, Math.max(0.065, ht * 0.032) * limbRobustness * upperSurfaceScale, Math.max(0.048, ht * 0.024) * limbRobustness * limbJointScale);
-                var lowerLimbShell = addSoftTissueCylinder(knee, ankle, Math.max(0.048, ht * 0.024) * limbRobustness * limbJointScale, Math.max(0.032, ht * 0.015) * limbRobustness * lowerSurfaceScale);
-                var distalLimbShell = addSoftTissueCylinder(ankle, foot, Math.max(0.032, ht * 0.015) * limbRobustness * lowerSurfaceScale, Math.max(0.025, ht * 0.011) * limbRobustness);
-                addContourGroup([upperLimbShell, lowerLimbShell, distalLimbShell]);
-                var kneeBlendRadius = Math.max(0.046, ht * 0.022) * limbRobustness * limbJointScale;
-                var ankleBlendRadius = Math.max(0.032, ht * 0.015) * limbRobustness * Math.max(0.90, lowerSurfaceScale);
-                addBodyContour(addEllipsoid(knee, vec(kneeBlendRadius * 1.05, kneeBlendRadius * 0.92, kneeBlendRadius), headMat));
-                addBodyContour(addEllipsoid(ankle, vec(ankleBlendRadius * 0.92, ankleBlendRadius * 1.06, ankleBlendRadius), headMat));
-                var limbRootCenter = new THREE.Vector3().copy(topPoint).lerp(knee, 0.09);
-                var limbRootScale = Math.max(0.055, ht * (front ? 0.025 : 0.038)) * limbRobustness * upperSurfaceScale;
-                addBodyContour(addEllipsoid(limbRootCenter, vec(limbRootScale * 1.18, limbRootScale * 1.05, limbRootScale * 1.12), bodyMat));
+                var thighRadius = Math.max(0.024 * detailScale, ht * (front ? 0.045 : (isTheropod ? 0.075 : 0.050))) * limbRobustness * upperSurfaceScale;
+                var kneeRadius = Math.max(0.018 * detailScale, ht * 0.032) * limbRobustness * limbJointScale;
+                var ankleRadius = Math.max(0.012 * detailScale, ht * 0.017) * limbRobustness * lowerSurfaceScale;
+                var thighMid = topPoint.clone().lerp(knee, 0.42);
+                var calfMid = knee.clone().lerp(ankle, 0.42);
+                var limbSkinRoot = topPoint.clone(); limbSkinRoot.z *= 0.40;
+                var upperLimbShell = addSoftTissueChain([limbSkinRoot, thighMid, knee, calfMid, ankle, foot],
+                  [thighRadius * 0.88, thighRadius, kneeRadius, kneeRadius * 1.02, ankleRadius, ankleRadius * 0.68], bodyMat)[0];
+                addBodyContour(upperLimbShell);
               }
             }
-            var stance = Math.max(0.18, bodyDepth * 0.55) * skeletalProfile.stanceWidth;
+            var stance = Math.max(0.055 * detailScale, bodyDepth * 0.68) * skeletalProfile.stanceWidth;
             addLeg(hip.x, stance, false);
             addLeg(hip.x, -stance, false);
             if (skeletalProfile.weightBearingForelimbs) {
@@ -9023,39 +9078,39 @@ window.StemLab = window.StemLab || {
                 var armScale = skeletalProfile.armScale;
                 var armRobustness = skeletalProfile.forelimbRobustness;
                 var armStart = vec(shoulder.x, shoulder.y * 0.93, armSide * stance * 0.42);
-                var elbow = armStart.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.075, shoulder.y * 0.25) * armScale, armSide * stance * 0.14 * armScale));
-                var wrist = elbow.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.060, shoulder.y * 0.17) * armScale, armSide * stance * 0.03 * armScale));
-                var humerusRadius = Math.max(0.018, ht * 0.0065) * armRobustness;
-                var forearmRadius = Math.max(0.014, ht * 0.0050) * armRobustness;
+                var elbow = armStart.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.075 * detailScale, shoulder.y * 0.25) * armScale, armSide * stance * 0.14 * armScale));
+                var wrist = elbow.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.060 * detailScale, shoulder.y * 0.17) * armScale, armSide * stance * 0.03 * armScale));
+                var humerusRadius = Math.max(0.018 * detailScale, ht * 0.0065) * armRobustness;
+                var forearmRadius = Math.max(0.014 * detailScale, ht * 0.0050) * armRobustness;
                 addLongBone(armStart, elbow, humerusRadius, Math.min(0.012, skeletalProfile.longBoneBow), -armSide, 1.38, 1.22);
                 addLongBone(elbow, wrist, forearmRadius, 0.006, armSide, 1.30, 1.12);
-                var freeArmPairedOffset = armSide * Math.max(0.012, bodyDepth * 0.045);
+                var freeArmPairedOffset = armSide * Math.max(0.012 * detailScale, bodyDepth * 0.045);
                 var freeUlnaStart = elbow.clone().add(vec(-forearmRadius * 0.18, forearmRadius * 0.20, freeArmPairedOffset * 0.56));
                 var freeUlnaEnd = wrist.clone().add(vec(0, 0, freeArmPairedOffset));
-                addLongBone(freeUlnaStart, freeUlnaEnd, Math.max(0.006, forearmRadius * skeletalProfile.companionBoneScale), 0.005, -armSide, 1.34, 1.10);
+                addLongBone(freeUlnaStart, freeUlnaEnd, Math.max(0.006 * detailScale, forearmRadius * skeletalProfile.companionBoneScale), 0.005, -armSide, 1.34, 1.10);
                 var freeDeltoBase = new THREE.Vector3().copy(armStart).lerp(elbow, 0.24);
                 addLimbCrest(freeDeltoBase, freeDeltoBase.clone().add(vec(-humerusRadius * 1.18 * skeletalProfile.deltopectoralCrestScale, humerusRadius * 0.18, armSide * humerusRadius * 0.58)), humerusRadius * 0.44);
-                addLimbJoint(elbow, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.025, ht * 0.009) * armRobustness, 1.30);
-                addLimbJoint(wrist, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.018, ht * 0.0065) * armRobustness, 1.12);
+                addLimbJoint(elbow, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.025 * detailScale, ht * 0.009) * armRobustness, 1.30);
+                addLimbJoint(wrist, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.018 * detailScale, ht * 0.0065) * armRobustness, 1.12);
                 var handDigits = skeletalProfile.manualDigits;
-                var handLength = Math.max(0.07, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
-                if (props.showBody) addBodyContour(addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, Math.max(0.014, ht * 0.0055), Math.max(0.025, bodyDepth * 0.085)), headMat));
+                var handLength = Math.max(0.07 * detailScale, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
+                if (props.showBody) addBodyContour(addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, Math.max(0.014 * detailScale, ht * 0.0055), Math.max(0.025 * detailScale, bodyDepth * 0.085)), headMat));
                 for (var handDigitIndex = 0; handDigitIndex < handDigits; handDigitIndex++) {
-                  var handSpread = (handDigitIndex - (handDigits - 1) * 0.5) * Math.max(0.025, bodyDepth * 0.10);
+                  var handSpread = (handDigitIndex - (handDigits - 1) * 0.5) * Math.max(0.025 * detailScale, bodyDepth * 0.10);
                   var manualFormulaCount = skeletalProfile.manualPhalanxFormula && skeletalProfile.manualPhalanxFormula[handDigitIndex] ? skeletalProfile.manualPhalanxFormula[handDigitIndex] : 3;
                   var manualUngualVisible = handDigitIndex < skeletalProfile.manualUnguals;
                   var manualNonUngualCount = Math.max(0, Math.min(4, manualFormulaCount - 1));
                   var metacarpalEnd = wrist.clone().add(vec(-handLength * 0.28, -handLength * 0.035, handSpread * 0.42));
                   var fingerTip = wrist.clone().add(vec(-handLength, -handLength * 0.14, handSpread * 1.22));
-                  if (props.showBody) addBodyContour(addSoftTissueCylinder(metacarpalEnd, fingerTip, Math.max(0.007, ht * 0.0030), Math.max(0.005, ht * 0.0021), headMat));
-                  addTaperedBoneSegment(wrist, metacarpalEnd, Math.max(0.008, ht * 0.0031), Math.max(0.006, ht * 0.0024), boneMat);
-                  addLimbJoint(metacarpalEnd, new THREE.Vector3().subVectors(metacarpalEnd, wrist), Math.max(0.008, ht * 0.0030), 1.12);
+                  if (props.showBody) addBodyContour(addSoftTissueCylinder(metacarpalEnd, fingerTip, Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.005 * detailScale, ht * 0.0021), headMat));
+                  addTaperedBoneSegment(wrist, metacarpalEnd, Math.max(0.008 * detailScale, ht * 0.0031), Math.max(0.006 * detailScale, ht * 0.0024), boneMat);
+                  addLimbJoint(metacarpalEnd, new THREE.Vector3().subVectors(metacarpalEnd, wrist), Math.max(0.008 * detailScale, ht * 0.0030), 1.12);
                   var previousManualPhalanx = metacarpalEnd;
                   for (var manualPhalanxIndex = 0; manualPhalanxIndex < manualNonUngualCount; manualPhalanxIndex++) {
                     var manualPhalanxT = (manualPhalanxIndex + 1) / manualNonUngualCount;
                     var manualPhalanxEnd = new THREE.Vector3().copy(metacarpalEnd).lerp(fingerTip, manualPhalanxT);
                     manualPhalanxEnd.y -= Math.sin(Math.PI * manualPhalanxT) * handLength * 0.035;
-                    var manualPhalanxRadius = Math.max(0.0045, ht * (0.0023 - manualPhalanxIndex * 0.00018));
+                    var manualPhalanxRadius = Math.max(0.0045 * detailScale, ht * (0.0023 - manualPhalanxIndex * 0.00018));
                     addTaperedBoneSegment(previousManualPhalanx, manualPhalanxEnd, manualPhalanxRadius * 1.22, manualPhalanxRadius, boneMat);
                     if (manualPhalanxIndex < manualNonUngualCount - 1) addLimbJoint(manualPhalanxEnd, new THREE.Vector3().subVectors(manualPhalanxEnd, previousManualPhalanx), manualPhalanxRadius * 1.30, 1.16);
                     previousManualPhalanx = manualPhalanxEnd;
@@ -9063,29 +9118,40 @@ window.StemLab = window.StemLab || {
                   if (manualUngualVisible) {
                     var manualUngualScale = /Therizinosaur/i.test(cladeName) ? 0.58 : (/Alvarezsaur/i.test(cladeName) ? 0.38 : 0.20);
                     var handClawTip = fingerTip.clone().add(vec(-handLength * manualUngualScale, -handLength * (manualUngualScale * 0.30), 0));
-                    addSkeletonCone(fingerTip, handClawTip, Math.max(0.004, ht * 0.0018), toothMat);
-                    if (props.showBody) addKeratinCone(fingerTip, new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14), Math.max(0.006, ht * 0.0025));
+                    addSkeletonCone(fingerTip, handClawTip, Math.max(0.004 * detailScale, ht * 0.0018), toothMat);
+                    if (props.showBody) addKeratinCone(fingerTip, new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14), Math.max(0.006 * detailScale, ht * 0.0025));
                   }
                   else {
-                    addSkeletonEllipsoid(fingerTip, vec(Math.max(0.010, handLength * 0.10), Math.max(0.007, ht * 0.0028), Math.max(0.008, bodyDepth * 0.028)), boneMat);
-                    if (props.showBody) addBodyContour(addEllipsoid(fingerTip, vec(Math.max(0.010, handLength * 0.11), Math.max(0.007, ht * 0.0030), Math.max(0.008, bodyDepth * 0.030)), headMat));
+                    addSkeletonEllipsoid(fingerTip, vec(Math.max(0.010 * detailScale, handLength * 0.10), Math.max(0.007 * detailScale, ht * 0.0028), Math.max(0.008 * detailScale, bodyDepth * 0.028)), boneMat);
+                    if (props.showBody) addBodyContour(addEllipsoid(fingerTip, vec(Math.max(0.010 * detailScale, handLength * 0.11), Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.008 * detailScale, bodyDepth * 0.030)), headMat));
                   }
                 }
                 if (props.showBody && surfaceHypothesis.wingFeathers) {
                   for (var wingFeatherIndex = 0; wingFeatherIndex < 7; wingFeatherIndex++) {
                     var wingFeatherT = 0.10 + wingFeatherIndex * 0.13;
                     var wingFeatherRoot = new THREE.Vector3().copy(elbow).lerp(wrist, wingFeatherT);
-                    var wingFeatherTip = wingFeatherRoot.clone().add(vec(Math.max(0.08, len * (0.026 + wingFeatherIndex * 0.0026)), -Math.max(0.04, ht * (0.016 + wingFeatherIndex * 0.0018)), armSide * Math.max(0.06, bodyDepth * (0.30 + wingFeatherIndex * 0.035))));
-                    addFeatherVane(wingFeatherRoot, wingFeatherTip, Math.max(0.014, ht * 0.007));
+                    var wingFeatherTip = wingFeatherRoot.clone().add(vec(Math.max(0.08 * detailScale, len * (0.080 + wingFeatherIndex * 0.008)), -Math.max(0.04 * detailScale, ht * (0.016 + wingFeatherIndex * 0.0018)), armSide * Math.max(0.06 * detailScale, bodyDepth * (0.30 + wingFeatherIndex * 0.035))));
+                    addFeatherVane(wingFeatherRoot, wingFeatherTip, Math.max(0.014 * detailScale, ht * 0.045));
                   }
                 }
                 if (props.showBody) {
-                  addBodyContour(addSoftTissueCylinder(armStart, elbow, Math.max(0.025, ht * 0.010) * armRobustness, Math.max(0.020, ht * 0.008) * armRobustness));
-                  addBodyContour(addSoftTissueCylinder(elbow, wrist, Math.max(0.020, ht * 0.008) * armRobustness, Math.max(0.014, ht * 0.0055) * armRobustness));
+                  addBodyContour(addSoftTissueCylinder(armStart, elbow, Math.max(0.025 * detailScale, ht * 0.010) * armRobustness, Math.max(0.020 * detailScale, ht * 0.008) * armRobustness));
+                  addBodyContour(addSoftTissueCylinder(elbow, wrist, Math.max(0.020 * detailScale, ht * 0.008) * armRobustness, Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness));
                 }
               });
             }
 
+            // Frame anatomy, not sprites, detached assembly pieces, or habitat scenery.
+            var specimenBounds = new THREE.Box3();
+            model.updateMatrixWorld(true);
+            model.traverse(function (part) {
+              if (!part.isMesh || part.userData.dinoContour || !part.geometry) return;
+              part.userData.dinoAnatomy = true;
+              if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+              specimenBounds.union(part.geometry.boundingBox.clone().applyMatrix4(part.matrixWorld));
+            });
+            if (specimenBounds.isEmpty()) specimenBounds.set(vec(-len * 0.55, 0, -ht * 0.3), vec(len * 0.55, ht, ht * 0.3));
+            model.userData.specimenBounds = { min: specimenBounds.min.toArray(), max: specimenBounds.max.toArray() };
             function addAssemblySocket(piece, active, placed) {
               var point = piece.point.clone();
               point.y += Math.max(0.09, ht * 0.028);
@@ -9178,7 +9244,7 @@ window.StemLab = window.StemLab || {
               labelPos.z += Math.max(0.20, bodyDepth * 0.55);
               addTextLabel('Claim: ' + piece.label, labelPos, '#14b8a6');
             }
-            if (props.assemblyTotal != null) {
+            if (props.assemblyTotal != null && props.showEvidence && assemblyUnlocked) {
               var assemblyPieces3d = [
                 { id: 'skull', label: 'Skull', point: head },
                 { id: 'spine', label: 'Spine', point: bodyCenter },
@@ -9267,62 +9333,115 @@ window.StemLab = window.StemLab || {
             if (props.showHuman) {
               var hx = len * 0.56;
               var human = new THREE.Group();
-              var humanMat = new THREE.MeshPhongMaterial({ color: 0x94a3b8, shininess: 18 });
-              var body = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.15, 1.25, 14), humanMat);
-              body.position.set(hx, 0.72, -Math.max(1.0, bodyDepth * 1.9));
-              body.castShadow = true;
-              var skull = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), humanMat);
-              skull.position.set(hx, 1.46, -Math.max(1.0, bodyDepth * 1.9));
-              skull.castShadow = true;
-              human.add(body); human.add(skull);
+              human.name = 'human-scale-reference';
+              human.position.set(hx, 0, -Math.max(0.55, bodyDepth * 1.65));
+              var humanMat = new THREE.MeshStandardMaterial({ color: 0xadc4d0, roughness: 0.8 });
+              function humanPart(x, y, z, sx, sy, sz) {
+                var part = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), humanMat);
+                part.position.set(x, y, z); part.scale.set(sx, sy, sz);
+                part.castShadow = true; part.receiveShadow = true; human.add(part);
+              }
+              humanPart(0, 1.58, 0, 0.095, 0.12, 0.095);
+              humanPart(0, 1.18, 0, 0.18, 0.29, 0.10);
+              humanPart(0, 0.91, 0, 0.15, 0.15, 0.10);
+              [-1, 1].forEach(function (side) {
+                humanPart(side * 0.087, 0.50, 0, 0.075, 0.43, 0.077);
+                humanPart(side * 0.087, 0.05, 0.035, 0.078, 0.05, 0.13);
+                humanPart(side * 0.22, 1.06, 0, 0.055, 0.30, 0.057);
+              });
               model.add(human);
             }
 
-            var modelCenter = vec(len * 0.02, Math.max(0.5, ht * 0.42), 0);
-            var radius = Math.max(len * 0.84, ht * 1.9, 5.5);
-            var cameraTargetIsEvidence = !!evidenceAnchorPoints[scanTargetId];
+            if (props.showHuman && human) {
+              human.updateMatrixWorld(true);
+              specimenBounds.union(new THREE.Box3().setFromObject(human));
+            }
+            var modelCenter = specimenBounds.getCenter(new THREE.Vector3());
+            var modelHalf = specimenBounds.getSize(new THREE.Vector3()).multiplyScalar(0.5);
+            var scanKey = props.showEvidence && props.scanActive ? scanTargetId : '';
+            var focusChanged = yawRef.current.scanKey !== scanKey;
+            if (focusChanged) { yawRef.current.scanKey = scanKey; yawRef.current.framing = scanKey ? 'evidence' : 'full'; }
+            var cameraTargetIsEvidence = !!(scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);
             var cameraTarget = cameraTargetIsEvidence ? evidenceAnchorPoints[scanTargetId].clone() : modelCenter.clone();
             function updateCameraReadout() {
               var rotationDegrees = Math.round((((yaw * 180 / Math.PI) + 180) % 360 + 360) % 360 - 180);
-              var elevationDegrees = Math.round(pitch * 180 / Math.PI);
-              var zoomPercent = Math.round(100 / zoom);
+              var elevationDegrees = Math.round(pitch * 180 / Math.PI), zoomPercent = Math.round(100 / zoom);
               var nextReadout = 'Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model') + ' | Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
               if (nextReadout !== lastCameraReadout && cameraReadoutRef.current) {
-                cameraReadoutRef.current.textContent = nextReadout;
-                lastCameraReadout = nextReadout;
+                cameraReadoutRef.current.textContent = nextReadout; lastCameraReadout = nextReadout;
               }
             }
             function updateCameraView() {
-              var distance = radius * (cameraTargetIsEvidence ? 1.18 : 1.55) * zoom;
+              var rotatedWidth = Math.abs(Math.cos(yaw)) * modelHalf.x + Math.abs(Math.sin(yaw)) * modelHalf.z;
+              var rotatedDepth = Math.abs(Math.sin(yaw)) * modelHalf.x + Math.abs(Math.cos(yaw)) * modelHalf.z;
+              var verticalSpan = modelHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
+              var depthSpan = modelHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
+              var fitDistance = dinoFrameDistance(rotatedWidth, verticalSpan, depthSpan, camera.fov, camera.aspect);
+              var distance = Math.max(0.4, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
               var targetForView = cameraTarget.clone();
-              if (cameraTargetIsEvidence) targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-              camera.position.set(targetForView.x + len * 0.12, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
-              camera.lookAt(targetForView);
-              yawRef.current.pitch = pitch;
-              yawRef.current.zoom = zoom;
+              targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+              camera.position.set(targetForView.x, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
+              camera.near = Math.max(0.005, distance / 500);
+              camera.far = Math.max(200, distance * 8, len * 20);
+              camera.updateProjectionMatrix(); camera.lookAt(targetForView); camera.updateMatrixWorld(true);
+              yawRef.current.pitch = pitch; yawRef.current.zoom = zoom;
               updateCameraReadout();
             }
             activeCameraControl = function (nextYaw, nextPitch, nextZoom, message) {
               cameraTargetIsEvidence = false;
               cameraTarget = modelCenter.clone();
-              yaw = nextYaw;
-              pitch = clampView(nextPitch, 0.04, 0.72);
-              zoom = clampView(nextZoom, 0.68, 1.65);
-              yawRef.current.value = yaw;
-              interactionPauseUntil = performance.now() + 3000;
-              updateCameraView();
-              setStatus(message);
+              yawRef.current.framing = 'full';
+              yaw = nextYaw; pitch = clampView(nextPitch, 0.04, 1.50); zoom = clampView(nextZoom, 0.68, 1.65);
+              yawRef.current.value = yaw; interactionPauseUntil = performance.now() + 3000;
+              updateCameraView(); setStatus(message);
             };
             cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
+            function layoutSceneLabels() {
+              var width = canvas.clientWidth || 720, height = canvas.clientHeight || 420;
+              var mode = labelModeRef.current, occupied = [];
+              model.updateMatrixWorld(true);
+              var candidates = sceneLabels.slice().sort(function (a, b) {
+                function priority(label) {
+                  var text = label.userData.dinoLabel;
+                  if (text.toLowerCase() === scanTargetId) return 0;
+                  if (/^(Skull|Shoulder|Hip)( done)?$/.test(text)) return 1;
+                  if (/^(Claim:|Placed|Assemble)/.test(text)) return 2;
+                  return 3;
+                }
+                return priority(a) - priority(b);
+              });
+              candidates.forEach(function (label) {
+                var text = label.userData.dinoLabel;
+                var keyLabel = /^(Skull|Shoulder|Hip)( done)?$|^(Claim:|Placed|Assemble)/.test(text);
+                var measurement = /^\d.* (m|cm)$/.test(text);
+                label.visible = mode !== 'off' && (mode === 'all' || keyLabel || (props.showHuman && measurement && label.userData.labelScale >= 0.5));
+                if (!label.visible) return;
+                var world = label.getWorldPosition(new THREE.Vector3()), projected = world.clone().project(camera);
+                var view = world.clone().applyMatrix4(camera.matrixWorldInverse);
+                if (view.z >= 0 || projected.z > 1 || projected.z < -1) { label.visible = false; return; }
+                var pxHeight = keyLabel ? 31 : 25;
+                var pxWidth = pxHeight * (256 / 96);
+                var worldHeight = pxHeight / height * 2 * -view.z * Math.tan(camera.fov * Math.PI / 360);
+                label.scale.set(worldHeight * (256 / 96), worldHeight, 1);
+                var x = (projected.x + 1) * width / 2, y = (1 - projected.y) * height / 2;
+                var rect = { left: x - pxWidth / 2 - 3, right: x + pxWidth / 2 + 3, top: y - pxHeight / 2 - 3, bottom: y + pxHeight / 2 + 3 };
+                if (rect.left < 8 || rect.right > width - 8 || rect.top < 68 || rect.bottom > height - 72 ||
+                  occupied.some(function (r) { return rect.left < r.right && rect.right > r.left && rect.top < r.bottom && rect.bottom > r.top; })) {
+                  label.visible = false; return;
+                }
+                occupied.push(rect);
+              });
+            }
             function resize() {
               if (!alive || !renderer || !camera) return;
-              var w = Math.max(320, canvas.clientWidth || 720);
+              var w = Math.max(1, canvas.clientWidth || 720);
               var h = Math.max(260, canvas.clientHeight || 420);
               camera.aspect = w / h;
               camera.updateProjectionMatrix();
               renderer.setSize(w, h, false);
+              updateCameraView();
               measurementIntervalLabels.forEach(function (label) { if (label) label.visible = w >= 560; });
             }
             resize();
@@ -9354,7 +9473,7 @@ window.StemLab = window.StemLab || {
               var x = ev.clientX || 0;
               var y = ev.clientY || 0;
               yaw += (x - lastX) * 0.009;
-              pitch = clampView(pitch + (y - lastY) * 0.006, 0.04, 0.62);
+              pitch = clampView(pitch + (y - lastY) * 0.006, 0.04, 1.50);
               yawRef.current.value = yaw;
               lastX = x;
               lastY = y;
@@ -9370,9 +9489,9 @@ window.StemLab = window.StemLab || {
               } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
                 ev.preventDefault(); yaw += Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated right.');
               } else if (key === 'ArrowUp') {
-                ev.preventDefault(); pitch = clampView(pitch + 0.08, 0.04, 0.62); updateCameraView(); setStatus('Camera raised.');
+                ev.preventDefault(); pitch = clampView(pitch + 0.08, 0.04, 1.50); updateCameraView(); setStatus('Camera raised.');
               } else if (key === 'ArrowDown') {
-                ev.preventDefault(); pitch = clampView(pitch - 0.08, 0.04, 0.62); updateCameraView(); setStatus('Camera lowered.');
+                ev.preventDefault(); pitch = clampView(pitch - 0.08, 0.04, 1.50); updateCameraView(); setStatus('Camera lowered.');
               } else if (key === 'PageUp') {
                 ev.preventDefault(); zoom = clampView(zoom * 0.90, 0.68, 1.65); updateCameraView(); setStatus('Camera zoomed in.');
               } else if (key === 'PageDown') {
@@ -9381,7 +9500,8 @@ window.StemLab = window.StemLab || {
                 setCameraPreset('reset');
                 cameraTargetIsEvidence = false;
                 cameraTarget = modelCenter.clone();
-                ev.preventDefault(); yaw = -0.35; pitch = 0.18; zoom = 1; yawRef.current.value = yaw; updateCameraView(); setStatus('Reconstruction returned to its starting view.');
+                yawRef.current.framing = 'full';
+                ev.preventDefault(); yaw = 0.35; pitch = 0.18; zoom = 1; yawRef.current.value = yaw; updateCameraView(); setStatus('Reconstruction returned to its starting view.');
               }
             }
             function wheelZoom(ev) {
@@ -9468,7 +9588,7 @@ window.StemLab = window.StemLab || {
                 }
                 yawRef.current.value = yaw;
                 model.rotation.y = yaw;
-                updateCameraReadout();
+                updateCameraView();
                 if (!reducedMotion && scanPulse) {
                   var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
                   scanPulse.scale.set(pulse, pulse, pulse);
@@ -9489,6 +9609,7 @@ window.StemLab = window.StemLab || {
                   ring.scale.set(glow, glow, glow);
                 });
               }
+              layoutSceneLabels();
               renderer.render(scene, camera);
               syncAnimation();
             }
@@ -9505,7 +9626,7 @@ window.StemLab = window.StemLab || {
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
 
           };
-        }, [props.species.id, props.reconstructionMode, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
+        }, [props.species.id, props.reconstructionMode, props.stage, props.scanActive, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
 
         React.useEffect(function () {
           return function () {
@@ -9534,10 +9655,10 @@ window.StemLab = window.StemLab || {
           setCameraPreset(preset);
           if (!cameraControlRef.current) return;
           var presets = {
-            front: { yaw: 0, pitch: 0.16, zoom: 1, message: 'Front reconstruction view selected.' },
-            side: { yaw: -Math.PI / 2, pitch: 0.16, zoom: 1, message: 'Side reconstruction view selected.' },
-            overhead: { yaw: -0.35, pitch: 0.70, zoom: 1.08, message: 'Overhead reconstruction view selected.' },
-            reset: { yaw: -0.35, pitch: 0.18, zoom: 1, message: 'Reconstruction returned to its starting view.' }
+            front: { yaw: Math.PI / 2, pitch: 0.16, zoom: 1, message: 'Front reconstruction view selected.' },
+            side: { yaw: 0, pitch: 0.16, zoom: 1, message: 'Side reconstruction view selected.' },
+            overhead: { yaw: 0, pitch: 1.45, zoom: 1, message: 'Overhead reconstruction view selected.' },
+            reset: { yaw: 0.35, pitch: 0.18, zoom: 1, message: 'Reconstruction returned to its starting view.' }
           };
           var view = presets[preset] || presets.reset;
           cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);
@@ -9550,9 +9671,10 @@ window.StemLab = window.StemLab || {
           if (materials) {
             var alpha = nextOpacity / 100;
             var opaqueSurface = alpha >= 0.98;
+            [materials.muscle, materials.lung, materials.airSac, materials.callout].forEach(function (material) { if (material) material.visible = !opaqueSurface; });
             materials.body.opacity = opaqueSurface ? 1 : alpha;
             materials.head.opacity = opaqueSurface ? 1 : Math.min(0.87, alpha + 0.12);
-            materials.wire.opacity = opaqueSurface ? 0 : Math.max(0.10, alpha * 0.64);
+            materials.wire.opacity = opaqueSurface ? 0 : 0.16;
             materials.accent.opacity = opaqueSurface ? 1 : Math.min(0.90, alpha + 0.40);
             materials.muscle.opacity = Math.min(0.52, 0.14 + alpha * 0.62);
             materials.lung.opacity = Math.min(0.48, 0.16 + alpha * 0.50);
@@ -9595,7 +9717,7 @@ var evidenceRoute = [
           evidenceRoute.forEach(function (step, index) { if (step.id === (props.scanTarget || 'skull')) activeRouteIndex = index; });
           var activeRoute = evidenceRoute[activeRouteIndex];
           var activeRouteLogged = !!loggedRoute[activeRoute.id];
-          return el('div', { className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route'), style: { position: 'absolute', top: 96, right: 10, width: 'min(172px, calc(100% - 20px))', padding: 8, borderRadius: 10, background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(245,158,11,0.48)', boxShadow: '0 10px 24px rgba(0,0,0,0.24)', zIndex: 3 } },
+          return el('div', { className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route'), style: { display: 'grid', gridTemplateColumns: '100px repeat(3,minmax(0,1fr)) minmax(140px,1.2fr)', gap: 7, alignItems: 'center', marginTop: 8, padding: 8, borderRadius: 10, background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(245,158,11,0.48)', boxShadow: '0 10px 24px rgba(0,0,0,0.24)', zIndex: 3 } },
             el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6, color: '#f8fafc', fontSize: 11, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase' } },
               el('span', null, 'Evidence route'),
               el('span', { style: { color: '#fbbf24', fontSize: 10 } }, (props.loggedCount || 0) + '/' + (props.scanTotal || 3))
@@ -9621,7 +9743,7 @@ var evidenceRoute = [
           el('canvas', { id: 'dinolab-3d-canvas-' + props.species.id, ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Environment scene hypothesis: ' + habitat.shortLabel + '. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
-            readoutChip('Scene ' + habitat.shortLabel, 'rgba(20,184,166,0.65)'),
+            readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : 'Neutral studio'), 'rgba(20,184,166,0.65)'),
             readoutChip('Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
             readoutChip('Body ' + postcranialSurface.shortLabel, 'rgba(251,146,60,0.62)'),
             readoutChip('Head ' + cranialSurface.shortLabel, 'rgba(167,139,250,0.62)'),
@@ -9629,17 +9751,18 @@ var evidenceRoute = [
             props.showEvidence && props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.showEvidence && props.loggedCount != null ? readoutChip('Scan ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Logged ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Path ' + (props.pathLoggedCount || 0) + '/' + (props.pathTotal || 2), 'rgba(34,197,94,0.65)') : null
           ),
-          renderEvidenceRoute(),
           props.orientationCueVisible ? el('div', { className: 'dinolab-3d-orientation-cue', role: 'note', 'aria-label': __alloT('stem.dinolab.a11y_3d_viewer_orientation_tips', '3D viewer orientation tips'), style: { position: 'absolute', left: 14, top: 52, maxWidth: 'min(330px, calc(100% - 28px))', padding: 10, borderRadius: 10, border: '1px solid rgba(20,184,166,0.48)', background: 'rgba(15,23,42,0.94)', color: '#e2e8f0', boxShadow: '0 10px 28px rgba(0,0,0,0.28)', zIndex: 4 } },
             el('div', { style: { fontSize: 12.5, fontWeight: 900, marginBottom: 3 } }, 'New to the field station?'),
             el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45, maxWidth: 280 } }, 'Drag to orbit. Use the wheel or Page Up/Page Down to zoom. Start with the amber ' + (props.scanLabel || 'evidence') + ' target.'),
             el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': __alloT('stem.dinolab.a11y_dismiss_3d_viewer_orientation_tips', 'Dismiss 3D viewer orientation tips'), style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
           ) : null,
+          el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); }, style: { position: 'absolute', left: 12, bottom: 52, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
           el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
+          renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
-            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? '#5eead4' : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? T.text : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),
             el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_camera_viewpoints_and_body_inference_opacity', '3D camera viewpoints and body inference opacity'), style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
             ['front', 'side', 'overhead', 'reset'].map(function (preset) {
               var label = preset === 'overhead' ? 'Overhead' : (preset === 'reset' ? 'Reset view' : cap(preset));
@@ -9919,7 +10042,7 @@ var evidenceRoute = [
           upd({ field3dShowSkeleton: preset.skeleton, field3dShowBody: preset.body, field3dShowHuman: preset.human, field3dShowEvidence: preset.evidence, field3dBodyOpacity: preset.opacity });
           announceToSR('3D field station view preset: ' + preset.label + (preset.id === 'life' ? '. Analytical overlays hidden; opaque reconstructed surface shown.' : '.'));
         }
-        var presetStrip = el('div', { style: { margin: '0 0 10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 7 } }, viewPresets.map(function (preset) {
+        var presetStrip = el('div', { className: 'dinolab-surface-presets', role: 'group', 'aria-label': __alloT('stem.dinolab.surface_views', 'Reconstruction views'), style: { margin: '0 0 10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 7 } }, viewPresets.map(function (preset) {
           var active = presetActive(preset);
           return el('button', {
             key: preset.id,
@@ -10325,9 +10448,9 @@ var evidenceRoute = [
           keyItem('#d8c39a', 'Mandibular levers', 'Clade-scaled coronoid and retroarticular processes expose the jaw-adductor input and posterior lever around the articular glenoid without pretending to calculate specimen-level bite force.'),
           keyItem('#b99d73', 'Quadrate-articular joint', 'A darker condyle marks the primary reptile-style jaw hinge. It is not animated as a freely swinging bird-like quadrate unless fossil mechanics support that interpretation.'),
           keyItem('#c4b5d9', 'Hyoid proxy', 'Paired lavender rods mark conservative tongue-support bones; elaboration is increased only for supported derived herbivorous ornithischians, while soft tongue shape is omitted.'),
-          keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton; muscle and keratin overlays refine the inference.'),
+          keyItem(dColor(dn.diet), 'Body inference', 'A smooth translucent surface outlines estimated soft-tissue volume around the visible skeleton; muscle and keratin overlays refine the inference.'),
           keyItem('#14b8a6', 'Life view', 'An opaque, depth-writing surface hides analytical overlays so silhouette, skin, feathers, face, and extremities read as one animal. It changes presentation only and does not increase evidential certainty.'),
-          keyItem('#c26b3a', 'Species body silhouette', 'Overlapping thorax, abdomen, pelvis, neck, tail, and limb-transition volumes distinguish high-shouldered, barrel-bodied, cursorial, forequarter-heavy, and tail-driven builds. The fossil skeleton remains invariant; external soft-tissue thickness is inferred.'),
+          keyItem('#c26b3a', 'Species body silhouette', 'Continuous thorax, abdomen, pelvis, neck, and tail surfaces distinguish high-shouldered, barrel-bodied, cursorial, forequarter-heavy, and tail-driven builds. The fossil skeleton remains invariant; external soft-tissue thickness is inferred.'),
           keyItem('#8b6b4a', 'Species head silhouette', 'Clade-scaled head length, skull height and breadth, muzzle taper, cheek volume, jaw depth, orbit size, and nostril position distinguish feeding and sensory profiles. The fossil skeleton remains invariant; external soft-tissue thickness is inferred.'),
           keyItem('#6d5434', 'Living face details', 'Layered corneas, round conservative pupils, eyelid margins, brow tissue, nostril rims, lips, and a distinct lower jaw improve readability. A reduced-motion-aware blink adds a subtle living cue; exact color and tissue thickness remain reconstructed.'),
           keyItem('#8f3f32', 'Muscle inference', 'Muted red-brown volumes mark inferred jaw, neck, chest, thigh, calf, and caudofemoral paths. Attachment regions are better constrained than their thickness.'),
@@ -10416,7 +10539,18 @@ var evidenceRoute = [
                   )
                 );
               })),
-              el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              presetStrip,
+              el('div', { className: 'dinolab-presentation-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10 } },
+                el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.scene_lighting', 'Scene lighting') },
+                  pill(d.field3dStage !== 'habitat', __alloT('stem.dinolab.studio_lighting', 'Studio'), function () { upd('field3dStage', 'studio'); }, 'studio'),
+                  pill(d.field3dStage === 'habitat', __alloT('stem.dinolab.habitat_lighting', 'Habitat'), function () { upd('field3dStage', 'habitat'); }, 'habitat')),
+                el('label', { htmlFor: 'dino-scene-labels', style: { fontSize: 12, fontWeight: 700, color: T.soft } }, __alloT('stem.dinolab.model_labels', 'Model labels')),
+                el('select', { id: 'dino-scene-labels', value: d.field3dLabelMode || 'key', onChange: function (event) { upd('field3dLabelMode', event.target.value); }, style: actionStyle },
+                  el('option', { value: 'key' }, __alloT('stem.dinolab.key_labels', 'Key labels')),
+                  el('option', { value: 'all' }, __alloT('stem.dinolab.all_labels', 'All labels')),
+                  el('option', { value: 'off' }, __alloT('stem.dinolab.labels_off', 'Labels off'))),
+                el('span', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.studio_note', 'Studio lighting shows form; habitat scenes and surface colors are interpretations.'))),
+              el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
@@ -10508,7 +10642,7 @@ var evidenceRoute = [
               el('div', { hidden: drawerSection !== 'assemble' }, assemblyPanel),
               el('div', { hidden: drawerSection !== 'claim' }, claimBuilderPanel),
               el('div', { hidden: drawerSection !== 'reconstruct' },
-                hypothesisStrip, hypothesisNote, presetStrip,
+                hypothesisStrip, hypothesisNote,
                 panel([
                 el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, 'Reconstruction layers'),
                 checkRow('field3dShowSkeleton', showSkeleton, 'Skeleton proxy', 'Shows modular cranial bars, the single occipital condyle, atlas-axis complex, clade-scaled coronoid and retroarticular jaw levers, regionalized centra and neural arches, double-headed curved dorsal ribs, differentiated sternal connections, supported gastral baskets or uncinate processes, expanded sacral ribs and iliac contacts, tapered proximal caudal ribs, true haemal arches, blade-like girdles, rimmed sockets, tapered paired limb bones, articulated phalangeal chains, and tail.'),
@@ -11016,7 +11150,8 @@ var evidenceRoute = [
         );
       }
 
-      var accessibilityStyles = '.dinolab-root button:disabled{opacity:.5;cursor:not-allowed!important}.dinolab-root summary:focus-visible{outline:3px solid #0f766e;outline-offset:4px}.dinolab-root .dinolab-compare-grid>div{min-width:0}.dinolab-root .dinolab-notebook-layout select{box-sizing:border-box;max-width:100%}@media(max-width:720px){.dinolab-root .dinolab-specimen-file{position:static!important;max-height:none!important;overflow:visible!important}.dinolab-root .dinolab-specimen-file.is-open{order:-1}.dinolab-root .dinolab-notebook-layout{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:380px){.dinolab-root .dinolab-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dinolab-root .dinolab-species-grid button{padding:9px!important}.dinolab-root .dinolab-species-grid span{white-space:normal!important}}' +
+      var accessibilityStyles = '@media(max-width:720px){.dinolab-root .dinolab-3d-evidence-route{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-root .dinolab-3d-evidence-route>div:first-child,.dinolab-root .dinolab-3d-evidence-route>div:last-child,.dinolab-root .dinolab-3d-evidence-route>button:last-child{grid-column:1/-1}.dinolab-root .dinolab-3d-camera-readout{max-width:calc(100% - 170px);font-size:9px!important}.dinolab-root .dinolab-3d-readouts>.dinolab-3d-chip:nth-child(n+3){display:none}.dinolab-root .dinolab-fit-model{font-size:10px!important;padding:7px!important;bottom:55px!important}}' +
+        '.dinolab-root button:disabled{opacity:.5;cursor:not-allowed!important}.dinolab-root summary:focus-visible{outline:3px solid #0f766e;outline-offset:4px}.dinolab-root .dinolab-compare-grid>div{min-width:0}.dinolab-root .dinolab-notebook-layout select{box-sizing:border-box;max-width:100%}@media(max-width:720px){.dinolab-root .dinolab-specimen-file{position:static!important;max-height:none!important;overflow:visible!important}.dinolab-root .dinolab-specimen-file.is-open{order:-1}.dinolab-root .dinolab-notebook-layout{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:380px){.dinolab-root .dinolab-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dinolab-root .dinolab-species-grid button{padding:9px!important}.dinolab-root .dinolab-species-grid span{white-space:normal!important}}' +
         '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
         '@media(max-width:980px){.dinolab-root .dinolab-field-drawer{position:static!important;width:100%!important;max-height:none!important;margin-top:12px!important}.dinolab-root .dinolab-field-workflow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-field-toolbar-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;margin-left:0!important}.dinolab-root .dinolab-field-toolbar-actions>button{width:100%!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +

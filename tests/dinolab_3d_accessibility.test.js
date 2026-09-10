@@ -53,7 +53,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-label': piece.label + ' fossil");
     expect(source).toContain('var DinoFieldStation3DStable = null;');
     expect(source).toContain('if (!DinoFieldStation3DStable) DinoFieldStation3DStable = DinoFieldStation3D;');
-    expect(source).toContain('el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id,');
+    expect(source).toContain("el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', focusMode: focusMode, reconstructionMode: activeHypothesis.id,");
     expect(source).toContain("var focusMode = d.field3dFocusMode === true;");
     expect(source).toContain("else if (focusMode) { e.preventDefault(); toggleFieldFocus(); }");
     expect(source).toContain("'aria-keyshortcuts': focusMode ? 'Escape' : null");
@@ -74,7 +74,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var cameraPresetState = React.useState(null)');
     expect(source).toContain("'aria-label': label + ' camera view'");
     expect(source).toContain("'aria-pressed': active ? 'true' : 'false'");
-    expect(source).toContain("setCameraPreset('reset');\n                cameraTargetIsEvidence = false;\n                cameraTarget = modelCenter.clone();\n                ev.preventDefault(); yaw = -0.35; pitch = 0.18; zoom = 1;");
+    expect(source).toContain("setCameraPreset('reset');\n                cameraTargetIsEvidence = false;\n                cameraTarget = modelCenter.clone();\n                yawRef.current.framing = 'full';\n                ev.preventDefault(); yaw = 0.35; pitch = 0.18; zoom = 1;");
     expect(source).toContain("className: 'dinolab-3d-controls-disclosure'");
     expect(source).toContain('open: props.focusMode ? true : null');
     expect(source).toContain("id: 'dinolab-3d-canvas-' + props.species.id");
@@ -136,10 +136,10 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("var requestedReconstructionMode = d.field3dReconstructionMode || 'evidence';");
     expect(source).toContain(`role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_hypothesis', 'Reconstruction hypothesis')`);
     expect(source).toContain('Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.');
-    expect(source).toContain('props.reconstructionMode, props.showSkeleton');
+    expect(source).toContain("props.reconstructionMode, props.stage, props.scanActive, props.showSkeleton");
     expect(source).toContain('var surfaceBodyHeight = bodyHeight * surfaceHypothesis.bodyHeightScale;');
     expect(source).toContain('var surfaceBodyDepth = bodyDepth * surfaceHypothesis.bodyDepthScale;');
-    expect(source).toContain('var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });');
+    expect(source).toContain('var yawRef = React.useRef({ speciesId: props.species.id, value: 0.35, pitch: 0.18, zoom: 1 });');
     expect(source).toContain('var autoRotateRef = React.useRef(props.autoRotate);');
     expect(source).toContain('var readySpeciesRef = React.useRef(null);');
     expect(source).toContain('autoRotateRef.current = props.autoRotate;');
@@ -166,9 +166,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('new Blob([summary]');
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);
-    expect(source).toContain('var cameraTargetIsEvidence = !!evidenceAnchorPoints[scanTargetId];');
+    expect(source).toContain("var cameraTargetIsEvidence = !!(scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);");
     expect(source).toContain('var targetForView = cameraTarget.clone();');
-    expect(source).toContain('camera.position.set(targetForView.x + len * 0.12');
+    expect(source).toContain("camera.position.set(targetForView.x, targetForView.y");
     expect(source).toContain('camera.lookAt(targetForView);');
     expect(source).toContain("Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model')");
     expect(source).toContain('cameraTargetIsEvidence = false;');
@@ -207,8 +207,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("id: 'low-armored-barrel', shortLabel: 'Low armored barrel'");
     expect(source).toContain('function addSoftTissueChain(points, radii, mat)');
     expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
-    expect(source).toContain('var abdomenShell = addEllipsoid(abdomenCenter');
-    expect(source).toContain('var pelvisShell = addEllipsoid(pelvisCenter');
+    expect(source).toContain("var torsoRadii = [");
+    expect(source).toContain("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;");
     expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
     expect(source).toContain('var tailMeshes = addSoftTissueChain([hip, tailMidA, tailMidB, tail]');
     expect(source).toContain('idleMotion.tailSegments.forEach(function (tailEntry, tailIndex)');
@@ -244,7 +244,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("addAnatomyCallout('Tail', tailCalloutPoint");
     expect(source).toContain('function addSoftTissueCylinder(a, b, startRadius, endRadius, mat)');
     expect(source).toContain('function addBodyContour(mesh)');
-    expect(source).toContain('wireframe: true, depthWrite: false');
+    expect(source).toContain("side: THREE.BackSide, depthWrite: false");
     expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
     expect(source).toContain('addSoftTissueCylinder(armStart, elbow');
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
@@ -263,7 +263,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('new THREE.DodecahedronGeometry(rockSize, 0)');
     expect(source).toContain("var skinCanvas = document.createElement('canvas');");
     expect(source).toContain('roughness: 0.82, metalness: 0');
-    expect(source).toContain('var muzzleShell = addSoftTissueCylinder(');
+    expect(source).toContain('var muzzleShell = isTheropod ? null : addSoftTissueCylinder(');
     expect(source).toContain('                surfaceSnout,');
     expect(source).toContain('var faceScale = reconstructionProfile.head;');
     expect(source).toContain('var surveyCorners = [');

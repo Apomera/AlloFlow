@@ -1,0 +1,27 @@
+{
+  "surfaces": 7,
+  "vertices": 83375,
+  "outside": 0,
+  "invalid": 0,
+  "labels": 0,
+  "yaw": 0.35,
+  "canvas": {
+    "canvasCount": 1,
+    "lost": false,
+    "w": 1146,
+    "h": 570,
+    "box": {
+      "w": 1146,
+      "h": 570
+    },
+    "parentBox": {
+      "w": 1148,
+      "h": 572
+    },
+    "attr": {
+      "w": 1146,
+      "h": 570
+    }
+  },
+  "errors": []
+}

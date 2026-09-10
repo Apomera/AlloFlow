@@ -249,7 +249,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Warm hinge-shaped ends distinguish hip, elbow or knee, wrist or ankle articulations/);
     expect(html).toMatch(/brow bosses, beaks/);
     expect(html).toMatch(/thumb spikes, or feather fans/);
-    expect(html).toMatch(/thin contour mesh show estimated soft-tissue volume around the visible skeleton/);
+    expect(html).toMatch(/smooth translucent surface outlines estimated soft-tissue volume around the visible skeleton/);
     expect(html).toMatch(/role="status"/);
     expect(html).toMatch(/aria-atomic="true"/);
     expect(html).toMatch(/role="progressbar"/);
