@@ -28,9 +28,10 @@ describe('Adventure typing pace support', () => {
   });
 
   it('covers both standard and immersive free-response editors', () => {
-    expect(viewSource.match(/onChange=\{handleAdventureTextChange\}/g)?.length).toBe(2);
-    expect(viewSource).toContain('{renderTypingPace(true)}');
-    expect(viewSource).toContain('{renderTypingPace(false)}');
+    expect(viewSource.match(/onChange=\{handleAdventureTextChange\}/g)?.length).toBe(1);
+    expect(viewSource).toContain('{renderAdventureComposer(true)}');
+    expect(viewSource).toContain('renderAdventureComposer(false)');
+    expect(viewSource).toContain("renderTypingPace(immersive || theme !== 'light')");
   });
 });
 

@@ -34,7 +34,7 @@ describe('Adventure standard and immersive toolbar accessibility', () => {
 
   it('provides larger visible-focus targets and hides toolbar decoration', () => {
     expect(source.match(/min-w-11 min-h-11/g)?.length).toBeGreaterThanOrEqual(10);
-    expect(source.match(/focus-visible:ring-2 focus-visible:ring-yellow-300/g)?.length).toBeGreaterThanOrEqual(10);
+    expect(source.match(/focus-visible:ring-2 focus-visible:ring-(?:yellow-300|\[var\(--av-focus\)\])/g)?.length).toBeGreaterThanOrEqual(10);
     expect(source).toContain('<MapIcon size={18} className="text-yellow-300" aria-hidden="true"/>');
     expect(source).toContain('<Pencil size={14} aria-hidden="true" />');
     expect(source).toContain('<Minimize size={16} aria-hidden="true" />');

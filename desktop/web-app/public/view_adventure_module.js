@@ -1794,6 +1794,89 @@ function AdventureView(props) {
       className: (isDark ? 'border-white/20 bg-black/40 text-white/80' : 'border-indigo-200 bg-indigo-50 text-indigo-900') + ' w-fit rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums'
     }, text);
   };
+  var renderAdventureComposer = function (immersive) {
+    var inputId = 'adventure-response-' + (immersive ? 'immersive' : 'standard');
+    var isDebate = adventureInputMode === 'debate';
+    var guidance = isDebate ? adventureSettingsText(t, 'response_debate_guide', 'State your claim and connect it to evidence from the scene.') : adventureInputMode === 'system' ? adventureSettingsText(t, 'response_system_guide', 'Propose a change, then explain the outcome you expect.') : adventureSettingsText(t, 'response_action_guide', 'Describe what you want to do and why.');
+    return /*#__PURE__*/React.createElement("section", {
+      "data-adventure-composer": true,
+      "aria-labelledby": inputId + '-label',
+      style: adventureVisualTokens(theme, immersive),
+      className: "min-w-0 rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-3 sm:p-4 text-[var(--av-ink)] shadow-[var(--av-shadow)]"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-3 flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true",
+      className: "hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] text-[var(--av-accent)]"
+    }, /*#__PURE__*/React.createElement(Pencil, {
+      size: 18
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "min-w-0"
+    }, /*#__PURE__*/React.createElement("label", {
+      id: inputId + '-label',
+      htmlFor: inputId,
+      className: "block text-sm font-black leading-relaxed"
+    }, isDebate ? adventureSettingsText(t, 'response_argument_label', 'Your argument') : adventureSettingsText(t, 'response_action_label', 'Your next action')), /*#__PURE__*/React.createElement("p", {
+      id: inputId + '-guide',
+      className: "m-0 mt-1 text-xs leading-relaxed text-[var(--av-muted)]"
+    }, guidance))), /*#__PURE__*/React.createElement("textarea", {
+      id: inputId,
+      ref: adventureInputRef,
+      "data-help-key": "adventure_input_field",
+      value: adventureTextInput,
+      "aria-describedby": inputId + '-guide ' + inputId + '-keys',
+      onChange: handleAdventureTextChange,
+      onFocus: typingPace.resume,
+      onBlur: typingPace.pause,
+      onPaste: () => typingPace.markAssisted('paste'),
+      placeholder: isDebate ? t('adventure.placeholder_debate') : t('adventure.placeholder_action'),
+      rows: 4,
+      autoFocus: immersive,
+      className: "block w-full min-w-0 min-h-[120px] max-h-56 resize-y rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] p-3 text-base leading-relaxed text-[var(--av-ink)] placeholder:text-[var(--av-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]",
+      onKeyDown: e => {
+        // Enter may confirm an input-method candidate instead of submitting the action.
+        if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
+        if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
+          e.preventDefault();
+          handleAdventureTextSubmit();
+        }
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 flex flex-wrap items-start justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      id: inputId + '-keys',
+      className: "m-0 text-xs leading-relaxed text-[var(--av-muted)]"
+    }, adventureSettingsText(t, 'response_keyboard_help', 'Enter to send · Shift + Enter for a new line.')), renderTypingPace(immersive || theme !== 'light')), /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 flex flex-col gap-2 sm:flex-row sm:justify-between"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-adventure-dictation": true,
+      "aria-pressed": isDictationMode,
+      onClick: () => {
+        const newState = !isDictationMode;
+        setIsDictationMode(newState);
+        if (newState) setTimeout(() => {
+          if (adventureInputRef.current) adventureInputRef.current.focus();
+        }, 100);
+      },
+      className: 'min-h-11 min-w-0 rounded-xl border border-[var(--av-control)] px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] ' + (isDictationMode ? 'bg-[var(--av-wash)] text-[var(--av-accent)]' : 'bg-[var(--av-surface)] text-[var(--av-ink)] hover:bg-[var(--av-wash)]')
+    }, isDictationMode ? /*#__PURE__*/React.createElement(Mic, {
+      size: 18,
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(MicOff, {
+      size: 18,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, isDictationMode ? adventureSettingsText(t, 'response_dictation_stop', 'Stop dictation') : adventureSettingsText(t, 'response_dictation_start', 'Dictate'))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "adventure_input_send",
+      onClick: () => handleAdventureTextSubmit(),
+      disabled: !adventureTextInput.trim() || adventureState.isLoading,
+      className: "min-h-11 min-w-0 rounded-xl border border-[var(--av-accent)] bg-[var(--av-accent)] px-5 py-2.5 text-sm font-black text-[var(--av-surface)] flex items-center justify-center gap-2 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
+    }, /*#__PURE__*/React.createElement(Send, {
+      size: 18,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, isDebate ? adventureSettingsText(t, 'response_argument_send', 'Send argument') : adventureSettingsText(t, 'response_action_send', 'Send action')))));
+  };
   var xpMax = Math.max(1, Number(adventureState.xpToNextLevel) || 1);
   var xpValue = Math.max(0, Math.min(xpMax, Number(adventureState.xp) || 0));
   var xpProgressPercent = Math.max(0, Math.min(100, xpValue / xpMax * 100));
@@ -2891,33 +2974,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", t('adventure.collect_class_actions') || 'Collect and vote on class actions'), /*#__PURE__*/React.createElement("p", {
     className: "m-0 mt-2 text-[11px] leading-snug text-emerald-100"
-  }, t('adventure.collect_class_actions_privacy') || 'Student proposals and votes use the existing peer-to-peer Live Polling channel and are not written to the session document.')) : null, renderStrategyHintCard(true), /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": t('adventure.aria_free_response') || 'Type your adventure action',
-    "data-help-key": "adventure_input_field",
-    value: adventureTextInput,
-    onChange: handleAdventureTextChange,
-    onFocus: typingPace.resume,
-    onBlur: typingPace.pause,
-    onPaste: () => typingPace.markAssisted('paste'),
-    onKeyDown: e => {
-      if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
-        e.preventDefault();
-        handleAdventureTextSubmit();
-      }
-    },
-    placeholder: t('adventure.action_placeholder_short'),
-    className: "w-full bg-black/50 text-white border border-white/30 rounded-xl p-3 focus:border-white focus:ring-2 focus:ring-white/20 outline-none resize-none h-24 text-sm font-medium placeholder:text-white/50 backdrop-blur-sm",
-    autoFocus: true
-  }), renderTypingPace(true), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "adventure_input_send",
-    onClick: () => handleAdventureTextSubmit(),
-    disabled: !adventureTextInput.trim() || adventureState.isLoading,
-    className: "min-h-11 w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-  }, /*#__PURE__*/React.createElement(Send, {
-    size: 16,
-    "aria-hidden": "true"
-  }), " ", t('adventure.send_action')), renderStrategyHintButton(true))) : /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.collect_class_actions_privacy') || 'Student proposals and votes use the existing peer-to-peer Live Polling channel and are not written to the session document.')) : null, renderStrategyHintCard(true), renderAdventureComposer(true), renderStrategyHintButton(true))) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
   }, renderDemocracyStatus(true), (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
@@ -3155,58 +3212,7 @@ function AdventureView(props) {
         className: "min-w-0 pt-0.5 [overflow-wrap:anywhere]"
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), renderAdventureChoiceListen(opt, idx)), renderAdventureChoiceStatus(isDemocracy, isMyVote, voteCount, percent, isReadingThisOption));
     });
-  })()) : /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start'),
-    "aria-pressed": isDictationMode,
-    type: "button",
-    onClick: () => {
-      const newState = !isDictationMode;
-      setIsDictationMode(newState);
-      if (newState && adventureInputRef.current) {
-        setTimeout(() => adventureInputRef.current.focus(), 100);
-      }
-    },
-    className: `min-w-11 min-h-11 p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ${isDictationMode ? 'bg-red-50 border-red-500 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-white border-indigo-300 text-slate-700 hover:text-indigo-700 hover:border-indigo-500'}`,
-    title: isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')
-  }, isDictationMode ? /*#__PURE__*/React.createElement(Mic, {
-    size: 20,
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement(MicOff, {
-    size: 20,
-    "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex min-w-0 flex-grow flex-col gap-1.5"
-  }, /*#__PURE__*/React.createElement("textarea", {
-    ref: adventureInputRef,
-    "data-help-key": "adventure_input_field",
-    value: adventureTextInput,
-    onChange: handleAdventureTextChange,
-    onFocus: typingPace.resume,
-    onBlur: typingPace.pause,
-    onPaste: () => typingPace.markAssisted('paste'),
-    placeholder: adventureInputMode === 'debate' ? t('adventure.placeholder_debate') : t('adventure.placeholder_action'),
-    "aria-label": adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adventure.aria_action'),
-    className: "w-full p-3 text-sm border border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-20 bg-purple-50 text-purple-900 placeholder:text-purple-300 transition-shadow duration-300",
-    onKeyDown: e => {
-      if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
-        e.preventDefault();
-        handleAdventureTextSubmit();
-      }
-    }
-  }), renderTypingPace(false)), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "adventure_input_send",
-    onClick: () => handleAdventureTextSubmit(),
-    disabled: !adventureTextInput.trim() || adventureState.isLoading,
-    className: "min-w-[80px] min-h-11 bg-indigo-600 text-white px-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, /*#__PURE__*/React.createElement(Send, {
-    size: 18,
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px]"
-  }, t('adventure.act_button')))), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
+  })()) : renderAdventureComposer(false), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-2 flex flex-col gap-2"
   }, renderStrategyHintCard(false), renderStrategyHintButton(false)), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"

@@ -697,3 +697,132 @@ for (const immersive of [false, true]) {
     });
   }
 }
+
+
+for (const theme of ['light', 'dark', 'contrast']) {
+  for (const immersive of [false, true]) {
+    test('response composer supports thoughtful writing in ' + theme + ' ' + (immersive ? 'immersive' : 'standard'), async ({ page }, info) => {
+      await page.setViewportSize({ width: 1200, height: 1100 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await load(page, theme);
+      const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+      await mountActiveAdventure(page, theme, {
+        props: { adventureFreeResponseEnabled: true, immersiveShowChoices: true, handleAdventureHint: false },
+        state: { isImmersiveMode: immersive }
+      });
+      await page.evaluate(() => {
+        const w = window as any;
+        w.__composerCalls = { submitted: [], dictation: [] };
+        const translate = w.__adventureProps.t;
+        w.__updateAdventure({
+          t: (key: string, values: any) => ({
+            'adventure.tooltips.dictation_start': 'Start dictation',
+            'adventure.tooltips.dictation_stop': 'Stop dictation',
+            'adventure.placeholder_action': 'I will… because…',
+            'adventure.placeholder_debate': 'My claim is… My evidence is…'
+          } as any)[key] || translate(key, values),
+          setAdventureTextInput: (text: string) => w.__updateAdventure({ adventureTextInput: text }),
+          setIsDictationMode: (active: boolean) => { w.__composerCalls.dictation.push(active); w.__updateAdventure({ isDictationMode: active }); },
+          handleAdventureTextSubmit: () => w.__composerCalls.submitted.push(w.__adventureProps.adventureTextInput)
+        });
+      });
+      const composer = page.locator('[data-adventure-composer]');
+      const input = composer.getByRole('textbox');
+      const send = composer.locator('[data-help-key="adventure_input_send"]');
+      const dictate = composer.locator('[data-adventure-dictation]');
+      await expect(composer).toHaveCount(1);
+      await expect(input).toHaveAccessibleName('Your next action');
+      await expect(input).toHaveAccessibleDescription('Describe what you want to do and why. Enter to send · Shift + Enter for a new line.');
+      await expect(send).toBeDisabled();
+      await expect(dictate).toHaveAccessibleName('Dictate');
+      await input.fill('   ');
+      await expect(send).toBeDisabled();
+      await input.fill('Compare the upstream and downstream samples because the storm may have moved sediment.');
+      for (const width of [1200, 320]) {
+        await page.setViewportSize({ width, height: 1100 });
+        await composer.locator('label').scrollIntoViewIfNeeded();
+        expect(await composer.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        const box = (await input.boundingBox())!, frame = (await composer.boundingBox())!;
+        expect(box.width / frame.width).toBeGreaterThan(0.8);
+        expect(box.width).toBeGreaterThan(width === 320 ? 180 : 600);
+        expect(await input.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+        for (const control of [send, dictate]) {
+          await control.scrollIntoViewIfNeeded();
+          expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        }
+        await axe(page, '[data-adventure-composer]');
+        await composer.locator('label').scrollIntoViewIfNeeded();
+        await page.screenshot({ path: info.outputPath('composer-' + theme + '-' + (immersive ? 'immersive' : 'standard') + '-' + width + '.png') });
+      }
+      await input.fill('Measure the water');
+      await input.press('End');
+      await input.press('Shift+Enter');
+      await input.pressSequentially('before changing the habitat.');
+      await expect(input).toHaveValue('Measure the water\nbefore changing the habitat.');
+      expect(await page.evaluate(() => (window as any).__composerCalls.submitted)).toEqual([]);
+      // IME confirmation must not submit, including the legacy 229 event used by some browsers.
+      await input.evaluate(el => {
+        el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter', isComposing: true }));
+        el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter', keyCode: 229 }));
+      });
+      expect(await page.evaluate(() => (window as any).__composerCalls.submitted)).toEqual([]);
+      await input.press('Enter');
+      expect(await page.evaluate(() => (window as any).__composerCalls.submitted)).toEqual(['Measure the water\nbefore changing the habitat.']);
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: true } }));
+      await expect(send).toBeDisabled();
+      await input.press('Enter');
+      expect(await page.evaluate(() => (window as any).__composerCalls.submitted.length)).toBe(1);
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: false }, adventureTextInput: 'Preserve this draft while using dictation.' }));
+      await dictate.click();
+      await expect(dictate).toHaveAttribute('aria-pressed', 'true');
+      await expect(dictate).toHaveAccessibleName('Stop dictation');
+      await expect(input).toBeFocused();
+      await expect(input).toHaveValue('Preserve this draft while using dictation.');
+      await dictate.click();
+      await expect(dictate).toHaveAttribute('aria-pressed', 'false');
+      await expect(dictate).toHaveAccessibleName('Dictate');
+      expect(await page.evaluate(() => (window as any).__composerCalls.dictation)).toEqual([true, false]);
+      await send.focus(); await page.keyboard.press('Space');
+      expect(await page.evaluate(() => (window as any).__composerCalls.submitted)).toEqual(['Measure the water\nbefore changing the habitat.', 'Preserve this draft while using dictation.']);
+
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureInputMode: 'system' }));
+      await expect(input).toHaveAccessibleDescription('Propose a change, then explain the outcome you expect. Enter to send · Shift + Enter for a new line.');
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureInputMode: 'debate', adventureState: { debatePhase: 'active' } }));
+      await expect(input).toHaveAccessibleName('Your argument');
+      await expect(send).toHaveText('Send argument');
+      await expect(input).toHaveAccessibleDescription('State your claim and connect it to evidence from the scene. Enter to send · Shift + Enter for a new line.');
+      await expect(input).toHaveValue('Preserve this draft while using dictation.');
+      if (immersive) {
+        await page.getByRole('button', { name: 'Return to story', exact: true }).click();
+        await expect(composer).toHaveCount(0);
+        await page.getByRole('button', { name: 'Make a choice', exact: true }).click();
+        await expect(input).toHaveValue('Preserve this draft while using dictation.');
+      }
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.addStyleTag({ content: 'html { font-size: 20px; }' });
+      await input.fill('Evidence'.repeat(60));
+      await send.scrollIntoViewIfNeeded();
+      await expect(send).toBeInViewport();
+      expect(await composer.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await axe(page, '[data-adventure-composer]');
+      await page.screenshot({ path: info.outputPath('composer-enlarged-' + theme + '-' + (immersive ? 'immersive' : 'standard') + '.png') });
+      expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test('immersive class-action controls keep the response composer teacher controlled', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 1000 });
+  await load(page, 'dark');
+  await mountActiveAdventure(page, 'dark', {
+    props: { adventureFreeResponseEnabled: true, immersiveShowChoices: true, activeSessionCode: 'test-session', isTeacherMode: false },
+    state: { isImmersiveMode: true }
+  });
+  await expect(page.locator('[data-adventure-composer]')).toHaveCount(0);
+  await page.evaluate(() => (window as any).__updateAdventure({ isTeacherMode: true }));
+  await expect(page.locator('[data-adventure-composer]')).toHaveCount(1);
+  await expect(page.locator('[data-adventure-actions]').getByRole('button', { name: /collect class actions/i })).toHaveCount(1);
+});
