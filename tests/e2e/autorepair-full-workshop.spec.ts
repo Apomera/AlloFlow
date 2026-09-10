@@ -1444,3 +1444,30 @@ test('task route reviews recorded evidence without skipping tasks or losing draf
   await route.locator('[data-ar-route-return]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-notes')).toBeFocused();await expect(page.locator('#ar-shop-notes')).toHaveValue('My explanation of the finding, service and verification.');
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('calculation coach links scene and work order while preserving captured instrument evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,instrument:{jugMl:4600},answer:'500',notes:'Keep my explanation draft.'}}});
+  const order=page.locator('[data-ar-calculation-coach="order"]'),scene=page.locator('[data-ar-calculation-coach="scene"]');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await order.locator('[data-ar-calculation-check]').focus();await page.keyboard.press('Enter');await expect(order.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','units');await expect(scene.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','units');
+  await order.locator('[data-ar-calculation-hint-toggle]').click();expect(await state()).toBe(before);
+  await expect(page.locator('#ar-shop-answer')).toHaveAttribute('aria-invalid','true');await order.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await order.screenshot({path:'reports/automobile-workshop/calculation-coach-desktop.png'});
+  await page.locator('#ar-shop-scene-answer').fill('4.6');await expect(page.locator('#ar-shop-answer')).toHaveValue('4.6');await expect(order.locator('[data-ar-calculation-result]')).toHaveCount(0);
+  await scene.locator('[data-ar-calculation-check]').click();await expect(order.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','total');
+  await page.locator('#ar-shop-answer').fill('0.5');await order.locator('[data-ar-calculation-check]').click();await expect(scene.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','correct');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');await expect(page.locator('#ar-shop-notes')).toHaveValue('Keep my explanation draft.');
+  const checked=await state();await order.locator('[data-ar-calculation-hint-toggle]').click();expect(await state()).toBe(checked);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopCalculationHint','oil');});
+  await order.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await order.screenshot({path:'reports/automobile-workshop/calculation-coach-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopCalculationHint','oil');});
+  await scene.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await scene.screenshot({path:'reports/automobile-workshop/calculation-coach-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await scene.locator('button').evaluateAll(buttons=>buttons.every(b=>b.getBoundingClientRect().height>=44))).toBe(true);
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();await expect(page.locator('[data-ar-calculation-coach]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.history.at(-1).result)).toContain('Learner calculation: 0.5 L');
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('[data-ar-calculation-result]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1231,5 +1231,46 @@ describe('Task route rendering',()=>{
     const host=render({step:6,history:[{id:'measure',result:'<img src=x onerror=alert(1)> 1.6 V'}]},{shopTaskRoute:true});
     expect(host.querySelector('[data-ar-task-route] img')).toBeNull();expect(host.querySelector('[data-ar-route-evidence="recorded"]').textContent).toContain('<img');
     expect(host.querySelector('[data-ar-route-return]').textContent).toBe('Review customer handoff');expect(host.querySelector('[data-ar-task-route] [aria-current]')).toBeNull();
+  });
+});
+
+
+describe('Workshop calculation coaching',()=>{
+  const positions={brakes:7,oil:9,electrical:2,alignment:2};
+  function state(job,answer){return model.normalize({job,step:positions[job],answer});}
+  it.each(model.jobs)('keeps the existing answer tolerance for $id',job=>{
+    expect(model.calculation(state(job.id,' '+job.answer+' ')).correct).toBe(true);
+    expect(model.calculation(state(job.id,job.answer+0.0009)).correct).toBe(true);
+    expect(model.calculation(state(job.id,job.answer+0.0011)).correct).toBe(false);
+    expect(model.calculation(state(job.id,job.answer)).formula).toContain('?');
+  });
+  it.each(model.jobs)('does not replace evidence or task gates for $id',job=>{
+    const s=state(job.id,job.answer);expect(model.calculation(s).correct).toBe(true);expect(model.readiness(s).ready).toBe(false);expect(model.advance(s).step).toBe(s.step);
+  });
+  it.each([['brakes',2,'remaining'],['brakes',3,'limit'],['oil',4.6,'total'],['oil',500,'units'],['electrical',1.6,'reading'],['electrical',0.08,'repeat'],['alignment',0.2,'target'],['alignment',0.3,'one-wheel'],['alignment',0.1,'one-wheel']])('explains %s answer %s as %s',(job,answer,status)=>{
+    const result=model.calculation(state(job,answer));expect(result.status).toBe(status);expect(result.correct).toBe(false);
+  });
+  it.each([['','empty'],['  ','empty'],['NaN','invalid'],['Infinity','invalid'],['oops','invalid'],[-2,'negative'],[999,'retry']])('handles %s as %s',(answer,status)=>{expect(model.calculation(state('oil',answer)).status).toBe(status);});
+  it('leaves inputs untouched and keys feedback to job, task and answer',()=>{
+    const s=state('oil','500'),before=JSON.stringify(s),result=model.calculation(s);expect(JSON.stringify(s)).toBe(before);
+    expect(model.calculation({...s,answer:'0.5'}).key).not.toBe(result.key);expect(model.calculation(state('brakes','500')).key).not.toBe(result.key);
+    expect(model.calculation({...s,step:10})).toBeNull();expect(model.calculation({job:'electrical',step:6})).toBeNull();
+  });
+});
+
+describe('Shared calculation coach rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(answer='500',prefs={},theme={}){const shop=model.normalize({job:'oil',step:9,answer});const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,...prefs}},theme);return{host,shop};}
+  it('starts without feedback or hints and retains both established answer fields',()=>{
+    const {host}=render();expect(host.querySelectorAll('[data-ar-calculation-coach]')).toHaveLength(2);expect(host.querySelectorAll('[data-ar-calculation-result],[data-ar-calculation-hint]')).toHaveLength(0);expect(host.querySelector('#ar-shop-answer')).not.toBeNull();expect(host.querySelector('#ar-shop-scene-answer')).not.toBeNull();
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('shares unit feedback and uniquely described hints in %j',theme=>{
+    const key=model.calculation(model.normalize({job:'oil',step:9,answer:'500'})).key;const {host}=render('500',{shopCalculationCheck:key,shopCalculationHint:'oil'},theme);
+    expect(host.querySelectorAll('[data-ar-calculation-result="units"]')).toHaveLength(2);
+    for(const id of ['ar-shop-answer','ar-shop-scene-answer']){const input=host.querySelector('#'+id);expect(input.getAttribute('aria-invalid')).toBe('true');for(const description of input.getAttribute('aria-describedby').split(' '))expect(host.querySelectorAll('#'+description)).toHaveLength(1);}
+    expect(host.querySelector('[data-ar-calculation-hint]').textContent).toContain('4.6 L − 4.1 L = ? L');
+  });
+  it('hides an old check when the answer changes and does not expose another job’s hint',()=>{
+    const key=model.calculation(model.normalize({job:'oil',step:9,answer:'500'})).key;const {host}=render('0.5',{shopCalculationCheck:key,shopCalculationHint:'brakes'});expect(host.querySelectorAll('[data-ar-calculation-result],[data-ar-calculation-hint]')).toHaveLength(0);expect(host.querySelector('#ar-shop-answer').hasAttribute('aria-invalid')).toBe(false);
   });
 });

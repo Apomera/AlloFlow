@@ -9701,6 +9701,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       hint('capture', 'The equipment is set up. Capture a fresh reading to record this task’s evidence.', 'read');
   }
 
+  function arShopCalculation(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
+    if (!task || (task.id !== 'measure' && task.id !== 'refill')) return null;
+    var text = String(state.answer).trim(), value = Number(text);
+    var lessons = {
+      brakes: ['8 mm − 2 mm = ? mm', 'Start with the new lining and subtract the remaining lining. The 3 mm replacement limit is a separate comparison.'],
+      oil: ['4.6 L − 4.1 L = ? L', 'Subtract the starting quantity from the service-fill target. Keep both quantities in litres; 1000 mL = 1 L.'],
+      electrical: ['1.6 V − 0.2 V = ? V', 'Use the initial connection drop minus this case’s limit. The repeat test after service answers a different question.'],
+      alignment: ['+0.30° + +0.10° = ?°', 'Add the two initial wheel angles with their signs. The target total is a separate value from the initial total.']
+    };
+    var status = !text ? 'empty' : !Number.isFinite(value) ? 'invalid' : Math.abs(value - job.answer) <= 0.001 ? 'correct' : value < 0 ? 'negative' : 'retry';
+    var message = status === 'empty' ? 'Enter a value in ' + job.unit + ', then check your calculation.' : status === 'invalid' ? 'Enter a finite number in ' + job.unit + '.' : status === 'correct' ? 'The calculation matches the service sheet. Equipment, evidence and setup checks still apply.' : status === 'negative' ? 'Check the order and signs. This service-sheet calculation gives a positive amount.' : 'Review the quantities and operation in the hint, then try your calculation again.';
+    if (status === 'retry') {
+      if (state.job === 'brakes' && value === 2) { status = 'remaining'; message = '2 mm is the lining remaining. The question asks how much has worn away from the original 8 mm.'; }
+      else if (state.job === 'brakes' && value === 3) { status = 'limit'; message = '3 mm is the replacement limit. Calculate material lost from the new lining to the measured lining.'; }
+      else if (state.job === 'oil' && value === 4.6) { status = 'total'; message = '4.6 L is the total service fill. Calculate how much to add to the starting 4.1 L.'; }
+      else if (state.job === 'oil' && value === 500) { status = 'units'; message = '500 is the difference in millilitres. This answer field uses litres: 1000 mL = 1 L.'; }
+      else if (state.job === 'electrical' && value === 1.6) { status = 'reading'; message = '1.6 V is the initial reading. The question asks how far that reading is above the 0.2 V case limit.'; }
+      else if (state.job === 'electrical' && value === 0.08) { status = 'repeat'; message = '0.08 V is the repeat test after service. Use the initial 1.6 V drop for this calculation.'; }
+      else if (state.job === 'alignment' && value === 0.2) { status = 'target'; message = '0.20° is the target total. This question asks for the initial total from +0.30° and +0.10°.'; }
+      else if (state.job === 'alignment' && (value === 0.3 || value === 0.1)) { status = 'one-wheel'; message = 'That is one wheel’s angle. Add both initial wheel angles to calculate total front toe.'; }
+    }
+    return { key: JSON.stringify([state.job, state.step, String(state.answer)]), status: status, correct: status === 'correct', message: message, formula: lessons[state.job][0], hint: lessons[state.job][1] };
+  }
+
   // One set of checks drives both the live guide and task completion.
   function arShopReadiness(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], checks = [];
@@ -9716,7 +9741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     check('prerequisites', 'Vehicle setup and access', Object.keys(task.requires).every(function (key) { return state[key] === task.requires[key]; }),
       'The vehicle is not ready for this operation. Complete the preceding setup and reassembly steps.');
     if (task.id === 'measure' || task.id === 'refill') check('calculation', 'Service-sheet calculation',
-      String(state.answer).trim() && Number.isFinite(Number(state.answer)) && Math.abs(Number(state.answer) - job.answer) <= 0.001,
+      arShopCalculation(state).correct,
       'Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
     var kind = arShopInstrumentKind(state);
     if (kind) check('evidence', kind === 'torque' ? 'Wheel seated · ' + state.lugs.length + '/5 fasteners checked' :
@@ -20517,6 +20542,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
             style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
         }
+        function calculationField(location) {
+          var calc = arShopCalculation(shop);
+          if (!calc) return null;
+          var id = location === 'scene' ? 'ar-shop-scene-answer' : 'ar-shop-answer', checked = d.shopCalculationCheck === calc.key, hintOpen = d.shopCalculationHint === shop.job;
+          var described = [checked ? id + '-check' : '', hintOpen ? id + '-hint' : ''].filter(Boolean).join(' ');
+          return h('div', { 'data-ar-calculation-coach': location, style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt, color: T.text } },
+            h('label', { htmlFor: id, style: { display: 'block', fontSize: 13, lineHeight: 1.5, marginBottom: 6 } }, job.question + ' (' + job.unit + ')'),
+            h('input', { id: id, type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, 'aria-describedby': described || undefined, 'aria-invalid': checked && !calc.correct ? 'true' : undefined,
+              onChange: function (e) { change({ answer: e.target.value, feedback: '' }); },
+              style: { minHeight: 44, width: '100%', boxSizing: 'border-box', background: T.card, color: T.text, border: '1px solid ' + T.border, padding: 10, borderRadius: 6 } }),
+            h('div', { className: 'ar-shop-actions', style: { marginTop: 8 } },
+              control('Check calculation', function () { upd('shopCalculationCheck', calc.key); arAnnounce(calc.message); }, { 'data-ar-calculation-check': location }),
+              control(hintOpen ? 'Hide calculation hint' : 'Show calculation hint', function () { upd('shopCalculationHint', hintOpen ? '' : shop.job); },
+                { 'data-ar-calculation-hint-toggle': location, 'aria-expanded': hintOpen, 'aria-controls': id + '-hint' })),
+            checked && h('p', { id: id + '-check', 'data-ar-calculation-result': calc.status, style: { fontSize: 12, lineHeight: 1.6, borderLeft: '3px solid ' + (calc.correct ? T.good : T.link), paddingLeft: 8 } }, calc.message),
+            hintOpen && h('div', { id: id + '-hint', 'data-ar-calculation-hint': true, style: { marginTop: 8, fontSize: 12, lineHeight: 1.6 } },
+              h('strong', { style: { display: 'block', fontSize: 16, color: T.link, marginBottom: 6 } }, calc.formula),
+              h('span', null, calc.hint), h('p', { style: { marginBottom: 0 } }, 'Use the starting values in this service-sheet question, even after changing the equipment.')));
+        }
         function taskRoutePanel() {
           var open = !!d.shopTaskRoute, route = arShopTaskRoute(shop), recorded = route.filter(function (item) { return item.status === 'recorded'; }).length;
           var statuses = { recorded: 'Recorded', current: 'Current task', upcoming: 'Upcoming', missing: 'No saved record' };
@@ -20751,10 +20795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 'aria-pressed': action.id === 'meter-posts' ? shop.instrument.contact === 'posts' : action.id === 'meter-joint' ? shop.instrument.contact === 'joint' : undefined });
             })),
             brakeExplorerPanel(),
-            task && (task.id === 'measure' || task.id === 'refill') && h('div', { style: { marginTop: 12 } },
-              h('label', { htmlFor: 'ar-shop-scene-answer', style: { display: 'block', fontSize: 12, marginBottom: 6 } }, job.question + ' (' + job.unit + ')'),
-              h('input', { id: 'ar-shop-scene-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); },
-                style: { minHeight: 44, width: '100%', boxSizing: 'border-box', background: '#fff', color: '#102033', padding: 10, borderRadius: 6 } })),
+            calculationField('scene'),
             task && task.id === 'release' && h('div', { style: { marginTop: 12 } }, h('label', { htmlFor: 'ar-shop-scene-notes', style: { fontSize: 12 } }, 'Customer handoff'),
               h('textarea', { id: 'ar-shop-scene-notes', rows: 3, maxLength: 2000, value: shop.notes, onChange: function (e) { change({ notes: e.target.value }); }, style: { width: '100%', boxSizing: 'border-box', padding: 10, background: '#fff', color: '#102033', borderRadius: 6 } })),
             h('p', { 'data-ar-scene-feedback': true, style: { fontSize: 13, color: '#a5f3fc', marginBottom: 0, minHeight: 20 } }, shop.feedback || 'Choose equipment, then focus the service controls.'));
@@ -21177,9 +21218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('select', { id: 'ar-shop-tool', value: shop.tool, onChange: function (e) { change({ tool: e.target.value, feedback: '' }); } },
                   SHOP_TOOLS.map(function (tool) { return h('option', { key: tool[0], value: tool[0] }, tool[1]); })),
                 instrumentPanel(),
-                (task.id === 'measure' || task.id === 'refill') && h('div', null,
-                  h('label', { htmlFor: 'ar-shop-answer' }, job.question + ' (' + job.unit + ')'),
-                  h('input', { id: 'ar-shop-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); } })),
+                calculationField('order'),
                 h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-shop-perform': task.id,
                   onClick: function () { var next = arShopAdvance(shop); save(next); arAnnounce(next.feedback); },
                   style: btnPrimary({ marginTop: 14, minHeight: 46, width: '100%', fontSize: 14 }) }, task.id === 'release' ? 'Complete training work order' : 'Perform simulated task'))

@@ -382,6 +382,18 @@ Validation: **234 workshop model/render tests passed** in the final run (15.10 s
 - [High-contrast phone completed route](../reports/automobile-workshop/task-route-contrast.png)
 - [Narrow dark-phone sequence and handoff](../reports/automobile-workshop/task-route-dark.png)
 
+## Optional calculation coaching
+
+The work-order and 3D-bay answer fields now share optional Check calculation and Show calculation hint controls. Feedback distinguishes remaining brake lining from material lost, the brake limit from wear, total oil fill from the amount to add, millilitres from litres, measured/after-service voltage from the amount above the initial limit, and one-wheel/target toe from the initial combined toe. Empty, non-finite, negative and other answers receive neutral guidance. Hints show the operation with a question mark and identify the starting service-sheet values, which remain relevant after the equipment changes.
+
+Both locations share the learner's answer and current feedback, with unique labels and description targets. Feedback appears only after an explicit check and clears when the keyed job, task or answer differs. Hints are scoped to the job. Checking or toggling a hint preserves the answer, instrument capture, task progress and notes; the coach never inserts an answer. The same pure correctness result now supplies the existing task calculation gate, preserving its 0.001 absolute tolerance. Checking is optional, and arithmetic success still requires the existing equipment, evidence and setup gates before advancement.
+
+Validation: **264 workshop model/render tests passed** (14.46 seconds), including thirty new cases for all four answers and tolerance boundaries, retained task gates, nine misconception inputs, empty/non-finite/negative values, unchanged inputs, keyed feedback, unique accessible descriptions, themes and stale-check removal. **Three real-WebGL workflows passed** (2.4 minutes): the new shared-coach journey and existing full brake-service/handoff and before/after-service voltmeter regressions. The new journey checks keyboard activation, synchronized answer fields and feedback, unit-versus-total explanations, preserved captured 4.6 L evidence through answer changes, unchanged state on hint/check actions, draft preservation, correct task advancement and recorded calculation, 390/320 px reflow and 44 px controls. Desktop light, high-contrast phone and narrow dark-phone scene-control screenshots were visually reviewed. Syntax, source/public byte parity and scoped whitespace checks passed. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Desktop unit feedback and setup hint](../reports/automobile-workshop/calculation-coach-desktop.png)
+- [High-contrast phone calculation](../reports/automobile-workshop/calculation-coach-contrast.png)
+- [Narrow dark-phone 3D-bay calculation](../reports/automobile-workshop/calculation-coach-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
