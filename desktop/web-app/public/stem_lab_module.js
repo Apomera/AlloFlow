@@ -15,6 +15,7 @@
     ['steer','Steering','a0',null], ['throttle','Accelerator','b7','KeyW'], ['brake','Brake','b6','KeyS'],
     ['left','Left signal','b2|b14','KeyE'], ['right','Right signal','b3|b15','KeyV'], ['drive','Drive','b12','KeyF'],
     ['reverse','Reverse','b13','KeyG'], ['park','Park / secure parking','b8','KeyP'], ['pause','Pause / stop','b9','Space'],
+    ['lookLeft','Look over left shoulder','a2-','KeyZ'], ['lookRight','Look over right shoulder','a2+','KeyX'],
     ['horn','Horn','b0','KeyQ'], ['camera','Camera','b1','KeyC'], ['low','Low beams','b4',null], ['high','High beams','b5',null]
   ];
   var generic = [
@@ -24,15 +25,24 @@
     ['cycle','Q key','b4','KeyQ'], ['secondary','Right click','b5','MouseRight'], ['sprint','Shift','b6','ShiftLeft'], ['click','Click','b7','MouseLeft'],
     ['grid','G key','b8','KeyG'], ['fly','F key','b9','KeyF'], ['one','1 key','b12','Digit1'], ['two','2 key','b13','Digit2'], ['three','3 key','b14','Digit3'], ['four','4 key','b15','Digit4']
   ];
+  // Existing wheel/pedal profiles may already own axis 2. New look defaults
+  // must not claim that hardware input from an earlier saved configuration.
+  Object.keys(profiles).forEach(function(key){
+    var p=profiles[key];if(key.indexOf('roadReady|')!==0 || !p || !p.buttons)return;
+    ['lookLeft','lookRight'].forEach(function(action){if(p.buttons[action]!=null)return;var direction=action==='lookLeft'?'-':'+';
+      var occupied=Object.keys(p.buttons).some(function(other){return other!==action && String(p.buttons[other]).split('|').some(function(src){return src==='a2'||src==='a2'+direction;});});
+      if(occupied)p.buttons[action]='none';
+    });
+  });
   function tool() { return scope ? scope.tool : claim; }
   function root() { return scope && scope.root && scope.root.isConnected ? scope.root : document.body; }
   function bound(n, min, max, fallback) { n = Number(n); return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback; }
   function definitions(id) { return id === 'roadReady' ? road : generic; }
   function profileKey(id) { return id + '|' + (prefs.device === 'auto' ? 'default' : prefs.device); }
   function profile(id) { var p = profiles[profileKey(id)]; return p && typeof p === 'object' ? p : {}; }
-  function keyboardDefinitions(id) {
+  function keyboardDefinitions(id,requestedContext) {
     if (id !== 'roadReady') return generic.filter(function(d) { return !/^Mouse/.test(d[3]); });
-    if (context === 'parking') return [['forward','Forward / W',null,'KeyW'],['backward','Reverse / S',null,'KeyS'],['steerLeft','Steer left',null,'KeyA'],['steerRight','Steer right',null,'KeyD'],['brake','Brake',null,'Space'],['reset','Reset practice',null,'KeyR'],['drive','Select Drive',null,'KeyF'],['reverse','Select Reverse',null,'KeyG'],['park','Secure parking',null,'KeyP']];
+    if ((requestedContext || context) === 'parking') return [['forward','Forward / W',null,'KeyW'],['backward','Reverse / S',null,'KeyS'],['steerLeft','Steer left',null,'KeyA'],['steerRight','Steer right',null,'KeyD'],['brake','Brake',null,'Space'],['reset','Reset practice',null,'KeyR'],['drive','Select Drive',null,'KeyF'],['reverse','Select Reverse',null,'KeyG'],['park','Secure parking',null,'KeyP']];
     return road.filter(function(d) { return d[3]; }).concat([['steerLeft','Steer left',null,'KeyA'],['steerRight','Steer right',null,'KeyD']]);
   }
   function keyMap(id) { var p=profile(id),raw=p[context==='parking'&&id==='roadReady'?'parkingKeys':'keys'],clean={}; if(raw&&typeof raw==='object')Object.keys(raw).forEach(function(k){if(typeof raw[k]==='string'&&/^(Key[A-Z]|Digit[0-9]|Arrow(Up|Down|Left|Right)|Space|Enter|ShiftLeft|PageUp|PageDown|Home|End)$/.test(raw[k]))clean[k]=raw[k];});return clean; }
@@ -200,7 +210,8 @@
     var identity = pad ? pad.index + ':' + pad.id : '';
     if (identity !== lastDevice) { rearm(true); lastDevice = identity; }
     snapshot = { devices: pads.map(function(p) { return { key: p.index + ':' + p.id, name: p.id, mapping: p.mapping }; }), connected: !!pad, name: pad && pad.id, axes: pad ? Array.from(pad.axes) : [], buttons: pad ? Array.from(pad.buttons).map(function(b) { return b.value == null ? +b.pressed : b.value; }) : [], actions: {}, revision: revision, message: message };
-    if (pollNavigation(pad)) { currentPad=null; snapshot.actions={}; }
+    if (pollControllerLearning(pad)) { currentPad=null; snapshot.actions={}; }
+    else if (pollNavigation(pad)) { currentPad=null; snapshot.actions={}; }
     else if (!pad || blocked() || prefs.mode === 'keyboard' || prefs.mode === 'touch') { release(blocked()); needsNeutral = true; }
     else {
       if (needsNeutral && isNeutral(pad,tool())) needsNeutral = false;
@@ -231,7 +242,8 @@
   function onKeyboard(event) {
     if (event._stemInput) return;
     var code = event.code || '', held = physicalDown[code];
-    if (suspended) { event.stopPropagation(); if(code==='Escape'&&!captureActive&&panelClose){event.preventDefault();panelClose();} return; }
+    if(controllerLearning && code==='Escape'){event.preventDefault();event.stopImmediatePropagation();if(event.type==='keydown'){var captureSession=controllerLearning;cancelControllerLearning();captureSession.callback({ok:false,done:true,message:'Controller capture cancelled.'});}return;}
+    if (suspended) { event.stopPropagation(); if(event.type==='keydown'&&code==='Escape'&&!captureActive&&panelClose){event.preventDefault();panelClose();} return; }
     if(navigating && !panelCount && !editable(event.target) && !/^(Tab|Enter|Space)$/.test(code)){
       event.stopImmediatePropagation();
       if(code==='Escape'){event.preventDefault();if(event.type==='keydown')setNavigation(false);}
@@ -259,11 +271,124 @@
   var style = document.createElement('style'); style.id = 'stem-input-controls-css';
   style.textContent = '.stem-input-panel{padding:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-panel,#172033);color:var(--allo-stem-text,#e2e8f0);font:14px system-ui;max-width:100%;box-sizing:border-box}.stem-input-panel *{box-sizing:border-box}.stem-input-panel button,.stem-input-panel select{min-height:44px;border:1px solid #64748b;border-radius:7px;padding:8px;background:var(--allo-stem-canvas,#0f172a);color:inherit}.stem-input-panel button:focus-visible,.stem-input-panel input:focus-visible,.stem-input-panel select:focus-visible{outline:3px solid #22d3ee;outline-offset:2px}.stem-input-panel h3{margin:0}.stem-input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-top:12px}.stem-input-grid label{display:flex;flex-direction:column;gap:5px;min-width:0}.stem-input-grid select{max-width:100%;width:100%}.stem-input-panel summary{cursor:pointer;padding:12px 0;font-weight:700}.stem-input-panel p{line-height:1.5}.stem-input-panel .stem-input-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}.stem-input-panel .stem-input-row>span:first-child{min-width:140px}.stem-input-panel small{display:block;line-height:1.5;color:var(--allo-stem-text-soft,#94a3b8)}[data-stem-touch-visible="false"] [data-stem-touch-controls]{display:none!important}[data-stem-large-controls="true"] [data-stem-touch-controls] button,[data-stem-large-controls="true"] button[data-stem-touch-controls]{min-width:58px!important;min-height:58px!important}[data-stem-control-hand="left"] .rr-touch-pedals{right:auto!important;left:10px!important}[data-stem-control-hand="left"] .rr-touch-secondary{left:auto!important;right:10px!important}';
   style.textContent += '[data-stem-controller-focus="true"]{outline:3px solid #22d3ee!important;outline-offset:3px!important}.stem-controller-navigation-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 24px);padding:10px 14px;border:1px solid #22d3ee;border-radius:10px;background:#0f172a;color:#fff;font:13px/1.5 system-ui;z-index:2147483000;pointer-events:none}';
+  style.textContent += '.stem-input-row select{width:220px;max-width:100%;min-width:0}.stem-input-panel{min-width:0;overflow-wrap:anywhere}.stem-input-import-preview{margin-top:12px;padding:10px;border:1px solid #64748b;border-radius:8px;overflow-wrap:anywhere}';
   document.head.appendChild(style);
+  var controllerLearning = null;
+  function controllerConflict(id,action,source) {
+    if(source==='none')return null;
+    return definitions(id).find(function(d){return d[0]!==action && String((profile(id).buttons||{})[d[0]]||d[2]).split('|').some(function(other){
+      if(source===other)return true;
+      var a=/^a(\d+)([+-]?)$/.exec(source),b=/^a(\d+)([+-]?)$/.exec(other);
+      return !!(a&&b&&a[1]===b[1]&&(!a[2]||!b[2]||a[2]===b[2]));
+    });});
+  }
+  function assignControllerBinding(id,action,source) {
+    if(!definitions(id).some(function(d){return d[0]===action;}) || !/^(none|[ab]\d{1,2}[+-]?)$/.test(source))return {ok:false,message:'Choose a valid controller input.'};
+    var conflict=controllerConflict(id,action,source);
+    if(conflict)return {ok:false,message:'That input is already assigned to '+conflict[1]+'. Unassign it there first, or choose another input.'};
+    var p=profile(id),buttons=Object.assign({},p.buttons||{}),calibration=Object.assign({},p.calibration||{});buttons[action]=source;delete calibration[action];
+    profiles[profileKey(id)]=Object.assign({},p,{buttons:buttons,calibration:calibration});rearm();persist();return {ok:true,source:source,message:/^a/.test(source)&&['throttle','brake'].indexOf(action)>=0?'Axis saved. Save its released and fully pressed pedal positions below.':'Controller binding saved.'};
+  }
+  function cancelControllerLearning(){controllerLearning=null;navigationNeutral=true;navigationHeld={};rearm();}
+  function learnControllerBinding(id,action,callback) {
+    var pad=currentRawPad();cancelControllerLearning();
+    if(!pad){callback({ok:false,done:true,message:'Connect the selected controller first.'});return function(){};}
+    var session={id:id,action:action,profile:profileKey(id),device:pad.index+':'+pad.id,baseline:null,waiting:true,callback:callback};controllerLearning=session;
+    return function(){if(controllerLearning===session)cancelControllerLearning();};
+  }
+  function pollControllerLearning(pad) {
+    var session=controllerLearning;if(!session)return false;
+    release();needsNeutral=true;
+    if(!pad || profileKey(session.id)!==session.profile || pad.index+':'+pad.id!==session.device || blurred || document.hidden){cancelControllerLearning();session.callback({ok:false,done:true,message:'Controller capture stopped. Reconnect or return here and try again.'});return true;}
+    var buttons=Array.from(pad.buttons).map(function(b){return !!(b.pressed||b.value>0.5);}),axes=Array.from(pad.axes);
+    if(session.waiting){
+      if(buttons.some(Boolean))return true;
+      if(session.baseline && axes.some(function(v,i){return Math.abs(v-session.baseline[i])>0.2;}))return true;
+      session.baseline=axes;session.waiting=false;return true;
+    }
+    var index=buttons.indexOf(true),source=index>=0?'b'+index:null;
+    if(!source){var largest=0;axes.forEach(function(v,i){var delta=v-(session.baseline[i]||0);if(Math.abs(delta)>Math.max(0.55,largest)){largest=Math.abs(delta);source='a'+i+(['steer','throttle','brake'].indexOf(session.action)>=0?'':delta<0?'-':'+');}});}
+    if(source){session.waiting=true;var result=assignControllerBinding(session.id,session.action,source);if(result.ok){cancelControllerLearning();result.done=true;}session.callback(result);}
+    return true;
+  }
+
+  function sourceLabel(source) {
+    if(source.indexOf('|')>=0)return source.split('|').map(sourceLabel).join(' or ');
+    if(source==='none')return 'Unassigned';
+    var pad=currentRawPad(),standard=!pad||pad.mapping==='standard';
+    var names={b0:'A / bottom',b1:'B / right',b2:'X / left',b3:'Y / top',b4:'Left bumper',b5:'Right bumper',b6:'Left trigger',b7:'Right trigger',b8:'Back / View',b9:'Start / Menu',b10:'Left stick press',b11:'Right stick press',b12:'D-pad up',b13:'D-pad down',b14:'D-pad left',b15:'D-pad right',a0:'Left stick horizontal',a1:'Left stick vertical',a2:'Right stick horizontal',a3:'Right stick vertical'};
+    var match=/^([ab])(\d+)([+-]?)$/.exec(source);if(!match)return source;
+    var label=(match[1]==='b'?'Button ':'Axis ')+match[2]+(match[3]==='-'?' negative':match[3]==='+'?' positive':'');
+    return standard&&names[match[1]+match[2]]?names[match[1]+match[2]]+(match[3]==='-'?' −':match[3]==='+'?' +':'')+' ('+label.toLowerCase()+')':label;
+  }
+  var comfortKeys=['deadzone','sensitivity','invert','large','hand'];
+  function cleanProfileFile(id,text) {
+    function fail(message){throw Error(message);}
+    function record(value,allowed,label){if(!value||typeof value!=='object'||Array.isArray(value))fail(label+' must be an object.');Object.keys(value).forEach(function(key){if(allowed.indexOf(key)<0)fail('Unknown '+label+' field: '+key);});}
+    if(typeof text!=='string'||text.length>65536)fail('Choose a profile file smaller than 64 KB.');
+    var file;try{file=JSON.parse(text);}catch(_){fail('This file is not valid JSON.');}
+    record(file,['format','version','toolId','profile','comfort'],'profile file');
+    if(file.format!=='alloflow-stem-controls'||file.version!==1)fail('Unsupported controller profile format or version.');
+    if(file.toolId!==id)fail('This profile belongs to '+String(file.toolId).slice(0,80)+'. Open that tool to import it.');
+    var defs=definitions(id),raw=file.profile;record(raw,['buttons','keys','parkingKeys','calibration'],'bindings');
+    var clean={buttons:{},keys:{},parkingKeys:{},calibration:{}};
+    record(raw.buttons===undefined?{}:raw.buttons,defs.map(function(d){return d[0];}),'controller actions');
+    defs.forEach(function(d){var source=(raw.buttons||{})[d[0]];if(source==null)source=d[2];
+      if(typeof source!=='string'||! /^(none|(?:b\d{1,2}|a\d{1,2}[+-]?)(?:\|(?:b\d{1,2}|a\d{1,2}[+-]?))*)$/.test(source))fail('Invalid input for '+d[1]+'.');clean.buttons[d[0]]=source;
+    });
+    function overlaps(a,b){return a!=='none'&&b!=='none'&&a.split('|').some(function(x){return b.split('|').some(function(y){var ax=/^a(\d+)([+-]?)$/.exec(x),ay=/^a(\d+)([+-]?)$/.exec(y);return x===y||!!(ax&&ay&&ax[1]===ay[1]&&(!ax[2]||!ay[2]||ax[2]===ay[2]));});});}
+    defs.forEach(function(a,i){defs.slice(i+1).forEach(function(b){if(overlaps(clean.buttons[a[0]],clean.buttons[b[0]]))fail('Controller binding conflict: '+a[1]+' and '+b[1]+'.');});});
+    ['keys','parkingKeys'].forEach(function(field){
+      var kd=keyboardDefinitions(id,field==='parkingKeys'?'parking':'driving'),map=raw[field]===undefined?{}:raw[field];
+      record(map,kd.map(function(d){return d[3];}),field);
+      Object.keys(map).forEach(function(key){if(typeof map[key]!=='string'||!/^(Key[A-Z]|Digit[0-9]|Arrow(Up|Down|Left|Right)|Space|Enter|ShiftLeft|PageUp|PageDown|Home|End)$/.test(map[key]))fail('Invalid or reserved keyboard binding.');clean[field][key]=map[key];});
+      var values=kd.map(function(d){return clean[field][d[3]]||d[3];});if(new Set(values).size!==values.length)fail('Duplicate keyboard binding in '+field+'.');
+    });
+    record(raw.calibration===undefined?{}:raw.calibration,id==='roadReady'?['throttle','brake']:[],'calibration');
+    Object.keys(raw.calibration||{}).forEach(function(action){var c=raw.calibration[action];record(c,['rest','full'],'pedal calibration');
+      if(!/^(b\d{1,2}|a\d{1,2}[+-]?)$/.test(clean.buttons[action])||typeof c.rest!=='number'||typeof c.full!=='number'||!Number.isFinite(c.rest)||!Number.isFinite(c.full)||Math.abs(c.rest)>1||Math.abs(c.full)>1||(!/^a\d+$/.test(clean.buttons[action])&&(c.rest<0||c.full<0))||Math.abs(c.full-c.rest)<0.1)fail('Complete the released and pressed calibration for '+action+' before transferring it.');
+      clean.calibration[action]={rest:c.rest,full:c.full};
+    });
+    var comfort=file.comfort===undefined?{}:file.comfort;record(comfort,comfortKeys,'comfort settings');var settings={};
+    comfortKeys.forEach(function(key){if(!Object.prototype.hasOwnProperty.call(comfort,key))return;var value=comfort[key];
+      if(key==='deadzone'||key==='sensitivity'){var min=key==='deadzone'?0.02:0.4,max=key==='deadzone'?0.45:2;if(typeof value!=='number'||!Number.isFinite(value)||value<min||value>max)fail('Invalid '+key+' setting.');}
+      else if(key==='hand'){if(value!=='left'&&value!=='right')fail('Invalid layout setting.');}
+      else if(typeof value!=='boolean')fail('Invalid '+key+' setting.');settings[key]=value;
+    });
+    return {format:'alloflow-stem-controls',version:1,toolId:id,profile:clean,comfort:settings};
+  }
+  function exportProfile(id){var settings={};comfortKeys.forEach(function(key){settings[key]=prefs[key];});return cleanProfileFile(id,JSON.stringify({format:'alloflow-stem-controls',version:1,toolId:id,profile:profile(id),comfort:settings}));}
+  function importProfile(id,text,includeComfort){
+    var file=cleanProfileFile(id,text);cancelControllerLearning();profiles[profileKey(id)]=file.profile;
+    if(includeComfort)Object.assign(prefs,file.comfort);rearm();persist();ensureLoop();return file;
+  }
+  function ProfileTransfer(props){
+    var React=props.React,h=React.createElement,previewState=React.useState(null),preview=previewState[0],setPreview=previewState[1],noteState=React.useState(''),note=noteState[0],setNote=noteState[1],comfortState=React.useState(false),includeComfort=comfortState[0],setComfort=comfortState[1],token=React.useRef(0),id=props.toolId,targetKey=profileKey(id);
+    React.useEffect(function(){token.current++;setPreview(null);setComfort(false);setNote('');return function(){token.current++;};},[targetKey]);
+    async function choose(event){var file=event.target.files&&event.target.files[0];event.target.value='';var request=++token.current;setPreview(null);setComfort(false);setNote('');if(!file)return;
+      try{if(file.size>65536)throw Error('Choose a profile file smaller than 64 KB.');var text=await file.text();if(request!==token.current)return;var parsed=cleanProfileFile(id,text);setPreview({text:text,file:parsed});setNote('Profile ready to review.');}catch(error){if(request===token.current)setNote(error.message||'Could not read this file.');}
+    }
+    function download(){try{var file=exportProfile(id),url=window.URL.createObjectURL(new window.Blob([JSON.stringify(file,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='stem-controls-'+id.replace(/[^a-z0-9_-]/gi,'-')+'.json';document.body.appendChild(link);link.click();link.remove();window.setTimeout(function(){window.URL.revokeObjectURL(url);},1000);setNote('Profile exported. Keep this file to restore or transfer your setup.');}catch(error){setNote(error.message||'Could not export this profile.');}}
+    return h('details',null,h('summary',null,'Save or transfer this setup'),
+      h('p',null,'Export this tool’s keyboard and controller bindings, pedal calibration, and comfort settings. Import applies to this tool and the controller selected above.'),
+      h('button',{type:'button',onClick:download},'Export profile'),
+      h('label',{style:{display:'block',marginTop:'12px'}},'Choose profile file',h('input',{type:'file',accept:'.json,application/json',onChange:choose,style:{display:'block',maxWidth:'100%',marginTop:'6px'}})),
+      preview&&h('div',{className:'stem-input-import-preview'},h('p',null,'Ready: '+preview.file.toolId+' · '+Object.keys(preview.file.profile.buttons).length+' controller actions. Applying replaces this tool’s bindings for the selected controller.'),
+        h('details',null,h('summary',null,'Review imported bindings'),
+          definitions(id).map(function(d){return h('div',{key:d[0],className:'stem-input-row'},h('strong',null,d[1]+': '),h('span',null,sourceLabel(preview.file.profile.buttons[d[0]])));}),
+          ['keys','parkingKeys'].map(function(field){var keys=preview.file.profile[field];return h('p',{key:field},(field==='parkingKeys'?'Parking keys: ':'Activity keys: ')+(Object.keys(keys).map(function(code){return code+' → '+keys[code];}).join(', ')||'Defaults'));}),
+          h('p',null,'Pedal calibration: '+(Object.keys(preview.file.profile.calibration).map(function(action){var c=preview.file.profile.calibration[action];return action+' released '+c.rest+', pressed '+c.full;}).join(' · ')||'None'))),
+        h('label',null,h('input',{type:'checkbox',checked:includeComfort,onChange:function(e){setComfort(e.target.checked);}}),' Also import sensitivity and layout settings'),
+        h('small',null,'Sensitivity and layout settings affect other STEM tools too. Your input method and selected controller stay the same.'),
+        h('div',{className:'stem-input-row'},h('button',{type:'button',onClick:function(){try{importProfile(id,preview.text,includeComfort);if(props.onApply)props.onApply();setPreview(null);setNote('Profile imported. Release the controller before returning to the activity.');}catch(error){setNote(error.message);}}},'Apply profile'),h('button',{type:'button',onClick:function(){setPreview(null);setNote('Import cancelled.');}},'Cancel import'))),
+      h('div',{role:'status'},note));
+  }
+
   function Panel(props) {
     var React=props.React,h=React.createElement, state=React.useState(0), bump=state[1], armed=React.useState(null), capture=armed[0], setCapture=armed[1], notice=React.useState(''), note=notice[0], setNote=notice[1];
+    var learningState=React.useState(null),learning=learningState[0],setLearning=learningState[1];
     var id=props.toolId || tool() || 'general', p=profile(id), defs=definitions(id), kd=keyboardDefinitions(id);
-    React.useEffect(function() { panelCount++; navigationHeld={};navigationNeutral=true; suspended=true; panelClose=props.onClose; rearm(); ensureLoop(); var timer=setInterval(function(){bump(function(v){return v+1;});},150); return function(){clearInterval(timer);panelCount--; navigating=false;navigationNeutral=true; suspended=panelCount>0; panelClose=null; captureActive=false; rearm(); ensureLoop();}; },[]);
+    React.useEffect(function() { panelCount++; navigationHeld={};navigationNeutral=true; suspended=true; panelClose=props.onClose; rearm(); ensureLoop(); var timer=setInterval(function(){bump(function(v){return v+1;});},150); return function(){clearInterval(timer);panelCount--; cancelControllerLearning(); navigating=false;navigationNeutral=true; suspended=panelCount>0; panelClose=null; captureActive=false; rearm(); ensureLoop();}; },[]);
     React.useEffect(function() {
       captureActive=!!capture; if (!capture) return;
       function catchKey(e) {
@@ -277,9 +402,10 @@
       }
       window.addEventListener('keydown',catchKey,true);return function(){captureActive=false;window.removeEventListener('keydown',catchKey,true);};
     },[capture,revision,id]);
+    React.useEffect(function(){if(!learning)return;setCapture(null);setNote('Release all controls, then press a button or move one stick/pedal. Escape cancels.');return learnControllerBinding(id,learning,function(result){setNote(result.message);if(result.done)setLearning(null);});},[learning,id]);
     function setting(key,value){prefs[key]=value;rearm();persist();ensureLoop();bump(function(v){return v+1;});}
     function updateProfile(id,key,value){var k=profileKey(id);profiles[k]=Object.assign({},profile(id));profiles[k][key]=value;rearm();persist();}
-    function binding(action,value){var conflict=value!=='none'&&defs.find(function(d){return d[0]!==action&&String((p.buttons||{})[d[0]]||d[2]).split('|').indexOf(value)!==-1;});if(conflict){setNote('That input is already assigned to '+conflict[1]+'. Choose another input.');return;}var map=Object.assign({},p.buttons||{});map[action]=value;updateProfile(id,'buttons',map);var cal=Object.assign({},p.calibration||{});delete cal[action];updateProfile(id,'calibration',cal);}
+    function binding(action,value){setLearning(null);var result=assignControllerBinding(id,action,value);setNote(result.message);}
     function calibration(action,point){var pad=currentRawPad();if(!pad){setNote('Connect the selected controller first.');return;}var source=(p.buttons||{})[action]||defs.find(function(d){return d[0]===action;})[2];var cal=Object.assign({},p.calibration||{});cal[action]=Object.assign({},cal[action]||{});cal[action][point]=sourceValue(pad,source);updateProfile(id,'calibration',cal);setNote(point==='rest'?'Released position saved. Hold the pedal fully down and save its pressed position.':'Pressed position saved. Both endpoints must be different.');}
     var sources=['none'];for(var b=0;b<Math.max(17,snapshot.buttons?snapshot.buttons.length:0);b++)sources.push('b'+b);for(var a=0;a<Math.max(4,snapshot.axes?snapshot.axes.length:0);a++)sources.push('a'+a,'a'+a+'-','a'+a+'+');
     var status=!snapshot.connected?'No controller detected. Connect it and press a button.':snapshot.name;
@@ -297,19 +423,21 @@
       h('div',{'aria-label':'Live controller input'},h('small',null,'Axes: '+(snapshot.axes||[]).map(function(n,i){return i+': '+Number(n).toFixed(2);}).join(' · ')),h('small',null,'Pressed buttons: '+((snapshot.buttons||[]).map(function(n,i){return n>0.15?i+' ('+n.toFixed(2)+')':null;}).filter(Boolean).join(', ')||'none'))),
       h('details',null,h('summary',null,'Keyboard bindings'),id!=='roadReady'&&h('p',null,'These map the keys used by this tool. Check its keyboard guide for each action. Raptor Hunt also has its own flight presets.'),
         h('button',{type:'button',onClick:function(){var map={};var replacements={KeyW:'KeyI',KeyS:'KeyK',KeyA:'KeyJ',KeyD:'KeyL',Space:'Enter'};kd.forEach(function(d){map[d[3]]=replacements[d[3]]||d[3];});var vals=Object.values(map);if(new Set(vals).size!==vals.length){setNote('This preset conflicts with an existing tool shortcut. Use individual key bindings.');return;}updateProfile(id,id==='roadReady'&&context==='parking'?'parkingKeys':'keys',map);}},'IJKL one-hand movement preset'),
-        kd.map(function(d){return h('div',{className:'stem-input-row',key:d[3]},h('span',null,d[1]),h('button',{type:'button',onClick:function(){setCapture(d[3]);setNote('Press a key. Esc cancels.');},'aria-label':'Change key for '+d[1]},capture===d[3]?'Press a key…':keyValue(keyMap(id)[d[3]]||d[3])===' '?'Space':keyMap(id)[d[3]]||d[3]));})),
+        kd.map(function(d){return h('div',{className:'stem-input-row',key:d[3]},h('span',null,d[1]),h('button',{type:'button',onClick:function(){setLearning(null);setCapture(d[3]);setNote('Press a key. Esc cancels.');},'aria-label':'Change key for '+d[1]},capture===d[3]?'Press a key…':keyValue(keyMap(id)[d[3]]||d[3])===' '?'Space':keyMap(id)[d[3]]||d[3]));})),
       h('details',null,h('summary',null,'Controller mapping and sensitivity'),id!=='roadReady'&&h('p',null,'Choose keys matching this tool’s keyboard guide. Button numbers appear in the live input display above.'),
         h('div',{className:'stem-input-grid'},h('label',null,'Stick deadzone '+Math.round(bound(prefs.deadzone,0.02,0.45,0.15)*100)+'%',h('input',{type:'range',min:0.02,max:0.45,step:0.01,value:prefs.deadzone,onChange:function(e){setting('deadzone',Number(e.target.value));}})),id==='roadReady'&&h('label',null,'Steering sensitivity '+Number(prefs.sensitivity).toFixed(1)+'×',h('input',{type:'range',min:0.4,max:2,step:0.1,value:prefs.sensitivity,onChange:function(e){setting('sensitivity',Number(e.target.value));}}))),
         id==='roadReady'&&h('label',null,h('input',{type:'checkbox',checked:!!prefs.invert,onChange:function(e){setting('invert',e.target.checked);}}),' Invert steering'),
-        defs.map(function(d){var selected=(p.buttons||{})[d[0]]||d[2];return h('div',{className:'stem-input-row',key:d[0]},h('span',null,d[1]),h('select',{'aria-label':'Controller binding for '+d[1],value:selected,onChange:function(e){binding(d[0],e.target.value);}},h('option',{value:d[2]},'Default: '+d[2]),sources.filter(function(x){return x!==d[2];}).map(function(x){return h('option',{key:x,value:x},x==='none'?'Unassigned':x[0]==='b'?'Button '+x.slice(1):'Axis '+x.slice(1));})),id==='roadReady'&&(d[0]==='throttle'||d[0]==='brake')&&h('span',null,h('button',{type:'button',onClick:function(){calibration(d[0],'rest');}},'Save released'), ' ',h('button',{type:'button',onClick:function(){calibration(d[0],'full');}},'Save pressed')));}),
+        defs.map(function(d){var selected=(p.buttons||{})[d[0]]||d[2];return h('div',{className:'stem-input-row',key:d[0]},h('span',null,d[1]),h('select',{'aria-label':'Controller binding for '+d[1],value:selected,onChange:function(e){binding(d[0],e.target.value);}},h('option',{value:d[2]},'Default: '+sourceLabel(d[2])),sources.filter(function(x){return x!==d[2];}).map(function(x){return h('option',{key:x,value:x},sourceLabel(x));})),h('button',{type:'button',onClick:function(){setLearning(d[0]);},'aria-label':'Learn controller input for '+d[1]},learning===d[0]?'Listening…':'Press to assign'),id==='roadReady'&&(d[0]==='throttle'||d[0]==='brake')&&h('span',null,h('button',{type:'button',onClick:function(){calibration(d[0],'rest');}},'Save released'), ' ',h('button',{type:'button',onClick:function(){calibration(d[0],'full');}},'Save pressed')));}),
         h('small',null,'Profiles are saved per tool and selected controller. For pedals on an axis, select the axis, save its released position, then its fully pressed position. Release all controls before closing this panel.')),
+      h(ProfileTransfer,{React:React,toolId:id,onApply:function(){setLearning(null);setCapture(null);}}),
+      learning&&h('button',{type:'button',onClick:function(){setLearning(null);setNote('Controller capture cancelled.');}},'Cancel controller capture'),
       h('div',{role:'status'},note||message),
       h('button',{type:'button',onClick:function(){delete profiles[profileKey(id)];rearm();persist();setCapture(null);setNote('Default bindings restored for this tool and controller.');}},'Reset bindings to defaults'));
   }
   function currentRawPad(){var pads=[];try{pads=Array.from(navigator.getGamepads?navigator.getGamepads():[]).filter(Boolean);}catch(_){}return prefs.device==='auto'?pads[0]:pads.find(function(p){return p.index+':'+p.id===prefs.device;});}
   window.StemInput = {
     subscribe:function(fn){listeners.push(fn);return function(){listeners=listeners.filter(function(x){return x!==fn;});};},
-    navigate:setNavigation, Panel:Panel, poll:poll, isSuspended:function(){return suspended || navigating;}, read:function(id){return tool()===id&&!blocked()?snapshot.actions||{}:{};},
+    exportProfile:exportProfile, validateProfile:cleanProfileFile, importProfile:importProfile, sourceLabel:sourceLabel, learnBinding:learnControllerBinding, assignBinding:assignControllerBinding, navigate:setNavigation, Panel:Panel, poll:poll, isSuspended:function(){return suspended || navigating;}, read:function(id){return tool()===id&&!blocked()?snapshot.actions||{}:{};},
     setScope:function(id,el){navigating=false;navigationHeld={};navigationNeutral=true;rearm();scope=id?{tool:id,root:el||document.body}:null;ensureLoop();},
     claim:function(id){claim=id;rearm();ensureLoop();return function(){if(claim===id){claim=null;navigating=false;rearm();ensureLoop();}};},
     setContext:function(value){if(context!==value){context=value;rearm();}},
@@ -317,9 +445,9 @@
     configure:function(patch){Object.assign(prefs,patch);rearm();persist();ensureLoop();},
     bind:function(id,field,map){profiles[profileKey(id)]=Object.assign({},profile(id));profiles[profileKey(id)][field]=Object.assign({},map);rearm();persist();},
     suspend:function(value){suspended=!!value;rearm();},
-    bindingLabel:function(id,action){var d=definitions(id).find(function(x){return x[0]===action;});var code=(profile(id).buttons||{})[action]||(d&&d[2])||'Unassigned';var names={a0:'Left stick',b7:'RT',b6:'LT',b12:'D-pad up',b13:'D-pad down',b8:'Back / View',b9:'Start'};return names[code]||code;},
+    bindingLabel:function(id,action){var d=definitions(id).find(function(x){return x[0]===action;});var code=(profile(id).buttons||{})[action]||(d&&d[2])||'Unassigned';var names={none:'Unassigned',a0:'Left stick',b0:'A / bottom button',b1:'B / right button',b2:'X / left button',b3:'Y / top button',b4:'Left bumper',b5:'Right bumper','a2-':'Right stick left','a2+':'Right stick right',b7:'RT',b6:'LT',b12:'D-pad up',b13:'D-pad down',b8:'Back / View',b9:'Start'};return names[code]||(/^b\d+$/.test(code)?'Button '+code.slice(1):/^a\d+[+-]?$/.test(code)?'Axis '+code.slice(1):code);},
     showTouch:showTouch, state:function(){return snapshot;}, keyLabel:function(id,code){return keyValue(keyMap(id)[code]||code);},
-    gamepad:function(id){if(tool()!==id||blocked()||!currentPad)return null;var a=snapshot.actions||{};var buttons=Array.from({length:16},function(){return {pressed:false,value:0};});var map={horn:0,camera:1,left:2,right:3,low:4,high:5,brake:6,throttle:7,park:8,pause:9,drive:12,reverse:13};Object.keys(map).forEach(function(k){var v=bound(a[k],0,1,0);buttons[map[k]]={pressed:v>0.5,value:v};});return {id:currentPad.id,index:currentPad.index,mapping:'standard',axes:[a.steer||0,0],buttons:buttons};}
+    gamepad:function(id){if(tool()!==id||blocked()||!currentPad)return null;var a=snapshot.actions||{};var buttons=Array.from({length:16},function(){return {pressed:false,value:0};});var map={horn:0,camera:1,left:2,right:3,low:4,high:5,brake:6,throttle:7,park:8,pause:9,lookLeft:10,lookRight:11,drive:12,reverse:13};Object.keys(map).forEach(function(k){var v=bound(a[k],0,1,0);buttons[map[k]]={pressed:v>0.5,value:v};});return {id:currentPad.id,index:currentPad.index,mapping:'standard',axes:[a.steer||0,0],buttons:buttons};}
   };
   ensureLoop();
 })();
