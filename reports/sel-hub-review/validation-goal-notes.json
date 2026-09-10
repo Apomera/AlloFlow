@@ -1,0 +1,41 @@
+{
+  "pass": "ninth - recoverable goal notes and optional reflection",
+  "regressions_passed": 106,
+  "browser": {
+    "final_passed": 15,
+    "goal_note_workflows": 9,
+    "weekly_review_regressions": 6,
+    "unrelated_filtered_out": 49,
+    "initial_note_workflows_passed": 7
+  },
+  "tool_renders_passed": 72,
+  "audits": {
+    "light-goal-reflection-axe.json": [],
+    "theme-contrast-goal-reflection-axe.json": [],
+    "theme-dark-goal-reflection-axe.json": [],
+    "light-goal-completion-axe.json": [],
+    "theme-contrast-goal-completion-axe.json": [],
+    "theme-dark-goal-completion-axe.json": [],
+    "light-goal-review-axe.json": [],
+    "theme-contrast-goal-review-axe.json": [],
+    "theme-dark-goal-review-axe.json": []
+  },
+  "visual_review": [
+    "theme-contrast-goal-reflection-phone.png",
+    "theme-dark-goal-completion-phone.png"
+  ],
+  "sha256": "5c91af52d6e7e1282ac9aadf055b2d50455ac21ebbe76b5d687c6c6e9f4e2e9f",
+  "mirrors_identical": true,
+  "syntax": "passed",
+  "scoped_whitespace": "passed",
+  "logs": [
+    "reports/sel-hub-goal-notes-regression.log",
+    "reports/sel-hub-goal-notes-browser.log",
+    "reports/sel-hub-goal-notes-browser-final.log",
+    "reports/sel-hub-goal-notes-render.log",
+    "reports/sel-hub-goal-notes-render-final.log"
+  ],
+  "validation_sequence": "106 regressions preceded the final automatic-completion focus and missing-date refinements. All 15 browser workflows and all 72 initial tool renders passed against final source.",
+  "limits": "Isolated Chromium harness with simulated host callbacks and serialized tool-state restore. No actual project-file round trip, classroom, real assistive-technology or packaged Desktop validation; broader goal content and AI outputs outside this pass.",
+  "deployed": false
+}

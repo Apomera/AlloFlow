@@ -659,6 +659,16 @@ window.SelHub = window.SelHub || {
 
         // ── Goal Reflection state ──
         var reflectingGoalId = d.reflectingGoalId || null;
+        var goalNotesDrafts = d.goalNotesDrafts || {};
+        var reflectionFields = [
+          { key: 'whatWorked', label: 'What helped? (optional)', hint: 'Think about a strategy, person, tool, or change in the environment.' },
+          { key: 'hardestPart', label: 'What got in the way? (optional)', hint: 'You can name a task or access barrier without sharing personal details.' },
+          { key: 'doDifferently', label: 'What might I keep or change? (optional)', hint: 'You could change the task, ask for support, or try a different way.' },
+          { key: 'nextGoal', label: 'What might come next? (optional)', hint: 'A small step, more practice, a different goal, or a break are all options.' }
+        ];
+        var noteFieldStyle = { width: '100%', minHeight: 88, padding: 12, borderRadius: 8, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 };
+        var noteButtonStyle = { minHeight: 44, padding: '10px 14px', borderRadius: 8, background: _goaHC ? '#000000' : '#0f172a', border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 14, cursor: 'pointer' };
+        var noteSaveStyle = Object.assign({}, noteButtonStyle, { background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', fontWeight: 700 });
 
         // ── Accountability state ──
         var accountabilityLog = d.accountabilityLog || {};
@@ -739,13 +749,54 @@ window.SelHub = window.SelHub || {
           }, 0);
         };
 
+        var focusCompletedGoal = function(goalId) {
+          setTimeout(function() {
+            var card = document.getElementById('goal-completed-' + getGoalDomId(goalId));
+            if (card) card.focus();
+          }, 0);
+        };
+
+        var focusGoalNote = function(goalId, field) {
+          setTimeout(function() {
+            var input = document.getElementById('goal-note-' + getGoalDomId(goalId) + '-' + field);
+            if (input) input.focus();
+          }, 0);
+        };
+
+        var goalNoteValue = function(goalId, field) {
+          var draft = goalNotesDrafts[goalId] || {};
+          return typeof draft[field] === 'string' ? draft[field] : '';
+        };
+
+        var updateGoalNote = function(goalId, field, value) {
+          setToolData(function(prev) {
+            var current = (prev && prev.goals_tool) || {};
+            if (!(current.goals || []).some(function(goal) { return goal.id === goalId; })) return prev;
+            var drafts = Object.assign({}, current.goalNotesDrafts || {});
+            drafts[goalId] = Object.assign({}, drafts[goalId] || {});
+            drafts[goalId][field] = value;
+            return Object.assign({}, prev, { goals_tool: Object.assign({}, current, { goalNotesDrafts: drafts, goalNotesNotice: '' }) });
+          });
+        };
+
+        var withoutGoalNoteFields = function(goalId, fields) {
+          var drafts = Object.assign({}, goalNotesDrafts);
+          var draft = Object.assign({}, drafts[goalId] || {});
+          fields.forEach(function(field) { delete draft[field]; });
+          if (Object.keys(draft).length) drafts[goalId] = draft;
+          else delete drafts[goalId];
+          return drafts;
+        };
+
         var updateGoal = function(goalId, patch) {
           var next = goals.map(function(g) { return g.id === goalId ? Object.assign({}, g, patch) : g; });
           upd({ goals: next });
         };
 
         var deleteGoal = function(goalId) {
-          var patch = { goals: goals.filter(function(g) { return g.id !== goalId; }) };
+          var drafts = Object.assign({}, goalNotesDrafts);
+          delete drafts[goalId];
+          var patch = { goals: goals.filter(function(g) { return g.id !== goalId; }), goalNotesDrafts: drafts };
           if (expandedGoalId === goalId) patch.expandedGoalId = null;
           if (editingGoal === goalId) patch.editingGoal = null;
           if (renamingGoalId === goalId) patch.renamingGoalId = null;
@@ -857,6 +908,10 @@ window.SelHub = window.SelHub || {
             updObj.journeyMilestonesShown = journeyMilestonesShown;
           }
           upd(updObj);
+          if (showCelebrationGoalId) setTimeout(function() {
+            var review = document.getElementById('goal-completion-review-' + getGoalDomId(showCelebrationGoalId));
+            if (review) review.focus();
+          }, 0);
         };
 
         var addStep = function(goalId, text) {
@@ -997,6 +1052,7 @@ window.SelHub = window.SelHub || {
 
         // ── Goal Reflection helpers ──
         var saveReflection = function(goalId, reflectionData) {
+          if (!goals.some(function(goal) { return goal.id === goalId && goal.completed; })) return;
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;
             var reflections = (g.reflections || []).concat([Object.assign({ date: Date.now() }, reflectionData)]);
@@ -1005,7 +1061,8 @@ window.SelHub = window.SelHub || {
           sfxComplete();
           if (awardXP) awardXP(10);
           if (addToast) addToast('\uD83D\uDCDD Reflection saved! +10 XP', 'success');
-          upd({ goals: next, hasGoalReflection: true, reflectingGoalId: null, hasReflection: true });
+          upd({ goals: next, hasGoalReflection: true, reflectingGoalId: null, hasReflection: true, goalNotesDrafts: withoutGoalNoteFields(goalId, reflectionFields.map(function(field) { return field.key; })), goalNotesNotice: 'Reflection added to this activity. Use the Hub save/export controls to keep a project copy.' });
+          focusCompletedGoal(goalId);
         };
 
         // ── Goal Buddy / Accountability helpers ──
@@ -1158,10 +1215,12 @@ window.SelHub = window.SelHub || {
         };
 
         var dismissCelebration = function() {
-          upd({ celebratingGoalId: null });
+          upd({ celebratingGoalId: null, goalNotesNotice: 'Completion note paused. Your draft stays with this goal in this activity.' });
+          focusCompletedGoal(celebratingGoalId);
         };
 
         var saveCompletionJournal = function(goalId, learnedText) {
+          if (!goals.some(function(goal) { return goal.id === goalId && goal.completed; })) return;
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;
             return Object.assign({}, g, { completionJournal: { whatLearned: learnedText, savedAt: Date.now() } });
@@ -1169,7 +1228,8 @@ window.SelHub = window.SelHub || {
           sfxComplete();
           if (awardXP) awardXP(10);
           if (addToast) addToast('\uD83D\uDCDD Completion journal saved! +10 XP', 'success');
-          upd({ goals: next, celebratingGoalId: null, hasGoalReflection: true });
+          upd({ goals: next, celebratingGoalId: null, hasGoalReflection: true, goalNotesDrafts: withoutGoalNoteFields(goalId, ['whatLearned']), goalNotesNotice: 'Completion note added to this activity. Use the Hub save/export controls to keep a project copy.' });
+          focusCompletedGoal(goalId);
         };
 
         var shareAchievement = function(goal) {
@@ -1372,13 +1432,13 @@ window.SelHub = window.SelHub || {
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
-              goals:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.14)',  icon: '\uD83C\uDFAF', title: 'Goals \u2014 the gap between now and next',                hint: 'Locke + Latham 1990: specific + difficult goals beat \u201Cdo your best.\u201D Write down what success looks like before you start; that one act predicts follow-through more than motivation.' },
-              habits:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDD01', title: 'Habits \u2014 the engine behind every goal',               hint: 'Cue \u2192 routine \u2192 reward (Duhigg 2012). Habits run on ~40% of daily behavior. Stack tiny new habits onto existing ones (Fogg 2019: \u201Cafter I brush my teeth, I\u2019ll \u2026\u201D). Friction reduction wins.' },
-              vision:   { accent: _goaFg('#fbbf24'), soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF1F', title: 'Vision \u2014 the picture above the to-do list',          hint: 'Most weeks fail to a vague vision \u2014 not lack of effort. Specifying \u201Cwhat does done LOOK like?\u201D in vivid detail engages the same brain regions as actual experience (Schacter 2007).' },
-              smart:    { accent: _goaFg('#a855f7'), soft: 'rgba(168,85,247,0.14)',  icon: '\uD83E\uDDE0', title: 'SMART \u2014 specific, measurable, achievable, relevant, time-bound', hint: 'Doran 1981. Drains the romance from goals to install the structure that makes them real. \u201CRead more\u201D \u2192 \u201CRead 10 pages each weeknight, 9-9:30pm, in bed, for 4 weeks.\u201D' },
-              coach:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDD16', title: 'Coach \u2014 reflective conversation partner',             hint: 'Type a stuck goal; the AI walks you through why-stuck \u2192 what-changed \u2192 next-tiny-step. Not advice; reflection prompts. Useful when the goal feels heavy and you don\u2019t know where to start again.' },
-              checkin:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In \u2014 the daily 1-minute rep',                  hint: 'Self-monitoring (Latham 1981, ~40 yrs of replicated studies) is the single biggest behavior-change lever after goal-setting. The act of TRACKING shifts behavior even before you analyze the data.' },
-              progress: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Progress \u2014 the chart that proves it',                hint: 'Visible progress predicts persistence (Amabile 2011 \u201Cprogress principle\u201D). Even small gains shown daily are stronger motivators than rare big wins. Show the chart \u2014 to yourself, to the people supporting you.' }
+              goals:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.14)',  icon: '\uD83C\uDFAF', title: 'Goals - choose a useful next step', hint: 'Choose a goal that matters to you, then make the first step manageable. You can adjust the goal or ask for support as you learn.' },
+              habits:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDD01', title: 'Habits - try a routine that fits', hint: 'Choose a routine and record the days you tried it. A missed day is information, not a failure; change the routine or its supports when needed.' },
+              vision:   { accent: _goaFg('#fbbf24'), soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF1F', title: 'Vision - explore what matters', hint: 'Describe something you would like to work toward. Start with this week if a longer view is hard to imagine; your priorities can change.' },
+              smart:    { accent: _goaFg('#a855f7'), soft: 'rgba(168,85,247,0.14)',  icon: '\uD83E\uDDE0', title: 'SMART - make a plan you can adjust', hint: 'Use these questions to make your plan clearer. A useful plan fits your situation and available supports; you can revise it after trying a step.' },
+              coach:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDD16', title: 'Coach - explore a next step', hint: 'When an AI connection is available, you can ask for planning ideas. Check suggestions for fit with your situation; you choose what to try or share.' },
+              checkin:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In - a weekly goal review', hint: 'Look back at the last seven days, notice barriers and supports, and choose what might come next. Writing and ratings are optional.' },
+              progress: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Progress - your recorded activity', hint: 'These records show checked steps and saved activity. They do not measure learning or wellbeing, and they may leave out progress made away from the tool.' }
             };
             var meta = TAB_META[tab] || TAB_META.goals;
             return h('div', {
@@ -1419,6 +1479,7 @@ window.SelHub = window.SelHub || {
 
             // ── GOALS TAB ──
             tab === 'goals' ? h('div', null,
+              h('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.6, color: _goaFg('#e2e8f0') } }, d.goalNotesNotice || ''),
               // Motivational boost banner
               motivationalBoost ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 18 } }, '\uD83D\uDCAB'),
@@ -1575,7 +1636,7 @@ window.SelHub = window.SelHub || {
                 var daysTaken = getTimeToDays(celebGoal.createdAt, celebGoal.completedAt || Date.now());
                 var stepsCount = getCompletedStepCount(celebGoal);
                 var diffInfo = DIFFICULTY_LABELS[(celebGoal.difficulty || 1) - 1] || DIFFICULTY_LABELS[0];
-                return h('div', { style: { padding: 20, marginBottom: 16, borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(34,197,94,0.08))', border: '2px solid rgba(52,211,153,0.4)', textAlign: 'center', position: 'relative' } },
+                return h('section', { id: 'goal-completion-review-' + getGoalDomId(celebGoal.id), tabIndex: -1, 'aria-label': 'Completion note for ' + (celebGoal.text || 'unnamed goal'), style: { padding: 16, marginBottom: 16, borderRadius: 16, background: _goaHC ? '#000000' : '#0f172a', border: '2px solid ' + (_goaHC ? '#ffff00' : '#64748b'), textAlign: 'center', position: 'relative', overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6 } },
                   // Confetti burst at top
                   h('div', { style: { fontSize: 28, marginBottom: 8, letterSpacing: 4 } }, '\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86'),
                   h('div', { style: { fontSize: 18, fontWeight: 'bold', color: _goaFg('#34d399'), marginBottom: 4 } }, '\uD83C\uDFC6 Goal Completed!'),
@@ -1595,21 +1656,18 @@ window.SelHub = window.SelHub || {
                       h('div', { style: { fontSize: 11, color: _goaFg('#94a3b8') } }, diffInfo.label)
                     )
                   ),
-                  // "What I Learned" textarea
+                  h('p', null, 'You can notice what helped, what you learned, or what you would change. Finishing the listed steps does not require a written reflection or another goal.'),
+                  h('p', null, 'Think, draw, speak, sign, or use AAC if you prefer. Only what you enter here is saved in this note; sharing is your choice.'),
                   h('div', { style: { textAlign: 'left', marginBottom: 12 } },
-                    h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 4 } }, '\uD83D\uDCA1 What I Learned'),
-                    h('textarea', { id: 'celebration-journal', 'aria-label': 'Celebration journal', placeholder: band === 'elementary' ? 'What did you learn from reaching this goal?' : 'Reflect on what you learned during this journey...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.5)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
+                    h('label', { htmlFor: 'goal-note-' + getGoalDomId(celebGoal.id) + '-whatLearned', style: { display: 'block', fontWeight: 700, marginBottom: 8 } }, 'What would I like to remember? (optional)'),
+                    h('textarea', { id: 'goal-note-' + getGoalDomId(celebGoal.id) + '-whatLearned', value: goalNoteValue(celebGoal.id, 'whatLearned'), onChange: function(event) { updateGoalNote(celebGoal.id, 'whatLearned', event.target.value); }, rows: 3, style: noteFieldStyle })
                   ),
-                  // Action buttons
+                  h('p', null, 'Your unfinished note stays with this goal when you switch tabs or pause. Use the Hub save/export controls to keep a project copy.'),
                   h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                    h('button', { 'aria-label': 'Save Journal', onClick: function() {
-                      var ta = document.getElementById('celebration-journal');
-                      var text = ta ? ta.value : '';
-                      saveCompletionJournal(celebGoal.id, text);
-                    }, style: { padding: '8px 16px', borderRadius: 8, background: _goaBg('#15803d'), color: _goaFg('#fff'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Save Journal'),
-                    h('button', { onClick: function() { shareAchievement(celebGoal); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: _goaFg('#a5b4fc'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Share Achievement'),
-                    h('button', { onClick: function() { dismissCelebration(); addGoal('', 'personal'); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', color: _goaFg('#c4b5fd'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Set Next Goal'),
-                    h('button', { 'aria-label': 'Dismiss', onClick: function() { dismissCelebration(); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.1)', color: _goaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' } }, 'Dismiss')
+                    h('button', { onClick: function() { saveCompletionJournal(celebGoal.id, goalNoteValue(celebGoal.id, 'whatLearned')); }, style: noteSaveStyle }, 'Save completion note'),
+                    h('button', { onClick: dismissCelebration, style: noteButtonStyle }, 'Pause for now'),
+                    h('button', { onClick: function() { shareAchievement(celebGoal); }, style: noteButtonStyle }, 'Copy achievement'),
+                    h('button', { onClick: function() { dismissCelebration(); addGoal('', 'personal'); }, style: noteButtonStyle }, 'Set another goal')
                   )
                 );
               })() : null,
@@ -1621,16 +1679,15 @@ window.SelHub = window.SelHub || {
                   var isReflecting = reflectingGoalId === goal.id;
                   var hasReflections = goal.reflections && goal.reflections.length > 0;
                   var goalDiffLvl = goal.difficulty || 1;
-                  return h('div', { key: goal.id, style: { padding: 10, marginBottom: 8, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                  return h('section', { key: goal.id, id: 'goal-completed-' + getGoalDomId(goal.id), tabIndex: -1, 'aria-label': 'Completed goal: ' + (goal.text || 'unnamed goal'), style: { padding: 12, marginBottom: 8, borderRadius: 10, background: _goaHC ? '#000000' : '#0f172a', border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6, scrollMarginTop: 100 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                       h('span', null, cat.emoji),
-                      h('span', { style: { flex: 1, fontSize: 12, color: _goaFg('#6ee7b7'), textDecoration: 'line-through' } }, goal.text),
+                      h('span', { style: { flex: '1 1 180px', fontSize: 16, color: _goaFg('#6ee7b7'), textDecoration: 'line-through' } }, goal.text),
                       h('span', { style: { fontSize: 10, letterSpacing: -2 } }, getDifficultyFlames(goalDiffLvl)),
                       h('span', { style: { fontSize: 10, color: _goaFg('#34d399') } }, '\uD83C\uDF89 Done!'),
-                      // Show celebration button if no journal yet
-                      !goal.completionJournal ? h('button', { 'aria-label': 'Celebrate', onClick: function() { upd({ celebratingGoalId: goal.id }); }, style: { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', color: _goaFg('#34d399'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 2 } }, '\uD83C\uDF89 Celebrate') : null,
-                      !hasReflections ? h('button', { 'aria-label': 'Reflect', onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id }); }, style: { background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 6, padding: '3px 8px', color: _goaFg('#c4b5fd'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 4 } }, '\uD83D\uDCDD Reflect') : null,
-                      h('button', { 'aria-label': 'Share goal', onClick: function() { shareGoalToClipboard(goal); }, style: { background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 11, padding: 2 } }, '\uD83D\uDCE4')
+                      !goal.completionJournal ? h('button', { 'aria-label': 'Completion note for ' + (goal.text || 'unnamed goal'), onClick: function() { upd({ celebratingGoalId: goal.id, goalNotesNotice: '' }); focusGoalNote(goal.id, 'whatLearned'); }, style: noteButtonStyle }, 'Completion note') : null,
+                      !hasReflections ? h('button', { 'aria-label': (isReflecting ? 'Pause reflection for ' : 'Reflect on ') + (goal.text || 'unnamed goal'), onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id, goalNotesNotice: '' }); if (!isReflecting) focusGoalNote(goal.id, 'whatWorked'); }, style: noteButtonStyle }, isReflecting ? 'Pause reflection' : 'Reflect') : null,
+                      h('button', { 'aria-label': 'Copy goal: ' + (goal.text || 'unnamed goal'), onClick: function() { shareGoalToClipboard(goal); }, style: noteButtonStyle }, 'Copy goal')
                     ),
                     // Completion stats line
                     (goal.completedAt || goal.completionJournal) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, paddingLeft: 22, fontSize: 10, color: _goaFg('#94a3b8') } },
@@ -1638,43 +1695,40 @@ window.SelHub = window.SelHub || {
                       h('span', null, '\uD83D\uDC63 ' + getCompletedStepCount(goal) + ' steps'),
                       goal.completionJournal ? h('span', { style: { color: _goaFg('#a5b4fc') } }, '\uD83D\uDCA1 Journal saved') : null
                     ) : null,
-                    // Show completion journal if saved
-                    goal.completionJournal && goal.completionJournal.whatLearned ? h('div', { style: { marginTop: 6, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
-                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 3 } }, '\uD83D\uDCA1 What I Learned'),
-                      h('div', { style: { fontSize: 11, color: _goaFg('#94a3b8'), lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
+                    goal.completionJournal ? h('div', { style: { marginTop: 8, fontSize: 14, lineHeight: 1.6 } },
+                      h('h4', { style: { fontSize: 16, margin: '0 0 4px' } }, 'Saved completion note'),
+                      h('p', { style: { whiteSpace: 'pre-wrap' } }, goal.completionJournal.whatLearned || 'No written note recorded.')
                     ) : null,
-                    // Reflection form
-                    isReflecting ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
-                      h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#c4b5fd'), marginBottom: 8 } }, '\uD83D\uDCDD Goal Reflection Journal'),
-                      h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 10 } }, band === 'elementary' ? 'Think about how you reached your goal!' : 'Reflect on your journey to completing this goal.'),
-                      ['What worked well?', 'What was the hardest part?', 'What would I do differently?', 'What\'s my next goal?'].map(function(prompt, pi) {
-                        return h('div', { key: pi, style: { marginBottom: 8 } },
-                          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 3 } }, prompt),
-                          h('textarea', { id: 'reflect-' + pi, placeholder: band === 'elementary' ? 'Write your thoughts...' : 'Share your reflection...', style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
+                    // Goal-specific controlled drafts survive tab changes and project restore.
+                    isReflecting ? h('section', { 'aria-label': 'Reflection for ' + (goal.text || 'unnamed goal'), style: { marginTop: 12, padding: 12, borderRadius: 8, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b') } },
+                      h('h4', { style: { fontSize: 16, margin: '0 0 8px' } }, 'Reflect on this goal'),
+                      h('p', null, 'Choose any question or leave them blank. You can think, draw, speak, sign, or use AAC away from this form. You do not need to share personal details.'),
+                      reflectionFields.map(function(field) {
+                        var fieldId = 'goal-note-' + getGoalDomId(goal.id) + '-' + field.key;
+                        return h('div', { key: field.key, style: { marginBottom: 16 } },
+                          h('label', { htmlFor: fieldId, style: { display: 'block', fontWeight: 700 } }, field.label),
+                          h('p', { id: fieldId + '-help', style: { margin: '4px 0 8px' } }, field.hint),
+                          h('textarea', { id: fieldId, 'aria-describedby': fieldId + '-help', value: goalNoteValue(goal.id, field.key), onChange: function(event) { updateGoalNote(goal.id, field.key, event.target.value); }, rows: 3, style: noteFieldStyle })
                         );
                       }),
-                      h('button', { 'aria-label': 'Save reflection', onClick: function() {
-                        var r0 = document.getElementById('reflect-0');
-                        var r1 = document.getElementById('reflect-1');
-                        var r2 = document.getElementById('reflect-2');
-                        var r3 = document.getElementById('reflect-3');
-                        saveReflection(goal.id, {
-                          whatWorked: r0 ? r0.value : '',
-                          hardestPart: r1 ? r1.value : '',
-                          doDifferently: r2 ? r2.value : '',
-                          nextGoal: r3 ? r3.value : ''
-                        });
-                      }, style: { padding: '8px 20px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer', marginTop: 4 } }, '\u2705 Save Reflection')
+                      h('p', null, 'Your draft stays with this goal when you switch tabs or pause. Use the Hub save/export controls to keep a project copy. Sharing is your choice.'),
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                        h('button', { onClick: function() {
+                          var reflection = {};
+                          reflectionFields.forEach(function(field) { reflection[field.key] = goalNoteValue(goal.id, field.key); });
+                          saveReflection(goal.id, reflection);
+                        }, style: noteSaveStyle }, 'Save reflection'),
+                        h('button', { onClick: function() { upd({ reflectingGoalId: null, goalNotesNotice: 'Reflection paused. Your draft stays with this goal in this activity.' }); focusCompletedGoal(goal.id); }, style: noteButtonStyle }, 'Pause for now')
+                      )
                     ) : null,
-                    // Show saved reflections
-                    hasReflections ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.1)' } },
-                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: _goaFg('#c4b5fd'), marginBottom: 6 } }, '\uD83D\uDCDD Reflection'),
+                    hasReflections ? h('details', { style: { marginTop: 12, fontSize: 14, lineHeight: 1.6 } },
+                      h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Saved reflections (' + goal.reflections.length + ')'),
                       goal.reflections.map(function(ref, ri) {
-                        return h('div', { key: ri, style: { fontSize: 11, color: _goaFg('#94a3b8'), lineHeight: 1.6 } },
-                          ref.whatWorked ? h('div', null, h('strong', { style: { color: _goaFg('#a5b4fc') } }, 'What worked: '), ref.whatWorked) : null,
-                          ref.hardestPart ? h('div', null, h('strong', { style: { color: _goaFg('#a5b4fc') } }, 'Hardest part: '), ref.hardestPart) : null,
-                          ref.doDifferently ? h('div', null, h('strong', { style: { color: _goaFg('#a5b4fc') } }, 'Do differently: '), ref.doDifferently) : null,
-                          ref.nextGoal ? h('div', null, h('strong', { style: { color: _goaFg('#a5b4fc') } }, 'Next goal: '), ref.nextGoal) : null
+                        return h('article', { key: ri, 'aria-label': 'Saved reflection ' + (ri + 1), style: { marginTop: 12 } },
+                          h('p', null, typeof ref.date === 'number' && isFinite(ref.date) && ref.date > 0 ? 'Saved ' + new Date(ref.date).toLocaleString() : 'Saved reflection (date not recorded)'),
+                          reflectionFields.some(function(field) { return ref[field.key]; }) ? reflectionFields.map(function(field) {
+                            return ref[field.key] ? h('p', { key: field.key, style: { whiteSpace: 'pre-wrap' } }, h('strong', null, field.label.replace(' (optional)', '') + ' '), ref[field.key]) : null;
+                          }) : h('p', null, 'No written responses recorded.')
                         );
                       })
                     ) : null

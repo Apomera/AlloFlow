@@ -557,6 +557,148 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     return page.getByRole('region', { name: 'Weekly goal review', exact: true });
   }
 
+  const completedNoteGoal = (id, text) => ({ id, text, category: 'academic', completed: true, progress: 100, createdAt: Date.now() - 86400000, completedAt: Date.now(), steps: [{ text: 'Try a model', done: true }], reflections: [], customField: 'keep me' });
+  const noteState = () => page.evaluate(() => window.__alloflowSelToolData.goals_tool);
+  const noteRegion = name => page.getByRole('region', { name, exact: true });
+  const noteButton = (root, name) => root.getByRole('button', { name, exact: true });
+  const noteField = (root, name) => root.getByRole('textbox', { name, exact: true });
+
+  it('goal notes keep separate drafts across goals, tabs and project restore', async () => {
+    await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('note-a', 'First practice'), completedNoteGoal('note-b', 'Second practice')], goalNotesDrafts: { 'note-a': { whatLearned: 'An unfinished completion note.' } } });
+    await noteButton(page, 'Reflect on First practice').click();
+    let form = noteRegion('Reflection for First practice');
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-a-whatWorked');
+    await noteField(form, 'What helped? (optional)').fill('A model.\nMore time.');
+    await noteField(form, 'What might come next? (optional)').fill('A break, then another try.');
+    await noteButton(page, 'Reflect on Second practice').click();
+    const second = noteRegion('Reflection for Second practice');
+    expect(await noteField(second, 'What helped? (optional)').inputValue()).toBe('');
+    await noteField(second, 'What helped? (optional)').fill('A different example.');
+    await page.locator('#goal-tab-checkin').click(); await page.locator('#goal-tab-goals').click();
+    expect(await noteField(second, 'What helped? (optional)').inputValue()).toBe('A different example.');
+    await openGoalReview(JSON.parse(JSON.stringify(await noteState())));
+    await noteButton(page, 'Reflect on First practice').click();
+    form = noteRegion('Reflection for First practice');
+    expect(await noteField(form, 'What helped? (optional)').inputValue()).toBe('A model.\nMore time.');
+    await noteButton(form, 'Save reflection').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-a');
+    const data = await noteState();
+    expect(data.goals[0].reflections[0]).toMatchObject({ whatWorked: 'A model.\nMore time.', nextGoal: 'A break, then another try.', hardestPart: '', doDifferently: '' });
+    expect(data.goalNotesDrafts).toEqual({ 'note-a': { whatLearned: 'An unfinished completion note.' }, 'note-b': { whatWorked: 'A different example.' } });
+    expect(data.goals[0].customField).toBe('keep me');
+    const card = noteRegion('Completed goal: First practice');
+    await card.getByText('Saved reflections (1)', { exact: true }).click();
+    expect(await card.getByRole('article').innerText()).toContain('A model.\nMore time.');
+  }, 120000);
+
+  it('goal notes pause and restore completion writing without erasing reflection drafts', async () => {
+    await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('note-c', 'Try a short section')], goalNotesDrafts: { 'note-c': { whatWorked: 'An unfinished reflection.' } } });
+    await noteButton(page, 'Completion note for Try a short section').click();
+    let form = noteRegion('Completion note for Try a short section');
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-c-whatLearned');
+    await form.getByRole('textbox').fill('The audio version helped.\nI can use it again.');
+    await noteButton(form, 'Pause for now').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-c');
+    expect(await page.getByText(/Completion note paused/).count()).toBe(1);
+    await noteButton(page, 'Completion note for Try a short section').click();
+    await page.locator('#goal-tab-vision').click(); await page.locator('#goal-tab-goals').click();
+    expect(await form.getByRole('textbox').inputValue()).toContain('The audio version helped.');
+    await openGoalReview(JSON.parse(JSON.stringify(await noteState())));
+    form = noteRegion('Completion note for Try a short section');
+    expect(await form.getByRole('textbox').inputValue()).toBe('The audio version helped.\nI can use it again.');
+    await noteButton(form, 'Save completion note').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-c');
+    const data = await noteState();
+    expect(data.goalNotesDrafts).toEqual({ 'note-c': { whatWorked: 'An unfinished reflection.' } });
+    expect(data.goals[0].completionJournal.whatLearned).toBe('The audio version helped.\nI can use it again.');
+    expect(data.goals[0].customField).toBe('keep me');
+  }, 120000);
+
+  it('goal notes allow blank responses and pausing without creating another goal', async () => {
+    await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('note-d', 'Pause and reflect')] });
+    await noteButton(page, 'Reflect on Pause and reflect').click();
+    let form = noteRegion('Reflection for Pause and reflect');
+    await noteField(form, 'What got in the way? (optional)').fill('A draft barrier.');
+    await noteButton(form, 'Pause for now').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-d');
+    await noteButton(page, 'Reflect on Pause and reflect').click();
+    form = noteRegion('Reflection for Pause and reflect');
+    expect(await noteField(form, 'What got in the way? (optional)').inputValue()).toBe('A draft barrier.');
+    await noteField(form, 'What got in the way? (optional)').fill('');
+    await noteButton(form, 'Save reflection').click();
+    await noteButton(page, 'Completion note for Pause and reflect').click();
+    await noteButton(noteRegion('Completion note for Pause and reflect'), 'Save completion note').click();
+    const data = await noteState();
+    expect(data.goals).toHaveLength(1);
+    expect(data.goals[0].reflections[0]).toMatchObject({ whatWorked: '', hardestPart: '', doDifferently: '', nextGoal: '' });
+    expect(data.goals[0].completionJournal.whatLearned).toBe('');
+    expect(data.goalNotesDrafts).toEqual({});
+    expect(await page.getByText('No written note recorded.', { exact: true }).count()).toBe(1);
+    await page.getByText('Saved reflections (1)', { exact: true }).click();
+    expect(await page.getByText('No written responses recorded.', { exact: true }).count()).toBe(1);
+  }, 120000);
+
+  it('goal notes are removed with their goal without clearing another goal draft', async () => {
+    const goal = { ...completedNoteGoal('remove-note', 'Remove this goal'), completed: false, progress: 0 };
+    await openGoalReview({ tab: 'goals', goals: [goal, completedNoteGoal('keep-note', 'Keep this goal')], goalNotesDrafts: { 'remove-note': { whatWorked: 'Remove with goal.' }, 'keep-note': { whatLearned: 'Keep with goal.' } } });
+    await noteButton(page, 'Delete goal: Remove this goal').click();
+    const data = await noteState();
+    expect(data.goals.map(goal => goal.id)).toEqual(['keep-note']);
+    expect(data.goalNotesDrafts).toEqual({ 'keep-note': { whatLearned: 'Keep with goal.' } });
+  }, 120000);
+
+  it('goal notes receive keyboard focus when the final step completes', async () => {
+    const goal = { ...completedNoteGoal('last-step', 'Finish one practice'), completed: false, progress: 0, completedAt: null, steps: [{ text: 'Try a model', done: false }] };
+    await openGoalReview({ tab: 'goals', goals: [goal], expandedGoalId: goal.id });
+    await noteButton(page, 'Mark complete: Try a model').focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completion-review-last-step');
+    const form = noteRegion('Completion note for Finish one practice');
+    expect(await form.innerText()).toContain('does not require a written reflection or another goal');
+    await noteButton(form, 'Pause for now').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-last-step');
+    expect((await noteState()).goals[0].completed).toBe(true);
+  }, 120000);
+
+  it('goal notes retain legacy reflections and describe missing dates honestly', async () => {
+    const goal = { ...completedNoteGoal('legacy-note', 'An earlier practice'), completionJournal: { whatLearned: 'An earlier note.', savedAt: 1234, customNote: true }, reflections: [{ whatWorked: 'A familiar tool.', hardestPart: 'The time limit.', customReflection: true }] };
+    await openGoalReview({ tab: 'goals', goals: [goal] });
+    const card = noteRegion('Completed goal: An earlier practice');
+    expect(await card.innerText()).toContain('An earlier note.');
+    await card.getByText('Saved reflections (1)', { exact: true }).click();
+    expect(await card.getByRole('article').innerText()).toContain('Saved reflection (date not recorded)');
+    expect(await card.getByRole('article').innerText()).toContain('A familiar tool.');
+    expect(await card.getByRole('article').innerText()).toContain('The time limit.');
+    expect((await noteState()).goals[0]).toEqual(goal);
+  }, 120000);
+
+  it.each(['', 'theme-dark', 'theme-contrast'])('goal notes fit a phone and have accessible labels in %s', async theme => {
+    await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('phone-note', 'Practice with an example and choose a helpful support')] }, 320, theme);
+    await noteButton(page, 'Reflect on Practice with an example and choose a helpful support').click();
+    const reflection = noteRegion('Reflection for Practice with an example and choose a helpful support');
+    await noteField(reflection, 'What helped? (optional)').fill('A model and more time.');
+    await page.addScriptTag({ path: path.join(root, 'node_modules/axe-core/axe.min.js') });
+    async function auditNote(region, kind) {
+      const violations = await region.evaluate(async node => {
+        const result = await window.axe.run(node, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'select-name', 'label-content-name-mismatch'] } });
+        return result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ html: n.html, summary: n.failureSummary })) }));
+      });
+      fs.writeFileSync(path.join(reports, (theme || 'light') + '-goal-' + kind + '-axe.json'), JSON.stringify(violations, null, 2));
+      expect(violations).toEqual([]);
+      expect(await region.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+      expect(await region.locator('button:visible, textarea:visible').evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44))).toBe(true);
+      await noteButton(region, 'Pause for now').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(reports, (theme || 'light') + '-goal-' + kind + '-phone.png') });
+    }
+    await auditNote(reflection, 'reflection');
+    await noteButton(reflection, 'Pause for now').click();
+    await noteButton(page, 'Completion note for Practice with an example and choose a helpful support').click();
+    const completion = noteRegion('Completion note for Practice with an example and choose a helpful support');
+    await completion.getByRole('textbox').fill('A short section was a useful place to start.');
+    await auditNote(completion, 'completion');
+    expect(errors).toEqual([]);
+  }, 120000);
+
   it('goal review saves without a rating and preserves support and dated snapshots on restore', async () => {
     const now = Date.now();
     const goal = { id: 'review-goal', text: 'Read a short section', category: 'academic', steps: [{ text: 'Earlier step', done: true }, { text: 'Recent step', done: true, completedAt: now - 1000 }], progress: 100, completed: true };
