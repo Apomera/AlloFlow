@@ -1,0 +1,17 @@
+{
+  "mapped": 57,
+  "coordinates": 66084,
+  "eyes": [
+    0.21,
+    0.21
+  ],
+  "eyeClearances": [
+    0.3200000000000096,
+    0.3200000000000142
+  ],
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

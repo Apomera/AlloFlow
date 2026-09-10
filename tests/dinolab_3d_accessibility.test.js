@@ -216,7 +216,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'Visible body silhouette: '");
     expect(source).toContain("'Species body silhouette'");
     expect(source).toContain('var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));');
-    expect(source).toContain('var facialMuzzleDepthScale = cranialSurface.muzzleDepthScale');
+    expect(source).toContain('dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld);');
     expect(source).toContain("readoutChip('Head ' + cranialSurface.shortLabel");
     expect(source).toContain("'Visible head silhouette: '");
     expect(source).toContain("'Species head silhouette'");
@@ -263,8 +263,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('new THREE.DodecahedronGeometry(rockSize, 0)');
     expect(source).toContain("var skinCanvas = document.createElement('canvas');");
     expect(source).toContain('roughness: 0.82, metalness: 0');
-    expect(source).toContain('var muzzleShell = isTheropod ? null : addSoftTissueCylinder(');
-    expect(source).toContain('                surfaceSnout,');
+    expect(source).toContain('function faceSurfacePoint(point, side, inset)');
+    expect(source).toContain('ray.intersectObject(headShell, false)');
     expect(source).toContain('var faceScale = reconstructionProfile.head;');
     expect(source).toContain('var surveyCorners = [');
     expect(source).toContain('var compassCenter = vec(');
@@ -289,7 +289,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("else if (/Abelisaur/i.test(cladeName) && /horn/i.test");
     expect(source).toContain("else if (/Oviraptor/i.test(cladeName) && /crest/i.test");
     expect(source).toContain("else if (/Iguanodont/i.test(cladeName))");
-    expect(source).toContain('var tyrantSnout = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.60);');
+    expect(source).toContain('var browRadius = eye.geometry.parameters.radius;');
     expect(source).toContain('var oviraptorCrest = addAccentCone');
     expect(source).toContain('var thumbBase = vec(');
     expect(source).toContain('var ribCount = isSauropod ? 10 : 9;');

@@ -85,3 +85,30 @@ describe('Dino Lab anatomical feature surfaces', () => {
     });
   }
 });
+
+describe('Dino Lab shared skin coordinates', () => {
+  const { dinoSkinCoordinates } = internals();
+  it('gives coincident points the same skin coordinates across separate meshes', () => {
+    const a=new THREE.BoxGeometry(2,2,2), b=new THREE.BoxGeometry(2,2,2);
+    b.translate(-4,2,-1);
+    dinoSkinCoordinates(THREE,a,new THREE.Matrix4());
+    dinoSkinCoordinates(THREE,b,new THREE.Matrix4().makeTranslation(4,-2,1));
+    expect([...b.attributes.dinoSkinPosition.array]).toEqual([...a.attributes.dinoSkinPosition.array]);
+    expect([...b.attributes.dinoSkinNormal.array]).toEqual([...a.attributes.dinoSkinNormal.array]);
+    a.dispose();b.dispose();
+  });
+  it('normalizes transformed skin normals on scaled and rotated anatomy', () => {
+    const g=new THREE.SphereGeometry(1,16,12);
+    const matrix=new THREE.Matrix4().compose(new THREE.Vector3(-2,4,1),new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),0.6),new THREE.Vector3(3,0.2,1));
+    dinoSkinCoordinates(THREE,g,matrix);
+    const normals=g.attributes.dinoSkinNormal,positions=g.attributes.dinoSkinPosition;
+    expect(positions.count).toBe(g.attributes.position.count);
+    for(let i=0;i<normals.count;i++){
+      const n=new THREE.Vector3().fromBufferAttribute(normals,i);
+      expect(n.length()).toBeCloseTo(1,5);
+      const p=new THREE.Vector3().fromBufferAttribute(positions,i);
+      expect(Number.isFinite(p.x+p.y+p.z)).toBe(true);
+    }
+    g.dispose();
+  });
+});

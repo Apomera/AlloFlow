@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:33136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › brachiosaurus skin mapping and face proportions render correctly (1.4m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › stegosaurus skin mapping and face proportions render correctly (1.0m)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › tyrannosaurus skin mapping and face proportions render correctly (47.1s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › triceratops skin mapping and face proportions render correctly (33.4s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › microraptor skin mapping and face proportions render correctly (23.6s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:45:7 › spinosaurus skin mapping and face proportions render correctly (28.7s)
+  ok 7 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:19:5 › catalog, notebook export, keyboard return, responsive layout, and contrast (10.0s)
+  ok 8 [chromium] › tests\e2e\dinolab-field-guide.spec.ts:73:5 › species-file entry resets stale 3D evidence and connects the live station to the notebook (36.2s)
+
+  8 passed (5.4m)

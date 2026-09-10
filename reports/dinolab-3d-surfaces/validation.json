@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-10",
+  "scope": "Dino Lab skin and face refinement",
+  "focusedTestsPassed": 127,
+  "newGeometryTests": 2,
+  "affectedTestsRechecked": 34,
+  "finalRendererContractPassed": 1,
+  "distinctBrowserTestsPassed": 10,
+  "finalSpeciesTestsPassed": 8,
+  "workflowTestsPassed": 2,
+  "testedSpecies": [
+    "brachiosaurus",
+    "stegosaurus",
+    "tyrannosaurus",
+    "triceratops",
+    "microraptor",
+    "spinosaurus",
+    "psittacosaurus",
+    "sinosauropteryx"
+  ],
+  "eyeClearanceVerified": true,
+  "shaderErrors": 0,
+  "moduleCopies": 3,
+  "moduleSha256": "D66316284E2B05CED412135C4F24E806435FE9F88EE43A796E9CFE44697E6249",
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "rendering": "Three.js r128 in Chromium with software WebGL and reduced motion",
+  "deployment": "No deployment or push performed by this task"
+}

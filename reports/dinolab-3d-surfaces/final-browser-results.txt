@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:25560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › brachiosaurus skin mapping and face proportions render correctly (1.0m)
+  ok 2 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › stegosaurus skin mapping and face proportions render correctly (45.7s)
+  ok 3 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › tyrannosaurus skin mapping and face proportions render correctly (28.1s)
+  ok 4 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › triceratops skin mapping and face proportions render correctly (21.1s)
+  ok 5 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › microraptor skin mapping and face proportions render correctly (17.0s)
+  ok 6 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › spinosaurus skin mapping and face proportions render correctly (19.0s)
+  ok 7 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › psittacosaurus skin mapping and face proportions render correctly (21.8s)
+  ok 8 [chromium] › tests\e2e\dinolab-3d-surfaces.spec.ts:53:7 › sinosauropteryx skin mapping and face proportions render correctly (17.4s)
+
+  8 passed (3.9m)
